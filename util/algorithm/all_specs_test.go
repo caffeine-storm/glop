@@ -12,7 +12,7 @@ func TestAllSpecs(t *testing.T) {
   r.AddSpec(ReachableDestinationsSpec)
   r.AddSpec(ChooserSpec)
   r.AddSpec(MapperSpec)
-  // r.AddSpec(Mapper2Spec)
+  r.AddSpec(Mapper2Spec)
   r.AddSpec(TopoSpec)
   gospec.MainGoTest(r, t)
 }
