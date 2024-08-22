@@ -1,0 +1,16 @@
+github.com/chsc/gogl v0.0.0-20131111203533-c411acc846b6 h1:GHNbGLo1VfjsT+Lf7i1beWEvSHbN/GIi7pzkWAnL2zk=
+github.com/chsc/gogl v0.0.0-20131111203533-c411acc846b6/go.mod h1:82yD5XkINXAhjoaZjStP4a8vZSO3c7aAWQS3OJtBg+s=
+github.com/golang/freetype v0.0.0-20120725121025-28cc5fbc5d0b h1:Wz3T/RQZq290dBxQ5Iu2Ot5KIyMWkSJWWp2NMvV7OYE=
+github.com/golang/freetype v0.0.0-20120725121025-28cc5fbc5d0b/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
+github.com/orfjackal/gospec v0.0.0-20140731185859-a21081619255 h1:ijtHD/28+EHo0NH8Ev8Y1TGiZdyLKbDaT4Jo9p0IufM=
+github.com/orfjackal/gospec v0.0.0-20140731185859-a21081619255/go.mod h1:s9jdgxV9J9CqMIKkedEWkAI6u7WsfJRXokgrzVfK39Q=
+github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701 h1:yOXfzNV7qkZ3nf2NPqy4BMzlCmnQzIEbI1vuqKb2FkQ=
+github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701/go.mod h1:VtBIF1XX0c1nKkeAPk8i4aXkYopqQgfDqolHUIHPwNI=
+github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894 h1:/AbPytcVIuyJwvyorTCxKD8bhTE9uMJJ3Ulf4vO0oc4=
+github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894/go.mod h1:4vpJ5d17O5eEwNBIYIPQeccmFDM2/P/4LBqCtPwTTU4=
+github.com/runningwild/opengl v0.0.0-20120403195019-a84b3617440e h1:MEHArdvONb7RduKnWTbaWZqOzABZr9Fona810xRBgxQ=
+github.com/runningwild/opengl v0.0.0-20120403195019-a84b3617440e/go.mod h1:tj4EQrChsAl8O5UOmShrcOg0jraTrVFf++0yD75wrJs=
+github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81 h1:FTAg+lBCy0v6vvGaykBPATDdUY50MjJ6FdQ9CQeQsAc=
+github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81/go.mod h1:BjqYe08obgSdkjNk2t3EpfJq4ITaQ27tAJoOxv0KXq0=
+github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9 h1:aSky3KZJsEt7N0/MEJJ8Sz1ytHoSLnxld3G8c2xfQ5Q=
+github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9/go.mod h1:45ANiHU8dW6oYKaeXXnhuCYG/vjboJhTYtTmUXC91Z8=
