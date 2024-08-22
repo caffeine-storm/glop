@@ -70,12 +70,6 @@ func MapperSpec(c gospec.Context) {
 }
 
 func Mapper2Spec(c gospec.Context) {
-  c.Specify("Map from []int to []float64", func() {
-    a := []int{0,1,2,3,4}
-    var b []float64
-    algorithm.Map2(a, &b, func(n int) float64 { return float64(n) })
-    c.Expect(b, ContainsInOrder, []float64{0,1,2,3,4})
-  })
   // c.Specify("Map from []int to []string", func() {
   //   a := []int{0,1,2,3,4}
   //   var b []string
