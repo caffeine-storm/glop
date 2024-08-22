@@ -425,7 +425,7 @@ func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, na
 	if index < 0 {
 		panic(fmt.Sprintf("Cannot register a key with index %d, indexes must be greater than 0.", index))
 	}
-	if prev, ok := input.index_to_agg_type[index]; ok {
+	if prev, ok := input.index_to_name[index]; ok {
 		panic(fmt.Sprintf("Cannot register key index %d, it has already been registered with the name %s and aggregator %v.", index, prev, agg_type))
 	}
 	input.index_to_agg_type[index] = agg_type
