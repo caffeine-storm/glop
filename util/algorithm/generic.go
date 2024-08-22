@@ -7,10 +7,10 @@ import (
 
 type Chooser func(interface{}) bool
 
-// //  Given a pointer to a slice and a Chooser,  type as the input
-// // slice that contains only those elements of the input slice for which
-// // choose() returns true.  The elements of the returned slice will be in the
-// // same order that they were in in the input slice.
+// TODO(tmckee): this could be done better with generics.
+// Given a pointer to a slice and a Chooser, rewrite the slice to contain only
+// those elements for which choose() returns true. The elements of the
+// resulting slice will be in the same order as they were in the input.
 func Choose(_a interface{}, chooser interface{}) {
   a := reflect.ValueOf(_a)
   if a.Kind() != reflect.Ptr || a.Elem().Kind() != reflect.Slice {
@@ -25,28 +25,31 @@ func Choose(_a interface{}, chooser interface{}) {
     panic("chooser must take exactly 1 input parameter")
   }
   if c.Type().In(0).Kind() != a.Elem().Type().Elem().Kind() {
-    panic(fmt.Sprintf("chooser's parameter must be %v, not %v", a.Addr().Elem(), c.Type().In(0)))
+    panic(fmt.Sprintf("chooser's parameter must be %v, not %v", a.Elem().Type().Elem().Kind(), c.Type().In(0)))
   }
   if c.Type().NumOut() != 1 || c.Type().Out(0).Kind() != reflect.Bool {
     panic("chooser must have exactly 1 output parameter, a bool")
   }
 
-  count := 0
-  in := make([]reflect.Value, 1)
-  var out []reflect.Value
+  outputIndex := 0
   slice := a.Elem()
+  fmt.Println("got input slice", slice)
   for i := 0; i < slice.Len(); i++ {
-    in[0] = slice.Index(i)
-    out = c.Call(in)
-    if out[0].Bool() {
-      if count > 0 {
-        slice.Index(i - count).Set(slice.Index(i))
+    inElem := slice.Index(i)
+    filterResult := c.Call([]reflect.Value{inElem})
+    include := filterResult[0].Bool()
+    if include {
+      // Don't need to overwrite if outputIndex is inputIndex
+      if outputIndex != i {
+        fmt.Println("writing idx", i, "to idx", outputIndex)
+        slice.Index(outputIndex).Set(slice.Index(i))
       }
-    } else {
-      count++
+      outputIndex++
     }
   }
-  slice.Set(slice.Slice(0, slice.Len()-count))
+
+  // *a = (*a)[:newLen]
+  slice.Set(slice.Slice(0, outputIndex))
 }
 
 type Mapper func(a interface{}) interface{}
