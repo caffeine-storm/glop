@@ -11,7 +11,6 @@ func TestAllSpecs(t *testing.T) {
   r.AddSpec(ReachableSpec)
   r.AddSpec(ReachableDestinationsSpec)
   r.AddSpec(ChooserSpec)
-  // r.AddSpec(Chooser2Spec)
   // r.AddSpec(MapperSpec)
   // r.AddSpec(Mapper2Spec)
   r.AddSpec(TopoSpec)
