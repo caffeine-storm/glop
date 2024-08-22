@@ -54,6 +54,7 @@ func Choose(_a interface{}, chooser interface{}) {
 
 type Mapper func(a interface{}) interface{}
 
+// TODO(tmckee): this could be done better with generics.
 func Map(_in interface{}, _out interface{}, mapper interface{}) {
   in := reflect.ValueOf(_in)
   if in.Kind() != reflect.Slice {
