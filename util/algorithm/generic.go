@@ -54,7 +54,7 @@ func Choose(_a interface{}, chooser interface{}) {
 
 type Mapper func(a interface{}) interface{}
 
-func Map2(_in interface{}, _out interface{}, mapper interface{}) {
+func Map(_in interface{}, _out interface{}, mapper interface{}) {
   in := reflect.ValueOf(_in)
   if in.Kind() != reflect.Slice {
     panic(fmt.Sprintf("Can only Map from a slice, not a %v", in))
@@ -73,13 +73,13 @@ func Map2(_in interface{}, _out interface{}, mapper interface{}) {
     panic("chooser must take exactly 1 input parameter")
   }
   if m.Type().In(0).Kind() != in.Type().Elem().Kind() {
-    panic(fmt.Sprintf("mapper's parameter must be %v, not %v", in.Addr().Elem(), m.Type().In(0)))
+    panic(fmt.Sprintf("mapper's parameter must be %v, not %v", in.Type().Elem().Kind(), m.Type().In(0)))
   }
   if m.Type().NumOut() != 1 {
     panic("chooser must have exactly 1 output parameter")
   }
   if m.Type().Out(0).Kind() != out.Elem().Type().Elem().Kind() {
-    panic(fmt.Sprintf("mapper's output parameter must be %v, not %v", out.Type().Elem().Kind(), m.Type().Out(0)))
+    panic(fmt.Sprintf("mapper's output parameter must be %v, not %v", out.Elem().Type().Elem().Kind(), m.Type().Out(0)))
   }
 
   if out.Elem().Len() < in.Len() {

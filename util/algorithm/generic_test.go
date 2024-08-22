@@ -1,8 +1,10 @@
 package algorithm_test
 
 import (
-  . "github.com/orfjackal/gospec/src/gospec"
+  "fmt"
+
   "github.com/orfjackal/gospec/src/gospec"
+  . "github.com/orfjackal/gospec/src/gospec"
   "github.com/runningwild/glop/util/algorithm"
 )
 
@@ -51,22 +53,23 @@ func ChooserSpec(c gospec.Context) {
   })
 }
 
-/*
+
 func MapperSpec(c gospec.Context) {
   c.Specify("Map from []int to []float64", func() {
     a := []int{0,1,2,3,4}
     var b []float64
-    b = algorithm.Map(a, []float64{}, func(v interface{}) interface{} { return float64(v.(int)) }).([]float64)
+    algorithm.Map(a, &b, func(v int) float64 { return float64(v) })
     c.Expect(b, ContainsInOrder, []float64{0,1,2,3,4})
   })
   c.Specify("Map from []int to []string", func() {
     a := []int{0,1,2,3,4}
     var b []string
-    b = algorithm.Map(a, []string{}, func(v interface{}) interface{} { return fmt.Sprintf("%d", v) }).([]string)
+    algorithm.Map(a, &b, func(v int) string { return fmt.Sprintf("%d", v) })
     c.Expect(b, ContainsInOrder, []string{"0", "1", "2", "3", "4"})
   })
 }
 
+/*
 func Mapper2Spec(c gospec.Context) {
   c.Specify("Map from []int to []float64", func() {
     a := []int{0,1,2,3,4}
