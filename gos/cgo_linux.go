@@ -43,9 +43,8 @@ func (linux *linuxSystemObject) SwapBuffers() {
   C.GlopSwapBuffers()
 }
 
-func (linux *linuxSystemObject) Think() bool {
+func (linux *linuxSystemObject) Think() {
   C.GlopThink()
-  return true
 }
 
 // TODO: Make sure that events are given in sorted order (by timestamp)
