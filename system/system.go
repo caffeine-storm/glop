@@ -15,6 +15,7 @@ type System interface {
   // TODO: implement this:
   // DestroyWindow(Window)
 
+  // TODO(tmckee): maybe 'with the origin at the bottom left'?
   // Gets the cursor position in window coordinates with the cursor at the bottom left
   // corner of the window
   GetCursorPos() (x, y int)
