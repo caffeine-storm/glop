@@ -4,9 +4,15 @@ go 1.14
 
 replace code.google.com/p/freetype-go => github.com/golang/freetype v0.0.0-20120725121025-28cc5fbc5d0b
 
+replace github.com/go-gl-legacy/gl => github.com/caffeine-storm/gl v0.0.0-20240822160436-13feedee09f9
+
+replace github.com/go-gl-legacy/glu => github.com/caffeine-storm/glu v0.0.0-20240828152149-38a5ac65629c
+
 require (
 	code.google.com/p/freetype-go v0.0.0-00010101000000-000000000000
 	github.com/chsc/gogl v0.0.0-20131111203533-c411acc846b6
+	github.com/go-gl-legacy/gl v0.0.0-20150223033340-df25b1fe668d
+	github.com/go-gl-legacy/glu v0.0.0-20150315173544-b54aa06bc77a
 	github.com/orfjackal/gospec v0.0.0-20140731185859-a21081619255
 	github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701 // indirect
 	github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894

@@ -7,8 +7,8 @@ import (
   "fmt"
   "github.com/runningwild/glop/render"
   "github.com/runningwild/glop/util/algorithm"
-  "github.com/runningwild/opengl/gl"
-  "github.com/runningwild/opengl/glu"
+  "github.com/go-gl-legacy/gl"
+  "github.com/go-gl-legacy/glu"
   "github.com/runningwild/yedparse"
   "math/rand"
   "os"
@@ -848,7 +848,7 @@ func (s *Sprite) Think(dt int64) {
           s.waiters[i].states = nil
         }
       }
-      algorithm.Choose2(&s.waiters, func(w *waiter) bool {
+      algorithm.Choose(&s.waiters, func(w *waiter) bool {
         return w.states != nil
       })
     }
@@ -1006,7 +1006,12 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
       gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
       gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
       pink := []byte{255, 0, 255, 255}
-      glu.Build2DMipmaps(gl.TEXTURE_2D, 4, 1, 1, gl.RGBA, pink)
+
+      // TODO(tmckee): what is the correct 'type'? See
+      // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluBuild2DMipmaps.xml
+      // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glDrawPixels.xml
+      var guessedType gl.GLenum = gl.UNSIGNED_BYTE
+      glu.Build2DMipmaps(gl.TEXTURE_2D, 4, 1, 1, gl.RGBA, guessedType, pink)
     })
   })
 

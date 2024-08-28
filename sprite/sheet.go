@@ -5,8 +5,8 @@ import (
   "fmt"
   "github.com/runningwild/glop/render"
   "github.com/runningwild/memory"
-  "github.com/runningwild/opengl/gl"
-  "github.com/runningwild/opengl/glu"
+  "github.com/go-gl-legacy/gl"
+  "github.com/go-gl-legacy/glu"
   "github.com/runningwild/yedparse"
   "hash/fnv"
   "image"
@@ -135,7 +135,14 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
   gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
   gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
   data := <-pixer
-  glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, data)
+
+  // TODO(tmckee): what is the correct 'type'? See
+  // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluBuild2DMipmaps.xml
+  // https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glDrawPixels.xml
+  // The type needs to describe the data in 'data'. 'data' is, ultimately, RGBA
+  // data rendered through 'draw.Draw'.
+  var guessedType gl.GLenum = gl.UNSIGNED_BYTE
+  glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, guessedType, data)
   memory.FreeBlock(data)
 }
 
