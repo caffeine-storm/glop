@@ -61,13 +61,23 @@ func (linux *linuxSystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
   c_events := (*[1000]C.GlopKeyEvent)(unsafe.Pointer(first_event))[:length]
   events := make([]gin.OsEvent, length)
   for i := range c_events {
-    wx,wy := linux.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
+    // wx,wy := linux.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
+    keyId := gin.KeyId{
+      Device: gin.DeviceId{
+        // TODO(tmckee): we need to inspect the 'index' or 'device' to know
+        // device type; right now, mouse events get labled as keyboard events
+        // :(
+        Type: gin.DeviceTypeKeyboard,
+        Index: gin.DeviceIndex(c_events[i].device),
+      },
+      Index: gin.KeyIndex(c_events[i].index),
+    }
     events[i] = gin.OsEvent{
-      KeyId     : gin.KeyId(c_events[i].index),
+      KeyId     : keyId,
       Press_amt : float64(c_events[i].press_amt),
       Timestamp : int64(c_events[i].timestamp),
-      X : wx,
-      Y : wy,
+      // X : wx,
+      // Y : wy,
     }
   }
   return events, linux.horizon
