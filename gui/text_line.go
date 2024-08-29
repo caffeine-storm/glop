@@ -4,8 +4,8 @@ import (
   "code.google.com/p/freetype-go/freetype"
   "code.google.com/p/freetype-go/freetype/truetype"
   "fmt"
-  "github.com/runningwild/opengl/gl"
-  "github.com/runningwild/opengl/glu"
+  "github.com/go-gl-legacy/gl"
+  "github.com/go-gl-legacy/glu"
   "image"
   "image/color"
   "image/draw"
@@ -142,7 +142,9 @@ func (w *TextLine) figureDims() {
   gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
   gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
   gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-  glu.Build2DMipmaps(gl.TEXTURE_2D, 4, w.rgba.Bounds().Dx(), w.rgba.Bounds().Dy(), gl.RGBA, w.rgba.Pix)
+  // TODO(tmckee): what is the correct 'type'?
+  var guessedType gl.GLenum = gl.UNSIGNED_BYTE
+  glu.Build2DMipmaps(gl.TEXTURE_2D, 4, w.rgba.Bounds().Dx(), w.rgba.Bounds().Dy(), gl.RGBA, guessedType, w.rgba.Pix)
   gl.Disable(gl.TEXTURE_2D)
 }
 

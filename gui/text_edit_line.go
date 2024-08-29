@@ -3,7 +3,7 @@ package gui
 import (
   "github.com/runningwild/glop/gin"
   "code.google.com/p/freetype-go/freetype"
-  "github.com/runningwild/opengl/gl"
+  "github.com/go-gl-legacy/gl"
 )
 
 type cursor struct {
@@ -25,9 +25,16 @@ func init() {
   upper := "ABCDEFGHIJKLMNOPQRSTUVWXYZ)!@#$%^&*(_+{}:<>?|\""
   shift_mapping = make(map[gin.KeyId]byte)
   for i := range lower {
-    shift_mapping[gin.KeyId(lower[i])] = upper[i]
+    lowerKeyId := gin.KeyId{
+      Device: gin.DeviceId{
+        Type: gin.DeviceTypeKeyboard,
+        Index: gin.DeviceIndexAny,
+      },
+      Index: gin.KeyIndex(i),
+    }
+    shift_mapping[gin.KeyId(lowerKeyId)] = upper[i]
   }
-  shift_mapping[' '] = 0
+  shift_mapping[gin.AnySpace] = 0
 }
 
 func (w *TextEditLine) String() string {
@@ -109,10 +116,12 @@ func (w *TextEditLine) SetText(text string) {
 func characterFromEventGroup(event_group EventGroup) byte {
   for _, event := range event_group.Events {
     if v, ok := shift_mapping[event.Key.Id()]; ok {
-      if gin.In().GetKey(gin.EitherShift).IsDown() {
+      // if gin.In().GetKey(gin.EitherShift).IsDown() {
+      if gin.In().GetKey(gin.AnyLeftShift).IsDown() ||
+         gin.In().GetKey(gin.AnyRightShift).IsDown() {
         return v
       } else {
-        return byte(event.Key.Id())
+        return byte(event.Key.Id().Index)
       }
     }
   }
@@ -129,11 +138,11 @@ func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus 
   }
   key_id := event.Key.Id()
   if event_group.Focus {
-    if key_id == gin.Escape || key_id == gin.Return {
+    if key_id == gin.AnyEscape || key_id == gin.AnyReturn {
       change_focus = true
       return
     }
-    if found, _ := event_group.FindEvent(gin.Backspace); found {
+    if found, _ := event_group.FindEvent(gin.AnyBackspace); found {
       if len(w.text) > 0 && w.cursor.index > 0 {
         var pre, post string
         if w.cursor.index > 0 {
@@ -150,17 +159,17 @@ func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus 
       w.SetText(w.text[0:w.cursor.index] + string([]byte{v}) + w.text[w.cursor.index:])
       w.cursor.index++
       w.cursor.moved = true
-    } else if key_id == gin.MouseLButton {
+    } else if key_id == gin.AnyMouseLButton {
       x, _ := event.Key.Cursor().Point()
       cx := w.TextLine.Render_region.X
       w.cursor.index = w.findIndexAtOffset(x - cx)
       w.cursor.moved = true
-    } else if found, _ := event_group.FindEvent(gin.Left); found {
+    } else if found, _ := event_group.FindEvent(gin.AnyLeft); found {
       if w.cursor.index > 0 {
         w.cursor.index--
         w.cursor.moved = true
       }
-    } else if found, _ := event_group.FindEvent(gin.Right); found {
+    } else if found, _ := event_group.FindEvent(gin.AnyRight); found {
       if w.cursor.index < len(w.text) {
         w.cursor.index++
         w.cursor.moved = true
@@ -168,7 +177,7 @@ func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus 
     }
     consume = true
   } else {
-    change_focus = event.Key.Id() == gin.MouseLButton
+    change_focus = event.Key.Id() == gin.AnyMouseLButton
   }
   return
 }

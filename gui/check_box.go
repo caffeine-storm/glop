@@ -2,7 +2,7 @@ package gui
 
 import (
   "github.com/runningwild/glop/gin"
-  "github.com/runningwild/opengl/gl"
+  "github.com/go-gl-legacy/gl"
   "reflect"
 )
 
@@ -93,7 +93,7 @@ func makeCheckRow(w Widget, target,index reflect.Value) *checkRow {
   return &cr
 }
 func (cr *checkRow) DoRespond(group EventGroup) (consume, change_focus bool) {
-  if found,event := group.FindEvent(gin.MouseLButton); found && event.Type == gin.Press {
+  if found,event := group.FindEvent(gin.AnyMouseLButton); found && event.Type == gin.Press {
     cr.check_box.Click()
     var selected reflect.Value
     if cr.check_box.selected == checkBoxSelected {

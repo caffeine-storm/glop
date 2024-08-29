@@ -2,7 +2,7 @@ package gui
 
 import (
   "github.com/runningwild/glop/gin"
-  "github.com/runningwild/opengl/gl"
+  "github.com/go-gl-legacy/gl"
 )
 
 type Point struct {
@@ -113,10 +113,10 @@ func (r Region) setClipPlanes() {
   eqs[1][0], eqs[1][1], eqs[1][2], eqs[1][3] = -1, 0, 0, float64(r.X+r.Dx)
   eqs[2][0], eqs[2][1], eqs[2][2], eqs[2][3] = 0, 1, 0, -float64(r.Y)
   eqs[3][0], eqs[3][1], eqs[3][2], eqs[3][3] = 0, -1, 0, float64(r.Y+r.Dy)
-  gl.ClipPlane(gl.CLIP_PLANE0, &eqs[0][0])
-  gl.ClipPlane(gl.CLIP_PLANE1, &eqs[1][0])
-  gl.ClipPlane(gl.CLIP_PLANE2, &eqs[2][0])
-  gl.ClipPlane(gl.CLIP_PLANE3, &eqs[3][0])
+  gl.ClipPlane(gl.CLIP_PLANE0, eqs[0][:])
+  gl.ClipPlane(gl.CLIP_PLANE1, eqs[1][:])
+  gl.ClipPlane(gl.CLIP_PLANE2, eqs[2][:])
+  gl.ClipPlane(gl.CLIP_PLANE3, eqs[3][:])
 }
 
 func (r Region) PushClipPlanes() {
@@ -302,7 +302,7 @@ type Clickable struct {
 
 func (c Clickable) DoRespond(event_group EventGroup) (bool, bool) {
   event := event_group.Events[0]
-  if event.Type == gin.Press && event.Key.Id() == gin.MouseLButton {
+  if event.Type == gin.Press && event.Key.Id() == gin.AnyMouseLButton {
     c.on_click(event_group.Timestamp)
     return true, false
   }
