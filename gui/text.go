@@ -125,6 +125,14 @@ const (
   Bottom
 )
 
+func (d *Dictionary) MaxHeight() float64 {
+  res := d.data.Maxy - d.data.Miny
+  if res < 0 {
+    res = 0
+  }
+  return float64(res)
+}
+
 func (d *Dictionary) split(s string, dx, height float64) []string {
   var lines []string
   var line []rune

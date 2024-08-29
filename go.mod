@@ -18,4 +18,5 @@ require (
 	github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894
 	github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81
 	github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9
+	github.com/stretchr/testify v1.9.0
 )
