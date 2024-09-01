@@ -1,9 +1,11 @@
 package gui
 
 import (
+  "fmt"
   "os"
   "testing"
 
+  "github.com/runningwild/glop/gos"
   "github.com/runningwild/glop/render"
   "github.com/stretchr/testify/require"
 )
@@ -59,10 +61,12 @@ func TestRenderString(t *testing.T) {
   // LoadDictionary to get an instance instead; it'll register shaders and
   // such.
   t.Run("rendering-should-not-panic", func(t *testing.T) {
-    require := require.New(t)
-
+    sys := gos.GetSystemInterface()
+    sys.Startup()
     render.Init()
 
+    fmt.Println(os.Getwd())
+    require := require.New(t)
     dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
     require.Nil(err)
 

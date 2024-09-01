@@ -18,6 +18,7 @@ func (err shaderError) Error() string {
   return string(err)
 }
 
+// TODO(tmckee): refactor: There should be a 'DisableShader' to 'UseProgram(0)'
 func EnableShader(name string) error {
   if name == "" {
     gl.Program(0).Use()
