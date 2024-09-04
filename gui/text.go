@@ -2,14 +2,15 @@ package gui
 
 import (
   "encoding/gob"
-  gl "github.com/chsc/gogl/gl21"
-  "github.com/runningwild/glop/render"
   "image"
   "io"
   "math"
   "runtime"
   "sync"
   "unsafe"
+
+  "github.com/go-gl-legacy/gl"
+  "github.com/runningwild/glop/render"
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
@@ -81,9 +82,11 @@ type Dictionary struct {
   dlists map[string]uint32
 }
 type strBuffer struct {
+  // vertex-buffer
   vbuffer uint32
   vs      []dictVert
 
+  // inidices-buffer
   ibuffer uint32
   is      []uint16
 }
@@ -217,7 +220,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
     render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
     defer render.EnableShader("")
   }
-  size := unsafe.Sizeof(dictVert{})
+  stride := unsafe.Sizeof(dictVert{})
   scale := height / float64(d.data.Maxy-d.data.Miny)
   width := float32(d.figureWidth(s) * scale)
   x_pos := float32(x)
@@ -230,27 +233,33 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
   if ok {
     gl.PushMatrix()
     defer gl.PopMatrix()
-    gl.Translated(gl.Double(x_pos), gl.Double(y), gl.Double(z))
-    gl.Scaled(gl.Double(scale), gl.Double(scale), 1)
+    gl.Translated(float64(x_pos), y, z)
+    gl.Scaled(scale, scale, 1)
 
     gl.PushAttrib(gl.COLOR_BUFFER_BIT)
     defer gl.PopAttrib()
     gl.Enable(gl.BLEND)
     gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
+    // TODO(tmckee): we should do error checking with glGetError:
+    // https://docs.gl/gl2/glGetError
+    // TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
     gl.Enable(gl.TEXTURE_2D)
-    gl.BindTexture(gl.TEXTURE_2D, gl.Uint(d.texture))
+    tex := gl.Texture(d.texture)
+    tex.Bind(gl.TEXTURE_2D)
 
-    gl.BindBuffer(gl.ARRAY_BUFFER, gl.Uint(strbuf.vbuffer))
+    vertex_buffer := gl.Buffer(strbuf.vbuffer)
+    vertex_buffer.Bind(gl.ARRAY_BUFFER)
 
     gl.EnableClientState(gl.VERTEX_ARRAY)
-    gl.VertexPointer(2, gl.FLOAT, gl.Sizei(size), nil)
+    gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
 
     gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
-    gl.TexCoordPointer(2, gl.FLOAT, gl.Sizei(size), gl.Pointer(unsafe.Offsetof(strbuf.vs[0].u)))
+    gl.TexCoordPointer(2, gl.FLOAT, int(stride), gl.Pointer(unsafe.Offsetof(strbuf.vs[0].u)))
 
-    gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.Uint(strbuf.ibuffer))
-    gl.DrawElements(gl.TRIANGLES, gl.Sizei(len(strbuf.is)), gl.UNSIGNED_SHORT, nil)
+    indices_buffer := gl.Buffer(strbuf.ibuffer)
+    indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+    gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
 
     gl.DisableClientState(gl.VERTEX_ARRAY)
     gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
@@ -301,13 +310,14 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
     })
     x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
   }
-  gl.GenBuffers(1, (*gl.Uint)(&strbuf.vbuffer))
-  gl.BindBuffer(gl.ARRAY_BUFFER, gl.Uint(strbuf.vbuffer))
-  gl.BufferData(gl.ARRAY_BUFFER, gl.Sizeiptr(int(size)*len(strbuf.vs)), gl.Pointer(&strbuf.vs[0].x), gl.STATIC_DRAW)
+  // gl.GenBuffers(1, (*gl.Uint)(&strbuf.vbuffer))
+  strbuf.vbuffer = uint32(gl.GenBuffer())
+  gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
+  gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), gl.Pointer(&strbuf.vs[0].x), gl.STATIC_DRAW)
 
-  gl.GenBuffers(1, (*gl.Uint)(&strbuf.ibuffer))
-  gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.Uint(strbuf.ibuffer))
-  gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, gl.Sizeiptr(int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is)), gl.Pointer(&strbuf.is[0]), gl.STATIC_DRAW)
+  strbuf.ibuffer = uint32(gl.GenBuffer())
+  gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
+  gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), gl.Pointer(&strbuf.is[0]), gl.STATIC_DRAW)
   d.strs[s] = strbuf
 }
 
@@ -344,15 +354,15 @@ func (d *Dictionary) setupGlStuff() {
   runtime.SetFinalizer(d, func(d *Dictionary) {
     render.Queue(func() {
       for _, v := range d.dlists {
-        gl.DeleteLists(gl.Uint(v), 1)
+        gl.DeleteLists(uint(v), 1)
       }
     })
   })
 
   render.Queue(func() {
     gl.Enable(gl.TEXTURE_2D)
-    gl.GenTextures(1, (*gl.Uint)(&d.texture))
-    gl.BindTexture(gl.TEXTURE_2D, gl.Uint(d.texture))
+    d.texture = uint32(gl.GenTexture())
+    gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
     gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
     gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
     gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
@@ -364,8 +374,8 @@ func (d *Dictionary) setupGlStuff() {
       gl.TEXTURE_2D,
       0,
       gl.ALPHA,
-      gl.Sizei(d.data.Dx),
-      gl.Sizei(d.data.Dy),
+      d.data.Dx,
+      d.data.Dy,
       0,
       gl.ALPHA,
       gl.UNSIGNED_BYTE,

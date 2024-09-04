@@ -1,8 +1,10 @@
 package gui
 
 import (
-	"testing"
+  "os"
+  "testing"
 
+  "github.com/runningwild/glop/render"
   "github.com/stretchr/testify/require"
 )
 
@@ -49,5 +51,24 @@ func TestDictionaryMaxHeight(t *testing.T) {
     }
 
     require.InDelta(42.0, d.MaxHeight(), 0.001)
+  })
+}
+
+func TestRenderString(t *testing.T) {
+  // TODO(tmckee): probably need to stop exporting Dictionary from gui and call
+  // LoadDictionary to get an instance instead; it'll register shaders and
+  // such.
+  t.Run("rendering-should-not-panic", func(t *testing.T) {
+    require := require.New(t)
+
+    render.Init()
+
+    dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
+    require.Nil(err)
+
+    d, err := LoadDictionary(dictReader)
+    require.Nil(err)
+
+    d.RenderString("lol", 0, 0, 0, 12.0, Left)
   })
 }

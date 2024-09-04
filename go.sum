@@ -1,9 +1,7 @@
-github.com/caffeine-storm/gl v0.0.0-20240822160436-13feedee09f9 h1:B+6yHcD8kuh96E1Klg/OgWXw3wGXs/2zD9k3tHcedpA=
-github.com/caffeine-storm/gl v0.0.0-20240822160436-13feedee09f9/go.mod h1:5WNXbhdBMLerIscVkSVTRwGcsRywYKYHRKFEBZOUBEA=
-github.com/caffeine-storm/glu v0.0.0-20240828152149-38a5ac65629c h1:KqJxBrec/mnKQ+QgBu3/iJvaiurKpNDsXLrrXSau73U=
-github.com/caffeine-storm/glu v0.0.0-20240828152149-38a5ac65629c/go.mod h1:ntYmIr0ULu7QxKlmOE6cC87X4pWDG8jO/wSUBn2ZzJY=
-github.com/chsc/gogl v0.0.0-20131111203533-c411acc846b6 h1:GHNbGLo1VfjsT+Lf7i1beWEvSHbN/GIi7pzkWAnL2zk=
-github.com/chsc/gogl v0.0.0-20131111203533-c411acc846b6/go.mod h1:82yD5XkINXAhjoaZjStP4a8vZSO3c7aAWQS3OJtBg+s=
+github.com/caffeine-storm/gl v0.0.0-20240901153421-ffd1b6683995 h1:XBfBr4LTo4qY5Y0HDMLJoRlxS/juK+m539xtn/lcnbM=
+github.com/caffeine-storm/gl v0.0.0-20240901153421-ffd1b6683995/go.mod h1:5WNXbhdBMLerIscVkSVTRwGcsRywYKYHRKFEBZOUBEA=
+github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6 h1:P5AfHxhrOVg47HAn8FTGsUyqnd+TEJghuMiuAb48IWc=
+github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6/go.mod h1:u7X6dfpvRdRDhT7TNW2tHPXi+GY3/8rgCZuHYHJKCyc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
