@@ -222,109 +222,106 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
   }
 
   strbuf, ok := d.strs[s]
-  if ok {
-    render.EnableShader("glop.font")
-    defer render.EnableShader("")
-
-    diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
-    if diff > 0.45 {
-      diff = 0.45
+  if !ok {
+    // We have to actually render a string!
+    x_pos = 0
+    var prev rune
+    for _, r := range s {
+      if _, ok := d.data.Kerning[prev]; ok {
+        x_pos += float32(d.data.Kerning[prev][r])
+      }
+      prev = r
+      info := d.getInfo(r)
+      xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
+      xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
+      ytop := float32(d.data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
+      ybot := float32(d.data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
+      start := uint16(len(strbuf.vs))
+      strbuf.is = append(strbuf.is, start+0)
+      strbuf.is = append(strbuf.is, start+1)
+      strbuf.is = append(strbuf.is, start+2)
+      strbuf.is = append(strbuf.is, start+0)
+      strbuf.is = append(strbuf.is, start+2)
+      strbuf.is = append(strbuf.is, start+3)
+      strbuf.vs = append(strbuf.vs, dictVert{
+        x: xleft,
+        y: ytop,
+        u: float32(info.Pos.Min.X) / float32(d.data.Dx),
+        v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
+      })
+      strbuf.vs = append(strbuf.vs, dictVert{
+        x: xleft,
+        y: ybot,
+        u: float32(info.Pos.Min.X) / float32(d.data.Dx),
+        v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
+      })
+      strbuf.vs = append(strbuf.vs, dictVert{
+        x: xright,
+        y: ybot,
+        u: float32(info.Pos.Max.X) / float32(d.data.Dx),
+        v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
+      })
+      strbuf.vs = append(strbuf.vs, dictVert{
+        x: xright,
+        y: ytop,
+        u: float32(info.Pos.Max.X) / float32(d.data.Dx),
+        v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
+      })
+      x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
     }
-    render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
-    render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
+    strbuf.vbuffer = uint32(gl.GenBuffer())
+    gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
+    gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
 
-    gl.PushMatrix()
-    defer gl.PopMatrix()
-    gl.Translated(float64(x_pos), y, z)
-    gl.Scaled(scale, scale, 1)
-
-    gl.PushAttrib(gl.COLOR_BUFFER_BIT)
-    defer gl.PopAttrib()
-    gl.Enable(gl.BLEND)
-    gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-
-    // TODO(tmckee): we should do error checking with glGetError:
-    // https://docs.gl/gl2/glGetError
-    // TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
-    gl.Enable(gl.TEXTURE_2D)
-    tex := gl.Texture(d.texture)
-    tex.Bind(gl.TEXTURE_2D)
-
-    vertex_buffer := gl.Buffer(strbuf.vbuffer)
-    vertex_buffer.Bind(gl.ARRAY_BUFFER)
-
-    gl.EnableClientState(gl.VERTEX_ARRAY)
-    gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
-
-    gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
-    gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
-
-    indices_buffer := gl.Buffer(strbuf.ibuffer)
-    indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-    gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
-
-    gl.DisableClientState(gl.VERTEX_ARRAY)
-    gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
-    return
+    strbuf.ibuffer = uint32(gl.GenBuffer())
+    gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
+    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
+    d.strs[s] = strbuf
   }
 
-  // We have to actually render a string!
-  x_pos = 0
-  var prev rune
-  for _, r := range s {
-    if _, ok := d.data.Kerning[prev]; ok {
-      x_pos += float32(d.data.Kerning[prev][r])
-    }
-    prev = r
-    info := d.getInfo(r)
-    xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
-    xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
-    ytop := float32(d.data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
-    ybot := float32(d.data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
-    start := uint16(len(strbuf.vs))
-    strbuf.is = append(strbuf.is, start+0)
-    strbuf.is = append(strbuf.is, start+1)
-    strbuf.is = append(strbuf.is, start+2)
-    strbuf.is = append(strbuf.is, start+0)
-    strbuf.is = append(strbuf.is, start+2)
-    strbuf.is = append(strbuf.is, start+3)
-    strbuf.vs = append(strbuf.vs, dictVert{
-      x: xleft,
-      y: ytop,
-      u: float32(info.Pos.Min.X) / float32(d.data.Dx),
-      v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
-    })
-    strbuf.vs = append(strbuf.vs, dictVert{
-      x: xleft,
-      y: ybot,
-      u: float32(info.Pos.Min.X) / float32(d.data.Dx),
-      v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
-    })
-    strbuf.vs = append(strbuf.vs, dictVert{
-      x: xright,
-      y: ybot,
-      u: float32(info.Pos.Max.X) / float32(d.data.Dx),
-      v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
-    })
-    strbuf.vs = append(strbuf.vs, dictVert{
-      x: xright,
-      y: ytop,
-      u: float32(info.Pos.Max.X) / float32(d.data.Dx),
-      v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
-    })
-    x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
+  render.EnableShader("glop.font")
+  defer render.EnableShader("")
+
+  diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
+  if diff > 0.45 {
+    diff = 0.45
   }
-  strbuf.vbuffer = uint32(gl.GenBuffer())
-  gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
-  gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
+  render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
+  render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
-  strbuf.ibuffer = uint32(gl.GenBuffer())
-  gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
-  gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
-  d.strs[s] = strbuf
+  gl.PushMatrix()
+  defer gl.PopMatrix()
+  gl.Translated(float64(x_pos), y, z)
+  gl.Scaled(scale, scale, 1)
 
-  // TODO(tmckee): ... recursion is not the way (here)
-  d.RenderString(s, x, y, z, height, just)
+  gl.PushAttrib(gl.COLOR_BUFFER_BIT)
+  defer gl.PopAttrib()
+  gl.Enable(gl.BLEND)
+  gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+  // TODO(tmckee): we should do error checking with glGetError:
+  // https://docs.gl/gl2/glGetError
+  // TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
+  gl.Enable(gl.TEXTURE_2D)
+  tex := gl.Texture(d.texture)
+  tex.Bind(gl.TEXTURE_2D)
+
+  vertex_buffer := gl.Buffer(strbuf.vbuffer)
+  vertex_buffer.Bind(gl.ARRAY_BUFFER)
+
+  gl.EnableClientState(gl.VERTEX_ARRAY)
+  gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
+
+  gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
+  gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
+
+  indices_buffer := gl.Buffer(strbuf.ibuffer)
+  indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+  gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
+
+  gl.DisableClientState(gl.VERTEX_ARRAY)
+  gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
+
 }
 
 var init_once sync.Once
