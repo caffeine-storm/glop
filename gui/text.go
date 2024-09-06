@@ -2,7 +2,6 @@ package gui
 
 import (
   "encoding/gob"
-  "fmt"
   "image"
   "io"
   "math"
@@ -208,21 +207,10 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
   if len(s) == 0 {
     return
   }
-  fmt.Printf("RenderString: len(d.strs): %d\n", len(d.strs))
-  strbuf, ok := d.strs[s]
-  if !ok {
-    defer d.RenderString(s, x, y, z, height, just)
-  } else {
-    render.EnableShader("glop.font")
-    diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
-    if diff > 0.45 {
-      diff = 0.45
-    }
-    render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
-    render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
-    defer render.EnableShader("")
-  }
+
   stride := unsafe.Sizeof(dictVert{})
+  // TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
+  // this out.
   scale := height / float64(d.data.Maxy-d.data.Miny)
   width := float32(d.figureWidth(s) * scale)
   x_pos := float32(x)
@@ -232,7 +220,19 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
   case Right:
     x_pos -= width
   }
+
+  strbuf, ok := d.strs[s]
   if ok {
+    render.EnableShader("glop.font")
+    defer render.EnableShader("")
+
+    diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
+    if diff > 0.45 {
+      diff = 0.45
+    }
+    render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
+    render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
+
     gl.PushMatrix()
     defer gl.PopMatrix()
     gl.Translated(float64(x_pos), y, z)
@@ -257,7 +257,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
     gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
 
     gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
-    gl.TexCoordPointer(2, gl.FLOAT, int(stride), gl.Pointer(unsafe.Offsetof(strbuf.vs[0].u)))
+    gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
 
     indices_buffer := gl.Buffer(strbuf.ibuffer)
     indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
@@ -267,6 +267,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
     gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
     return
   }
+
+  // We have to actually render a string!
   x_pos = 0
   var prev rune
   for _, r := range s {
@@ -312,15 +314,17 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
     })
     x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
   }
-  // gl.GenBuffers(1, (*gl.Uint)(&strbuf.vbuffer))
   strbuf.vbuffer = uint32(gl.GenBuffer())
   gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
-  gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), gl.Pointer(&strbuf.vs[0].x), gl.STATIC_DRAW)
+  gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
 
   strbuf.ibuffer = uint32(gl.GenBuffer())
   gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
-  gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), gl.Pointer(&strbuf.is[0]), gl.STATIC_DRAW)
+  gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
   d.strs[s] = strbuf
+
+  // TODO(tmckee): ... recursion is not the way (here)
+  d.RenderString(s, x, y, z, height, just)
 }
 
 var init_once sync.Once
@@ -381,7 +385,7 @@ func (d *Dictionary) setupGlStuff() {
       0,
       gl.ALPHA,
       gl.UNSIGNED_BYTE,
-      gl.Pointer(&d.data.Pix[0]))
+      d.data.Pix)
 
     gl.Disable(gl.TEXTURE_2D)
   })

@@ -1,13 +1,15 @@
 package gui
 
 import (
-  "fmt"
-  "os"
-  "testing"
+	"os"
+	"runtime"
+	"testing"
 
-  "github.com/runningwild/glop/gos"
-  "github.com/runningwild/glop/render"
-  "github.com/stretchr/testify/require"
+	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/gos"
+	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/system"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDictionaryMaxHeight(t *testing.T) {
@@ -61,11 +63,24 @@ func TestRenderString(t *testing.T) {
   // LoadDictionary to get an instance instead; it'll register shaders and
   // such.
   t.Run("rendering-should-not-panic", func(t *testing.T) {
-    sys := gos.GetSystemInterface()
+    runtime.LockOSThread()
+    sys := system.Make(gos.GetSystemInterface())
+    wdx := 1024
+    wdy := 750
+
     sys.Startup()
     render.Init()
+    render.Queue(func() {
+      sys.CreateWindow(10, 10, wdx, wdy)
+      sys.EnableVSync(true)
+      err := gl.Init()
+      if err != 0 {
+        panic(err)
+      }
+      gl.Enable(gl.BLEND)
+      gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+    })
 
-    fmt.Println(os.Getwd())
     require := require.New(t)
     dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
     require.Nil(err)

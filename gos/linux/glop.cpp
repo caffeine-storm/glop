@@ -1,11 +1,11 @@
-#include <vector>
-#include <string>
-#include <set>
-#include <map>
 #include <algorithm>
 #include <cstdio>
-#include <stdio.h>
+#include <map>
+#include <set>
+#include <string>
 #include <sys/time.h>
+#include <unistd.h>
+#include <vector>
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
