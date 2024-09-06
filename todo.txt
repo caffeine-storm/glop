@@ -1,10 +1,13 @@
+tmckee: use type system to make initialization ordering constraints explicit
+
 tmckee: find a better debug-logging sol'n than println
+
+tmckee: use a xvfb instance for rendering tests
 
 tmckee: Make it so that 'go test ./...' builds the native library on-demand
 
-tmckee: find a way to work around needing LD_LIBRARY_PATH when running tests
-
-tmckee: use a xvfb instance for rendering tests
+tmckee: find a way to work around needing LD_LIBRARY_PATH when running tests in
+subdirectories
 
 If windows is ok with giving up the main thread we should switch to doing
 things with a Run() / Quit() mechanism instead of a for { Think() } mechanism.
