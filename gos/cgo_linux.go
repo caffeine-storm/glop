@@ -61,6 +61,8 @@ func (linux *linuxSystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
   c_events := (*[1000]C.GlopKeyEvent)(unsafe.Pointer(first_event))[:length]
   events := make([]gin.OsEvent, length)
   for i := range c_events {
+    // TODO(tmckee): we should make this work; otherwise, we never get the
+    // right mouse position.
     // wx,wy := linux.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
     keyId := gin.KeyId{
       Device: gin.DeviceId{

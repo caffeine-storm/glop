@@ -1,3 +1,8 @@
+tmckee: in gos/cgo_linux.go, mouse position needs to get un-stubbed
+
+tmckee: installed multilib support to get the build going; is it necessary?
+- sudo apt install gcc-multilib g++-multilib
+
 tmckee: use type system to make initialization ordering constraints explicit
 
 tmckee: find a better debug-logging sol'n than println
