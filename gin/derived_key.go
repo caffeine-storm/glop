@@ -167,10 +167,15 @@ func (b *Binding) CurPressAmt() float64 {
 			return 0
 		}
 	}
-	if !b.Input.key_map[b.PrimaryKey].IsDown() {
+	key, ok := b.Input.key_map[b.PrimaryKey]
+	if !ok {
+		fmt.Printf("key_map: %+v\n", b.Input.key_map)
+		panic(fmt.Errorf("couldn't look up binding %+v by PrimaryKey", b))
+	}
+	if !key.IsDown() {
 		return 0
 	}
-	return b.Input.key_map[b.PrimaryKey].CurPressAmt()
+	return key.CurPressAmt()
 }
 
 type derivedKeyFamily struct {
