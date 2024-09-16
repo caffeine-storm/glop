@@ -15,7 +15,11 @@ test:
 compile_commands: gos/linux/compile_commands.json
 
 gos/linux/compile_commands.json:
-	cd $(dir $@) && bear -- bash make.bash
+	cd $(dir $@) && bear -- ${MAKE}
+
+gos/linux/lib/libglop.so:
+	mkdir -p $(dir $@)
+	${MAKE} -C $(dir $@)
 
 fmt:
 	go fmt ./...
