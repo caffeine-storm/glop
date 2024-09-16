@@ -1,10 +1,16 @@
+ifneq "${testrun}" ""
+testrunargs:=-run ${testrun}
+else
+testrunargs:=
+endif
+
 all: build-check compile_commands
 
 build-check:
 	go build ./...
 
 test:
-	LD_LIBRARY_PATH=`pwd -P`/gos/linux/lib go test ./...
+	LD_LIBRARY_PATH=`pwd -P`/gos/linux/lib go test ${testrunargs} ./...
 
 compile_commands: gos/linux/compile_commands.json
 
