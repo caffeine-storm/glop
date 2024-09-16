@@ -47,366 +47,366 @@ const font_fragment_shader = `
 `
 
 type runeInfo struct {
-  Pos         image.Rectangle
-  Bounds      image.Rectangle
-  Full_bounds image.Rectangle
-  Advance     float64
+	Pos         image.Rectangle
+	Bounds      image.Rectangle
+	Full_bounds image.Rectangle
+	Advance     float64
 }
 type dictData struct {
-  // The Pix data from the original image.Rgba
-  Pix []byte
+	// The Pix data from the original image.Rgba
+	Pix []byte
 
-  Kerning map[rune]map[rune]int
+	Kerning map[rune]map[rune]int
 
-  // Dx and Dy of the original image.Rgba
-  Dx, Dy int
+	// Dx and Dy of the original image.Rgba
+	Dx, Dy int
 
-  // Map from rune to that rune's runeInfo.
-  Info map[rune]runeInfo
+	// Map from rune to that rune's runeInfo.
+	Info map[rune]runeInfo
 
-  // runeInfo for all r < 256 will be stored here as well as in info so we can
-  // avoid map lookups if possible.
-  Ascii_info []runeInfo
+	// runeInfo for all r < 256 will be stored here as well as in info so we can
+	// avoid map lookups if possible.
+	Ascii_info []runeInfo
 
-  // At what vertical value is the line on which text is logically rendered.
-  // This is determined by the positioning of the '.' rune.
-  Baseline int
+	// At what vertical value is the line on which text is logically rendered.
+	// This is determined by the positioning of the '.' rune.
+	Baseline int
 
-  // Amount glyphs were scaled down during packing.
-  Scale float64
+	// Amount glyphs were scaled down during packing.
+	Scale float64
 
-  Miny, Maxy int
+	Miny, Maxy int
 }
 type Dictionary struct {
-  data dictData
+	data dictData
 
-  texture uint32
+	texture uint32
 
-  strs map[string]strBuffer
-  pars map[string]strBuffer
+	strs map[string]strBuffer
+	pars map[string]strBuffer
 
-  dlists map[string]uint32
+	dlists map[string]uint32
 }
 type strBuffer struct {
-  // vertex-buffer
-  vbuffer uint32
-  vs      []dictVert
+	// vertex-buffer
+	vbuffer uint32
+	vs      []dictVert
 
-  // inidices-buffer
-  ibuffer uint32
-  is      []uint16
+	// inidices-buffer
+	ibuffer uint32
+	is      []uint16
 }
 type dictVert struct {
-  x, y float32
-  u, v float32
+	x, y float32
+	u, v float32
 }
 
 func (d *Dictionary) Scale() float64 {
-  return d.data.Scale
+	return d.data.Scale
 }
 
 func (d *Dictionary) getInfo(r rune) runeInfo {
-  var info runeInfo
-  if r >= 0 && r < 256 {
-    info = d.data.Ascii_info[r]
-  } else {
-    info, _ = d.data.Info[r]
-  }
-  return info
+	var info runeInfo
+	if r >= 0 && r < 256 {
+		info = d.data.Ascii_info[r]
+	} else {
+		info, _ = d.data.Info[r]
+	}
+	return info
 }
 
 // Figures out how wide a string will be if rendered at its natural size.
 func (d *Dictionary) figureWidth(s string) float64 {
-  w := 0.0
-  for _, r := range s {
-    w += d.getInfo(r).Advance
-  }
-  return w
+	w := 0.0
+	for _, r := range s {
+		w += d.getInfo(r).Advance
+	}
+	return w
 }
 
 type Justification int
 
 const (
-  Center Justification = iota
-  Left
-  Right
-  Top
-  Bottom
+	Center Justification = iota
+	Left
+	Right
+	Top
+	Bottom
 )
 
 func (d *Dictionary) MaxHeight() float64 {
-  res := d.data.Maxy - d.data.Miny
-  if res < 0 {
-    res = 0
-  }
-  return float64(res)
+	res := d.data.Maxy - d.data.Miny
+	if res < 0 {
+		res = 0
+	}
+	return float64(res)
 }
 
 func (d *Dictionary) split(s string, dx, height float64) []string {
-  var lines []string
-  var line []rune
-  var word []rune
-  pos := 0.0
-  for _, r := range s {
-    if r == ' ' {
-      if len(line) > 0 {
-        line = append(line, ' ')
-      }
-      for _, r := range word {
-        line = append(line, r)
-      }
-      word = word[0:0]
-    } else {
-      word = append(word, r)
-    }
-    pos += d.getInfo(r).Advance
-    if pos >= dx {
-      pos = 0.0
-      for _, r := range word {
-        pos += d.getInfo(r).Advance
-      }
-      lines = append(lines, string(line))
-      line = line[0:0]
-    }
-  }
-  if pos < dx {
-    if len(line) > 0 {
-      line = append(line, ' ')
-    }
-    for _, r := range word {
-      line = append(line, r)
-    }
-    lines = append(lines, string(line))
-  } else {
-    lines = append(lines, string(line))
-    lines = append(lines, string(word))
-  }
-  return lines
+	var lines []string
+	var line []rune
+	var word []rune
+	pos := 0.0
+	for _, r := range s {
+		if r == ' ' {
+			if len(line) > 0 {
+				line = append(line, ' ')
+			}
+			for _, r := range word {
+				line = append(line, r)
+			}
+			word = word[0:0]
+		} else {
+			word = append(word, r)
+		}
+		pos += d.getInfo(r).Advance
+		if pos >= dx {
+			pos = 0.0
+			for _, r := range word {
+				pos += d.getInfo(r).Advance
+			}
+			lines = append(lines, string(line))
+			line = line[0:0]
+		}
+	}
+	if pos < dx {
+		if len(line) > 0 {
+			line = append(line, ' ')
+		}
+		for _, r := range word {
+			line = append(line, r)
+		}
+		lines = append(lines, string(line))
+	} else {
+		lines = append(lines, string(line))
+		lines = append(lines, string(word))
+	}
+	return lines
 }
 
-//TODO: This isn't working - not even a little
+// TODO: This isn't working - not even a little
 func (d *Dictionary) RenderParagraph(s string, x, y, z, dx, height float64, halign, valign Justification) {
-  lines := d.split(s, dx, height)
-  total_height := height * float64(len(lines)-1)
-  switch valign {
-  case Bottom:
-    y += total_height
-  case Center:
-    y += total_height / 2
-  }
-  for _, line := range lines {
-    d.RenderString(line, x, y, z, height, halign)
-    y -= height
-  }
+	lines := d.split(s, dx, height)
+	total_height := height * float64(len(lines)-1)
+	switch valign {
+	case Bottom:
+		y += total_height
+	case Center:
+		y += total_height / 2
+	}
+	for _, line := range lines {
+		d.RenderString(line, x, y, z, height, halign)
+		y -= height
+	}
 }
 
 func (d *Dictionary) StringWidth(s string) float64 {
-  width := 0.0
-  for _, r := range s {
-    info := d.getInfo(r)
-    width += info.Advance
-  }
-  return width
+	width := 0.0
+	for _, r := range s {
+		info := d.getInfo(r)
+		width += info.Advance
+	}
+	return width
 }
 
 func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
-  if len(s) == 0 {
-    return
-  }
+	if len(s) == 0 {
+		return
+	}
 
-  stride := unsafe.Sizeof(dictVert{})
-  // TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
-  // this out.
-  scale := height / float64(d.data.Maxy-d.data.Miny)
-  width := float32(d.figureWidth(s) * scale)
-  x_pos := float32(x)
-  switch just {
-  case Center:
-    x_pos -= width / 2
-  case Right:
-    x_pos -= width
-  }
+	stride := unsafe.Sizeof(dictVert{})
+	// TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
+	// this out.
+	scale := height / float64(d.data.Maxy-d.data.Miny)
+	width := float32(d.figureWidth(s) * scale)
+	x_pos := float32(x)
+	switch just {
+	case Center:
+		x_pos -= width / 2
+	case Right:
+		x_pos -= width
+	}
 
-  strbuf, ok := d.strs[s]
-  if !ok {
-    // We have to actually render a string!
-    x_pos = 0
-    var prev rune
-    for _, r := range s {
-      // TODO(tmckee): why toss out the mapped value, then look it up again?!
-      if _, ok := d.data.Kerning[prev]; ok {
-        x_pos += float32(d.data.Kerning[prev][r])
-      }
-      prev = r
-      info := d.getInfo(r)
-      xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
-      xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
-      ytop := float32(d.data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
-      ybot := float32(d.data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
-      start := uint16(len(strbuf.vs))
-      strbuf.is = append(strbuf.is, start+0)
-      strbuf.is = append(strbuf.is, start+1)
-      strbuf.is = append(strbuf.is, start+2)
-      strbuf.is = append(strbuf.is, start+0)
-      strbuf.is = append(strbuf.is, start+2)
-      strbuf.is = append(strbuf.is, start+3)
-      strbuf.vs = append(strbuf.vs, dictVert{
-        x: xleft,
-        y: ytop,
-        u: float32(info.Pos.Min.X) / float32(d.data.Dx),
-        v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
-      })
-      strbuf.vs = append(strbuf.vs, dictVert{
-        x: xleft,
-        y: ybot,
-        u: float32(info.Pos.Min.X) / float32(d.data.Dx),
-        v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
-      })
-      strbuf.vs = append(strbuf.vs, dictVert{
-        x: xright,
-        y: ybot,
-        u: float32(info.Pos.Max.X) / float32(d.data.Dx),
-        v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
-      })
-      strbuf.vs = append(strbuf.vs, dictVert{
-        x: xright,
-        y: ytop,
-        u: float32(info.Pos.Max.X) / float32(d.data.Dx),
-        v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
-      })
-      x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
-    }
-    strbuf.vbuffer = uint32(gl.GenBuffer())
-    gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
-    gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
+	strbuf, ok := d.strs[s]
+	if !ok {
+		// We have to actually render a string!
+		x_pos = 0
+		var prev rune
+		for _, r := range s {
+			// TODO(tmckee): why toss out the mapped value, then look it up again?!
+			if _, ok := d.data.Kerning[prev]; ok {
+				x_pos += float32(d.data.Kerning[prev][r])
+			}
+			prev = r
+			info := d.getInfo(r)
+			xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
+			xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
+			ytop := float32(d.data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
+			ybot := float32(d.data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
+			start := uint16(len(strbuf.vs))
+			strbuf.is = append(strbuf.is, start+0)
+			strbuf.is = append(strbuf.is, start+1)
+			strbuf.is = append(strbuf.is, start+2)
+			strbuf.is = append(strbuf.is, start+0)
+			strbuf.is = append(strbuf.is, start+2)
+			strbuf.is = append(strbuf.is, start+3)
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xleft,
+				y: ytop,
+				u: float32(info.Pos.Min.X) / float32(d.data.Dx),
+				v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
+			})
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xleft,
+				y: ybot,
+				u: float32(info.Pos.Min.X) / float32(d.data.Dx),
+				v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
+			})
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xright,
+				y: ybot,
+				u: float32(info.Pos.Max.X) / float32(d.data.Dx),
+				v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
+			})
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xright,
+				y: ytop,
+				u: float32(info.Pos.Max.X) / float32(d.data.Dx),
+				v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
+			})
+			x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
+		}
+		strbuf.vbuffer = uint32(gl.GenBuffer())
+		gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
+		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
 
-    strbuf.ibuffer = uint32(gl.GenBuffer())
-    gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
-    gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
-    d.strs[s] = strbuf
-  }
+		strbuf.ibuffer = uint32(gl.GenBuffer())
+		gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
+		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
+		d.strs[s] = strbuf
+	}
 
-  // Reset x-pos
-  x_pos = float32(x)
-  switch just {
-  case Center:
-    x_pos -= width / 2
-  case Right:
-    x_pos -= width
-  }
+	// Reset x-pos
+	x_pos = float32(x)
+	switch just {
+	case Center:
+		x_pos -= width / 2
+	case Right:
+		x_pos -= width
+	}
 
-  err := render.EnableShader("glop.font")
-  if err != nil {
-    panic(err)
-  }
-  defer render.EnableShader("")
+	err := render.EnableShader("glop.font")
+	if err != nil {
+		panic(err)
+	}
+	defer render.EnableShader("")
 
-  diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
-  if diff > 0.45 {
-    diff = 0.45
-  }
-  render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
-  render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
+	diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
+	if diff > 0.45 {
+		diff = 0.45
+	}
+	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
+	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
-  gl.PushMatrix()
-  defer gl.PopMatrix()
-  gl.Translated(float64(x_pos), y, z)
-  gl.Scaled(scale, scale, 1)
+	gl.PushMatrix()
+	defer gl.PopMatrix()
+	gl.Translated(float64(x_pos), y, z)
+	gl.Scaled(scale, scale, 1)
 
-  gl.PushAttrib(gl.COLOR_BUFFER_BIT)
-  defer gl.PopAttrib()
-  gl.Enable(gl.BLEND)
-  gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
+	defer gl.PopAttrib()
+	gl.Enable(gl.BLEND)
+	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-  // TODO(tmckee): we should do error checking with glGetError:
-  // https://docs.gl/gl2/glGetError
-  // TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
-  gl.Enable(gl.TEXTURE_2D)
-  tex := gl.Texture(d.texture)
-  tex.Bind(gl.TEXTURE_2D)
+	// TODO(tmckee): we should do error checking with glGetError:
+	// https://docs.gl/gl2/glGetError
+	// TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
+	gl.Enable(gl.TEXTURE_2D)
+	tex := gl.Texture(d.texture)
+	tex.Bind(gl.TEXTURE_2D)
 
-  vertex_buffer := gl.Buffer(strbuf.vbuffer)
-  vertex_buffer.Bind(gl.ARRAY_BUFFER)
+	vertex_buffer := gl.Buffer(strbuf.vbuffer)
+	vertex_buffer.Bind(gl.ARRAY_BUFFER)
 
-  gl.EnableClientState(gl.VERTEX_ARRAY)
-  gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
+	gl.EnableClientState(gl.VERTEX_ARRAY)
+	gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
 
-  gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
-  gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
+	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
+	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
 
-  indices_buffer := gl.Buffer(strbuf.ibuffer)
-  indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-  gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
+	indices_buffer := gl.Buffer(strbuf.ibuffer)
+	indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
 
-  gl.DisableClientState(gl.VERTEX_ARRAY)
-  gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
+	gl.DisableClientState(gl.VERTEX_ARRAY)
+	gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
 
 }
 
 type subImage struct {
-  im     image.Image
-  bounds image.Rectangle
+	im     image.Image
+	bounds image.Rectangle
 }
 type transparent struct{}
 
 func (t transparent) RGBA() (r, g, b, a uint32) {
-  return 0, 0, 0, 0
+	return 0, 0, 0, 0
 }
 func (si *subImage) ColorModel() color.Model {
-  return si.im.ColorModel()
+	return si.im.ColorModel()
 }
 func (si *subImage) Bounds() image.Rectangle {
-  return si.bounds
+	return si.bounds
 }
 func (si *subImage) At(x, y int) color.Color {
-  b := si.bounds
-  if (image.Point{x, y}).In(b) {
-    return si.im.At(x, y)
-  }
-  return transparent{}
+	b := si.bounds
+	if (image.Point{x, y}).In(b) {
+		return si.im.At(x, y)
+	}
+	return transparent{}
 }
 
 // Returns a sub-image of the input image. The bounding rectangle is the
 // smallest possible rectangle that includes all pixels that have alpha > 0,
 // with one pixel of border on all sides.
 func minimalSubImage(src image.Image) *subImage {
-  bounds := src.Bounds()
-  var new_bounds image.Rectangle
-  new_bounds.Max = bounds.Min
-  new_bounds.Min = bounds.Max
-  for x := bounds.Min.X; x <= bounds.Max.X; x++ {
-    for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
-      c := src.At(x, y)
-      _, _, _, a := c.RGBA()
-      if a > 0 {
-        if x < new_bounds.Min.X {
-          new_bounds.Min.X = x
-        }
-        if y < new_bounds.Min.Y {
-          new_bounds.Min.Y = y
-        }
-        if x > new_bounds.Max.X {
-          new_bounds.Max.X = x
-        }
-        if y > new_bounds.Max.Y {
-          new_bounds.Max.Y = y
-        }
-      }
-    }
-  }
+	bounds := src.Bounds()
+	var new_bounds image.Rectangle
+	new_bounds.Max = bounds.Min
+	new_bounds.Min = bounds.Max
+	for x := bounds.Min.X; x <= bounds.Max.X; x++ {
+		for y := bounds.Min.Y; y <= bounds.Max.Y; y++ {
+			c := src.At(x, y)
+			_, _, _, a := c.RGBA()
+			if a > 0 {
+				if x < new_bounds.Min.X {
+					new_bounds.Min.X = x
+				}
+				if y < new_bounds.Min.Y {
+					new_bounds.Min.Y = y
+				}
+				if x > new_bounds.Max.X {
+					new_bounds.Max.X = x
+				}
+				if y > new_bounds.Max.Y {
+					new_bounds.Max.Y = y
+				}
+			}
+		}
+	}
 
-  // // We want one row/col of boundary between characters so that we don't get
-  // // annoying artifacts
-  new_bounds.Min.X--
-  new_bounds.Min.Y--
-  new_bounds.Max.X++
-  new_bounds.Max.Y++
+	// // We want one row/col of boundary between characters so that we don't get
+	// // annoying artifacts
+	new_bounds.Min.X--
+	new_bounds.Min.Y--
+	new_bounds.Max.X++
+	new_bounds.Max.Y++
 
-  if new_bounds.Min.X > new_bounds.Max.X || new_bounds.Min.Y > new_bounds.Max.Y {
-    new_bounds = image.Rect(0, 0, 0, 0)
-  }
+	if new_bounds.Min.X > new_bounds.Max.X || new_bounds.Min.Y > new_bounds.Max.Y {
+		new_bounds = image.Rect(0, 0, 0, 0)
+	}
 
-  return &subImage{src, new_bounds}
+	return &subImage{src, new_bounds}
 }
 
 // This stupid thing is just so that our idiot-packedImage can answer queries
@@ -529,145 +529,145 @@ func packImages(ims []image.Image) *packedImage {
 }
 
 func MakeDictionary(font *truetype.Font, size int) *Dictionary {
-  alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
-  context := freetype.NewContext()
-  context.SetFont(font)
-  width := 300
-  height := 300
-  context.SetSrc(image.White)
-  dpi := 150.0
-  context.SetFontSize(float64(size))
-  context.SetDPI(dpi)
-  var letters []image.Image
-  rune_mapping := make(map[rune]image.Image)
-  rune_info := make(map[rune]runeInfo)
-  for _, r := range alphabet {
-    canvas := image.NewRGBA(image.Rect(-width/2, -height/2, width/2, height/2))
-    context.SetDst(canvas)
-    context.SetClip(canvas.Bounds())
+	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
+	context := freetype.NewContext()
+	context.SetFont(font)
+	width := 300
+	height := 300
+	context.SetSrc(image.White)
+	dpi := 150.0
+	context.SetFontSize(float64(size))
+	context.SetDPI(dpi)
+	var letters []image.Image
+	rune_mapping := make(map[rune]image.Image)
+	rune_info := make(map[rune]runeInfo)
+	for _, r := range alphabet {
+		canvas := image.NewRGBA(image.Rect(-width/2, -height/2, width/2, height/2))
+		context.SetDst(canvas)
+		context.SetClip(canvas.Bounds())
 
-    advance, _ := context.DrawString(string([]rune{r}), raster.Point{})
-    sub := minimalSubImage(canvas)
-    letters = append(letters, sub)
-    rune_mapping[r] = sub
-    adv_x := float64(advance.X) / 256.0
-    rune_info[r] = runeInfo{Bounds: sub.bounds, Advance: adv_x}
-  }
-  packed := packImages(letters)
+		advance, _ := context.DrawString(string([]rune{r}), raster.Point{})
+		sub := minimalSubImage(canvas)
+		letters = append(letters, sub)
+		rune_mapping[r] = sub
+		adv_x := float64(advance.X) / 256.0
+		rune_info[r] = runeInfo{Bounds: sub.bounds, Advance: adv_x}
+	}
+	packed := packImages(letters)
 
-  for _, r := range alphabet {
-    ri := rune_info[r]
-    ri.Pos = packed.GetRect(rune_mapping[r])
-    rune_info[r] = ri
-  }
+	for _, r := range alphabet {
+		ri := rune_info[r]
+		ri.Pos = packed.GetRect(rune_mapping[r])
+		rune_info[r] = ri
+	}
 
-  dx := 1
-  for dx < packed.Bounds().Dx() {
-    dx = dx << 1
-  }
-  dy := 1
-  for dy < packed.Bounds().Dy() {
-    dy = dy << 1
-  }
+	dx := 1
+	for dx < packed.Bounds().Dx() {
+		dx = dx << 1
+	}
+	dy := 1
+	for dy < packed.Bounds().Dy() {
+		dy = dy << 1
+	}
 
-  pim := image.NewRGBA(image.Rect(0, 0, dx, dy))
-  draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
-  var dict Dictionary
-  dict.data.Pix = pim.Pix
-  dict.data.Dx = pim.Bounds().Dx()
-  dict.data.Dy = pim.Bounds().Dy()
-  dict.data.Info = rune_info
+	pim := image.NewRGBA(image.Rect(0, 0, dx, dy))
+	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
+	var dict Dictionary
+	dict.data.Pix = pim.Pix
+	dict.data.Dx = pim.Bounds().Dx()
+	dict.data.Dy = pim.Bounds().Dy()
+	dict.data.Info = rune_info
 
-  dict.data.Ascii_info = make([]runeInfo, 256)
-  for r := rune(0); r < 256; r++ {
-    if info, ok := dict.data.Info[r]; ok {
-      dict.data.Ascii_info[r] = info
-    }
-  }
-  dict.data.Baseline = dict.data.Info['.'].Bounds.Min.Y
+	dict.data.Ascii_info = make([]runeInfo, 256)
+	for r := rune(0); r < 256; r++ {
+		if info, ok := dict.data.Info[r]; ok {
+			dict.data.Ascii_info[r] = info
+		}
+	}
+	dict.data.Baseline = dict.data.Info['.'].Bounds.Min.Y
 
-  dict.data.Miny = int(1e9)
-  dict.data.Maxy = int(-1e9)
-  for _, info := range dict.data.Info {
-    if info.Bounds.Min.Y < dict.data.Miny {
-      dict.data.Miny = info.Bounds.Min.Y
-    }
-    if info.Bounds.Max.Y > dict.data.Maxy {
-      dict.data.Maxy = info.Bounds.Max.Y
-    }
-  }
+	dict.data.Miny = int(1e9)
+	dict.data.Maxy = int(-1e9)
+	for _, info := range dict.data.Info {
+		if info.Bounds.Min.Y < dict.data.Miny {
+			dict.data.Miny = info.Bounds.Min.Y
+		}
+		if info.Bounds.Max.Y > dict.data.Maxy {
+			dict.data.Maxy = info.Bounds.Max.Y
+		}
+	}
 
-  dict.setupGlStuff()
+	dict.setupGlStuff()
 
-  return &dict
+	return &dict
 }
 
 var init_once sync.Once
 
 func LoadDictionary(r io.Reader) (*Dictionary, error) {
-  // TODO(tmckee): we shouldn't coulple loading a dictionary to registering
-  // shaders.
-  init_once.Do(func() {
-    render.Queue(func() {
-      err := render.RegisterShader("glop.font", []byte(font_vertex_shader), []byte(font_fragment_shader))
-      if err != nil {
-        panic(err)
-      }
-    })
-    render.Purge()
-  })
+	// TODO(tmckee): we shouldn't coulple loading a dictionary to registering
+	// shaders.
+	init_once.Do(func() {
+		render.Queue(func() {
+			err := render.RegisterShader("glop.font", []byte(font_vertex_shader), []byte(font_fragment_shader))
+			if err != nil {
+				panic(err)
+			}
+		})
+		render.Purge()
+	})
 
-  var d Dictionary
-  err := gob.NewDecoder(r).Decode(&d.data)
-  if err != nil {
-    return nil, err
-  }
-  d.setupGlStuff()
-  return &d, nil
+	var d Dictionary
+	err := gob.NewDecoder(r).Decode(&d.data)
+	if err != nil {
+		return nil, err
+	}
+	d.setupGlStuff()
+	return &d, nil
 }
 
 func (d *Dictionary) Store(outputStream io.Writer) error {
-  return gob.NewEncoder(outputStream).Encode(d.data)
+	return gob.NewEncoder(outputStream).Encode(d.data)
 }
 
 // Sets up anything that wouldn't have been loaded from disk, including
 // all opengl data, and sets up finalizers for that data.
 func (d *Dictionary) setupGlStuff() {
-  d.dlists = make(map[string]uint32)
-  d.strs = make(map[string]strBuffer)
-  d.pars = make(map[string]strBuffer)
+	d.dlists = make(map[string]uint32)
+	d.strs = make(map[string]strBuffer)
+	d.pars = make(map[string]strBuffer)
 
-  // TODO: This finalizer is untested
-  runtime.SetFinalizer(d, func(d *Dictionary) {
-    render.Queue(func() {
-      for _, v := range d.dlists {
-        gl.DeleteLists(uint(v), 1)
-      }
-    })
-  })
+	// TODO: This finalizer is untested
+	runtime.SetFinalizer(d, func(d *Dictionary) {
+		render.Queue(func() {
+			for _, v := range d.dlists {
+				gl.DeleteLists(uint(v), 1)
+			}
+		})
+	})
 
-  render.Queue(func() {
-    gl.Enable(gl.TEXTURE_2D)
-    d.texture = uint32(gl.GenTexture())
-    gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
-    gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
-    gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
-    gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-    gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	render.Queue(func() {
+		gl.Enable(gl.TEXTURE_2D)
+		d.texture = uint32(gl.GenTexture())
+		gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
+		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
+		gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-    gl.TexImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.ALPHA,
-      d.data.Dx,
-      d.data.Dy,
-      0,
-      gl.ALPHA,
-      gl.UNSIGNED_BYTE,
-      d.data.Pix)
+		gl.TexImage2D(
+			gl.TEXTURE_2D,
+			0,
+			gl.ALPHA,
+			d.data.Dx,
+			d.data.Dy,
+			0,
+			gl.ALPHA,
+			gl.UNSIGNED_BYTE,
+			d.data.Pix)
 
-    gl.Disable(gl.TEXTURE_2D)
-  })
+		gl.Disable(gl.TEXTURE_2D)
+	})
 }

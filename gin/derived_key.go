@@ -78,7 +78,7 @@ type derivedKey struct {
 
 	Bindings []Binding
 
-	// We store the down state of all of our bindings so that things 
+	// We store the down state of all of our bindings so that things
 	bindings_down []bool
 }
 
@@ -221,7 +221,7 @@ func (dkf *derivedKeyFamily) GetKey(device DeviceId) Key {
 		dkf.input.bindDerivedKeyWithIndex(dkf.name, dkf.index, device, bindings...)
 
 		// On second thought i don't think i need any of this - it's done in the above
-		// function call		
+		// function call
 		// TODO: Maybe should set the key in the map here, it gets set elsewhere and
 		// it might be nice to have that all in one place.
 		// dkf.input.key_map[id] = key
@@ -233,12 +233,14 @@ func (dkf *derivedKeyFamily) GetKey(device DeviceId) Key {
 
 // A BindingFamily is like a binding, but it does not specify a device.  Instead
 // a binding family can be down per device.  Example:
-// bf := BindingFamily{
-//   PrimaryKey: KeyA,
-//   Modifiers: []KeyIndex{KeyB},
-//   Down: []bool{false},
-// }
-// bf will be down 
+//
+//	bf := BindingFamily{
+//	  PrimaryKey: KeyA,
+//	  Modifiers: []KeyIndex{KeyB},
+//	  Down: []bool{false},
+//	}
+//
+// bf will be down
 // A BindingFamily is considered down if PrimaryKey is down and all Modifiers' IsDown()s match the
 // corresponding entry in Down
 type BindingFamily struct {

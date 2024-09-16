@@ -264,7 +264,8 @@ func init() {
 }
 
 // TODO: You fucked up, the name of this function should be Input, and it should
-//       return an interfact or something that is not called Input
+//
+//	return an interfact or something that is not called Input
 func In() *Input {
 	return input_obj
 }
