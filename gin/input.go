@@ -578,7 +578,7 @@ func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []Event
 	// regardless, so we do not need to worry about it here.
 	fmt.Printf("DEPOS\n")
 	for a, b := range input.id_to_deps {
-		fmt.Printf("id(%v): %v\n", a, b)
+		fmt.Printf("id(%+v): %+v\n", a, b)
 	}
 	if lost_focus {
 		//    clearAllKeyState()

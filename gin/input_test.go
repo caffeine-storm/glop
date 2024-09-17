@@ -1,10 +1,11 @@
 package gin_test
 
 import (
+	"strings"
+
 	"github.com/orfjackal/gospec/src/gospec"
 	. "github.com/orfjackal/gospec/src/gospec"
 	"github.com/runningwild/glop/gin"
-	"strings"
 )
 
 func injectEvent(events *[]gin.OsEvent, key_index gin.KeyIndex, device_index gin.DeviceIndex, device_type gin.DeviceType, amt float64, timestamp int64) {

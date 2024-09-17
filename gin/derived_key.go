@@ -158,7 +158,11 @@ func (input *Input) MakeBinding(primary KeyId, modifiers []KeyId, down []bool) B
 }
 
 func (b *Binding) primaryPressAmt() float64 {
-	return b.Input.key_map[b.PrimaryKey].CurPressAmt()
+	mappedKey, ok := b.Input.key_map[b.PrimaryKey]
+	if !ok {
+		panic(fmt.Errorf("couldn't find PrimaryKey %+v in key_map", b.PrimaryKey))
+	}
+	return mappedKey.CurPressAmt()
 }
 
 func (b *Binding) CurPressAmt() float64 {
