@@ -86,7 +86,6 @@ type derivedKey struct {
 }
 
 func (dk *derivedKey) Think(ms int64) (bool, float64) {
-	fmt.Printf("Thinking on dk %v\n", dk.id)
 	return dk.keyState.Think(ms)
 }
 

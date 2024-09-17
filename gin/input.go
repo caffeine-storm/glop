@@ -631,13 +631,6 @@ func (input *Input) RegisterEventListener(listener Listener) {
 
 func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []EventGroup {
 	input.trace()
-	// If we have lost focus, clear all key state. Note that down_keys_frame_ is
-	// rebuilt every frame regardless, so we do not need to worry about it here.
-	fmt.Printf("DEPOS\n")
-	for a, b := range input.id_to_deps {
-		fmt.Printf("id(%+v): %+v\n", a, b)
-	}
-
 	// Generate all key events here. Derived keys are handled through pressKey
 	// and all events are aggregated into one array. Events in this array will
 	// necessarily be in sorted order.
@@ -646,7 +639,6 @@ func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []Event
 		group := EventGroup{
 			Timestamp: os_event.Timestamp,
 		}
-		fmt.Printf("Raw press key (%v): %v\n", os_event.KeyId, os_event.Press_amt)
 		input.pressKey(
 			input.GetKey(os_event.KeyId),
 			os_event.Press_amt,
@@ -675,7 +667,6 @@ func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []Event
 	}
 
 	for _, key := range input.all_keys {
-		fmt.Printf("Loop think on %v\n", key.Id())
 		gen, amt := key.Think(t)
 		if !gen {
 			continue
