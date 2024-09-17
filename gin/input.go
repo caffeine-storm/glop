@@ -226,14 +226,14 @@ type OsEvent struct {
 	Timestamp int64
 }
 
-// Everything 'global' is put inside a struct so that tests can be run without stepping
-// on each other
+// Everything 'global' is put inside a struct so that tests can be run without
+// stepping on each other.
 type Input struct {
 	all_keys []Key
 	key_map  map[KeyId]Key
 
-	// map from keyId to list of derived Keys and general derived Keys that depend
-	// on it in some way
+	// map from keyId to list of derived Keys and general derived Keys that
+	// depend on it in some way
 	id_to_deps map[KeyId][]Key
 
 	// map from KeyId to list of derived key families that depend on it
@@ -250,9 +250,9 @@ type Input struct {
 	// map from KeyIndex to a human-readable name for that key
 	index_to_name map[KeyIndex]string
 
-	// The listeners will receive all events immediately after those events have been used to
-	// update all key states.  The order in which listeners are notified of a particular event
-	// group can change from group to group.
+	// The listeners will receive all events immediately after those events have
+	// been used to update all key states. The order in which listeners are
+	// notified of a particular event group can change from group to group.
 	listeners []Listener
 }
 
@@ -263,14 +263,13 @@ func init() {
 	input_obj = Make()
 }
 
-// TODO: You fucked up, the name of this function should be Input, and it should
-//
-//	return an interfact or something that is not called Input
+// TODO: You messed up, the name of this function should be Input, and it
+// should return an interface or something that is not called Input
 func In() *Input {
 	return input_obj
 }
 
-// Creates a new input object, mostly for testing.  Most users will just query
+// Creates a new input object, mostly for testing. Most users will just query
 // gin.Input, which is created during initialization
 func Make() *Input {
 	input := new(Input)
@@ -405,14 +404,16 @@ func (e Event) String() string {
 	return fmt.Sprintf("'%v %v'", e.Type, e.Key)
 }
 
-// An EventGroup is a series of events that were all created by a single OsEvent.
+// An EventGroup is a series of events that were all created by a single
+// OsEvent.
 type EventGroup struct {
 	Events    []Event
 	Timestamp int64
 }
 
-// Returns a bool indicating whether an event corresponding to the given KeyId is present
-// in the EventGroup, and if so the Event returned is a copy of that event.
+// Returns a bool indicating whether an event corresponding to the given KeyId
+// is present in the EventGroup, and if so the Event returned is a copy of that
+// event.
 func (eg *EventGroup) FindEvent(id KeyId) (bool, Event) {
 	for i := range eg.Events {
 		if eg.Events[i].Key.Id() == id {
@@ -450,8 +451,8 @@ func (input *Input) GetKey(id KeyId) Key {
 	key, ok := input.key_map[id]
 	if !ok {
 		if family, ok := input.index_to_family[id.Index]; ok {
-			// If the index indicates a family but the key doesn't exist, go ahead and
-			// have the family create it.
+			// If the index indicates a family but the key doesn't exist, go ahead
+			// and have the family create it.
 			input.key_map[id] = family.GetKey(id.Device)
 			key = input.key_map[id]
 
@@ -476,8 +477,8 @@ func (input *Input) GetKey(id KeyId) Key {
 			key = input.key_map[id]
 			input.all_keys = append(input.all_keys, key)
 		} else {
-			// Check if the index is valid, if it is then we can just create a new key
-			// the appropriate device.
+			// Check if the index is valid, if it is then we can just create a new
+			// key the appropriate device.
 			agg_type, ok := input.index_to_agg_type[id.Index]
 			if !ok {
 				panic(fmt.Sprintf("No key registered with id == %v.", id))
@@ -552,12 +553,16 @@ func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup)
 	}
 }
 
-// The Input object can have a single Listener registered with it.  This object will receive
-// event groups as they are processed.  During HandleEventGroup a listener can query keys as to
-// their current state (i.e. with Cur*() methods) and these will accurately report their state
-// given that the current event group has happened and no future events have happened yet.
+// The Input object can have a single Listener registered with it. This object
+// will receive event groups as they are processed. During HandleEventGroup a
+// listener can query keys as to their current state (i.e. with Cur*() methods)
+// and these will accurately report their state given that the current event
+// group has happened and no future events have happened yet.
+//
 // Frame*() methods on keys will report state from last frame.
-// Listener.Think() will be called after all the events for a frame have been processed.
+//
+// Listener.Think() will be called after all the events for a frame have been
+// processed.
 type EventHandler interface {
 	HandleEventGroup(EventGroup)
 }
@@ -574,8 +579,8 @@ func (input *Input) RegisterEventListener(listener Listener) {
 }
 
 func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []EventGroup {
-	// If we have lost focus, clear all key state. Note that down_keys_frame_ is rebuilt every frame
-	// regardless, so we do not need to worry about it here.
+	// If we have lost focus, clear all key state. Note that down_keys_frame_ is
+	// rebuilt every frame regardless, so we do not need to worry about it here.
 	fmt.Printf("DEPOS\n")
 	for a, b := range input.id_to_deps {
 		fmt.Printf("id(%+v): %+v\n", a, b)
@@ -583,8 +588,9 @@ func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []Event
 	if lost_focus {
 		//    clearAllKeyState()
 	}
-	// Generate all key events here.  Derived keys are handled through pressKey and all
-	// events are aggregated into one array.  Events in this array will necessarily be in
+	// Generate all key events here. Derived keys are handled through pressKey
+	// and all events are aggregated into one array. Events in this array will
+	// necessarily be in
 	// sorted order.
 	var groups []EventGroup
 	for _, os_event := range os_events {
@@ -598,10 +604,10 @@ func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []Event
 			Event{},
 			&group)
 		// Sets the cursor position if this is a cursor based event.
-		// TODO: Currently only the mouse is supported as a cursor, but if we want to support
-		//       joysticks as cursor_keys, since they don't naturally have a position associated
-		//       with them, we will need to somehow associate cursor_keys with axes and treat the
-		//       mouse and joysticks separately.
+		// TODO: Currently only the mouse is supported as a cursor, but if we want
+		// to support joysticks as cursor_keys, since they don't naturally have a
+		// position associated with them, we will need to somehow associate
+		// cursor_keys with axes and treat the mouse and joysticks separately.
 		// if cursor := input.cursor_keys[os_event.KeyId]; cursor != nil {
 		// 	cursor.X = os_event.X
 		// 	cursor.Y = os_event.Y
