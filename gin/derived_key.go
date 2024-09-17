@@ -139,8 +139,8 @@ func (dk *derivedKey) SetPressAmt(amt float64, ms int64, cause Event) (event Eve
 	return
 }
 
-// A Binding is considered down if PrimaryKey is down and all Modifiers' IsDown()s match the
-// corresponding entry in Down
+// A Binding is considered down if PrimaryKey is down and all Modifiers'
+// IsDown()s match the corresponding entry in Down
 type Binding struct {
 	PrimaryKey KeyId
 	Modifiers  []KeyId
@@ -176,11 +176,7 @@ func (b *Binding) CurPressAmt() float64 {
 		}
 	}
 	key, ok := b.Input.key_map[b.PrimaryKey]
-	if !ok {
-		fmt.Printf("key_map: %+v\n", b.Input.key_map)
-		panic(fmt.Errorf("couldn't look up binding %+v by PrimaryKey", b))
-	}
-	if !key.IsDown() {
+	if !ok || !key.IsDown() {
 		return 0
 	}
 	return key.CurPressAmt()
