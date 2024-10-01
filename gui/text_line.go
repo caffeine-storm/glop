@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 
 	"code.google.com/p/freetype-go/freetype"
+	"code.google.com/p/freetype-go/freetype/raster"
 	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
 	"github.com/go-gl-legacy/glu"
@@ -58,28 +59,37 @@ func GetDict(name string) *Dictionary {
 	if ok {
 		return d
 	}
-	// basic_dicts[name] = MakeDictionary(basic_fonts[name], 15)
+	basic_dicts[name] = MakeDictionary(basic_fonts[name], 15)
 	return basic_dicts[name]
 }
 
 func drawText(font *truetype.Font, c *freetype.Context, color color.Color, rgba *image.RGBA, text string) (int, int) {
-	fg := image.NewUniform(color)
+	// Make 'rgba' transparent.
 	bg := image.Transparent
-	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
+	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
+
+	// Tell freetype to use the given colour.
+	fg := image.NewUniform(color)
+	c.SetSrc(fg)
+
 	c.SetFont(font)
 	c.SetDst(rgba)
-	c.SetSrc(fg)
 	c.SetClip(rgba.Bounds())
-	// height is the fraction of the font that is above the line, 1.0 would mean
-	// that the font never falls below the line
-	// TODO: wtf - this is all wrong!
-	// fix fonts - we can't change the font size easily
-	height := 1.3
-	pt := freetype.Pt(0, int(float64(c.PointToFix32(10)>>8)))
-	adv, _ := c.DrawString(text, pt)
+
+	pt := raster.Point{
+		X: 0,
+		// TODO(tmckee): always a 10pt font?
+		Y: c.PointToFix32(10),
+	}
+	// TODO(tmckee): aiming at (0, 0) for debugging; we need to point at x=0,
+	// y=baseline
+	adv, err := c.DrawString(text, pt)
+	if err != nil {
+		panic(err)
+	}
 	pt.X += adv.X
-	py := int(float64(pt.Y>>8)/height + 0.01)
-	return int(pt.X >> 8), py
+
+	return int(pt.X >> 8), int(pt.Y >> 8)
 }
 
 var basic_fonts map[string]*truetype.Font
@@ -276,13 +286,17 @@ func (w *TextLine) coreDraw(region Region) {
 	}
 	w.Render_region.Dims = req
 	w.Render_region.Point = region.Point
-	tx := float64(w.rdims.Dx) / float64(w.rgba.Bounds().Dx())
-	ty := float64(w.rdims.Dy) / float64(w.rgba.Bounds().Dy())
+	// tx := float64(w.rdims.Dx) / float64(w.rgba.Bounds().Dx())
+	// ty := float64(w.rdims.Dy) / float64(w.rgba.Bounds().Dy())
+	tx := 21.0
+	ty := 18.0
 	//  w.scale = float64(w.Render_region.Dx) / float64(w.rdims.Dx)
+
 	{
 		r, g, b, a := w.color.RGBA()
 		gl.Color4d(float64(r)/65535, float64(g)/65535, float64(b)/65535, float64(a)/65535)
 	}
+
 	gl.Begin(gl.QUADS)
 	gl.TexCoord2d(0, 0)
 	gl.Vertex2i(region.X, region.Y)
