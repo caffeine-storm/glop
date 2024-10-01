@@ -5,9 +5,10 @@ package gos
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system"
-	"unsafe"
 )
 
 type linuxSystemObject struct {
@@ -16,6 +17,7 @@ type linuxSystemObject struct {
 
 var (
 	linux_system_object linuxSystemObject
+	_                   system.Os = &linux_system_object
 )
 
 // Call after runtime.LockOSThread(), *NOT* in an init function
