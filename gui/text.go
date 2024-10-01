@@ -7,7 +7,6 @@ import (
 	"image/draw"
 	"io"
 	"math"
-	"runtime"
 	"sort"
 	"sync"
 	"unsafe"
@@ -85,8 +84,6 @@ type Dictionary struct {
 
 	strs map[string]strBuffer
 	pars map[string]strBuffer
-
-	dlists map[string]uint32
 }
 type strBuffer struct {
 	// vertex-buffer
@@ -629,20 +626,10 @@ func (d *Dictionary) Store(outputStream io.Writer) error {
 }
 
 // Sets up anything that wouldn't have been loaded from disk, including
-// all opengl data, and sets up finalizers for that data.
+// all opengl data.
 func (d *Dictionary) setupGlStuff() {
-	d.dlists = make(map[string]uint32)
 	d.strs = make(map[string]strBuffer)
 	d.pars = make(map[string]strBuffer)
-
-	// TODO: This finalizer is untested
-	runtime.SetFinalizer(d, func(d *Dictionary) {
-		render.Queue(func() {
-			for _, v := range d.dlists {
-				gl.DeleteLists(uint(v), 1)
-			}
-		})
-	})
 
 	render.Queue(func() {
 		gl.Enable(gl.TEXTURE_2D)
