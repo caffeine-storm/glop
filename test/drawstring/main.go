@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"runtime"
 	"time"
 
@@ -29,34 +28,54 @@ func main() {
 		}
 		gl.Enable(gl.BLEND)
 		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+		gl.MatrixMode(gl.PROJECTION)
+		gl.LoadIdentity()
+
+		gl.MatrixMode(gl.MODELVIEW)
+		gl.LoadIdentity()
+
+		gl.ClearColor(1, 0, 0, 1)
 	})
 	render.Purge()
 
-	dictReader, err := os.Open("../../testdata/fonts/dict_10.gob")
-	if err != nil {
-		panic(err)
+	// 0. Pre-load a font (TextLine takes a name-of-loaded-font to use when
+	// rendering)
+	// 1. Call TextLine constructor (MakeTextLine)
+	// 2. reg := gui.Region{Point{x, y}, Dims{width, height}}
+	// 3. ourTextLine.Draw(reg)
+	// 4. swap buffers
+	skiaTtfPath := "./skia.ttf"
+	gui.MustLoadFontAs(skiaTtfPath, "glop.font")
+
+	textLine := gui.MakeTextLine("glop.font", "lol", 200, 0, 1, 0, 1)
+	if textLine == nil {
+		panic("nil textLine returned")
 	}
 
-	d, err := gui.LoadDictionary(dictReader)
-	if err != nil {
-		panic(err)
+	region := gui.Region{
+		Point: gui.Point{X: 0, Y: 0},
+		Dims: gui.Dims{Dx: 50, Dy: 50},
 	}
 
-	render.Queue(func() {
-		sys.SwapBuffers()
-		d.RenderString("lol", 0, 0, 0, 12.0, gui.Left)
-	})
-	render.Purge()
+	for {
+		sys.Think()
+		render.Queue(func() {
+			gl.Clear(gl.COLOR_BUFFER_BIT);
 
-	sys.Think()
+			gl.Begin(gl.QUADS)
+			gl.Vertex2d(-0.5, -0.5)
+			gl.Vertex2d( 0.5, -0.5)
+			gl.Vertex2d( 0.5,  0.5)
+			gl.Vertex2d(-0.5,  0.5)
+			gl.End()
 
-	render.Queue(func() {
-		sys.SwapBuffers()
-		d.RenderString("lol", 0, 0, 0, 12.0, gui.Left)
-	})
-	render.Purge()
+			textLine.Draw(region)
 
-	sys.Think()
+			sys.SwapBuffers()
+		})
+		render.Purge()
 
-	time.Sleep(1 * time.Second)
+		time.Sleep(time.Millisecond * 100)
+	}
 }
