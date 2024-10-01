@@ -220,6 +220,8 @@ func (w *TextLine) DoThink(int64, bool) {
 func (w *TextLine) preDraw(region Region) {
 	if !w.initted {
 		w.initted = true
+		// TODO(tmckee): we need a way to clean up after ourselves; we never
+		// deallocate this texture.
 		w.texture = gl.GenTexture()
 		w.text = w.next_text
 		w.figureDims()
@@ -235,6 +237,8 @@ func (w *TextLine) preDraw(region Region) {
 		panic(err)
 	}
 
+	// Draw a black rectangle over the region to erase what might be there
+	// already.
 	gl.Color3d(0, 0, 0)
 	gl.Begin(gl.QUADS)
 	gl.Vertex2i(region.X, region.Y)
@@ -297,6 +301,7 @@ func (w *TextLine) coreDraw(region Region) {
 		gl.Color4d(float64(r)/65535, float64(g)/65535, float64(b)/65535, float64(a)/65535)
 	}
 
+	// Blit the texture onto the Region.
 	gl.Begin(gl.QUADS)
 	gl.TexCoord2d(0, 0)
 	gl.Vertex2i(region.X, region.Y)
