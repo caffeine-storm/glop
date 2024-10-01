@@ -80,6 +80,7 @@ type dictData struct {
 type Dictionary struct {
 	data dictData
 
+	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
 
 	strs map[string]strBuffer
@@ -322,11 +323,9 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// https://docs.gl/gl2/glGetError
 	// TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
 	gl.Enable(gl.TEXTURE_2D)
-	tex := gl.Texture(d.texture)
-	tex.Bind(gl.TEXTURE_2D)
+	gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
 
-	vertex_buffer := gl.Buffer(strbuf.vbuffer)
-	vertex_buffer.Bind(gl.ARRAY_BUFFER)
+	gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
 
 	gl.EnableClientState(gl.VERTEX_ARRAY)
 	gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
@@ -334,8 +333,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
 	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
 
-	indices_buffer := gl.Buffer(strbuf.ibuffer)
-	indices_buffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
 
 	gl.DisableClientState(gl.VERTEX_ARRAY)
