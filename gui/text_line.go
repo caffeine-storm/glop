@@ -1,15 +1,16 @@
 package gui
 
 import (
-	"code.google.com/p/freetype-go/freetype"
-	"code.google.com/p/freetype-go/freetype/truetype"
 	"fmt"
-	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
 	"image"
 	"image/color"
 	"image/draw"
 	"io/ioutil"
+
+	"code.google.com/p/freetype-go/freetype"
+	"code.google.com/p/freetype-go/freetype/truetype"
+	"github.com/go-gl-legacy/gl"
+	"github.com/go-gl-legacy/glu"
 )
 
 type guiError struct {
@@ -52,6 +53,7 @@ func LoadFontAs(path, name string) error {
 }
 
 func GetDict(name string) *Dictionary {
+	// TODO(tmckee): this function doesn't seem to be referenced anywhere.
 	d, ok := basic_dicts[name]
 	if ok {
 		return d
@@ -81,6 +83,9 @@ func drawText(font *truetype.Font, c *freetype.Context, color color.Color, rgba 
 }
 
 var basic_fonts map[string]*truetype.Font
+
+// TODO(tmckee): is basic_dicts redundant? Only written in `GetDict` which is
+// redundanat?
 var basic_dicts map[string]*Dictionary
 
 func init() {
@@ -124,6 +129,7 @@ func nextPowerOf2(n uint32) uint32 {
 	return 0
 }
 
+// TODO(tmckee): this is a bad name; we're calling drawText!!!
 func (w *TextLine) figureDims() {
 	// Always draw the text as white on a transparent background so that we can change
 	// the color easily through opengl
@@ -214,6 +220,10 @@ func (w *TextLine) preDraw(region Region) {
 	}
 
 	gl.PushMatrix()
+	err := gl.GetError()
+	if err != gl.NO_ERROR {
+		panic(err)
+	}
 
 	gl.Color3d(0, 0, 0)
 	gl.Begin(gl.QUADS)
