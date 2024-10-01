@@ -88,6 +88,10 @@ func TestRenderString(t *testing.T) {
 		d, err := LoadDictionary(dictReader)
 		require.Nil(err)
 
-		d.RenderString("lol", 0, 0, 0, 12.0, Left)
+		render.Queue(func() {
+			d.RenderString("lol", 0, 0, 0, 12.0, Left)
+			sys.SwapBuffers()
+		})
+		render.Purge()
 	})
 }
