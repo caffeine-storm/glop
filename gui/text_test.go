@@ -10,7 +10,6 @@ import (
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/system"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
