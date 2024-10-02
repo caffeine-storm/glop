@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/system"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,5 +95,17 @@ func TestRenderString(t *testing.T) {
 			sys.SwapBuffers()
 		})
 		render.Purge()
+
+		// Read a frame-buffer file to peek at Xvfb's data
+		frameBufferBytes, err := os.ReadFile("../test/Xvfb_screen0")
+		if err != nil {
+			panic(err)
+		}
+
+		// Verify that we read the right "shape" of file.
+		if len(frameBufferBytes) != 8352 {
+			panic(fmt.Errorf("The framebuffer file was %d bytes but expected %d", len(frameBufferBytes), 8352))
+		}
+
 	})
 }
