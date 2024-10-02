@@ -25,7 +25,7 @@ func TestDictionaryMaxHeight(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
-			data: dictData{
+			Data: dictData{
 				Miny: 42.0,
 				Maxy: 42.0,
 			},
@@ -37,7 +37,7 @@ func TestDictionaryMaxHeight(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
-			data: dictData{
+			Data: dictData{
 				Miny: 42.0,
 				Maxy: 0.0,
 			},
@@ -49,7 +49,7 @@ func TestDictionaryMaxHeight(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
-			data: dictData{
+			Data: dictData{
 				Miny: 0.0,
 				Maxy: 42.0,
 			},

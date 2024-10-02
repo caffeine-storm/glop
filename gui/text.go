@@ -77,7 +77,7 @@ type dictData struct {
 	Miny, Maxy int
 }
 type Dictionary struct {
-	data dictData
+	Data dictData
 
 	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
@@ -100,15 +100,15 @@ type dictVert struct {
 }
 
 func (d *Dictionary) Scale() float64 {
-	return d.data.Scale
+	return d.Data.Scale
 }
 
 func (d *Dictionary) getInfo(r rune) runeInfo {
 	var info runeInfo
 	if r >= 0 && r < 256 {
-		info = d.data.Ascii_info[r]
+		info = d.Data.Ascii_info[r]
 	} else {
-		info, _ = d.data.Info[r]
+		info, _ = d.Data.Info[r]
 	}
 	return info
 }
@@ -133,7 +133,7 @@ const (
 )
 
 func (d *Dictionary) MaxHeight() float64 {
-	res := d.data.Maxy - d.data.Miny
+	res := d.Data.Maxy - d.Data.Miny
 	if res < 0 {
 		res = 0
 	}
@@ -215,7 +215,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	stride := unsafe.Sizeof(dictVert{})
 	// TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
 	// this out.
-	scale := height / float64(d.data.Maxy-d.data.Miny)
+	scale := height / float64(d.Data.Maxy-d.Data.Miny)
 	width := float32(d.figureWidth(s) * scale)
 	x_pos := float32(x)
 	switch just {
@@ -232,15 +232,15 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		var prev rune
 		for _, r := range s {
 			// TODO(tmckee): why toss out the mapped value, then look it up again?!
-			if _, ok := d.data.Kerning[prev]; ok {
-				x_pos += float32(d.data.Kerning[prev][r])
+			if _, ok := d.Data.Kerning[prev]; ok {
+				x_pos += float32(d.Data.Kerning[prev][r])
 			}
 			prev = r
 			info := d.getInfo(r)
 			xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
 			xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
-			ytop := float32(d.data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
-			ybot := float32(d.data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
+			ytop := float32(d.Data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
+			ybot := float32(d.Data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
 			start := uint16(len(strbuf.vs))
 			strbuf.is = append(strbuf.is, start+0)
 			strbuf.is = append(strbuf.is, start+1)
@@ -251,26 +251,26 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			strbuf.vs = append(strbuf.vs, dictVert{
 				x: xleft,
 				y: ytop,
-				u: float32(info.Pos.Min.X) / float32(d.data.Dx),
-				v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
+				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
 			strbuf.vs = append(strbuf.vs, dictVert{
 				x: xleft,
 				y: ybot,
-				u: float32(info.Pos.Min.X) / float32(d.data.Dx),
-				v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
+				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
 			strbuf.vs = append(strbuf.vs, dictVert{
 				x: xright,
 				y: ybot,
-				u: float32(info.Pos.Max.X) / float32(d.data.Dx),
-				v: float32(info.Pos.Min.Y) / float32(d.data.Dy),
+				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
 			strbuf.vs = append(strbuf.vs, dictVert{
 				x: xright,
 				y: ytop,
-				u: float32(info.Pos.Max.X) / float32(d.data.Dx),
-				v: float32(info.Pos.Max.Y) / float32(d.data.Dy),
+				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
 			x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
 		}
@@ -299,7 +299,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	}
 	defer render.EnableShader("")
 
-	diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.data.Scale, 1.0)/math.Pow(height, 1.0)
+	diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.Data.Scale, 1.0)/math.Pow(height, 1.0)
 	if diff > 0.45 {
 		diff = 0.45
 	}
@@ -568,27 +568,27 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 	pim := image.NewRGBA(image.Rect(0, 0, dx, dy))
 	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
 	var dict Dictionary
-	dict.data.Pix = pim.Pix
-	dict.data.Dx = pim.Bounds().Dx()
-	dict.data.Dy = pim.Bounds().Dy()
-	dict.data.Info = rune_info
+	dict.Data.Pix = pim.Pix
+	dict.Data.Dx = pim.Bounds().Dx()
+	dict.Data.Dy = pim.Bounds().Dy()
+	dict.Data.Info = rune_info
 
-	dict.data.Ascii_info = make([]runeInfo, 256)
+	dict.Data.Ascii_info = make([]runeInfo, 256)
 	for r := rune(0); r < 256; r++ {
-		if info, ok := dict.data.Info[r]; ok {
-			dict.data.Ascii_info[r] = info
+		if info, ok := dict.Data.Info[r]; ok {
+			dict.Data.Ascii_info[r] = info
 		}
 	}
-	dict.data.Baseline = dict.data.Info['.'].Bounds.Min.Y
+	dict.Data.Baseline = dict.Data.Info['.'].Bounds.Min.Y
 
-	dict.data.Miny = int(1e9)
-	dict.data.Maxy = int(-1e9)
-	for _, info := range dict.data.Info {
-		if info.Bounds.Min.Y < dict.data.Miny {
-			dict.data.Miny = info.Bounds.Min.Y
+	dict.Data.Miny = int(1e9)
+	dict.Data.Maxy = int(-1e9)
+	for _, info := range dict.Data.Info {
+		if info.Bounds.Min.Y < dict.Data.Miny {
+			dict.Data.Miny = info.Bounds.Min.Y
 		}
-		if info.Bounds.Max.Y > dict.data.Maxy {
-			dict.data.Maxy = info.Bounds.Max.Y
+		if info.Bounds.Max.Y > dict.Data.Maxy {
+			dict.Data.Maxy = info.Bounds.Max.Y
 		}
 	}
 
@@ -613,7 +613,7 @@ func LoadDictionary(r io.Reader) (*Dictionary, error) {
 	})
 
 	var d Dictionary
-	err := gob.NewDecoder(r).Decode(&d.data)
+	err := gob.NewDecoder(r).Decode(&d.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -622,7 +622,7 @@ func LoadDictionary(r io.Reader) (*Dictionary, error) {
 }
 
 func (d *Dictionary) Store(outputStream io.Writer) error {
-	return gob.NewEncoder(outputStream).Encode(d.data)
+	return gob.NewEncoder(outputStream).Encode(d.Data)
 }
 
 // Sets up anything that wouldn't have been loaded from disk, including
@@ -646,12 +646,12 @@ func (d *Dictionary) setupGlStuff() {
 			gl.TEXTURE_2D,
 			0,
 			gl.ALPHA,
-			d.data.Dx,
-			d.data.Dy,
+			d.Data.Dx,
+			d.Data.Dy,
 			0,
 			gl.ALPHA,
 			gl.UNSIGNED_BYTE,
-			d.data.Pix)
+			d.Data.Pix)
 
 		gl.Disable(gl.TEXTURE_2D)
 	})
