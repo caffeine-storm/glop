@@ -4,13 +4,36 @@ import (
 	"image"
 	"image/png"
 	"os"
+	"runtime"
 
+	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/gui"
+	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/system"
 )
 
 func main() {
-	fromFile := os.Args[0]
-	toFile := os.Args[1]
+	fromFile := os.Args[1]
+	toFile := os.Args[2]
+
+	runtime.LockOSThread()
+	sys := system.Make(gos.GetSystemInterface())
+	wdx := 1024
+	wdy := 750
+
+	sys.Startup()
+	render.Init()
+	render.Queue(func() {
+		sys.CreateWindow(10, 10, wdx, wdy)
+		sys.EnableVSync(true)
+		err := gl.Init()
+		if err != 0 {
+			panic(err)
+		}
+		gl.Enable(gl.BLEND)
+		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	})
 
 	dictReader, err := os.Open(fromFile)
 	if err != nil {
