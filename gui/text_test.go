@@ -1,7 +1,9 @@
 package gui
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"testing"
@@ -132,7 +134,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		require.Nil(err)
 
 		render.Queue(func() {
-			d.RenderString("lol", 0, 0, 0, 12.0, Left)
+			d.RenderString("lol", -1, -1, 0, 12.0, Left)
 			sys.SwapBuffers()
 		})
 		render.Purge()
@@ -146,6 +148,28 @@ func TestDictionaryRenderString(t *testing.T) {
 		// Verify that we read the right "shape" of file.
 		if len(frameBufferBytes) != 8352 {
 			panic(fmt.Errorf("The framebuffer file was %d bytes but expected %d", len(frameBufferBytes), 8352))
+		}
+
+		// Verify that the framebuffer's contents match our expected image.
+		expectedImage := "../testdata/text/lol.xwd"
+		expectedBytes, err := os.ReadFile(expectedImage)
+		if err != nil {
+			panic(err)
+		}
+
+		rejectFileName := "../test/lol.rej.xwd"
+		cmp := bytes.Compare(expectedBytes, frameBufferBytes)
+		if cmp != 0 {
+			// For debug purposes, copy the bad frame buffer for offline inspection.
+			rejectFile, err := os.Create(rejectFileName)
+			if err != nil {
+				panic(fmt.Errorf("couldn't open rejection file: %s: %v", rejectFileName, err))
+			}
+			defer rejectFile.Close()
+
+			io.Copy(rejectFile, bytes.NewReader(frameBufferBytes))
+
+			t.Fatalf("framebuffer mismatch; see %s", rejectFileName)
 		}
 	})
 }
