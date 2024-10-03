@@ -33,7 +33,6 @@ func Choose(_a interface{}, chooser interface{}) {
 
 	outputIndex := 0
 	slice := a.Elem()
-	fmt.Println("got input slice", slice)
 	for i := 0; i < slice.Len(); i++ {
 		inElem := slice.Index(i)
 		filterResult := c.Call([]reflect.Value{inElem})
@@ -41,7 +40,6 @@ func Choose(_a interface{}, chooser interface{}) {
 		if include {
 			// Don't need to overwrite if outputIndex is inputIndex
 			if outputIndex != i {
-				fmt.Println("writing idx", i, "to idx", outputIndex)
 				slice.Index(outputIndex).Set(slice.Index(i))
 			}
 			outputIndex++
