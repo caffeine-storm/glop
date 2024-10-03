@@ -10,6 +10,7 @@ import (
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/system"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -59,7 +60,48 @@ func TestDictionaryMaxHeight(t *testing.T) {
 	})
 }
 
-func TestRenderString(t *testing.T) {
+func TestDictionaryGetInfo(t *testing.T) {
+	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
+		require := require.New(t)
+		assert := assert.New(t)
+
+		sys := system.Make(gos.GetSystemInterface())
+		wdx := 1024
+		wdy := 750
+
+		sys.Startup()
+		render.Init()
+		render.Queue(func() {
+			sys.CreateWindow(10, 10, wdx, wdy)
+			sys.EnableVSync(true)
+			err := gl.Init()
+			if err != 0 {
+				panic("couldn't init GL")
+			}
+		})
+		render.Purge()
+
+		dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
+		require.Nil(err)
+
+		d, err := LoadDictionary(dictReader)
+		require.Nil(err)
+
+		emptyRuneInfo := runeInfo{}
+		// In ascii, all the characters we care about are between 0x20 (space) and
+		// 0x7E (tilde).
+		for idx := ' '; idx <= '~'; idx++ {
+			info := d.getInfo(rune(idx))
+			assert.NotEqual(emptyRuneInfo, info)
+		}
+	})
+
+	// TODO(tmckee): verify slices of texture by runeInfo correspond to correct
+	// letters
+	// TODO(tmckee): verify texture image in GL matches expectations
+}
+
+func TestDictionaryRenderString(t *testing.T) {
 	// TODO(tmckee): probably need to stop exporting Dictionary from gui and call
 	// LoadDictionary to get an instance instead; it'll register shaders and
 	// such.
@@ -105,6 +147,5 @@ func TestRenderString(t *testing.T) {
 		if len(frameBufferBytes) != 8352 {
 			panic(fmt.Errorf("The framebuffer file was %d bytes but expected %d", len(frameBufferBytes), 8352))
 		}
-
 	})
 }
