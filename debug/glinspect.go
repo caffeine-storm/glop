@@ -3,6 +3,8 @@ package debug
 import (
 	"fmt"
 	"log"
+	"runtime"
+	"strings"
 
 	"github.com/go-gl-legacy/gl"
 )
@@ -42,6 +44,14 @@ func GetDepthRange() (float64, float64) {
 }
 
 func LogAndClearGlErrors(logger *log.Logger) {
+	_, file, line, ok := runtime.Caller(1)
+	if !ok {
+		panic("couldn't call runtime.Caller(1)")
+	}
+
+	parts := strings.SplitAfter(file, "glop")
+	file = parts[len(parts)-1][1:]
+
 	for {
 		glErr := gl.GetError()
 		if glErr == gl.NO_ERROR {
@@ -49,6 +59,6 @@ func LogAndClearGlErrors(logger *log.Logger) {
 		}
 
 		// TODO(tmckee): include the line number where we were called.
-		logger.Printf("GlError: %d\n", glErr)
+		logger.Printf("GlError(%s:%d): 0x%04x\n", file, line, glErr)
 	}
 }
