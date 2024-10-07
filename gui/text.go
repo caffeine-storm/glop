@@ -21,7 +21,6 @@ import (
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
-// TODO(tmckee): add a #version pragma for OpenGL 2.1
 const font_vertex_shader = `
   #version 120
   varying vec3 pos;
@@ -36,7 +35,6 @@ const font_vertex_shader = `
   }
 `
 
-// TODO(tmckee): add a #version pragma for OpenGL 2.1
 const font_fragment_shader = `
   #version 120
   uniform sampler2D tex;
