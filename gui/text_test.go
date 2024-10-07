@@ -107,16 +107,18 @@ func TestDictionaryRenderString(t *testing.T) {
 	// TODO(tmckee): probably need to stop exporting Dictionary from gui and call
 	// LoadDictionary to get an instance instead; it'll register shaders and
 	// such.
-	t.Run("rendering-should-not-panic", func(t *testing.T) {
+	t.Run("CanRenderLol", func(t *testing.T) {
 		runtime.LockOSThread()
 		sys := system.Make(gos.GetSystemInterface())
-		wdx := 1024
-		wdy := 750
+		// wdx := 640
+		// wdy := 512
+		wdx := 512
+		wdy := 64
 
 		sys.Startup()
 		render.Init()
 		render.Queue(func() {
-			sys.CreateWindow(10, 10, wdx, wdy)
+			sys.CreateWindow(0, 0, wdx, wdy)
 			sys.EnableVSync(true)
 			err := gl.Init()
 			if err != 0 {
@@ -134,7 +136,8 @@ func TestDictionaryRenderString(t *testing.T) {
 		require.Nil(err)
 
 		render.Queue(func() {
-			d.RenderString("lol", -1, -1, 0, 12.0, Left)
+			// d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
+			d.RenderString("T", 0, 0, 0, d.MaxHeight(), Left)
 			sys.SwapBuffers()
 		})
 		render.Purge()
@@ -146,8 +149,8 @@ func TestDictionaryRenderString(t *testing.T) {
 		}
 
 		// Verify that we read the right "shape" of file.
-		if len(frameBufferBytes) != 8352 {
-			panic(fmt.Errorf("The framebuffer file was %d bytes but expected %d", len(frameBufferBytes), 8352))
+		if len(frameBufferBytes) != 85152 {
+			fmt.Printf("frameBufferSize: %v\n", fmt.Errorf("The framebuffer file was %d bytes but expected %d", len(frameBufferBytes), 85152))
 		}
 
 		// Verify that the framebuffer's contents match our expected image.

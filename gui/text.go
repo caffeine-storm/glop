@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/draw"
 	"io"
+	"log"
 	"math"
 	"sort"
 	"sync"
@@ -15,11 +16,14 @@ import (
 	"code.google.com/p/freetype-go/freetype/raster"
 	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
+// TODO(tmckee): add a #version pragma for OpenGL 2.1
 const font_vertex_shader = `
+  #version 120
   varying vec3 pos;
 
   void main() {
@@ -32,13 +36,15 @@ const font_vertex_shader = `
   }
 `
 
+// TODO(tmckee): add a #version pragma for OpenGL 2.1
 const font_fragment_shader = `
+  #version 120
   uniform sampler2D tex;
   uniform float dist_min;
   uniform float dist_max;
 
   void main() {
-    vec2 tpos = gl_TexCoord[0].xy;
+    vec2 tpos = gl_TexCoord[0].st;
     float dist = texture2D(tex, tpos).a;
     float alpha = smoothstep(dist_min, dist_max, dist);
     gl_FragColor = gl_Color * vec4(1.0, 1.0, 1.0, alpha);
@@ -208,6 +214,8 @@ func (d *Dictionary) StringWidth(s string) float64 {
 }
 
 func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
+	debug.LogAndClearGlErrors(log.Default())
+
 	if len(s) == 0 {
 		return
 	}
@@ -217,6 +225,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// this out.
 	scale := height / float64(d.Data.Maxy-d.Data.Miny)
 	width := float32(d.figureWidth(s) * scale)
+	log.Printf("scale: %v, stride: %v, width: %v", scale, stride, width)
+	log.Printf("d.Data.D{x,y}: %v, %v", d.Data.Dx, d.Data.Dy)
 	x_pos := float32(x)
 	switch just {
 	case Center:
@@ -237,6 +247,9 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			}
 			prev = r
 			info := d.getInfo(r)
+			log.Printf("render char: x_pos: %f rune: %d\n", x_pos, r)
+			log.Printf("info: %+v\n", info)
+			log.Printf("d.Data.Maxy: %+v\n", d.Data.Maxy)
 			xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
 			xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
 			ytop := float32(d.Data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
@@ -274,6 +287,47 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			})
 			x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
 		}
+
+		// XXX: add a 'letter' that covers the entire viewport to show a slice of
+		// the entire glyph-grid texture... plz
+		numvs := uint16(len(strbuf.vs))
+		strbuf.is = append(strbuf.is,
+			numvs+0,
+			numvs+1,
+			numvs+2,
+			numvs+0,
+			numvs+2,
+			numvs+3,
+		)
+		strbuf.vs = append(strbuf.vs, []dictVert{
+			{
+				x: -1,
+				y: -1,
+				u: 0,
+				v: 1,
+			},
+			{
+				x: -1,
+				y: 1,
+				u: 0,
+				v: 0,
+			},
+			{
+				x: 1,
+				y: 1,
+				u: 1,
+				v: 0,
+			},
+			{
+				x: 1,
+				y: -1,
+				u: 1,
+				v: 1,
+			},
+		}...)
+
+		log.Printf("vxs: %v", strbuf.vs)
+		log.Printf("ixs: %v", strbuf.is)
 		strbuf.vbuffer = uint32(gl.GenBuffer())
 		gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
@@ -293,23 +347,40 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		x_pos -= width
 	}
 
+	debug.LogAndClearGlErrors(log.Default())
+
 	err := render.EnableShader("glop.font")
 	if err != nil {
 		panic(err)
 	}
 	defer render.EnableShader("")
 
+	debug.LogAndClearGlErrors(log.Default())
+
 	diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.Data.Scale, 1.0)/math.Pow(height, 1.0)
 	if diff > 0.45 {
 		diff = 0.45
 	}
+	log.Printf("diff: %f", diff)
 	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
 	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
-	gl.PushMatrix()
-	defer gl.PopMatrix()
-	gl.Translated(float64(x_pos), y, z)
-	gl.Scaled(scale, scale, 1)
+	debug.LogAndClearGlErrors(log.Default())
+
+	// We want to use the 0'th texture unit.
+	render.SetUniformI("glop.font", "tex", gl.TEXTURE0 + 0)
+
+	debug.LogAndClearGlErrors(log.Default())
+
+	{
+		log.Printf("current matrix mode: %q", debug.GetMatrixMode())
+
+		x, y, w, h := debug.GetViewport()
+		log.Printf("current viewport: %v %v %v %v", x, y, w, h)
+
+		near, far := debug.GetDepthRange()
+		log.Printf("depth range: %v %v", near, far)
+	}
 
 	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
 	defer gl.PopAttrib()
@@ -322,20 +393,20 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	gl.Enable(gl.TEXTURE_2D)
 	gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
 
-	gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
-
 	gl.EnableClientState(gl.VERTEX_ARRAY)
+	defer gl.DisableClientState(gl.VERTEX_ARRAY)
+	gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
 	gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
 
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
+	defer gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
+	gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
 
-	gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
+	// TODO(tmckee): let's use gl.QUADS and simplify indices considerably...
 	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
 
-	gl.DisableClientState(gl.VERTEX_ARRAY)
-	gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
-
+	debug.LogAndClearGlErrors(log.Default())
 }
 
 type subImage struct {
@@ -642,6 +713,7 @@ func (d *Dictionary) setupGlStuff() {
 		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
+		gl.ActiveTexture(gl.TEXTURE0+0)
 		gl.TexImage2D(
 			gl.TEXTURE_2D,
 			0,
@@ -650,7 +722,7 @@ func (d *Dictionary) setupGlStuff() {
 			d.Data.Dy,
 			0,
 			gl.ALPHA,
-			gl.UNSIGNED_BYTE,
+			gl.UNSIGNED_INT,
 			d.Data.Pix)
 
 		gl.Disable(gl.TEXTURE_2D)
