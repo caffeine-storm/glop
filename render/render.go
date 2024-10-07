@@ -16,7 +16,9 @@ func init() {
 	purge = make(chan bool)
 }
 
-// Queues a function to run on the render thread
+// Queues a function to run on the render thread.
+// TODO(tmckee): inject a GL dependency to the callback for testability and to
+// keep arbitrary code from calling GL off of the render thread.
 func Queue(f func()) {
 	render_funcs <- f
 }
