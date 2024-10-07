@@ -2,7 +2,10 @@ package render
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/debug"
 )
 
 // TODO(tmckee): refactor: map to gl.Program instead
@@ -87,5 +90,7 @@ func RegisterShader(name string, vertex, fragment []byte) error {
 	}
 
 	shader_progs[name] = gl.GLuint(program)
+
+	debug.LogAndClearGlErrors(log.Default())
 	return nil
 }

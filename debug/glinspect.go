@@ -2,6 +2,7 @@ package debug
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/go-gl-legacy/gl"
 )
@@ -38,4 +39,16 @@ func GetDepthRange() (float64, float64) {
 	buffer := []float64{0, 0}
 	gl.GetDoublev(gl.DEPTH_RANGE, buffer)
 	return buffer[0], buffer[1]
+}
+
+func LogAndClearGlErrors(logger *log.Logger) {
+	for {
+		glErr := gl.GetError()
+		if glErr == gl.NO_ERROR {
+			return
+		}
+
+		// TODO(tmckee): include the line number where we were called.
+		logger.Printf("GlError: %d\n", glErr)
+	}
 }
