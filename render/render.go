@@ -30,6 +30,9 @@ func Purge() {
 }
 
 func Init() {
+	// TODO(tmckee): this approach means we can't use multiple GL contexts from
+	// one process. Currently, this is only a problem for testing but we can fix
+	// it by spawning a render-goroutine per-context.
 	init_once.Do(func() {
 		go func() {
 			runtime.LockOSThread()
