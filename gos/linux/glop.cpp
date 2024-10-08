@@ -581,7 +581,7 @@ void GlopSwapBuffers() {
 }
 
 void GlopEnableVSync(int enable) {
-  // TODO: Implement
+  fprintf(stderr, "WARN: glop.cpp: GlopEnableVSync: unimplemented\n");
 }
 
 } // extern "C"
