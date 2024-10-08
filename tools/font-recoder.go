@@ -23,7 +23,6 @@ func main() {
 	wdy := 750
 
 	sys.Startup()
-	render.Init()
 	render.Queue(func() {
 		sys.CreateWindow(10, 10, wdx, wdy)
 		sys.EnableVSync(true)
