@@ -101,8 +101,14 @@ void GlopClearKeyEvent(GlopKeyEvent* event) {
   event->caps_lock = 0;
 }
 
+struct OsWindowData;
+typedef struct {
+	struct OsWindowData *data;
+} GlopWindowHandle;
+
 void GlopInit();
-void* GlopCreateWindow(
+// Returns an opaque handle for further window operations.
+GlopWindowHandle GlopCreateWindow(
     void* title,
     int x,
     int y,
@@ -116,6 +122,8 @@ void GlopGetWindowDims(int* x, int* y, int* dx, int* dy);
 void GlopGetInputEvents(void** _events_ret, void* _num_events, void* _horizon);
 void GlopEnableVSync(int enable);
 
+// Takes a handle returned from GlopCreateWindow.
+void GlopSetGlContext(GlopWindowHandle hdl);
 
 /*
 

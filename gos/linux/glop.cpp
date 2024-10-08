@@ -367,7 +367,7 @@ void glopSetCurrentContext(OsWindowData* data) {
   glXMakeCurrent(display, data->window, data->context);
 }
 
-void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
+GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
 //  ASSERT(!windowdata);
   windowdata = nw;
@@ -485,7 +485,7 @@ void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
 
   glopSetCurrentContext(nw);
 
-  return nw;
+  return GlopWindowHandle{nw};
 }
 
 
@@ -582,6 +582,10 @@ void GlopSwapBuffers() {
 
 void GlopEnableVSync(int enable) {
   fprintf(stderr, "WARN: glop.cpp: GlopEnableVSync: unimplemented\n");
+}
+
+void GlopSetGlContext(GlopWindowHandle hdl) {
+  glopSetCurrentContext(hdl.data);
 }
 
 } // extern "C"

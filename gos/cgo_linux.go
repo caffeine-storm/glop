@@ -13,6 +13,7 @@ import (
 
 type linuxSystemObject struct {
 	horizon int64
+	windowHandle C.GlopWindowHandle // Handle to native per-window data
 }
 
 var (
@@ -25,7 +26,9 @@ func (linux *linuxSystemObject) Startup() {
 	C.GlopInit()
 }
 
-func GetSystemInterface() system.Os {
+func GetSystemInterface() *linuxSystemObject {
+	// TODO(tmckee): we'll need to not just use the same module-constant
+	// everytime when we want multiple windows.
 	return &linux_system_object
 }
 
@@ -38,7 +41,7 @@ func (linux *linuxSystemObject) Quit() {
 }
 
 func (linux *linuxSystemObject) CreateWindow(x, y, width, height int) {
-	C.GlopCreateWindow(unsafe.Pointer(&(([]byte("linux window"))[0])), C.int(x), C.int(y), C.int(width), C.int(height))
+	linux.windowHandle = C.GlopCreateWindow(unsafe.Pointer(&(([]byte("linux window"))[0])), C.int(x), C.int(y), C.int(width), C.int(height))
 }
 
 func (linux *linuxSystemObject) SwapBuffers() {
@@ -114,4 +117,8 @@ func (linux *linuxSystemObject) EnableVSync(enable bool) {
 		_enable = 1
 	}
 	C.GlopEnableVSync(_enable)
+}
+
+func (linux *linuxSystemObject) SetGlContext() {
+	C.GlopSetGlContext(linux.windowHandle)
 }
