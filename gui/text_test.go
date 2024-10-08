@@ -136,8 +136,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		require.Nil(err)
 
 		render.Queue(func() {
-			// d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
-			d.RenderString("T", 0, 0, 0, d.MaxHeight(), Left)
+			d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
 			sys.SwapBuffers()
 		})
 		render.Purge()

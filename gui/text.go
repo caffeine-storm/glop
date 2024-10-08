@@ -42,7 +42,7 @@ const font_fragment_shader = `
   uniform float dist_max;
 
   void main() {
-    vec2 tpos = gl_TexCoord[0].st;
+    vec2 tpos = gl_TexCoord[0].xy;
     float dist = texture2D(tex, tpos).a;
     float alpha = smoothstep(dist_min, dist_max, dist);
     gl_FragColor = gl_Color * vec4(1.0, 1.0, 1.0, alpha);
@@ -52,6 +52,8 @@ const font_fragment_shader = `
 type runeInfo struct {
 	Pos         image.Rectangle
 	Bounds      image.Rectangle
+	// TODO(tmckee): Full_bounds seems to never get populated... this is either a
+	// problem with the data we're using or we can drop this field.
 	Full_bounds image.Rectangle
 	Advance     float64
 }
@@ -222,36 +224,45 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
 	// this out.
 	scale := height / float64(d.Data.Maxy-d.Data.Miny)
-	width := float32(d.figureWidth(s) * scale)
-	log.Printf("scale: %v, stride: %v, width: %v", scale, stride, width)
+	width_texunits := float32(d.figureWidth(s) * scale)
+	log.Printf("scale: %v, stride: %v, width: %v", scale, stride, width_texunits)
 	log.Printf("d.Data.D{x,y}: %v, %v", d.Data.Dx, d.Data.Dy)
-	x_pos := float32(x)
+	x_pos_geounits := float32(x)
+
+	height_geounits := 1.0
+	// TODO(tmckee): gaaah! Dy should not be glyph height!!!
+	height_texunits := float64(d.Data.Dy)
+	texunits_to_geounits := float32(height_geounits / height_texunits)
+
 	switch just {
 	case Center:
-		x_pos -= width / 2
+		// TODO(tmckee): we shouldn't add/substract things that have different units
+		x_pos_geounits -= width_texunits / 2
 	case Right:
-		x_pos -= width
+		// TODO(tmckee): we shouldn't add/substract things that have different units
+		x_pos_geounits -= width_texunits
 	}
 
 	strbuf, ok := d.strs[s]
 	if !ok {
 		// We have to actually render a string!
-		x_pos = 0
+		x_pos_geounits = 0
 		var prev rune
 		for _, r := range s {
 			// TODO(tmckee): why toss out the mapped value, then look it up again?!
 			if _, ok := d.Data.Kerning[prev]; ok {
-				x_pos += float32(d.Data.Kerning[prev][r])
+				x_pos_geounits += float32(d.Data.Kerning[prev][r])
 			}
 			prev = r
 			info := d.getInfo(r)
-			log.Printf("render char: x_pos: %f rune: %d\n", x_pos, r)
+			log.Printf("render char: x_pos: %f rune: %d\n", x_pos_geounits, r)
 			log.Printf("info: %+v\n", info)
 			log.Printf("d.Data.Maxy: %+v\n", d.Data.Maxy)
-			xleft := x_pos + float32(info.Full_bounds.Min.X)      //- float32(info.Full_bounds.Min.X-info.Bounds.Min.X)
-			xright := x_pos + float32(info.Full_bounds.Max.X)     //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
-			ytop := float32(d.Data.Maxy - info.Full_bounds.Max.Y) //- float32(info.Full_bounds.Min.Y-info.Bounds.Min.Y)
-			ybot := float32(d.Data.Maxy - info.Full_bounds.Min.Y) //+ float32(info.Full_bounds.Max.X-info.Bounds.Max.X)
+			xleft_geounits := x_pos_geounits
+			xright_geounits := x_pos_geounits + float32(info.Pos.Max.X-info.Pos.Min.X)*texunits_to_geounits
+			// TODO(tmckee): uh... what? shouldn't it just be ytop_geounits, ybot := scale, 0 ?
+			ytop_geounits := float32(1.0)
+			ybot_geounits := float32(0.0)
 			start := uint16(len(strbuf.vs))
 			strbuf.is = append(strbuf.is, start+0)
 			strbuf.is = append(strbuf.is, start+1)
@@ -259,70 +270,35 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			strbuf.is = append(strbuf.is, start+0)
 			strbuf.is = append(strbuf.is, start+2)
 			strbuf.is = append(strbuf.is, start+3)
-			strbuf.vs = append(strbuf.vs, dictVert{
-				x: xleft,
-				y: ytop,
-				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
-			})
-			strbuf.vs = append(strbuf.vs, dictVert{
-				x: xleft,
-				y: ybot,
-				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
-			})
-			strbuf.vs = append(strbuf.vs, dictVert{
-				x: xright,
-				y: ybot,
-				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
-			})
-			strbuf.vs = append(strbuf.vs, dictVert{
-				x: xright,
-				y: ytop,
-				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
-			})
-			x_pos += float32(info.Advance) // - float32((info.Full_bounds.Dx() - info.Bounds.Dx()))
-		}
 
-		// XXX: add a 'letter' that covers the entire viewport to show a slice of
-		// the entire glyph-grid texture... plz
-		numvs := uint16(len(strbuf.vs))
-		strbuf.is = append(strbuf.is,
-			numvs+0,
-			numvs+1,
-			numvs+2,
-			numvs+0,
-			numvs+2,
-			numvs+3,
-		)
-		strbuf.vs = append(strbuf.vs, []dictVert{
-			{
-				x: -1,
-				y: -1,
-				u: 0,
-				v: 1,
-			},
-			{
-				x: -1,
-				y: 1,
-				u: 0,
-				v: 0,
-			},
-			{
-				x: 1,
-				y: 1,
-				u: 1,
-				v: 0,
-			},
-			{
-				x: 1,
-				y: -1,
-				u: 1,
-				v: 1,
-			},
-		}...)
+			// Note: the texture is loaded 'upside down' so we flip our y-coordinates
+			// in texture-space.
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xleft_geounits,
+				y: ytop_geounits,
+				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
+			})
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xleft_geounits,
+				y: ybot_geounits,
+				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
+			})
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xright_geounits,
+				y: ybot_geounits,
+				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
+			})
+			strbuf.vs = append(strbuf.vs, dictVert{
+				x: xright_geounits,
+				y: ytop_geounits,
+				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
+				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
+			})
+			x_pos_geounits += float32(info.Advance) * texunits_to_geounits
+		}
 
 		log.Printf("vxs: %v", strbuf.vs)
 		log.Printf("ixs: %v", strbuf.is)
@@ -337,12 +313,12 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	}
 
 	// Reset x-pos
-	x_pos = float32(x)
+	x_pos_geounits = float32(x)
 	switch just {
 	case Center:
-		x_pos -= width / 2
+		x_pos_geounits -= width_texunits / 2
 	case Right:
-		x_pos -= width
+		x_pos_geounits -= width_texunits
 	}
 
 	debug.LogAndClearGlErrors(log.Default())
@@ -366,6 +342,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	debug.LogAndClearGlErrors(log.Default())
 
 	// We want to use the 0'th texture unit.
+	// TODO(tmckee): this seems to be getting an 'INVALID_VALUE' glerror back.
+	// Look into whether we've correctly looked up the uniform location.
 	render.SetUniformI("glop.font", "tex", gl.TEXTURE0 + 0)
 
 	debug.LogAndClearGlErrors(log.Default())
@@ -638,6 +616,8 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
 	var dict Dictionary
 	dict.Data.Pix = pim.Pix
+	// TODO(tmckee): Dy will be two glyphs tall in some cases; Dy should _not_
+	// get used as the height of a glyph!!!
 	dict.Data.Dx = pim.Bounds().Dx()
 	dict.Data.Dy = pim.Bounds().Dy()
 	dict.Data.Info = rune_info
