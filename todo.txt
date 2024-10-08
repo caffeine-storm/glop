@@ -7,12 +7,15 @@ tmckee: use type system to make initialization ordering constraints explicit
 
 tmckee: find a better debug-logging sol'n than println
 
-tmckee: use a xvfb instance for rendering tests
-
 tmckee: Make it so that 'go test ./...' builds the native library on-demand
 
 tmckee: find a way to work around needing LD_LIBRARY_PATH when running tests in
 subdirectories
+
+tmckee: in gos/linux/glop.cpp:
+    case XK_slash: ki = '/'; break;
+    case XK_space: ki = '/'; break;
+  ?? shouldn't that be a space, not a slash?
 
 If windows is ok with giving up the main thread we should switch to doing
 things with a Run() / Quit() mechanism instead of a for { Think() } mechanism.
