@@ -276,7 +276,7 @@ void GlopThink() {
           last_botched_time = event.xkey.time;
           continue;
         } else {
-          if(last_botched_release == event.xkey.keycode && last_botched_time == event.xkey.time) {
+          if(last_botched_release == int(event.xkey.keycode) && unsigned(last_botched_time) == event.xkey.time) {
             // ffffffffff
             last_botched_release = -1;
             last_botched_time = -1;
@@ -414,7 +414,7 @@ void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
       static const unsigned long MWM_DECOR_BORDER      = 1 << 1;
       static const unsigned long MWM_DECOR_RESIZEH     = 1 << 2;
       static const unsigned long MWM_DECOR_TITLE       = 1 << 3;
-      static const unsigned long MWM_DECOR_MENU        = 1 << 4;
+      //static const unsigned long MWM_DECOR_MENU        = 1 << 4;
       static const unsigned long MWM_DECOR_MINIMIZE    = 1 << 5;
       static const unsigned long MWM_DECOR_MAXIMIZE    = 1 << 6;
 
@@ -550,7 +550,7 @@ void GlopGetInputEvents(void** _events_ret, void* _num_events, void* _horizon) {
   glop_event_buffer = (GlopKeyEvent*)malloc(sizeof(GlopKeyEvent) * ret.size());
   *((GlopKeyEvent**)_events_ret) = glop_event_buffer;
   *((int*)_num_events) = ret.size();
-  for (int i = 0; i < ret.size(); i++) {
+  for (size_t i = 0; i < ret.size(); i++) {
     glop_event_buffer[i] = ret[i];
   }
 }
