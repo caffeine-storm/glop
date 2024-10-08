@@ -42,7 +42,7 @@ struct OsWindowData {
     XDestroyIC(inputcontext);
     XDestroyWindow(display, window);
   }
-  
+
   Window window;
   GLXContext context;
   XIC inputcontext;
@@ -51,12 +51,12 @@ struct OsWindowData {
 void GlopInit() {
   display = XOpenDisplay(NULL);
 //  ASSERT(display);
-  
+
   screen = DefaultScreen(display);
-  
+
   xim = XOpenIM(display, NULL, NULL, NULL);
 //  ASSERT(xim);
-  
+
   close_atom = XInternAtom(display, "WM_DELETE_WINDOW", false);
 }
 void glopShutDown() {
@@ -71,7 +71,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
   int x, y, winx, winy;
   unsigned int mask;
   XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
-  
+
   KeySym throwaway_lower, key;
   XConvertCase(sym, &throwaway_lower, &key);
 
@@ -103,7 +103,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     case XK_X: ki = tolower('X'); break;
     case XK_Y: ki = tolower('Y'); break;
     case XK_Z: ki = tolower('Z'); break;
-    
+
     case XK_0: ki = '0'; break;
     case XK_1: ki = '1'; break;
     case XK_2: ki = '2'; break;
@@ -114,7 +114,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     case XK_7: ki = '7'; break;
     case XK_8: ki = '8'; break;
     case XK_9: ki = '9'; break;
-    
+
     case XK_F1: ki = kKeyF1; break;
     case XK_F2: ki = kKeyF2; break;
     case XK_F3: ki = kKeyF3; break;
@@ -127,7 +127,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     case XK_F10: ki = kKeyF10; break;
     case XK_F11: ki = kKeyF11; break;
     case XK_F12: ki = kKeyF12; break;
-    
+
     case XK_KP_0: ki = kKeyPad0; break;
     case XK_KP_1: ki = kKeyPad1; break;
     case XK_KP_2: ki = kKeyPad2; break;
@@ -138,18 +138,18 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     case XK_KP_7: ki = kKeyPad7; break;
     case XK_KP_8: ki = kKeyPad8; break;
     case XK_KP_9: ki = kKeyPad9; break;
-    
+
     case XK_Left: ki = kKeyLeft; break;
     case XK_Right: ki = kKeyRight; break;
     case XK_Up: ki = kKeyUp; break;
     case XK_Down: ki = kKeyDown; break;
-    
+
     case XK_BackSpace: ki = kKeyBackspace; break;
     case XK_Tab: ki = kKeyTab; break;
     case XK_KP_Enter: ki = kKeyPadEnter; break;
     case XK_Return: ki = kKeyReturn; break;
     case XK_Escape: ki = kKeyEscape; break;
-    
+
     case XK_Shift_L: ki = kKeyLeftShift; break;
     case XK_Shift_R: ki = kKeyRightShift; break;
     case XK_Control_L: ki = kKeyLeftControl; break;
@@ -158,12 +158,12 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     case XK_Alt_R: ki = kKeyRightAlt; break;
     case XK_Super_L: ki = kKeyLeftGui; break;
     case XK_Super_R: ki = kKeyRightGui; break;
-    
+
     case XK_KP_Divide: ki = kKeyPadDivide; break;
     case XK_KP_Multiply: ki = kKeyPadMultiply; break;
     case XK_KP_Subtract: ki = kKeyPadSubtract; break;
     case XK_KP_Add: ki = kKeyPadAdd; break;
-    
+
     case XK_dead_grave: ki = '`'; break;
     case XK_minus: ki = '-'; break;
     case XK_equal: ki = '='; break;
@@ -177,7 +177,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     case XK_slash: ki = '/'; break;
     case XK_space: ki = '/'; break;
   }
-  
+
   if(ki == 0)
     return false;
 
@@ -196,7 +196,7 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
   int x, y, winx, winy;
   unsigned int mask;
   XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
-  
+
   GlopKey ki;
   if(button == Button1)
     ki = kMouseLButton;
@@ -211,7 +211,7 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
     ki = kMouseWheelDown;*/
   else
     return false;
-    
+
   ev->index = ki;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
@@ -228,7 +228,7 @@ static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, Glop
   int x, y, winx, winy;
   unsigned int mask;
   XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
-  
+
   ev->index = kMouseXAxis;
   ev->press_amt = dx;
   ev->timestamp = gt();
@@ -258,7 +258,7 @@ Window get_x_window() {
 }
 void GlopThink() {
   if(!windowdata) return;
-  
+
   OsWindowData *data = windowdata;
   XEvent event;
   int last_botched_release = -1;
@@ -266,7 +266,7 @@ void GlopThink() {
   while(XCheckIfEvent(display, &event, &EventTester, NULL)) {
     if((event.type == KeyPress || event.type == KeyRelease) && event.xkey.keycode < 256) {
       // X is kind of a cock and likes to send us hardware repeat messages for people holding buttons down. Why do you do this, X? Why do you have to make me hate you?
-      
+
       // So here's an algorithm ripped from some other source
       char kiz[32];
       XQueryKeymap(display, kiz);
@@ -285,10 +285,10 @@ void GlopThink() {
         }
       }
     }
-    
+
     last_botched_release = -1;
     last_botched_time = -1;
-    
+
     GlopKeyEvent ev;
     GlopClearKeyEvent(&ev);
     switch(event.type) {
@@ -296,31 +296,31 @@ void GlopThink() {
         char buf[2];
         KeySym sym;
         XComposeStatus status;
-        
+
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
-        
+
         if(SynthKey(sym, true, event, data->window, &ev))
           events.push_back(ev);
         break;
       }
-      
+
       case KeyRelease: {
         char buf[2];
         KeySym sym;
         XComposeStatus status;
-        
+
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
-        
+
         if(SynthKey(sym, false, event, data->window, &ev))
           events.push_back(ev);
         break;
       }
-      
+
       case ButtonPress:
         if(SynthButton(event.xbutton.button, true, event, data->window, &ev))
           events.push_back(ev);
         break;
-      
+
       case ButtonRelease:
         if(SynthButton(event.xbutton.button, false, event, data->window, &ev))
           events.push_back(ev);
@@ -334,21 +334,21 @@ void GlopThink() {
           events.push_back(ev2);
         }
         break;
-      
+
       case FocusIn:
         XSetICFocus(data->inputcontext);
         break;
-      
+
       case FocusOut:
         XUnsetICFocus(data->inputcontext);
         break;
-      
+
       case DestroyNotify:
           // TODO: probably want to do something here
 //        WindowDashDestroy(); // ffffff
 //        LOGF("destroed\n");
         return;
-    
+
       case ClientMessage :
         if(event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(close_atom)) {
 //            WindowDashDestroy();
@@ -371,12 +371,12 @@ void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
 //  ASSERT(!windowdata);
   windowdata = nw;
-     
+
   // this is bad
   if(x == -1) x = 100;
   if(y == -1) y = 100;
-  
-  
+
+
   int glxcv_params[] = {
     GLX_RGBA,
     GLX_RED_SIZE, 1,
@@ -389,21 +389,21 @@ void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
   };
   XVisualInfo *vinfo = glXChooseVisual(display, screen, glxcv_params);
 //  ASSERT(vinfo);
-  
+
   // Define the window attributes
   XSetWindowAttributes attribs;
   attribs.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask | PointerMotionMask | FocusChangeMask |
-  
+
   FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
                                                     PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
-                                                    EnterWindowMask | LeaveWindowMask;  
+                                                    EnterWindowMask | LeaveWindowMask;
   attribs.colormap = XCreateColormap( display, RootWindow(display, screen), vinfo->visual, AllocNone);
-  
+
 
   nw->window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, 0, vinfo->depth, InputOutput, vinfo->visual, CWColormap | CWEventMask, &attribs); // I don't know if I need anything further here
-  
 
-  
+
+
   {
     Atom WMHintsAtom = XInternAtom(display, "_MOTIF_WM_HINTS", false);
     if (WMHintsAtom) {
@@ -458,7 +458,7 @@ void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
       const unsigned char* HintsPtr = reinterpret_cast<const unsigned char*>(&Hints);
       XChangeProperty(display, nw->window, WMHintsAtom, WMHintsAtom, 32, PropModeReplace, HintsPtr, 5);
     }
-    
+
     // This is a hack to force some windows managers to disable resizing
     if(true)
     {
@@ -466,25 +466,25 @@ void* GlopCreateWindow(void* title, int x, int y, int width, int height) {
         XSizeHints.flags      = PMinSize | PMaxSize;
         XSizeHints.min_width  = XSizeHints.max_width  = width;
         XSizeHints.min_height = XSizeHints.max_height = height;
-        XSetWMNormalHints(display, nw->window, &XSizeHints); 
+        XSetWMNormalHints(display, nw->window, &XSizeHints);
     }
   }
 
   GlopSetTitle(nw, string((char*)(title)));
-  
+
   XSetWMProtocols(display, nw->window, &close_atom, 1);
   // I think in here is where we're meant to set window styles and stuff
-  
+
   nw->inputcontext = XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
 //  ASSERT(nw->inputcontext);
-  
+
   XMapWindow(display, nw->window);
-  
+
   nw->context = glXCreateContext(display, vinfo, NULL, True);
 //  ASSERT(nw->context);
-  
+
   glopSetCurrentContext(nw);
-  
+
   return nw;
 }
 
@@ -503,17 +503,17 @@ void glopGetWindowPosition(const OsWindowData* data, int* x, int* y) {
   //XWindowAttributes attrs;
   //XGetWindowAttributes(display, data->window, &attrs);
   // You'd think these functions would do something useful. Problem is, they work relative to the parent window. The parent window is the window that contains the titlebar, nothing more.
-  
+
   // What we really want to do is to get the absolute offset. The easiest way, as stupid as it is, is to get the cursor position - both relative to window and to world - and subtract.
-  
+
   // The irony, of course, is that Glop only cares so it can then subtract *again* and get the exact data that we're throwing away right now.
-  
+
   // mostly ignored
   Window root, child;
   int tx, ty, winx, winy;
   unsigned int mask;
   XQueryPointer(display, data->window, &root, &child, &tx, &ty, &winx, &winy, &mask);
-  
+
   *x = tx - winx;
   *y = ty - winy;
 }
