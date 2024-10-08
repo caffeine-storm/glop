@@ -16,6 +16,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func readPixels(width, height int) ([]byte, error) {
+	ret := make([]byte, width*height)
+	gl.ReadPixels(0, 0, width, height, gl.RED, gl.UNSIGNED_BYTE, ret)
+	return ret, nil
+}
+
 func TestDictionaryMaxHeight(t *testing.T) {
 	t.Run("default-height-is-zero", func(t *testing.T) {
 		require := require.New(t)
@@ -141,26 +147,27 @@ func TestDictionaryRenderString(t *testing.T) {
 		})
 		render.Purge()
 
-		// Read a frame-buffer file to peek at Xvfb's data
-		frameBufferBytes, err := os.ReadFile("../test/Xvfb_screen0")
-		if err != nil {
-			panic(err)
-		}
+		// Read all the pixels from the framebuffer through OpenGL
+		var frameBufferBytes []byte
+		render.Queue(func() {
 
-		// Verify that we read the right "shape" of file.
-		if len(frameBufferBytes) != 85152 {
-			fmt.Printf("frameBufferSize: %v\n", fmt.Errorf("The framebuffer file was %d bytes but expected %d", len(frameBufferBytes), 85152))
-		}
+			frameBufferBytes, err = readPixels(wdx, wdy)
+			if err != nil {
+				panic(fmt.Errorf("couldn't DumpWindow(): %v", err))
+			}
+		})
+		render.Purge()
 
 		// Verify that the framebuffer's contents match our expected image.
-		expectedImage := "../testdata/text/lol.xwd"
+		expectedImage := "../testdata/text/lol.pgm"
 		expectedBytes, err := os.ReadFile(expectedImage)
 		if err != nil {
 			panic(err)
 		}
 
-		rejectFileName := "../test/lol.rej.xwd"
-		cmp := bytes.Compare(expectedBytes, frameBufferBytes)
+		rejectFileName := "../test/lol.rej.pgm"
+		pgmBytes := append([]byte("P5 512 64 255 "), frameBufferBytes...)
+		cmp := bytes.Compare(expectedBytes, pgmBytes)
 		if cmp != 0 {
 			// For debug purposes, copy the bad frame buffer for offline inspection.
 			rejectFile, err := os.Create(rejectFileName)
@@ -169,7 +176,7 @@ func TestDictionaryRenderString(t *testing.T) {
 			}
 			defer rejectFile.Close()
 
-			io.Copy(rejectFile, bytes.NewReader(frameBufferBytes))
+			io.Copy(rejectFile, bytes.NewReader(pgmBytes))
 
 			t.Fatalf("framebuffer mismatch; see %s", rejectFileName)
 		}
