@@ -115,7 +115,8 @@ func TestDictionaryRenderString(t *testing.T) {
 	// such.
 	t.Run("CanRenderLol", func(t *testing.T) {
 		runtime.LockOSThread()
-		sys := system.Make(gos.GetSystemInterface())
+		linuxSystemObject := gos.GetSystemInterface()
+		sys := system.Make(linuxSystemObject)
 		// wdx := 640
 		// wdy := 512
 		wdx := 512
@@ -141,7 +142,9 @@ func TestDictionaryRenderString(t *testing.T) {
 		d, err := LoadDictionary(dictReader)
 		require.Nil(err)
 
+		// TODO(tmckee): make a 'test-render' that SetGlContext's for you.
 		render.Queue(func() {
+			linuxSystemObject.SetGlContext()
 			d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
 			sys.SwapBuffers()
 		})
@@ -150,6 +153,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		// Read all the pixels from the framebuffer through OpenGL
 		var frameBufferBytes []byte
 		render.Queue(func() {
+			linuxSystemObject.SetGlContext()
 
 			frameBufferBytes, err = readPixels(wdx, wdy)
 			if err != nil {

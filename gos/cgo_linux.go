@@ -12,13 +12,12 @@ import (
 )
 
 type linuxSystemObject struct {
-	horizon int64
+	horizon      int64
 	windowHandle C.GlopWindowHandle // Handle to native per-window data
 }
 
 var (
-	linux_system_object linuxSystemObject
-	_                   system.Os = &linux_system_object
+	_ system.Os = (*linuxSystemObject)(nil)
 )
 
 // Call after runtime.LockOSThread(), *NOT* in an init function
@@ -27,9 +26,7 @@ func (linux *linuxSystemObject) Startup() {
 }
 
 func GetSystemInterface() *linuxSystemObject {
-	// TODO(tmckee): we'll need to not just use the same module-constant
-	// everytime when we want multiple windows.
-	return &linux_system_object
+	return &linuxSystemObject{}
 }
 
 func (linux *linuxSystemObject) Run() {
