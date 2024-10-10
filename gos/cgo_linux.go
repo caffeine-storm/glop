@@ -117,5 +117,9 @@ func (linux *linuxSystemObject) EnableVSync(enable bool) {
 }
 
 func (linux *linuxSystemObject) SetGlContext() {
+	if linux.windowHandle.data == nil {
+		// We haven't initialized a GL context yet; do nothing
+		return
+	}
 	C.GlopSetGlContext(linux.windowHandle)
 }

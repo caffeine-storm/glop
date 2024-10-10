@@ -24,6 +24,7 @@ func main() {
 
 	sys.Startup()
 	render := render.MakeQueue()
+	render.StartProcessing(func(){})
 	render.Queue(func() {
 		sys.CreateWindow(10, 10, wdx, wdy)
 		sys.EnableVSync(true)

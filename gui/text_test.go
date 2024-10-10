@@ -73,12 +73,16 @@ func TestDictionaryGetInfo(t *testing.T) {
 		require := require.New(t)
 		assert := assert.New(t)
 
-		sys := system.Make(gos.GetSystemInterface())
+		linuxSystemObject := gos.GetSystemInterface()
+		sys := system.Make(linuxSystemObject)
 		wdx := 1024
 		wdy := 750
 
 		sys.Startup()
 		render := render.MakeQueue()
+		render.StartProcessing(func() {
+			linuxSystemObject.SetGlContext()
+		})
 		render.Queue(func() {
 			sys.CreateWindow(10, 10, wdx, wdy)
 			sys.EnableVSync(true)
@@ -124,6 +128,9 @@ func TestDictionaryRenderString(t *testing.T) {
 
 		sys.Startup()
 		render := render.MakeQueue()
+		render.StartProcessing(func() {
+			linuxSystemObject.SetGlContext()
+		})
 		render.Queue(func() {
 			sys.CreateWindow(0, 0, wdx, wdy)
 			sys.EnableVSync(true)
