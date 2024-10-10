@@ -2,8 +2,6 @@ package sprite
 
 import (
 	"fmt"
-	"github.com/runningwild/glop/util/algorithm"
-	"github.com/runningwild/yedparse"
 	"image"
 	_ "image/png"
 	"os"
@@ -11,6 +9,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/util/algorithm"
+	"github.com/runningwild/yedparse"
 )
 
 type sharedSprite struct {
@@ -29,7 +31,7 @@ type sharedSprite struct {
 	manager *Manager
 }
 
-func loadSharedSprite(path string) (*sharedSprite, error) {
+func loadSharedSprite(path string, renderQueue render.RenderQueue) (*sharedSprite, error) {
 	state, err := yed.ParseFromFile(filepath.Join(path, "state.xgml"))
 	if err != nil {
 		return nil, err
@@ -103,7 +105,7 @@ func loadSharedSprite(path string) (*sharedSprite, error) {
 		}
 	}
 	sort.Sort(frameIdArray(fids))
-	ss.connector, err = makeSheet(path, &anim.Graph, fids)
+	ss.connector, err = makeSheet(path, &anim.Graph, fids, renderQueue)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +125,7 @@ func loadSharedSprite(path string) (*sharedSprite, error) {
 			}
 		}
 		sort.Sort(frameIdArray(facing_fids))
-		sh, err := makeSheet(path, &anim.Graph, facing_fids)
+		sh, err := makeSheet(path, &anim.Graph, facing_fids, renderQueue)
 		if err != nil {
 			return nil, err
 		}

@@ -53,8 +53,9 @@ func LoadFontAs(path, name string) error {
 	return nil
 }
 
+// TODO(tmckee): clean: this function doesn't seem to be referenced anywhere.
+/*
 func GetDict(name string) *Dictionary {
-	// TODO(tmckee): this function doesn't seem to be referenced anywhere.
 	d, ok := basic_dicts[name]
 	if ok {
 		return d
@@ -62,6 +63,7 @@ func GetDict(name string) *Dictionary {
 	basic_dicts[name] = MakeDictionary(basic_fonts[name], 15)
 	return basic_dicts[name]
 }
+*/
 
 func drawText(font *truetype.Font, c *freetype.Context, color color.Color, rgba *image.RGBA, text string) (int, int) {
 	// Make 'rgba' transparent.

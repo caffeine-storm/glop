@@ -85,6 +85,8 @@ type dictData struct {
 type Dictionary struct {
 	Data dictData
 
+	renderQueue render.RenderQueue
+
 	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
 
@@ -213,6 +215,9 @@ func (d *Dictionary) StringWidth(s string) float64 {
 	return width
 }
 
+// TODO(tmckee): refactor uses of Dictionary to not require calling
+// RenderString/RenderParagraph from a render queue but dispatch the op
+// internally.
 func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
 	debug.LogAndClearGlErrors(log.Default())
 
@@ -648,17 +653,17 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 
 var init_once sync.Once
 
-func LoadDictionary(r io.Reader) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueue) (*Dictionary, error) {
 	// TODO(tmckee): we shouldn't coulple loading a dictionary to registering
 	// shaders.
 	init_once.Do(func() {
-		render.Queue(func() {
+		renderQueue.Queue(func() {
 			err := render.RegisterShader("glop.font", []byte(font_vertex_shader), []byte(font_fragment_shader))
 			if err != nil {
 				panic(err)
 			}
 		})
-		render.Purge()
+		renderQueue.Purge()
 	})
 
 	var d Dictionary
@@ -666,6 +671,7 @@ func LoadDictionary(r io.Reader) (*Dictionary, error) {
 	if err != nil {
 		return nil, err
 	}
+	d.renderQueue = renderQueue
 	d.setupGlStuff()
 	return &d, nil
 }
@@ -680,7 +686,7 @@ func (d *Dictionary) setupGlStuff() {
 	d.strs = make(map[string]strBuffer)
 	d.pars = make(map[string]strBuffer)
 
-	render.Queue(func() {
+	d.renderQueue.Queue(func() {
 		gl.Enable(gl.TEXTURE_2D)
 		d.texture = uint32(gl.GenTexture())
 		gl.Texture(d.texture).Bind(gl.TEXTURE_2D)

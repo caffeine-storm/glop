@@ -956,21 +956,24 @@ type TriggerFunc func(*Sprite, string)
 
 type Manager struct {
 	shared map[string]*sharedSprite
+	renderQueue render.RenderQueue
 	mutex  sync.Mutex
 }
 
-func MakeManager() *Manager {
-	var m Manager
-	m.shared = make(map[string]*sharedSprite)
-	return &m
+func MakeManager(rq render.RenderQueue) *Manager {
+	return &Manager{
+		shared: make(map[string]*sharedSprite),
+		renderQueue: rq,
+	}
 }
 
+// TODO(tmckee): refactor this to not use module-globals
 var the_manager *Manager
 var error_texture gl.Texture
 var gen_tex_once sync.Once
 
 func init() {
-	the_manager = MakeManager()
+	the_manager = MakeManager(render.MakeQueue())
 }
 func LoadSprite(path string) (*Sprite, error) {
 	return the_manager.LoadSprite(path)
@@ -982,7 +985,7 @@ func (m *Manager) loadSharedSprite(path string) error {
 		return nil
 	}
 
-	ss, err := loadSharedSprite(path)
+	ss, err := loadSharedSprite(path, m.renderQueue)
 	if err != nil {
 		return err
 	}
@@ -996,7 +999,7 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	// run before the opengl context is created, so we just check here and run
 	// it if we haven't run it before.
 	gen_tex_once.Do(func() {
-		render.Queue(func() {
+		m.renderQueue.Queue((func() {
 			gl.Enable(gl.TEXTURE_2D)
 			error_texture = gl.GenTexture()
 			error_texture.Bind(gl.TEXTURE_2D)
@@ -1012,7 +1015,7 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 			// https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glDrawPixels.xml
 			var guessedType gl.GLenum = gl.UNSIGNED_BYTE
 			glu.Build2DMipmaps(gl.TEXTURE_2D, 4, 1, 1, gl.RGBA, guessedType, pink)
-		})
+		}))
 	})
 
 	path = filepath.Clean(path)

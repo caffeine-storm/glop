@@ -48,9 +48,11 @@ type sheet struct {
 	// sheet on disk when not in use.
 	name string
 
+	// Channel for sending reference-count updates (+1/-1 only)
 	reference_chan chan int
-	load_chan      chan bool
-	texture        gl.Texture
+	// Channel for sending load/unload requests (true: load, false: unload)
+	load_chan chan bool
+	texture   gl.Texture
 }
 
 func (s *sheet) Load() {
@@ -146,14 +148,16 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
 	memory.FreeBlock(data)
 }
 
-func (s *sheet) loadRoutine() {
+func (s *sheet) loadRoutine(renderQueue render.RenderQueue) {
 	ready := make(chan bool, 1)
 	pixer := make(chan []byte)
 	for load := range s.load_chan {
 		if load {
 			go s.compose(pixer)
+			// TODO(tmckee): clean: we don't need to spawn a go-routine to send a
+			// func on a chan.
 			go func() {
-				render.Queue(func() {
+				renderQueue.Queue(func() {
 					s.makeTexture(pixer)
 					ready <- true
 				})
@@ -161,7 +165,7 @@ func (s *sheet) loadRoutine() {
 		} else {
 			go func() {
 				<-ready
-				render.Queue(func() {
+				renderQueue.Queue(func() {
 					s.texture.Delete()
 					s.texture = 0
 				})
@@ -172,8 +176,8 @@ func (s *sheet) loadRoutine() {
 
 // TODO: Need to set up a finalizer on this thing so that we don't keep this
 // texture memory around forever if we forget about it
-func (s *sheet) routine() {
-	go s.loadRoutine()
+func (s *sheet) routine(renderQueue render.RenderQueue) {
+	go s.loadRoutine(renderQueue)
 	references := 0
 	for load := range s.reference_chan {
 		if load < 0 {
@@ -206,7 +210,7 @@ func uniqueName(fids []frameId) string {
 	return fmt.Sprintf("%x.gob", h.Sum64())
 }
 
-func makeSheet(path string, anim *yed.Graph, fids []frameId) (*sheet, error) {
+func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.RenderQueue) (*sheet, error) {
 	s := sheet{path: path, anim: anim, name: uniqueName(fids)}
 	s.rects = make(map[frameId]FrameRect)
 	cy := 0
@@ -247,7 +251,7 @@ func makeSheet(path string, anim *yed.Graph, fids []frameId) (*sheet, error) {
 	s.dy = int(nextPowerOf2(uint32(cy + cdy)))
 	s.load_chan = make(chan bool)
 	s.reference_chan = make(chan int)
-	go s.routine()
+	go s.routine(renderQueue)
 
 	return &s, nil
 }

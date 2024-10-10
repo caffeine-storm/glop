@@ -9,10 +9,6 @@ type RenderQueue struct {
 	purge        chan bool
 }
 
-var (
-	defaultQueue RenderQueue
-)
-
 func (q *RenderQueue) loop() {
 	runtime.LockOSThread()
 	for {
@@ -45,27 +41,14 @@ func MakeQueue() RenderQueue {
 	return result
 }
 
+// TODO(tmckee): inject a GL dependency to given func for testability and to
+// keep arbitrary code from calling GL off of the render thread.
 func (q *RenderQueue) Queue(f func()) {
 	q.render_funcs <- f
 }
 
+// Waits until all render thread functions have been run
 func (q *RenderQueue) Purge() {
 	q.purge <- true
 	<- q.purge
-}
-
-func init() {
-	defaultQueue = MakeQueue()
-}
-
-// Queues a function to run on the render thread.
-// TODO(tmckee): inject a GL dependency to the callback for testability and to
-// keep arbitrary code from calling GL off of the render thread.
-func Queue(f func()) {
-	defaultQueue.Queue(f)
-}
-
-// Waits until all render thread functions have been run
-func Purge() {
-	defaultQueue.Purge()
 }

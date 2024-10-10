@@ -78,6 +78,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		wdy := 750
 
 		sys.Startup()
+		render := render.MakeQueue()
 		render.Queue(func() {
 			sys.CreateWindow(10, 10, wdx, wdy)
 			sys.EnableVSync(true)
@@ -91,7 +92,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 		require.Nil(err)
 
-		d, err := LoadDictionary(dictReader)
+		d, err := LoadDictionary(dictReader, render)
 		require.Nil(err)
 
 		emptyRuneInfo := runeInfo{}
@@ -122,6 +123,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		wdy := 64
 
 		sys.Startup()
+		render := render.MakeQueue()
 		render.Queue(func() {
 			sys.CreateWindow(0, 0, wdx, wdy)
 			sys.EnableVSync(true)
@@ -137,7 +139,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 		require.Nil(err)
 
-		d, err := LoadDictionary(dictReader)
+		d, err := LoadDictionary(dictReader, render)
 		require.Nil(err)
 
 		// TODO(tmckee): make a 'test-render' that SetGlContext's for you.
