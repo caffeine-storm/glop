@@ -148,7 +148,7 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
 	memory.FreeBlock(data)
 }
 
-func (s *sheet) loadRoutine(renderQueue render.RenderQueue) {
+func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {
 	ready := make(chan bool, 1)
 	pixer := make(chan []byte)
 	for load := range s.load_chan {
@@ -176,7 +176,7 @@ func (s *sheet) loadRoutine(renderQueue render.RenderQueue) {
 
 // TODO: Need to set up a finalizer on this thing so that we don't keep this
 // texture memory around forever if we forget about it
-func (s *sheet) routine(renderQueue render.RenderQueue) {
+func (s *sheet) routine(renderQueue render.RenderQueueInterface) {
 	go s.loadRoutine(renderQueue)
 	references := 0
 	for load := range s.reference_chan {
@@ -210,7 +210,7 @@ func uniqueName(fids []frameId) string {
 	return fmt.Sprintf("%x.gob", h.Sum64())
 }
 
-func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.RenderQueue) (*sheet, error) {
+func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.RenderQueueInterface) (*sheet, error) {
 	s := sheet{path: path, anim: anim, name: uniqueName(fids)}
 	s.rects = make(map[frameId]FrameRect)
 	cy := 0

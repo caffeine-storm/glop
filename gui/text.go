@@ -85,7 +85,7 @@ type dictData struct {
 type Dictionary struct {
 	Data dictData
 
-	renderQueue render.RenderQueue
+	renderQueue render.RenderQueueInterface
 
 	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
@@ -651,20 +651,23 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 	return &dict
 }
 
+// TODO(tmckee): this is wrong; we need on per renderQueue
 var init_once sync.Once
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueue) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface) (*Dictionary, error) {
 	// TODO(tmckee): we shouldn't coulple loading a dictionary to registering
 	// shaders.
-	init_once.Do(func() {
-		renderQueue.Queue(func() {
+	renderQueue.Queue(func() {
+		// TODO(tmckee): consider supporting 'run this once' through the queue
+		// interface as we'd want to track onceness per-queue.
+		init_once.Do(func() {
 			err := render.RegisterShader("glop.font", []byte(font_vertex_shader), []byte(font_fragment_shader))
 			if err != nil {
 				panic(err)
 			}
 		})
-		renderQueue.Purge()
 	})
+	renderQueue.Purge()
 
 	var d Dictionary
 	err := gob.NewDecoder(r).Decode(&d.Data)

@@ -956,11 +956,11 @@ type TriggerFunc func(*Sprite, string)
 
 type Manager struct {
 	shared map[string]*sharedSprite
-	renderQueue render.RenderQueue
+	renderQueue render.RenderQueueInterface
 	mutex  sync.Mutex
 }
 
-func MakeManager(rq render.RenderQueue) *Manager {
+func MakeManager(rq render.RenderQueueInterface) *Manager {
 	return &Manager{
 		shared: make(map[string]*sharedSprite),
 		renderQueue: rq,

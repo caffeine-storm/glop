@@ -5,13 +5,19 @@ import (
 	"runtime"
 )
 
-type RenderQueue struct {
+type RenderQueueInterface interface {
+	Queue(f func())
+	Purge()
+	StartProcessing(f func())
+}
+
+type renderQueue struct {
 	render_funcs chan func()
 	purge        chan bool
 	is_running   bool
 }
 
-func (q *RenderQueue) loop(fn func()) {
+func (q *renderQueue) loop(fn func()) {
 	runtime.LockOSThread()
 	for {
 		select {
@@ -34,24 +40,24 @@ func (q *RenderQueue) loop(fn func()) {
 	}
 }
 
-func MakeQueue() RenderQueue {
-	result := RenderQueue{
+func MakeQueue() RenderQueueInterface {
+	result := renderQueue{
 		render_funcs: make(chan func(), 1000),
 		purge:        make(chan bool),
 		is_running:   false,
 	}
 
-	return result
+	return &result
 }
 
 // TODO(tmckee): inject a GL dependency to given func for testability and to
 // keep arbitrary code from calling GL off of the render thread.
-func (q *RenderQueue) Queue(f func()) {
+func (q *renderQueue) Queue(f func()) {
 	q.render_funcs <- f
 }
 
 // Waits until all render thread functions have been run
-func (q *RenderQueue) Purge() {
+func (q *renderQueue) Purge() {
 	if !q.is_running {
 		log.Printf("WARNING: render.RenderQueue.Purge called on non-started queue")
 	}
@@ -59,7 +65,7 @@ func (q *RenderQueue) Purge() {
 	<-q.purge
 }
 
-func (q *RenderQueue) StartProcessing(fn func()) {
+func (q *renderQueue) StartProcessing(fn func()) {
 	if q.is_running {
 		panic("must not call 'StartProcessing' twice")
 	}

@@ -68,6 +68,16 @@ func TestDictionaryMaxHeight(t *testing.T) {
 	})
 }
 
+type discardQueue struct {}
+
+func (*discardQueue) Queue(f func()) {}
+func (*discardQueue) Purge() {}
+func (*discardQueue) StartProcessing(f func ()) {}
+
+func makeDiscardingRenderQueue() render.RenderQueueInterface {
+	return &discardQueue{}
+}
+
 func TestDictionaryGetInfo(t *testing.T) {
 	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
 		require := require.New(t)
@@ -79,7 +89,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		wdy := 750
 
 		sys.Startup()
-		render := render.MakeQueue()
+		render := makeDiscardingRenderQueue()
 		render.StartProcessing(func() {
 			linuxSystemObject.SetGlContext()
 		})
@@ -164,7 +174,7 @@ func TestDictionaryRenderString(t *testing.T) {
 
 			frameBufferBytes, err = readPixels(wdx, wdy)
 			if err != nil {
-				panic(fmt.Errorf("couldn't DumpWindow(): %v", err))
+				panic(fmt.Errorf("couldn't readPixels: %v", err))
 			}
 		})
 		render.Purge()

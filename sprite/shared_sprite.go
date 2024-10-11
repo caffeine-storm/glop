@@ -31,7 +31,7 @@ type sharedSprite struct {
 	manager *Manager
 }
 
-func loadSharedSprite(path string, renderQueue render.RenderQueue) (*sharedSprite, error) {
+func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sharedSprite, error) {
 	state, err := yed.ParseFromFile(filepath.Join(path, "state.xgml"))
 	if err != nil {
 		return nil, err
