@@ -37,7 +37,7 @@ func (q *renderQueue) loop() {
 	}
 }
 
-func MakeQueue(initialization func ()) RenderQueueInterface {
+func MakeQueue(initialization func()) RenderQueueInterface {
 	result := renderQueue{
 		render_funcs: make(chan func(), 1000),
 		purge:        make(chan bool),

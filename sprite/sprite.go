@@ -959,16 +959,16 @@ type FrameRect struct {
 type TriggerFunc func(*Sprite, string)
 
 type Manager struct {
-	shared map[string]*sharedSprite
-	renderQueue render.RenderQueueInterface
+	shared        map[string]*sharedSprite
+	renderQueue   render.RenderQueueInterface
 	error_texture gl.Texture
-	gen_tex_once sync.Once
-	mutex  sync.Mutex
+	gen_tex_once  sync.Once
+	mutex         sync.Mutex
 }
 
 func MakeManager(rq render.RenderQueueInterface) *Manager {
 	return &Manager{
-		shared: make(map[string]*sharedSprite),
+		shared:      make(map[string]*sharedSprite),
 		renderQueue: rq,
 	}
 }

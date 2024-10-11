@@ -50,8 +50,8 @@ const font_fragment_shader = `
 `
 
 type runeInfo struct {
-	Pos         image.Rectangle
-	Bounds      image.Rectangle
+	Pos    image.Rectangle
+	Bounds image.Rectangle
 	// TODO(tmckee): Full_bounds seems to never get populated... this is either a
 	// problem with the data we're using or we can drop this field.
 	Full_bounds image.Rectangle
@@ -349,7 +349,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// We want to use the 0'th texture unit.
 	// TODO(tmckee): this seems to be getting an 'INVALID_VALUE' glerror back.
 	// Look into whether we've correctly looked up the uniform location.
-	render.SetUniformI("glop.font", "tex", gl.TEXTURE0 + 0)
+	render.SetUniformI("glop.font", "tex", gl.TEXTURE0+0)
 
 	debug.LogAndClearGlErrors(log.Default())
 
@@ -700,7 +700,7 @@ func (d *Dictionary) setupGlStuff() {
 		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-		gl.ActiveTexture(gl.TEXTURE0+0)
+		gl.ActiveTexture(gl.TEXTURE0 + 0)
 		gl.TexImage2D(
 			gl.TEXTURE_2D,
 			0,
