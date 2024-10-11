@@ -741,7 +741,11 @@ func (s *Sprite) Bind() (x, y, x2, y2 float64) {
 	} else if rect, ok = s.shared.facings[s.facing].rects[fid]; ok {
 		sh = s.shared.facings[s.facing]
 	} else {
-		error_texture.Bind(gl.TEXTURE_2D)
+		// TODO(tmckee): bit of train wreck expression here
+		// It would be better for this function to return an error instead of
+		// expecting a human to see that a visual got flagged for error (at least,
+		// I think that's what this expects).
+		s.shared.manager.error_texture.Bind(gl.TEXTURE_2D)
 		return
 	}
 	sh.texture.Bind(gl.TEXTURE_2D)
@@ -957,6 +961,8 @@ type TriggerFunc func(*Sprite, string)
 type Manager struct {
 	shared map[string]*sharedSprite
 	renderQueue render.RenderQueueInterface
+	error_texture gl.Texture
+	gen_tex_once sync.Once
 	mutex  sync.Mutex
 }
 
@@ -967,17 +973,6 @@ func MakeManager(rq render.RenderQueueInterface) *Manager {
 	}
 }
 
-// TODO(tmckee): refactor this to not use module-globals
-var the_manager *Manager
-var error_texture gl.Texture
-var gen_tex_once sync.Once
-
-func init() {
-	the_manager = MakeManager(render.MakeQueue(func(){}))
-}
-func LoadSprite(path string) (*Sprite, error) {
-	return the_manager.LoadSprite(path)
-}
 func (m *Manager) loadSharedSprite(path string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -985,6 +980,8 @@ func (m *Manager) loadSharedSprite(path string) error {
 		return nil
 	}
 
+	// TODO(tmckee): we shouldn't load something from disk while holding a mutex.
+	// We can use double-locking instead.
 	ss, err := loadSharedSprite(path, m.renderQueue)
 	if err != nil {
 		return err
@@ -998,16 +995,17 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	// We can't run this during an init() function because it will get queued to
 	// run before the opengl context is created, so we just check here and run
 	// it if we haven't run it before.
-	gen_tex_once.Do(func() {
+	m.gen_tex_once.Do(func() {
 		m.renderQueue.Queue((func() {
 			gl.Enable(gl.TEXTURE_2D)
-			error_texture = gl.GenTexture()
-			error_texture.Bind(gl.TEXTURE_2D)
+			m.error_texture = gl.GenTexture()
+			m.error_texture.Bind(gl.TEXTURE_2D)
 			gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+			// TODO(tmckee): this isn't pink; it's purple!
 			pink := []byte{255, 0, 255, 255}
 
 			// TODO(tmckee): what is the correct 'type'? See
@@ -1019,6 +1017,9 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	})
 
 	path = filepath.Clean(path)
+	// TODO(tmckee): we lock, maybe load the sprite and write it to the protected
+	// map, unlock, then lock, then read from the protected map, then unlock. We
+	// can avoid some of the lock churn here.
 	err := m.loadSharedSprite(path)
 	if err != nil {
 		return nil, err
@@ -1026,6 +1027,7 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	var s Sprite
 	m.mutex.Lock()
 	s.shared = m.shared[path]
+	// TODO(tmckee): use a 'defer' here
 	m.mutex.Unlock()
 	s.anim_node = s.shared.anim_start
 	s.state_node = s.shared.state_start

@@ -1,15 +1,36 @@
 package sprite_test
 
 import (
+	"fmt"
+
 	"github.com/orfjackal/gospec/src/gospec"
 	. "github.com/orfjackal/gospec/src/gospec"
+	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/sprite"
 )
 
+func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
+	discardQueue := rendertest.MakeDiscardingRenderQueue()
+	spriteMan := sprite.MakeManager(discardQueue)
+
+	result := []*sprite.Sprite{}
+
+	for _, spritePath := range sprite_paths {
+		s, err := spriteMan.LoadSprite(spritePath)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't load sprite at path %q: %v", spritePath, err)
+		}
+		result = append(result, s)
+	}
+
+	return result, nil
+}
+
 func LoadSpriteSpec(c gospec.Context) {
 	c.Specify("Sample sprite loads correctly", func() {
-		s, err := sprite.LoadSprite("test_sprite")
+		sList, err := loadSprites("test_sprite")
 		c.Expect(err, Equals, nil)
+		s := sList[0]
 		for i := 0; i < 2000; i++ {
 			s.Think(50)
 		}
@@ -43,8 +64,9 @@ func LoadSpriteSpec(c gospec.Context) {
 
 func CommandNSpec(c gospec.Context) {
 	c.Specify("Sample sprite loads correctly", func() {
-		s, err := sprite.LoadSprite("test_sprite")
+		sList, err := loadSprites("test_sprite")
 		c.Expect(err, Equals, nil)
+		s := sList[0]
 		for i := 0; i < 2000; i++ {
 			s.Think(50)
 		}
@@ -72,10 +94,9 @@ func CommandNSpec(c gospec.Context) {
 
 func SyncSpec(c gospec.Context) {
 	c.Specify("Sample sprite loads correctly", func() {
-		s1, err := sprite.LoadSprite("test_sprite")
+		sList, err := loadSprites("test_sprite", "test_sprite")
 		c.Expect(err, Equals, nil)
-		s2, err := sprite.LoadSprite("test_sprite")
-		c.Expect(err, Equals, nil)
+		s1, s2 := sList[0], sList[1]
 		sprite.CommandSync([]*sprite.Sprite{s1, s2}, [][]string{[]string{"melee"}, []string{"defend", "damaged"}}, "hit")
 		hit := false
 		for i := 0; i < 20; i++ {
