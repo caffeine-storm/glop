@@ -72,7 +72,7 @@ type discardQueue struct {}
 
 func (*discardQueue) Queue(f func()) {}
 func (*discardQueue) Purge() {}
-func (*discardQueue) StartProcessing(f func ()) {}
+func (*discardQueue) StartProcessing() {}
 
 func makeDiscardingRenderQueue() render.RenderQueueInterface {
 	return &discardQueue{}
@@ -90,9 +90,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 
 		sys.Startup()
 		render := makeDiscardingRenderQueue()
-		render.StartProcessing(func() {
-			linuxSystemObject.SetGlContext()
-		})
+		render.StartProcessing()
 		render.Queue(func() {
 			sys.CreateWindow(10, 10, wdx, wdy)
 			sys.EnableVSync(true)
@@ -137,11 +135,8 @@ func TestDictionaryRenderString(t *testing.T) {
 		wdy := 64
 
 		sys.Startup()
-		render := render.MakeQueue()
-		render.StartProcessing(func() {
-			linuxSystemObject.SetGlContext()
-		})
-		render.Queue(func() {
+		render := render.MakeQueue(func() {
+			// TODO(tmckee): DRY out creating a window
 			sys.CreateWindow(0, 0, wdx, wdy)
 			sys.EnableVSync(true)
 			err := gl.Init()
@@ -151,6 +146,7 @@ func TestDictionaryRenderString(t *testing.T) {
 			gl.Enable(gl.BLEND)
 			gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 		})
+		render.StartProcessing()
 
 		require := require.New(t)
 		dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
@@ -161,6 +157,8 @@ func TestDictionaryRenderString(t *testing.T) {
 
 		// TODO(tmckee): make a 'test-render' that SetGlContext's for you.
 		render.Queue(func() {
+			// TODO(tmckee): with initializtion bound to render queue construction,
+			// this call should no longer be necessary.
 			linuxSystemObject.SetGlContext()
 			d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
 			sys.SwapBuffers()
@@ -170,6 +168,8 @@ func TestDictionaryRenderString(t *testing.T) {
 		// Read all the pixels from the framebuffer through OpenGL
 		var frameBufferBytes []byte
 		render.Queue(func() {
+			// TODO(tmckee): with initializtion bound to render queue construction,
+			// this call should no longer be necessary.
 			linuxSystemObject.SetGlContext()
 
 			frameBufferBytes, err = readPixels(wdx, wdy)

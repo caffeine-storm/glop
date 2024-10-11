@@ -8,7 +8,7 @@ import (
 type RenderQueueInterface interface {
 	Queue(f func())
 	Purge()
-	StartProcessing(f func())
+	StartProcessing()
 }
 
 type renderQueue struct {
@@ -17,18 +17,15 @@ type renderQueue struct {
 	is_running   bool
 }
 
-func (q *renderQueue) loop(fn func()) {
-	runtime.LockOSThread()
+func (q *renderQueue) loop() {
 	for {
 		select {
 		case f := <-q.render_funcs:
-			fn() // XXX: T_T: BAD: chicken and egg problem w.r.t. initializing opengl _on_ the render thread...
 			f()
 		case <-q.purge:
 			for {
 				select {
 				case f := <-q.render_funcs:
-					fn() // XXX: T_T: BAD: chicken and egg problem w.r.t. initializing opengl _on_ the render thread...
 					f()
 				default:
 					goto purged
@@ -40,13 +37,19 @@ func (q *renderQueue) loop(fn func()) {
 	}
 }
 
-func MakeQueue() RenderQueueInterface {
+func MakeQueue(initialization func ()) RenderQueueInterface {
 	result := renderQueue{
 		render_funcs: make(chan func(), 1000),
 		purge:        make(chan bool),
 		is_running:   false,
 	}
 
+	// We're guaranteed that this render job will run first. We can include our
+	// own initialization that should happen on the loop's thread.
+	result.Queue(func() {
+		runtime.LockOSThread()
+		initialization()
+	})
 	return &result
 }
 
@@ -65,10 +68,10 @@ func (q *renderQueue) Purge() {
 	<-q.purge
 }
 
-func (q *renderQueue) StartProcessing(fn func()) {
+func (q *renderQueue) StartProcessing() {
 	if q.is_running {
 		panic("must not call 'StartProcessing' twice")
 	}
 	q.is_running = true
-	go q.loop(fn)
+	go q.loop()
 }
