@@ -145,11 +145,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		d, err := LoadDictionary(dictReader, render)
 		require.Nil(err)
 
-		// TODO(tmckee): make a 'test-render' that SetGlContext's for you.
 		render.Queue(func() {
-			// TODO(tmckee): with initializtion bound to render queue construction,
-			// this call should no longer be necessary.
-			linuxSystemObject.SetGlContext()
 			d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
 			sys.SwapBuffers()
 		})
@@ -158,10 +154,6 @@ func TestDictionaryRenderString(t *testing.T) {
 		// Read all the pixels from the framebuffer through OpenGL
 		var frameBufferBytes []byte
 		render.Queue(func() {
-			// TODO(tmckee): with initializtion bound to render queue construction,
-			// this call should no longer be necessary.
-			linuxSystemObject.SetGlContext()
-
 			frameBufferBytes, err = readPixels(wdx, wdy)
 			if err != nil {
 				panic(fmt.Errorf("couldn't readPixels: %v", err))
