@@ -23,9 +23,7 @@ func main() {
 	wdy := 750
 
 	sys.Startup()
-	render := render.MakeQueue()
-	render.StartProcessing(func(){})
-	render.Queue(func() {
+	render := render.MakeQueue(func() {
 		sys.CreateWindow(10, 10, wdx, wdy)
 		sys.EnableVSync(true)
 		err := gl.Init()
@@ -35,6 +33,7 @@ func main() {
 		gl.Enable(gl.BLEND)
 		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	})
+	render.StartProcessing()
 
 	dictReader, err := os.Open(fromFile)
 	if err != nil {

@@ -973,7 +973,7 @@ var error_texture gl.Texture
 var gen_tex_once sync.Once
 
 func init() {
-	the_manager = MakeManager(render.MakeQueue())
+	the_manager = MakeManager(render.MakeQueue(func(){}))
 }
 func LoadSprite(path string) (*Sprite, error) {
 	return the_manager.LoadSprite(path)

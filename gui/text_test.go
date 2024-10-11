@@ -11,6 +11,7 @@ import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -68,16 +69,6 @@ func TestDictionaryMaxHeight(t *testing.T) {
 	})
 }
 
-type discardQueue struct {}
-
-func (*discardQueue) Queue(f func()) {}
-func (*discardQueue) Purge() {}
-func (*discardQueue) StartProcessing() {}
-
-func makeDiscardingRenderQueue() render.RenderQueueInterface {
-	return &discardQueue{}
-}
-
 func TestDictionaryGetInfo(t *testing.T) {
 	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
 		require := require.New(t)
@@ -89,8 +80,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		wdy := 750
 
 		sys.Startup()
-		render := makeDiscardingRenderQueue()
-		render.StartProcessing()
+		render := rendertest.MakeDiscardingRenderQueue()
 		render.Queue(func() {
 			sys.CreateWindow(10, 10, wdx, wdy)
 			sys.EnableVSync(true)
