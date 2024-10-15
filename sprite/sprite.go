@@ -1020,6 +1020,8 @@ func (m *Manager) spriteForPath(path string) (*Sprite, error) {
 	}, nil
 }
 
+// TODO(tmckee): find a way to support checking/blocking for a sprite to finish
+// loading. Right now, the tests just race to actually load/cache-to-disk them.
 func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	// We can't run this during an init() function because it will get queued to
 	// run before the opengl context is created, so we just check here and run
