@@ -25,9 +25,9 @@ func FsByteBankSpec(c gospec.Context) {
 
 		c.Specify("returns a 'miss' when reading", func() {
 			data, ok, err := bank.Read("p1", "p2")
-			c.Expect(data, gospec.Equals, nil)
+			c.Expect(err, gospec.IsNil)
+			c.Expect(data == nil, gospec.IsTrue)
 			c.Expect(ok, gospec.Equals, false)
-			c.Expect(err, gospec.Equals, nil)
 		})
 	})
 }

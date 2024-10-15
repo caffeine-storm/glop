@@ -1,18 +1,16 @@
 package sprite
 
 import (
-	"encoding/binary"
-	"errors"
 	"fmt"
 	"hash/fnv"
 	"image"
 	"image/draw"
-	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/go-gl-legacy/glu"
+	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/render"
 	yed "github.com/runningwild/yedparse"
 )
@@ -38,61 +36,6 @@ func (fia frameIdArray) Swap(i, j int) {
 	fia[i], fia[j] = fia[j], fia[i]
 }
 
-// TODO(tmckee): don't use two strings for the key!
-type byteBank interface {
-	Read(p1, p2 string) ([]byte, bool, error)
-	Write(p1, p2 string, data []byte) error
-}
-
-type fsByteBank struct{}
-
-func (*fsByteBank) Read(p1, p2 string) ([]byte, bool, error) {
-	// TODO(tmckee): DRY this out
-	filename := filepath.Join(p1, p2)
-	f, err := os.Open(filename)
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			// If the file doesn't exist, we just haven't cached at this path yet.
-			return nil, false, nil
-		}
-		// Other errors indicate something fatal.
-		return nil, false, fmt.Errorf("couldn't open file %q: %v", filename, err)
-	}
-	defer f.Close()
-
-	var length int32
-	err = binary.Read(f, binary.LittleEndian, &length)
-	if err != nil {
-		return nil, false, fmt.Errorf("couldn't read length prefix: %v", err)
-	}
-
-	buf := make([]byte, length)
-	_, err = f.Read(buf)
-	if err != nil {
-		return nil, true, fmt.Errorf("couldn't read payload: %v", err)
-	}
-
-	return buf, true, nil
-}
-
-func (*fsByteBank) Write(p1, p2 string, data []byte) error {
-	filename := filepath.Join(p1, p2)
-
-	f, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("couldn't os.Create(%q): %v", filename, err)
-	}
-	defer f.Close()
-
-	binary.Write(f, binary.LittleEndian, int32(len(data)))
-	_, err = f.Write(data)
-	if err != nil {
-		return fmt.Errorf("coudln't write to file %q: %v", filename, err)
-	}
-
-	return nil
-}
-
 // A sheet contains a group of frames of animations indexed by frameId
 type sheet struct {
 	rects  map[frameId]FrameRect
@@ -111,7 +54,7 @@ type sheet struct {
 	load_chan chan bool
 	texture   gl.Texture
 
-	pixelDataCache byteBank
+	pixelDataCache cache.ByteBank
 }
 
 func (s *sheet) Load() {
@@ -256,7 +199,7 @@ func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.
 		path:           path,
 		anim:           anim,
 		name:           uniqueName(fids),
-		pixelDataCache: new(fsByteBank),
+		pixelDataCache: new(cache.FsByteBank),
 	}
 	s.rects = make(map[frameId]FrameRect)
 	cy := 0
