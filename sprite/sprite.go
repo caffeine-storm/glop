@@ -1008,11 +1008,7 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 			// TODO(tmckee): this isn't pink; it's purple!
 			pink := []byte{255, 0, 255, 255}
 
-			// TODO(tmckee): what is the correct 'type'? See
-			// https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluBuild2DMipmaps.xml
-			// https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glDrawPixels.xml
-			var guessedType gl.GLenum = gl.INT
-			glu.Build2DMipmaps(gl.TEXTURE_2D, 4, 1, 1, gl.RGBA, guessedType, pink)
+			glu.Build2DMipmaps(gl.TEXTURE_2D, 4, 1, 1, gl.RGBA, gl.INT, pink)
 		}))
 	})
 

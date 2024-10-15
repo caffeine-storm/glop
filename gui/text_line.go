@@ -160,9 +160,7 @@ func (w *TextLine) figureDims() {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	// TODO(tmckee): what is the correct 'type'?
-	var guessedType gl.GLenum = gl.UNSIGNED_BYTE
-	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, w.rgba.Bounds().Dx(), w.rgba.Bounds().Dy(), gl.RGBA, guessedType, w.rgba.Pix)
+	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, w.rgba.Bounds().Dx(), w.rgba.Bounds().Dy(), gl.RGBA, gl.INT, w.rgba.Pix)
 	gl.Disable(gl.TEXTURE_2D)
 }
 
