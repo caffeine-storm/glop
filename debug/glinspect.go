@@ -58,7 +58,6 @@ func LogAndClearGlErrors(logger *log.Logger) {
 			return
 		}
 
-		// TODO(tmckee): include the line number where we were called.
 		logger.Printf("GlError(%s:%d): 0x%04x\n", file, line, glErr)
 	}
 }
