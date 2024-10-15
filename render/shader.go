@@ -8,11 +8,10 @@ import (
 	"github.com/runningwild/glop/debug"
 )
 
-// TODO(tmckee): refactor: map to gl.Program instead
-var shader_progs map[string]gl.GLuint
+var shader_progs map[string]gl.Program
 
 func init() {
-	shader_progs = make(map[string]gl.GLuint)
+	shader_progs = make(map[string]gl.Program)
 }
 
 type shaderError string
@@ -31,27 +30,25 @@ func EnableShader(name string) error {
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to use unknown shader '%s'", name))
 	}
-	gl.Program(prog_obj).Use()
+	prog_obj.Use()
 	return nil
 }
 
 func SetUniformI(shader, variable string, n int) error {
-	progid, ok := shader_progs[shader]
+	prog, ok := shader_progs[shader]
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to set a uniform in an unknown shader '%s'", shader))
 	}
-	prog := gl.Program(progid)
 	loc := prog.GetUniformLocation(variable)
 	loc.Uniform1i(n)
 	return nil
 }
 
 func SetUniformF(shader, variable string, f float32) error {
-	progid, ok := shader_progs[shader]
+	prog, ok := shader_progs[shader]
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to set a uniform in an unknown shader '%s'", shader))
 	}
-	prog := gl.Program(progid)
 	loc := prog.GetUniformLocation(variable)
 	loc.Uniform1f(f)
 	return nil
@@ -59,7 +56,7 @@ func SetUniformF(shader, variable string, f float32) error {
 
 // TODO(tmckee): refactor: this should take strings, not []byte? Maybe?
 func RegisterShader(name string, vertex, fragment []byte) error {
-	if _, ok := shader_progs[name]; ok {
+	if _, notOk := shader_progs[name]; notOk {
 		return shaderError(fmt.Sprintf("Tried to register a shader called '%s' twice", name))
 	}
 
@@ -89,7 +86,7 @@ func RegisterShader(name string, vertex, fragment []byte) error {
 		return shaderError(fmt.Sprintf("Failed to link shader '%s': %v", name, did_compile))
 	}
 
-	shader_progs[name] = gl.GLuint(program)
+	shader_progs[name] = program
 
 	debug.LogAndClearGlErrors(log.Default())
 	return nil
