@@ -26,11 +26,11 @@ func EnableShader(name string) error {
 		gl.Program(0).Use()
 		return nil
 	}
-	prog_obj, ok := shader_progs[name]
+	prog, ok := shader_progs[name]
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to use unknown shader '%s'", name))
 	}
-	prog_obj.Use()
+	prog.Use()
 	return nil
 }
 
