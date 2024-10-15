@@ -16,8 +16,18 @@ func TestCacheSpecs(t *testing.T) {
 }
 
 func FsByteBankSpec(c gospec.Context) {
-	c.Specify("An FsByteBank can be constructed", func() {
+	c.Specify("An empty FsByteBank", func() {
 		bank := &cache.FsByteBank{}
-		c.Expect(bank, gospec.Not(gospec.Equals), nil)
+
+		c.Specify("can be constructed", func() {
+			c.Expect(bank, gospec.Not(gospec.Equals), nil)
+		})
+
+		c.Specify("returns a 'miss' when reading", func() {
+			data, ok, err := bank.Read("p1", "p2")
+			c.Expect(data, gospec.Equals, nil)
+			c.Expect(ok, gospec.Equals, false)
+			c.Expect(err, gospec.Equals, nil)
+		})
 	})
 }
