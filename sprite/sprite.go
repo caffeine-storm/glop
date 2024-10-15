@@ -1005,7 +1005,6 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-			// TODO(tmckee): this isn't pink; it's purple!
 			pink := []byte{255, 0, 255, 255}
 
 			glu.Build2DMipmaps(gl.TEXTURE_2D, 4, 1, 1, gl.RGBA, gl.INT, pink)
