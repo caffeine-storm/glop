@@ -21,7 +21,7 @@ import (
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
-const font_vertex_shader = `
+const font_vertex_shader string = `
   #version 120
   varying vec3 pos;
 
@@ -35,7 +35,7 @@ const font_vertex_shader = `
   }
 `
 
-const font_fragment_shader = `
+const font_fragment_shader string = `
   #version 120
   uniform sampler2D tex;
   uniform float dist_min;
@@ -661,7 +661,7 @@ func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface) (*Dict
 		// TODO(tmckee): consider supporting 'run this once' through the queue
 		// interface as we'd want to track onceness per-queue.
 		init_once.Do(func() {
-			err := render.RegisterShader("glop.font", []byte(font_vertex_shader), []byte(font_fragment_shader))
+			err := render.RegisterShader("glop.font", font_vertex_shader, font_fragment_shader)
 			if err != nil {
 				panic(err)
 			}

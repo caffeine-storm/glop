@@ -54,14 +54,13 @@ func SetUniformF(shader, variable string, f float32) error {
 	return nil
 }
 
-// TODO(tmckee): refactor: this should take strings, not []byte? Maybe?
-func RegisterShader(name string, vertex, fragment []byte) error {
+func RegisterShader(name string, vertex, fragment string) error {
 	if _, notOk := shader_progs[name]; notOk {
 		return shaderError(fmt.Sprintf("Tried to register a shader called '%s' twice", name))
 	}
 
 	vertex_shader := gl.CreateShader(gl.VERTEX_SHADER)
-	vertex_shader.Source(string(vertex))
+	vertex_shader.Source(vertex)
 	vertex_shader.Compile()
 	did_compile := vertex_shader.Get(gl.COMPILE_STATUS)
 	if did_compile != gl.TRUE {
@@ -69,7 +68,7 @@ func RegisterShader(name string, vertex, fragment []byte) error {
 	}
 
 	fragment_shader := gl.CreateShader(gl.FRAGMENT_SHADER)
-	fragment_shader.Source(string(fragment))
+	fragment_shader.Source(fragment)
 	fragment_shader.Compile()
 	did_compile = fragment_shader.Get(gl.COMPILE_STATUS)
 	if did_compile != gl.TRUE {
