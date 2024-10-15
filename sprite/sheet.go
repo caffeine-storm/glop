@@ -2,17 +2,19 @@ package sprite
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
-	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/memory"
-	"github.com/runningwild/yedparse"
 	"hash/fnv"
 	"image"
 	"image/draw"
+	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/go-gl-legacy/gl"
+	"github.com/go-gl-legacy/glu"
+	"github.com/runningwild/glop/render"
+	yed "github.com/runningwild/yedparse"
 )
 
 // An id that specifies a specific frame along with its facing.  This is used
@@ -36,6 +38,61 @@ func (fia frameIdArray) Swap(i, j int) {
 	fia[i], fia[j] = fia[j], fia[i]
 }
 
+// TODO(tmckee): don't use two strings for the key!
+type byteBank interface {
+	Read(p1, p2 string) ([]byte, bool, error)
+	Write(p1, p2 string, data []byte) error
+}
+
+type fsByteBank struct{}
+
+func (*fsByteBank) Read(p1, p2 string) ([]byte, bool, error) {
+	// TODO(tmckee): DRY this out
+	filename := filepath.Join(p1, p2)
+	f, err := os.Open(filename)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			// If the file doesn't exist, we just haven't cached at this path yet.
+			return nil, false, nil
+		}
+		// Other errors indicate something fatal.
+		return nil, false, fmt.Errorf("couldn't open file %q: %v", filename, err)
+	}
+	defer f.Close()
+
+	var length int32
+	err = binary.Read(f, binary.LittleEndian, &length)
+	if err != nil {
+		return nil, false, fmt.Errorf("couldn't read length prefix: %v", err)
+	}
+
+	buf := make([]byte, length)
+	_, err = f.Read(buf)
+	if err != nil {
+		return nil, true, fmt.Errorf("couldn't read payload: %v", err)
+	}
+
+	return buf, true, nil
+}
+
+func (*fsByteBank) Write(p1, p2 string, data []byte) error {
+	filename := filepath.Join(p1, p2)
+
+	f, err := os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("couldn't os.Create(%q): %v", filename, err)
+	}
+	defer f.Close()
+
+	binary.Write(f, binary.LittleEndian, int32(len(data)))
+	_, err = f.Write(data)
+	if err != nil {
+		return fmt.Errorf("coudln't write to file %q: %v", filename, err)
+	}
+
+	return nil
+}
+
 // A sheet contains a group of frames of animations indexed by frameId
 type sheet struct {
 	rects  map[frameId]FrameRect
@@ -53,6 +110,8 @@ type sheet struct {
 	// Channel for sending load/unload requests (true: load, false: unload)
 	load_chan chan bool
 	texture   gl.Texture
+
+	pixelDataCache byteBank
 }
 
 func (s *sheet) Load() {
@@ -64,26 +123,17 @@ func (s *sheet) Unload() {
 }
 
 func (s *sheet) compose(pixer chan<- []byte) {
-	filename := filepath.Join(s.path, s.name)
-	f, err := os.Open(filename)
-	if err == nil {
-		var length int32
-		err := binary.Read(f, binary.LittleEndian, &length)
-		if err != nil {
-			f.Close()
-		} else {
-			b := memory.GetBlock(int(length))
-			// b := make([]byte, length)
-			_, err := f.Read(b)
-			f.Close()
-			if err == nil {
-				pixer <- b
-				return
-			}
-		}
+	bytes, ok, err := s.pixelDataCache.Read(s.path, s.name)
+	if err != nil {
+		panic(fmt.Errorf("couldn't read from byteSource: %v", err))
 	}
+	if ok {
+		pixer <- bytes
+		return
+	}
+
 	rect := image.Rect(0, 0, s.dx, s.dy)
-	canvas := &image.RGBA{memory.GetBlock(4 * s.dx * s.dy), 4 * s.dx, rect}
+	canvas := image.NewRGBA(rect)
 	for fid, rect := range s.rects {
 		name := s.anim.Node(fid.node).Line(0) + ".png"
 		file, err := os.Open(filepath.Join(s.path, fmt.Sprintf("%d", fid.facing), name))
@@ -100,14 +150,11 @@ func (s *sheet) compose(pixer chan<- []byte) {
 		}
 		draw.Draw(canvas, image.Rect(rect.X, s.dy-rect.Y, rect.X2, s.dy-rect.Y2), im, image.Point{}, draw.Src)
 	}
-	f, err = os.Create(filename)
-	if err == nil {
-		binary.Write(f, binary.LittleEndian, int32(len(canvas.Pix)))
-		_, err := f.Write(canvas.Pix)
-		f.Close()
-		if err != nil {
-			os.Remove(filename)
-		}
+
+	// Cache the bytes for later use.
+	err = s.pixelDataCache.Write(s.path, s.name, canvas.Pix)
+	if err != nil {
+		panic(fmt.Errorf("couldn't write byte source: %v", err))
 	}
 	pixer <- canvas.Pix
 }
@@ -139,7 +186,6 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
 	data := <-pixer
 
 	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.INT, data)
-	memory.FreeBlock(data)
 }
 
 func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {
@@ -204,8 +250,14 @@ func uniqueName(fids []frameId) string {
 	return fmt.Sprintf("%x.gob", h.Sum64())
 }
 
+// TODO(tmckee): support injecting a different type of byteBank
 func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.RenderQueueInterface) (*sheet, error) {
-	s := sheet{path: path, anim: anim, name: uniqueName(fids)}
+	s := sheet{
+		path:           path,
+		anim:           anim,
+		name:           uniqueName(fids),
+		pixelDataCache: new(fsByteBank),
+	}
 	s.rects = make(map[frameId]FrameRect)
 	cy := 0
 	cx := 0
