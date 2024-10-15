@@ -959,6 +959,8 @@ type FrameRect struct {
 type TriggerFunc func(*Sprite, string)
 
 type Manager struct {
+	// 'shared' is a cache of sharedSprite objects keyed by the filesystem path
+	// that we loaded it from.
 	shared        map[string]*sharedSprite
 	renderQueue   render.RenderQueueInterface
 	error_texture gl.Texture
@@ -973,22 +975,49 @@ func MakeManager(rq render.RenderQueueInterface) *Manager {
 	}
 }
 
-func (m *Manager) loadSharedSprite(path string) error {
+func (m *Manager) spriteForPath(path string) (*Sprite, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	if _, ok := m.shared[path]; ok {
-		return nil
+
+	cachedSharedSprite, cacheHit := m.shared[path]
+	if !cacheHit {
+		// Release the mutex while we do a potentially expensive load.
+		m.mutex.Unlock()
+
+		var err error
+		cachedSharedSprite, err = loadSharedSprite(path, m.renderQueue)
+
+		// Acquire the mutex again while we potentially read/write from the
+		// protected map.
+		m.mutex.Lock()
+		if err != nil {
+			return nil, err
+		}
+
+		// Try the lookup again; some other thread may have raced ahead for the
+		// given path.
+		preLoaded, lostTheRace := m.shared[path]
+		if lostTheRace {
+			// Prefer to re-use from cache instead of using what was just
+			// (re-)loaded; there are probably references to the one in cache
+			// already.
+			cachedSharedSprite = preLoaded
+		} else {
+			// Nobody raced ahead; cache what we've loaded.
+			m.shared[path] = cachedSharedSprite
+			cachedSharedSprite.manager = m
+		}
 	}
 
-	// TODO(tmckee): we shouldn't load something from disk while holding a mutex.
-	// We can use double-locking instead.
-	ss, err := loadSharedSprite(path, m.renderQueue)
-	if err != nil {
-		return err
+	if cachedSharedSprite == nil {
+		panic(fmt.Errorf("logic error: should have loaded from disk or resolved from cache"))
 	}
-	m.shared[path] = ss
-	ss.manager = m
-	return nil
+
+	return &Sprite{
+		shared:     cachedSharedSprite,
+		anim_node:  cachedSharedSprite.anim_start,
+		state_node: cachedSharedSprite.state_start,
+	}, nil
 }
 
 func (m *Manager) LoadSprite(path string) (*Sprite, error) {
@@ -1012,19 +1041,5 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	})
 
 	path = filepath.Clean(path)
-	// TODO(tmckee): we lock, maybe load the sprite and write it to the protected
-	// map, unlock, then lock, then read from the protected map, then unlock. We
-	// can avoid some of the lock churn here.
-	err := m.loadSharedSprite(path)
-	if err != nil {
-		return nil, err
-	}
-	var s Sprite
-	m.mutex.Lock()
-	s.shared = m.shared[path]
-	// TODO(tmckee): use a 'defer' here
-	m.mutex.Unlock()
-	s.anim_node = s.shared.anim_start
-	s.state_node = s.shared.state_start
-	return &s, nil
+	return m.spriteForPath(path)
 }
