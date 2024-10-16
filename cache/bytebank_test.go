@@ -61,7 +61,7 @@ func FsByteBankSpec(c gospec.Context) {
 			})
 
 			c.Specify("still misses for different key", func() {
-				_, ok, err := bank.Read(tmpfile+"-but-miss")
+				_, ok, err := bank.Read(tmpfile + "-but-miss")
 				c.Expect(err, gospec.IsNil)
 				c.Expect(ok, gospec.IsFalse)
 			})
