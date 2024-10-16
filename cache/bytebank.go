@@ -6,20 +6,17 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 )
 
-// TODO(tmckee): don't use two strings for the key!
 type ByteBank interface {
-	Read(p1, p2 string) ([]byte, bool, error)
-	Write(p1, p2 string, data []byte) error
+	Read(key string) ([]byte, bool, error)
+	Write(key string, data []byte) error
 }
 
 type FsByteBank struct{}
 
-func (*FsByteBank) Read(p1, p2 string) ([]byte, bool, error) {
+func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
 	// TODO(tmckee): DRY this out
-	filename := filepath.Join(p1, p2)
 	f, err := os.Open(filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -46,9 +43,7 @@ func (*FsByteBank) Read(p1, p2 string) ([]byte, bool, error) {
 	return buf, true, nil
 }
 
-func (*FsByteBank) Write(p1, p2 string, data []byte) error {
-	filename := filepath.Join(p1, p2)
-
+func (*FsByteBank) Write(filename string, data []byte) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("couldn't os.Create(%q): %v", filename, err)

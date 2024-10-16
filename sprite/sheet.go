@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/draw"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/go-gl-legacy/gl"
@@ -65,8 +66,12 @@ func (s *sheet) Unload() {
 	s.reference_chan <- -1
 }
 
+func (s *sheet) getCacheKey() string {
+	return path.Join(s.path, s.name)
+}
+
 func (s *sheet) compose(pixer chan<- []byte) {
-	bytes, ok, err := s.pixelDataCache.Read(s.path, s.name)
+	bytes, ok, err := s.pixelDataCache.Read(s.getCacheKey())
 	if err != nil {
 		panic(fmt.Errorf("couldn't read from pixelDataCache: %v", err))
 	}
@@ -95,7 +100,7 @@ func (s *sheet) compose(pixer chan<- []byte) {
 	}
 
 	// Cache the bytes for later use.
-	err = s.pixelDataCache.Write(s.path, s.name, canvas.Pix)
+	err = s.pixelDataCache.Write(s.getCacheKey(), canvas.Pix)
 	if err != nil {
 		panic(fmt.Errorf("couldn't write byte source: %v", err))
 	}
