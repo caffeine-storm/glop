@@ -55,10 +55,15 @@ func (*FsByteBank) Write(p1, p2 string, data []byte) error {
 	}
 	defer f.Close()
 
-	binary.Write(f, binary.LittleEndian, int32(len(data)))
+	// TODO(tmckee): we don't need to write a size; we can os.Stat the file for
+	// its size instead.
+	err = binary.Write(f, binary.LittleEndian, int32(len(data)))
+	if err != nil {
+		return fmt.Errorf("coudln't write length header to file %q: %v", filename, err)
+	}
 	_, err = f.Write(data)
 	if err != nil {
-		return fmt.Errorf("coudln't write to file %q: %v", filename, err)
+		return fmt.Errorf("coudln't write payload to file %q: %v", filename, err)
 	}
 
 	return nil
