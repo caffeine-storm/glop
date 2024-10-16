@@ -16,7 +16,6 @@ type ByteBank interface {
 type FsByteBank struct{}
 
 func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
-	// TODO(tmckee): DRY this out
 	f, err := os.Open(filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {

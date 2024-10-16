@@ -110,6 +110,10 @@ func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sh
 		return nil, err
 	}
 
+	// TODO(tmckee): shouldn't we call ss.connector.Load() here? That way it can
+	// make progress while we're looking through non-connector frames. Maybe we
+	// don't to simplify error handling?
+
 	// Now we make a sheet for each facing, but don't include any of the frames
 	// that are in the connctor sheet
 	used := make(map[*yed.Node]bool)
