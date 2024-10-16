@@ -1,8 +1,11 @@
 package cache_test
 
 import (
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
+	"path"
 	"testing"
 
 	// TODO(tmckee): use 'convey' instead:
@@ -34,9 +37,11 @@ func FsByteBankSpec(c gospec.Context) {
 		})
 
 		c.Specify("propagates file writing failures", func() {
-			// TODO(tmckee): find a portable way to pick an unwriteable file.  This
-			// is linux only for now.
-			err := bank.Write("/dev/full", someData)
+			doesNotExistDir := "/does/not/exist/"
+			_, err := os.Stat(doesNotExistDir)
+			c.Assume(errors.Is(err, fs.ErrNotExist), gospec.IsTrue)
+
+			err = bank.Write(path.Join(doesNotExistDir, "foo"), someData)
 			c.Expect(err, gospec.Not(gospec.IsNil))
 		})
 
