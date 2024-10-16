@@ -15,7 +15,7 @@ type ByteBank interface {
 type FsByteBank struct{}
 
 func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
-	fileInfo, err := os.Stat(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			// If the file doesn't exist, we just haven't cached at this path yet.
@@ -24,26 +24,7 @@ func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
 		// Other errors indicate something fatal.
 		return nil, false, fmt.Errorf("couldn't open file %q: %v", filename, err)
 	}
-	fileLength := fileInfo.Size()
-
-	f, err := os.Open(filename)
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			// If the file doesn't exist, we just haven't cached at this path yet.
-			return nil, false, nil
-		}
-		// Other errors indicate something fatal.
-		return nil, false, fmt.Errorf("couldn't open file %q: %v", filename, err)
-	}
-	defer f.Close()
-
-	buf := make([]byte, fileLength)
-	_, err = f.Read(buf)
-	if err != nil {
-		return nil, true, fmt.Errorf("couldn't read payload: %v", err)
-	}
-
-	return buf, true, nil
+	return data, true, nil
 }
 
 func (*FsByteBank) Write(filename string, data []byte) error {
