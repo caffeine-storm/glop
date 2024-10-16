@@ -1,5 +1,3 @@
-tmckee: make ByteBank interface take a single key instead of a pair of keys
-
 tmckee: 'make test' can leave some temporary files behind on success; see
 sprite/test_sprite/<hash>.gob when running sprite spec tests
 

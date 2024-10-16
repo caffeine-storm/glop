@@ -3,7 +3,6 @@ package cache_test
 import (
 	"fmt"
 	"os"
-	"path"
 	"testing"
 
 	// TODO(tmckee): use 'convey' instead:
@@ -29,7 +28,7 @@ func FsByteBankSpec(c gospec.Context) {
 		})
 
 		c.Specify("returns a 'miss' when reading", func() {
-			_, ok, err := bank.Read("p1", "p2")
+			_, ok, err := bank.Read("not-present")
 			c.Expect(err, gospec.IsNil)
 			c.Expect(ok, gospec.Equals, false)
 		})
@@ -37,7 +36,7 @@ func FsByteBankSpec(c gospec.Context) {
 		c.Specify("propagates file writing failures", func() {
 			// TODO(tmckee): find a portable way to pick an unwriteable file.  This
 			// is linux only for now.
-			err := bank.Write("/dev", "full", someData)
+			err := bank.Write("/dev/full", someData)
 			c.Expect(err, gospec.Not(gospec.IsNil))
 		})
 
@@ -49,22 +48,20 @@ func FsByteBankSpec(c gospec.Context) {
 			tmpfile := f.Name()
 			defer os.Remove(tmpfile)
 
-			tmpdir, tmpname := path.Split(tmpfile)
-
-			err = bank.Write(tmpdir, tmpname, someData)
+			err = bank.Write(tmpfile, someData)
 			if err != nil {
 				panic(fmt.Errorf("couldn't write data: %w", err))
 			}
 
 			c.Specify("the data can be read back", func() {
-				data, ok, err := bank.Read(tmpdir, tmpname)
+				data, ok, err := bank.Read(tmpfile)
 				c.Expect(err, gospec.IsNil)
 				c.Expect(ok, gospec.IsTrue)
 				c.Expect(string(data), gospec.Equals, string(someData))
 			})
 
 			c.Specify("still misses for different key", func() {
-				_, ok, err := bank.Read(tmpdir, tmpname+"-but-miss")
+				_, ok, err := bank.Read(tmpfile+"-but-miss")
 				c.Expect(err, gospec.IsNil)
 				c.Expect(ok, gospec.IsFalse)
 			})
