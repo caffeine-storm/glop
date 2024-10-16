@@ -67,4 +67,24 @@ func FsByteBankSpec(c gospec.Context) {
 			})
 		})
 	})
+
+	c.Specify("An FsByteBank with some data", func() {
+		bank := &cache.FsByteBank{}
+		f, err := os.CreateTemp("", "glop-test")
+		if err != nil {
+			panic(fmt.Errorf("couldn't create temp file: %w", err))
+		}
+		tmpfile := f.Name()
+		defer os.Remove(tmpfile)
+
+		err = bank.Write(tmpfile, someData)
+		c.Assume(err, gospec.IsNil)
+
+		c.Specify("uses a flat format/encoding", func() {
+			fileData, err := os.ReadFile(tmpfile)
+			c.Assume(err, gospec.IsNil)
+
+			c.Expect(fileData, gospec.ContainsInOrder, someData)
+		})
+	})
 }
