@@ -68,7 +68,7 @@ func (s *sheet) Unload() {
 func (s *sheet) compose(pixer chan<- []byte) {
 	bytes, ok, err := s.pixelDataCache.Read(s.path, s.name)
 	if err != nil {
-		panic(fmt.Errorf("couldn't read from byteSource: %v", err))
+		panic(fmt.Errorf("couldn't read from pixelDataCache: %v", err))
 	}
 	if ok {
 		pixer <- bytes
