@@ -27,7 +27,7 @@ func FsByteBankSpec(c gospec.Context) {
 			c.Expect(bank, gospec.Not(gospec.Equals), nil)
 		})
 
-		c.Specify("returns a 'miss' when reading", func() {
+		c.Specify("returns a 'miss' when reading a bogus key", func() {
 			_, ok, err := bank.Read("not-present")
 			c.Expect(err, gospec.IsNil)
 			c.Expect(ok, gospec.Equals, false)

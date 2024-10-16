@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -16,6 +15,17 @@ type ByteBank interface {
 type FsByteBank struct{}
 
 func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
+	fileInfo, err := os.Stat(filename)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			// If the file doesn't exist, we just haven't cached at this path yet.
+			return nil, false, nil
+		}
+		// Other errors indicate something fatal.
+		return nil, false, fmt.Errorf("couldn't open file %q: %v", filename, err)
+	}
+	fileLength := fileInfo.Size()
+
 	f, err := os.Open(filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -27,13 +37,7 @@ func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
 	}
 	defer f.Close()
 
-	var length int32
-	err = binary.Read(f, binary.LittleEndian, &length)
-	if err != nil {
-		return nil, false, fmt.Errorf("couldn't read length prefix: %v", err)
-	}
-
-	buf := make([]byte, length)
+	buf := make([]byte, fileLength)
 	_, err = f.Read(buf)
 	if err != nil {
 		return nil, true, fmt.Errorf("couldn't read payload: %v", err)
@@ -49,12 +53,6 @@ func (*FsByteBank) Write(filename string, data []byte) error {
 	}
 	defer f.Close()
 
-	// TODO(tmckee): we don't need to write a size; we can os.Stat the file for
-	// its size instead.
-	err = binary.Write(f, binary.LittleEndian, int32(len(data)))
-	if err != nil {
-		return fmt.Errorf("coudln't write length header to file %q: %v", filename, err)
-	}
 	_, err = f.Write(data)
 	if err != nil {
 		return fmt.Errorf("coudln't write payload to file %q: %v", filename, err)
