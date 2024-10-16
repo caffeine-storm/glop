@@ -28,16 +28,5 @@ func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
 }
 
 func (*FsByteBank) Write(filename string, data []byte) error {
-	f, err := os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("couldn't os.Create(%q): %v", filename, err)
-	}
-	defer f.Close()
-
-	_, err = f.Write(data)
-	if err != nil {
-		return fmt.Errorf("coudln't write payload to file %q: %v", filename, err)
-	}
-
-	return nil
+	return os.WriteFile(filename, data, 0644)
 }
