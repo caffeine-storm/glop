@@ -23,6 +23,37 @@ func readPixels(width, height int) ([]byte, error) {
 	return ret, nil
 }
 
+func loadDictionaryForTest() *Dictionary {
+	linuxSystemObject := gos.GetSystemInterface()
+	sys := system.Make(linuxSystemObject)
+	wdx := 512
+	wdy := 64
+
+	sys.Startup()
+	render := rendertest.MakeDiscardingRenderQueue()
+	render.Queue(func() {
+		sys.CreateWindow(0, 0, wdx, wdy)
+		sys.EnableVSync(true)
+		err := gl.Init()
+		if err != 0 {
+			panic("couldn't init GL")
+		}
+	})
+	render.Purge()
+
+	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.Open: %w", err))
+	}
+
+	d, err := LoadDictionary(dictReader, render)
+	if err != nil {
+		panic(fmt.Errorf("couldn't LoadDictionary: %w", err))
+	}
+
+	return d
+}
+
 func TestDictionaryMaxHeight(t *testing.T) {
 	t.Run("default-height-is-zero", func(t *testing.T) {
 		require := require.New(t)
@@ -71,31 +102,9 @@ func TestDictionaryMaxHeight(t *testing.T) {
 
 func TestDictionaryGetInfo(t *testing.T) {
 	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
-		require := require.New(t)
 		assert := assert.New(t)
 
-		linuxSystemObject := gos.GetSystemInterface()
-		sys := system.Make(linuxSystemObject)
-		wdx := 1024
-		wdy := 750
-
-		sys.Startup()
-		render := rendertest.MakeDiscardingRenderQueue()
-		render.Queue(func() {
-			sys.CreateWindow(10, 10, wdx, wdy)
-			sys.EnableVSync(true)
-			err := gl.Init()
-			if err != 0 {
-				panic("couldn't init GL")
-			}
-		})
-		render.Purge()
-
-		dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
-		require.Nil(err)
-
-		d, err := LoadDictionary(dictReader, render)
-		require.Nil(err)
+		d := loadDictionaryForTest()
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and
