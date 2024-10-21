@@ -1,6 +1,8 @@
 tmckee: 'make test' can leave some temporary files behind on success; see
 sprite/test_sprite/<hash>.gob when running sprite spec tests
 
+tmckee: make a commit hook that blocks non-fmt'd changes
+
 tmckee: migrate to convey
 (https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
 
