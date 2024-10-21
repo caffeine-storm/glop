@@ -23,24 +23,30 @@ func readPixels(width, height int) ([]byte, error) {
 	return ret, nil
 }
 
-func loadDictionaryForTest() *Dictionary {
+func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
+	runtime.LockOSThread()
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
 	wdx := 512
 	wdy := 64
 
 	sys.Startup()
-	render := rendertest.MakeDiscardingRenderQueue()
-	render.Queue(func() {
+	render := render.MakeQueue(func() {
 		sys.CreateWindow(0, 0, wdx, wdy)
 		sys.EnableVSync(true)
 		err := gl.Init()
 		if err != 0 {
-			panic("couldn't init GL")
+			panic(fmt.Errorf("couldn't gl.Init: %d", err))
 		}
+		gl.Enable(gl.BLEND)
+		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	})
-	render.Purge()
+	render.StartProcessing()
 
+	return sys, render, wdx, wdy
+}
+
+func loadDictionaryForTest(render render.RenderQueueInterface) *Dictionary {
 	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
@@ -104,7 +110,8 @@ func TestDictionaryGetInfo(t *testing.T) {
 	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		d := loadDictionaryForTest()
+		render := rendertest.MakeDiscardingRenderQueue()
+		d := loadDictionaryForTest(render)
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and
@@ -125,40 +132,17 @@ func TestDictionaryRenderString(t *testing.T) {
 	// LoadDictionary to get an instance instead; it'll register shaders and
 	// such.
 	t.Run("CanRenderLol", func(t *testing.T) {
-		runtime.LockOSThread()
-		linuxSystemObject := gos.GetSystemInterface()
-		sys := system.Make(linuxSystemObject)
-		// wdx := 640
-		// wdy := 512
-		wdx := 512
-		wdy := 64
+		sys, render, wdx, wdy := initGlForTest()
 
-		sys.Startup()
-		render := render.MakeQueue(func() {
-			// TODO(tmckee): DRY out creating a window
-			sys.CreateWindow(0, 0, wdx, wdy)
-			sys.EnableVSync(true)
-			err := gl.Init()
-			if err != 0 {
-				panic(err)
-			}
-			gl.Enable(gl.BLEND)
-			gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-		})
-		render.StartProcessing()
-
-		require := require.New(t)
-		dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
-		require.Nil(err)
-
-		d, err := LoadDictionary(dictReader, render)
-		require.Nil(err)
+		d := loadDictionaryForTest(render)
 
 		render.Queue(func() {
 			d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
 			sys.SwapBuffers()
 		})
 		render.Purge()
+
+		var err error
 
 		// Read all the pixels from the framebuffer through OpenGL
 		var frameBufferBytes []byte
