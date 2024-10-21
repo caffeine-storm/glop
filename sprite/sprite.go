@@ -5,11 +5,6 @@ import (
 	"encoding/gob"
 	"errors"
 	"fmt"
-	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/util/algorithm"
-	"github.com/runningwild/yedparse"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -17,6 +12,13 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/go-gl-legacy/gl"
+	"github.com/go-gl-legacy/glu"
+	"github.com/runningwild/glop/cache"
+	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/util/algorithm"
+	"github.com/runningwild/yedparse"
 )
 
 const (
@@ -962,17 +964,19 @@ type TriggerFunc func(*Sprite, string)
 type Manager struct {
 	// 'shared' is a cache of sharedSprite objects keyed by the filesystem path
 	// that we loaded it from.
-	shared        map[string]*sharedSprite
-	renderQueue   render.RenderQueueInterface
-	error_texture gl.Texture
-	gen_tex_once  sync.Once
-	mutex         sync.Mutex
+	shared         map[string]*sharedSprite
+	renderQueue    render.RenderQueueInterface
+	pixelDataCache cache.ByteBank
+	error_texture  gl.Texture
+	gen_tex_once   sync.Once
+	mutex          sync.Mutex
 }
 
-func MakeManager(rq render.RenderQueueInterface) *Manager {
+func MakeManager(rq render.RenderQueueInterface, pixelDataCache cache.ByteBank) *Manager {
 	return &Manager{
-		shared:      make(map[string]*sharedSprite),
-		renderQueue: rq,
+		shared:         make(map[string]*sharedSprite),
+		renderQueue:    rq,
+		pixelDataCache: pixelDataCache,
 	}
 }
 
