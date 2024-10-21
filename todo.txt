@@ -1,8 +1,19 @@
+tmckee: make sure we aren't writing to stdout each frame ('current matrix
+mode:' etc.)
+
 tmckee: 'make test' can leave some temporary files behind on success; see
 sprite/test_sprite/<hash>.gob when running sprite spec tests
 
+tmckee: migrate to convey
+(https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
+
+tmckee: make render.RenderQueueInterface.Queue take a specific type of
+'RenderWork'; will let us refactor to inject the GL dependecy down the line.
+
 tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
 				using '%w'.
+
+tmckee: loading a gui.Dictionary from disk should not need a render queue
 
 tmckee: in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
@@ -10,8 +21,10 @@ tmckee: installed multilib support to get the build going; is it necessary?
 - sudo apt install gcc-multilib g++-multilib
 
 tmckee: use type system to make initialization ordering constraints explicit
+	- need to identify which modules/packages need this
 
 tmckee: find a better debug-logging sol'n than println
+	- it's slog
 
 tmckee: Make it so that 'go test ./...' builds the native library on-demand
 
@@ -19,9 +32,9 @@ tmckee: find a way to work around needing LD_LIBRARY_PATH when running tests in
 subdirectories
 
 tmckee: in gos/linux/glop.cpp:
-    case XK_slash: ki = '/'; break;
-    case XK_space: ki = '/'; break;
-  ?? shouldn't that be a space, not a slash?
+	case XK_slash: ki = '/'; break;
+	case XK_space: ki = '/'; break;
+	?? shouldn't that be a space, not a slash?
 
 If windows is ok with giving up the main thread we should switch to doing
 things with a Run() / Quit() mechanism instead of a for { Think() } mechanism.
@@ -29,4 +42,3 @@ Doing this would increase the number of mouse events on osx and would give
 better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
-
