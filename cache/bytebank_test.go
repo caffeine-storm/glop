@@ -97,6 +97,6 @@ func FsByteBankSpec(c gospec.Context) {
 
 func RamByteBankSpec(c gospec.Context) {
 	c.Specify("An empty RamByteBank", func() {
-		_ = &cache.RamByteBank{}
+		var _ cache.ByteBank = &cache.RamByteBank{}
 	})
 }
