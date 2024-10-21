@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/orfjackal/gospec/src/gospec"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
@@ -181,5 +184,57 @@ func TestDictionaryRenderString(t *testing.T) {
 
 			t.Fatalf("framebuffer mismatch; see %s", rejectFileName)
 		}
+	})
+}
+
+func TestRunTextSpecs(t *testing.T) {
+	r := gospec.NewRunner()
+	r.AddSpec(CleanLogsPerFrameSpec)
+	gospec.MainGoTest(r, t)
+}
+
+// Runs the given operation and returns a slice of strings that the operation
+// wrote to log.Print*, stdout and stderr combined.
+func CollectOutput(operation func()) []string {
+	read, write, err := os.Pipe()
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.Pipe: %w", err))
+	}
+
+	go func() {
+		oldStdout := os.Stdout
+		oldStderr := os.Stderr
+		os.Stdout = write
+		os.Stderr = write
+		stdlogger := log.Default()
+		oldLogOut := stdlogger.Writer()
+		stdlogger.SetOutput(write)
+		defer func() {
+			os.Stdout = oldStdout
+			os.Stderr = oldStderr
+			stdlogger.SetOutput(oldLogOut)
+			write.Close()
+		}()
+
+		operation()
+	}()
+
+	byteList, err := io.ReadAll(read)
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.ReadFile on the read end of the pipe: %w", err))
+	}
+
+	return strings.Split(string(byteList), "\n")
+}
+
+func CleanLogsPerFrameSpec(c gospec.Context) {
+	c.Specify("stdout isn't spammed by RenderString", func() {
+		sys, render, _, _ := initGlForTest()
+
+		stdoutLines := CollectOutput(func() {
+			renderStringForTest("lol", sys, render)
+		})
+
+		c.Expect(stdoutLines, gospec.ContainsExactly, []string{})
 	})
 }
