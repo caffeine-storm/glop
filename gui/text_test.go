@@ -49,13 +49,13 @@ func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
 	return sys, render, wdx, wdy
 }
 
-func loadDictionaryForTest(render render.RenderQueueInterface) *Dictionary {
+func loadDictionaryForTest(render render.RenderQueueInterface, logger *log.Logger) *Dictionary {
 	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
 	}
 
-	d, err := LoadDictionary(dictReader, render)
+	d, err := LoadDictionary(dictReader, render, logger)
 	if err != nil {
 		panic(fmt.Errorf("couldn't LoadDictionary: %w", err))
 	}
@@ -63,8 +63,8 @@ func loadDictionaryForTest(render render.RenderQueueInterface) *Dictionary {
 	return d
 }
 
-func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface) {
-	d := loadDictionaryForTest(render)
+func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, logger *log.Logger) {
+	d := loadDictionaryForTest(render, logger)
 
 	render.Queue(func() {
 		d.RenderString(toDraw, 0, 0, 0, d.MaxHeight(), Left)
@@ -125,7 +125,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		assert := assert.New(t)
 
 		render := rendertest.MakeDiscardingRenderQueue()
-		d := loadDictionaryForTest(render)
+		d := loadDictionaryForTest(render, log.Default())
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and
@@ -148,7 +148,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
-		renderStringForTest("lol", sys, render)
+		renderStringForTest("lol", sys, render, log.Default())
 
 		var err error
 
@@ -224,6 +224,10 @@ func CollectOutput(operation func()) []string {
 		panic(fmt.Errorf("couldn't os.ReadFile on the read end of the pipe: %w", err))
 	}
 
+	if len(byteList) == 0 {
+		return []string{}
+	}
+
 	return strings.Split(string(byteList), "\n")
 }
 
@@ -231,8 +235,9 @@ func CleanLogsPerFrameSpec(c gospec.Context) {
 	c.Specify("stdout isn't spammed by RenderString", func() {
 		sys, render, _, _ := initGlForTest()
 
+		voidLogger := log.New(io.Discard, "", 0)
 		stdoutLines := CollectOutput(func() {
-			renderStringForTest("lol", sys, render)
+			renderStringForTest("lol", sys, render, voidLogger)
 		})
 
 		c.Expect(stdoutLines, gospec.ContainsExactly, []string{})

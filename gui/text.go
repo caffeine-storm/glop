@@ -86,6 +86,7 @@ type Dictionary struct {
 	Data dictData
 
 	renderQueue render.RenderQueueInterface
+	logger *log.Logger
 
 	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
@@ -219,7 +220,7 @@ func (d *Dictionary) StringWidth(s string) float64 {
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
 func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(d.logger)
 
 	if len(s) == 0 {
 		return
@@ -230,8 +231,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// this out.
 	scale := height / float64(d.Data.Maxy-d.Data.Miny)
 	width_texunits := float32(d.figureWidth(s) * scale)
-	log.Printf("scale: %v, stride: %v, width: %v", scale, stride, width_texunits)
-	log.Printf("d.Data.D{x,y}: %v, %v", d.Data.Dx, d.Data.Dy)
+	d.logger.Printf("scale: %v, stride: %v, width: %v", scale, stride, width_texunits)
+	d.logger.Printf("d.Data.D{x,y}: %v, %v", d.Data.Dx, d.Data.Dy)
 	x_pos_geounits := float32(x)
 
 	height_geounits := 1.0
@@ -260,9 +261,9 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			}
 			prev = r
 			info := d.getInfo(r)
-			log.Printf("render char: x_pos: %f rune: %d\n", x_pos_geounits, r)
-			log.Printf("info: %+v\n", info)
-			log.Printf("d.Data.Maxy: %+v\n", d.Data.Maxy)
+			d.logger.Printf("render char: x_pos: %f rune: %d\n", x_pos_geounits, r)
+			d.logger.Printf("info: %+v\n", info)
+			d.logger.Printf("d.Data.Maxy: %+v\n", d.Data.Maxy)
 			xleft_geounits := x_pos_geounits
 			xright_geounits := x_pos_geounits + float32(info.Pos.Max.X-info.Pos.Min.X)*texunits_to_geounits
 			// TODO(tmckee): uh... what? shouldn't it just be ytop_geounits, ybot := scale, 0 ?
@@ -305,8 +306,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			x_pos_geounits += float32(info.Advance) * texunits_to_geounits
 		}
 
-		log.Printf("vxs: %v", strbuf.vs)
-		log.Printf("ixs: %v", strbuf.is)
+		d.logger.Printf("vxs: %v", strbuf.vs)
+		d.logger.Printf("ixs: %v", strbuf.is)
 		strbuf.vbuffer = uint32(gl.GenBuffer())
 		gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
@@ -326,7 +327,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		x_pos_geounits -= width_texunits
 	}
 
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(d.logger)
 
 	err := render.EnableShader("glop.font")
 	if err != nil {
@@ -334,33 +335,33 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	}
 	defer render.EnableShader("")
 
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(d.logger)
 
 	diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.Data.Scale, 1.0)/math.Pow(height, 1.0)
 	if diff > 0.45 {
 		diff = 0.45
 	}
-	log.Printf("diff: %f", diff)
+	d.logger.Printf("diff: %f", diff)
 	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
 	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(d.logger)
 
 	// We want to use the 0'th texture unit.
 	// TODO(tmckee): this seems to be getting an 'INVALID_VALUE' glerror back.
 	// Look into whether we've correctly looked up the uniform location.
 	render.SetUniformI("glop.font", "tex", gl.TEXTURE0+0)
 
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(d.logger)
 
 	{
-		log.Printf("current matrix mode: %q", debug.GetMatrixMode())
+		d.logger.Printf("current matrix mode: %q", debug.GetMatrixMode())
 
 		x, y, w, h := debug.GetViewport()
-		log.Printf("current viewport: %v %v %v %v", x, y, w, h)
+		d.logger.Printf("current viewport: %v %v %v %v", x, y, w, h)
 
 		near, far := debug.GetDepthRange()
-		log.Printf("depth range: %v %v", near, far)
+		d.logger.Printf("depth range: %v %v", near, far)
 	}
 
 	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
@@ -387,7 +388,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// TODO(tmckee): let's use gl.QUADS and simplify indices considerably...
 	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
 
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(d.logger)
 }
 
 type subImage struct {
@@ -646,6 +647,9 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 		}
 	}
 
+	// TODO(tmckee): we haven't set dict.renderQueue yet; this will panic. It
+	// doesn't matter right now, because nobody calls MakeDictionary, but this is
+	// broken right now.
 	dict.setupGlStuff()
 
 	return &dict
@@ -654,7 +658,7 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 // TODO(tmckee): this is wrong; we need on per renderQueue
 var init_once sync.Once
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *log.Logger) (*Dictionary, error) {
 	// TODO(tmckee): we shouldn't coulple loading a dictionary to registering
 	// shaders.
 	renderQueue.Queue(func() {
@@ -675,6 +679,7 @@ func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface) (*Dict
 		return nil, err
 	}
 	d.renderQueue = renderQueue
+	d.logger = logger
 	d.setupGlStuff()
 	return &d, nil
 }
