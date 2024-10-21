@@ -1,17 +1,14 @@
-tmckee: make sure we aren't writing to stdout each frame ('current matrix
-mode:' etc.)
-
 tmckee: 'make test' can leave some temporary files behind on success; see
 sprite/test_sprite/<hash>.gob when running sprite spec tests
+
+tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
+				using '%w'.
 
 tmckee: migrate to convey
 (https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
 
 tmckee: make render.RenderQueueInterface.Queue take a specific type of
 'RenderWork'; will let us refactor to inject the GL dependecy down the line.
-
-tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
-				using '%w'.
 
 tmckee: loading a gui.Dictionary from disk should not need a render queue
 
