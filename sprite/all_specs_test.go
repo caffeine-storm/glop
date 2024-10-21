@@ -10,5 +10,6 @@ func TestAllSpecs(t *testing.T) {
 	r.AddSpec(LoadSpriteSpec)
 	r.AddSpec(CommandNSpec)
 	r.AddSpec(SyncSpec)
+	r.AddSpec(ManagerSpec)
 	gospec.MainGoTest(r, t)
 }

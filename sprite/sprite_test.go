@@ -5,13 +5,14 @@ import (
 
 	"github.com/orfjackal/gospec/src/gospec"
 	. "github.com/orfjackal/gospec/src/gospec"
+	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/sprite"
 )
 
 func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
 	discardQueue := rendertest.MakeDiscardingRenderQueue()
-	spriteMan := sprite.MakeManager(discardQueue)
+	spriteMan := sprite.MakeManager(discardQueue, nil)
 
 	result := []*sprite.Sprite{}
 
@@ -107,5 +108,13 @@ func SyncSpec(c gospec.Context) {
 			}
 		}
 		c.Expect(hit, Equals, true)
+	})
+}
+
+func ManagerSpec(c gospec.Context) {
+	c.Specify("A manager must take a cacheing dependency", func() {
+		discardQueue := rendertest.MakeDiscardingRenderQueue()
+		diskCache := &cache.FsByteBank{}
+		_ = sprite.MakeManager(discardQueue, diskCache)
 	})
 }
