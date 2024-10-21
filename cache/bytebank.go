@@ -38,5 +38,5 @@ func (*RamByteBank) Read(key string) ([]byte, bool, error) {
 }
 
 func (*RamByteBank) Write(key string, data []byte) error {
-	return fmt.Errorf("not implemented")
+	return nil
 }
