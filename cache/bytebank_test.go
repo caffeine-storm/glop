@@ -21,7 +21,10 @@ func TestCacheSpecs(t *testing.T) {
 	gospec.MainGoTest(r, t)
 }
 
-var someData []byte = []byte("lol")
+var (
+	someData = []byte("lol")
+	someOtherData = []byte("rofl")
+)
 
 func FsByteBankSpec(c gospec.Context) {
 	c.Specify("An empty FsByteBank", func() {
@@ -110,6 +113,7 @@ func RamByteBankSpec(c gospec.Context) {
 		})
 
 		someKey := "some-key"
+		someOtherKey := "some-other-key"
 
 		c.Specify("can write a payload", func() {
 			err := bank.Write(someKey, someData)
@@ -121,6 +125,16 @@ func RamByteBankSpec(c gospec.Context) {
 				readData, hit, err := bank.Read(someKey)
 				c.Expect(err, gospec.Equals, nil)
 				c.Expect(hit, gospec.Equals, true)
+				c.Expect(readData, gospec.ContainsInOrder, someData)
+			})
+
+			c.Specify("keeps payloads separate by key", func() {
+				err := bank.Write(someOtherKey, someOtherData)
+				c.Expect(err, gospec.IsNil)
+
+				readData, hit, err := bank.Read(someKey)
+				c.Expect(err, gospec.IsNil)
+				c.Expect(hit, gospec.IsTrue)
 				c.Expect(readData, gospec.ContainsInOrder, someData)
 			})
 		})
