@@ -17,6 +17,7 @@ import (
 func TestCacheSpecs(t *testing.T) {
 	r := gospec.NewRunner()
 	r.AddSpec(FsByteBankSpec)
+	r.AddSpec(RamByteBankSpec)
 	gospec.MainGoTest(r, t)
 }
 
@@ -91,5 +92,11 @@ func FsByteBankSpec(c gospec.Context) {
 
 			c.Expect(fileData, gospec.ContainsInOrder, someData)
 		})
+	})
+}
+
+func RamByteBankSpec(c gospec.Context) {
+	c.Specify("An empty RamByteBank", func() {
+		_ = &cache.RamByteBank{}
 	})
 }
