@@ -18,6 +18,8 @@ func TestCacheSpecs(t *testing.T) {
 	r := gospec.NewRunner()
 	r.AddSpec(FsByteBankSpec)
 	r.AddSpec(RamByteBankSpec)
+	r.AddNamedSpec("FsByteBank is a ByteBank", ImplementsByteBank(&cache.FsByteBank{}))
+	r.AddNamedSpec("ramByteBank is a ByteBank", ImplementsByteBank(cache.MakeRamByteBank()))
 	gospec.MainGoTest(r, t)
 }
 
@@ -29,16 +31,6 @@ var (
 func FsByteBankSpec(c gospec.Context) {
 	c.Specify("An empty FsByteBank", func() {
 		bank := &cache.FsByteBank{}
-
-		c.Specify("can be constructed", func() {
-			c.Expect(bank, gospec.Not(gospec.Equals), nil)
-		})
-
-		c.Specify("returns a 'miss' when reading a bogus key", func() {
-			_, ok, err := bank.Read("not-present")
-			c.Expect(err, gospec.IsNil)
-			c.Expect(ok, gospec.Equals, false)
-		})
 
 		c.Specify("propagates file writing failures", func() {
 			doesNotExistDir := "/does/not/exist/"
@@ -105,38 +97,48 @@ func RamByteBankSpec(c gospec.Context) {
 		c.Specify("can be constructed", func() {
 			c.Expect(bank, gospec.Not(gospec.Equals), nil)
 		})
-
-		c.Specify("returns a 'miss' when reading a bogus key", func() {
-			_, ok, err := bank.Read("not-present")
-			c.Expect(err, gospec.IsNil)
-			c.Expect(ok, gospec.Equals, false)
-		})
-
-		someKey := "some-key"
-		someOtherKey := "some-other-key"
-
-		c.Specify("can write a payload", func() {
-			err := bank.Write(someKey, someData)
-			if err != nil {
-				panic(fmt.Errorf("couldn't write data: %w", err))
-			}
-
-			c.Specify("can read back the payload", func() {
-				readData, hit, err := bank.Read(someKey)
-				c.Expect(err, gospec.Equals, nil)
-				c.Expect(hit, gospec.Equals, true)
-				c.Expect(readData, gospec.ContainsInOrder, someData)
-			})
-
-			c.Specify("keeps payloads separate by key", func() {
-				err := bank.Write(someOtherKey, someOtherData)
-				c.Expect(err, gospec.IsNil)
-
-				readData, hit, err := bank.Read(someKey)
-				c.Expect(err, gospec.IsNil)
-				c.Expect(hit, gospec.IsTrue)
-				c.Expect(readData, gospec.ContainsInOrder, someData)
-			})
-		})
 	})
+}
+
+func ImplementsByteBank(bb cache.ByteBank) func(gospec.Context) {
+	return func(c gospec.Context) {
+		c.Specify("An empty ByteBank", func() {
+			c.Specify("can be constructed", func() {
+				c.Expect(bb, gospec.Not(gospec.Equals), nil)
+			})
+
+			c.Specify("returns a 'miss' when reading a bogus key", func() {
+				_, ok, err := bb.Read("not-present")
+				c.Expect(err, gospec.IsNil)
+				c.Expect(ok, gospec.Equals, false)
+			})
+
+			someKey := "some-key"
+			someOtherKey := "some-other-key"
+
+			c.Specify("can write a payload", func() {
+				err := bb.Write(someKey, someData)
+				if err != nil {
+					panic(fmt.Errorf("couldn't write data: %w", err))
+				}
+
+				c.Specify("can read back the payload", func() {
+					readData, hit, err := bb.Read(someKey)
+					c.Expect(err, gospec.Equals, nil)
+					c.Expect(hit, gospec.Equals, true)
+					c.Expect(readData, gospec.ContainsInOrder, someData)
+				})
+
+				c.Specify("keeps payloads separate by key", func() {
+					err := bb.Write(someOtherKey, someOtherData)
+					c.Expect(err, gospec.IsNil)
+
+					readData, hit, err := bb.Read(someKey)
+					c.Expect(err, gospec.IsNil)
+					c.Expect(hit, gospec.IsTrue)
+					c.Expect(readData, gospec.ContainsInOrder, someData)
+				})
+			})
+		})
+	}
 }
