@@ -31,12 +31,21 @@ func (*FsByteBank) Write(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0644)
 }
 
-type RamByteBank struct{}
-
-func (*RamByteBank) Read(key string) ([]byte, bool, error) {
-	return nil, false, nil
+type RamByteBank struct{
+	key string
+	data []byte
 }
 
-func (*RamByteBank) Write(key string, data []byte) error {
+func (bank *RamByteBank) Read(key string) ([]byte, bool, error) {
+	if bank.key != key {
+		return nil, false, nil
+	}
+
+	return bank.data, true, nil
+}
+
+func (bank *RamByteBank) Write(key string, data []byte) error {
+	bank.key = key
+	bank.data = data
 	return nil
 }
