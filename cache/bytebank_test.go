@@ -108,5 +108,14 @@ func RamByteBankSpec(c gospec.Context) {
 			c.Expect(err, gospec.IsNil)
 			c.Expect(ok, gospec.Equals, false)
 		})
+
+		someKey := "some-key"
+
+		c.Specify("can write a payload", func() {
+			err := bank.Write(someKey, someData)
+			if err != nil {
+				panic(fmt.Errorf("couldn't write data: %w", err))
+			}
+		})
 	})
 }
