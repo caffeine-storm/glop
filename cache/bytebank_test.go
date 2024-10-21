@@ -116,6 +116,13 @@ func RamByteBankSpec(c gospec.Context) {
 			if err != nil {
 				panic(fmt.Errorf("couldn't write data: %w", err))
 			}
+
+			c.Specify("can read back the payload", func() {
+				readData, hit, err := bank.Read(someKey)
+				c.Expect(err, gospec.Equals, nil)
+				c.Expect(hit, gospec.Equals, true)
+				c.Expect(readData, gospec.ContainsInOrder, someData)
+			})
 		})
 	})
 }
