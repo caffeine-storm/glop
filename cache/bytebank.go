@@ -32,3 +32,11 @@ func (*FsByteBank) Write(filename string, data []byte) error {
 }
 
 type RamByteBank struct{}
+
+func (*RamByteBank) Read(key string) ([]byte, bool, error) {
+	return []byte{}, true, nil
+}
+
+func (*RamByteBank) Write(key string, data []byte) error {
+	return nil
+}
