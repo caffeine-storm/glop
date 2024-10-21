@@ -60,6 +60,17 @@ func loadDictionaryForTest(render render.RenderQueueInterface) *Dictionary {
 	return d
 }
 
+func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface) {
+	d := loadDictionaryForTest(render)
+
+	render.Queue(func() {
+		d.RenderString(toDraw, 0, 0, 0, d.MaxHeight(), Left)
+		sys.SwapBuffers()
+	})
+
+	render.Purge()
+}
+
 func TestDictionaryMaxHeight(t *testing.T) {
 	t.Run("default-height-is-zero", func(t *testing.T) {
 		require := require.New(t)
@@ -134,13 +145,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
-		d := loadDictionaryForTest(render)
-
-		render.Queue(func() {
-			d.RenderString("lol", 0, 0, 0, d.MaxHeight(), Left)
-			sys.SwapBuffers()
-		})
-		render.Purge()
+		renderStringForTest("lol", sys, render)
 
 		var err error
 
