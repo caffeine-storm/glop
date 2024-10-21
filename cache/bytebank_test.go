@@ -100,7 +100,7 @@ func FsByteBankSpec(c gospec.Context) {
 
 func RamByteBankSpec(c gospec.Context) {
 	c.Specify("An empty RamByteBank", func() {
-		bank := &cache.RamByteBank{}
+		bank := cache.MakeRamByteBank()
 
 		c.Specify("can be constructed", func() {
 			c.Expect(bank, gospec.Not(gospec.Equals), nil)

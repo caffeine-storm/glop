@@ -31,15 +31,17 @@ func (*FsByteBank) Write(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0644)
 }
 
-type RamByteBank struct{
+type ramByteBank struct{
 	data map[string][]byte
 }
 
-func (bank *RamByteBank) Read(key string) ([]byte, bool, error) {
-	if bank.data == nil {
-		return nil, false, nil
+func MakeRamByteBank() *ramByteBank {
+	return &ramByteBank{
+		data: map[string][]byte{},
 	}
+}
 
+func (bank *ramByteBank) Read(key string) ([]byte, bool, error) {
 	if ret, ok := bank.data[key]; ok {
 		return ret, true, nil
 	}
@@ -47,11 +49,7 @@ func (bank *RamByteBank) Read(key string) ([]byte, bool, error) {
 	return nil, false, nil
 }
 
-func (bank *RamByteBank) Write(key string, data []byte) error {
-	if bank.data == nil {
-		bank.data = make(map[string][]byte)
-	}
-
+func (bank *ramByteBank) Write(key string, data []byte) error {
 	bank.data[key] = data
 
 	return nil
