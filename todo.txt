@@ -1,11 +1,11 @@
 tmckee: 'make test' can leave some temporary files behind on success; see
 sprite/test_sprite/<hash>.gob when running sprite spec tests
 
-tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
-				using '%w'.
-
 tmckee: migrate to convey
 (https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
+
+tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
+				using '%w'.
 
 tmckee: make render.RenderQueueInterface.Queue take a specific type of
 'RenderWork'; will let us refactor to inject the GL dependecy down the line.
