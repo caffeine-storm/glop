@@ -22,7 +22,7 @@ func TestCacheSpecs(t *testing.T) {
 }
 
 var (
-	someData = []byte("lol")
+	someData      = []byte("lol")
 	someOtherData = []byte("rofl")
 )
 

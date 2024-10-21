@@ -210,11 +210,11 @@ func CollectOutput(operation func()) []string {
 
 		oldStdout := os.Stdout
 		os.Stdout = write
-		defer func() {os.Stdout = oldStdout}()
+		defer func() { os.Stdout = oldStdout }()
 
 		oldStderr := os.Stderr
 		os.Stderr = write
-		defer func() {os.Stderr = oldStderr}()
+		defer func() { os.Stderr = oldStderr }()
 
 		// Prefer to defer closing the write end of the pipe. If operation panics,
 		// the pipe still needs to be closed or else the reading goroutine would

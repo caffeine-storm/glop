@@ -86,7 +86,7 @@ type Dictionary struct {
 	Data dictData
 
 	renderQueue render.RenderQueueInterface
-	logger *log.Logger
+	logger      *log.Logger
 
 	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
