@@ -194,7 +194,7 @@ func TestRunTextSpecs(t *testing.T) {
 }
 
 // Runs the given operation and returns a slice of strings that the operation
-// wrote to log.Print*, stdout and stderr combined.
+// wrote to log.Default().*, stdout and stderr combined.
 func CollectOutput(operation func()) []string {
 	read, write, err := os.Pipe()
 	if err != nil {
@@ -202,19 +202,24 @@ func CollectOutput(operation func()) []string {
 	}
 
 	go func() {
-		oldStdout := os.Stdout
-		oldStderr := os.Stderr
-		os.Stdout = write
-		os.Stderr = write
 		stdlogger := log.Default()
+
 		oldLogOut := stdlogger.Writer()
 		stdlogger.SetOutput(write)
-		defer func() {
-			os.Stdout = oldStdout
-			os.Stderr = oldStderr
-			stdlogger.SetOutput(oldLogOut)
-			write.Close()
-		}()
+		defer stdlogger.SetOutput(oldLogOut)
+
+		oldStdout := os.Stdout
+		os.Stdout = write
+		defer func() {os.Stdout = oldStdout}()
+
+		oldStderr := os.Stderr
+		os.Stderr = write
+		defer func() {os.Stderr = oldStderr}()
+
+		// Prefer to defer closing the write end of the pipe. If operation panics,
+		// the pipe still needs to be closed or else the reading goroutine would
+		// block forever.
+		defer write.Close()
 
 		operation()
 	}()
