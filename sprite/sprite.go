@@ -962,14 +962,19 @@ type FrameRect struct {
 type TriggerFunc func(*Sprite, string)
 
 type Manager struct {
-	// 'shared' is a cache of sharedSprite objects keyed by the filesystem path
-	// that we loaded it from.
-	shared         map[string]*sharedSprite
-	renderQueue    render.RenderQueueInterface
+	// A cache of sharedSprite objects keyed by the filesystem path that we
+	// loaded it from.
+	shared map[string]*sharedSprite
+
+	renderQueue render.RenderQueueInterface
+
+	// A cache of image.RGBA.Pix data from sprite sheets keyed by a hash of their
+	// content.
 	pixelDataCache cache.ByteBank
-	error_texture  gl.Texture
-	gen_tex_once   sync.Once
-	mutex          sync.Mutex
+
+	error_texture gl.Texture
+	gen_tex_once  sync.Once
+	mutex         sync.Mutex
 }
 
 func MakeManager(rq render.RenderQueueInterface, pixelDataCache cache.ByteBank) *Manager {
