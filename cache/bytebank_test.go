@@ -102,5 +102,11 @@ func RamByteBankSpec(c gospec.Context) {
 		c.Specify("can be constructed", func() {
 			c.Expect(bank, gospec.Not(gospec.Equals), nil)
 		})
+
+		c.Specify("returns a 'miss' when reading a bogus key", func() {
+			_, ok, err := bank.Read("not-present")
+			c.Expect(err, gospec.IsNil)
+			c.Expect(ok, gospec.Equals, false)
+		})
 	})
 }
