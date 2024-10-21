@@ -6,6 +6,7 @@ import (
 	"github.com/orfjackal/gospec/src/gospec"
 	. "github.com/orfjackal/gospec/src/gospec"
 	"github.com/runningwild/glop/cache"
+	"github.com/runningwild/glop/cache/cachetest"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/sprite"
 )
@@ -114,7 +115,9 @@ func SyncSpec(c gospec.Context) {
 func ManagerSpec(c gospec.Context) {
 	c.Specify("A manager must take a cacheing dependency", func() {
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
-		diskCache := &cache.FsByteBank{}
-		_ = sprite.MakeManager(discardQueue, diskCache)
+		spyCache := &cachetest.SpyedCache{
+			Impl: cache.MakeRamByteBank(),
+		}
+		_ = sprite.MakeManager(discardQueue, spyCache)
 	})
 }
