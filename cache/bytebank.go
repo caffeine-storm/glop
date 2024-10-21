@@ -30,3 +30,5 @@ func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
 func (*FsByteBank) Write(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0644)
 }
+
+type RamByteBank struct{}
