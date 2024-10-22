@@ -15,10 +15,15 @@ import (
 )
 
 func TestCacheSpecs(t *testing.T) {
+	tmpdir, err := os.MkdirTemp("", "glop-test")
+	if err != nil {
+		panic(fmt.Errorf("couldn't MkdirTemp: %w", err))
+	}
+	defer os.RemoveAll(tmpdir)
 	r := gospec.NewRunner()
 	r.AddSpec(FsByteBankSpec)
 	r.AddSpec(RamByteBankSpec)
-	r.AddNamedSpec("FsByteBank is a ByteBank", ImplementsByteBank(cache.MakeFsByteBank()))
+	r.AddNamedSpec("FsByteBank is a ByteBank", ImplementsByteBank(cache.MakeFsByteBank(tmpdir)))
 	r.AddNamedSpec("ramByteBank is a ByteBank", ImplementsByteBank(cache.MakeRamByteBank()))
 	gospec.MainGoTest(r, t)
 }
@@ -29,8 +34,14 @@ var (
 )
 
 func FsByteBankSpec(c gospec.Context) {
+	tmpdir, err := os.MkdirTemp("", "glop-test")
+	if err != nil {
+		panic(fmt.Errorf("couldn't make temp dir: %w", err))
+	}
+	defer os.RemoveAll(tmpdir)
+
 	c.Specify("An empty FsByteBank", func() {
-		bank := cache.MakeFsByteBank()
+		bank := cache.MakeFsByteBank(tmpdir)
 
 		c.Specify("propagates file writing failures", func() {
 			doesNotExistDir := "/does/not/exist/"
@@ -70,7 +81,7 @@ func FsByteBankSpec(c gospec.Context) {
 	})
 
 	c.Specify("An FsByteBank with some data", func() {
-		bank := cache.MakeFsByteBank()
+		bank := cache.MakeFsByteBank(tmpdir)
 		f, err := os.CreateTemp("", "glop-test")
 		if err != nil {
 			panic(fmt.Errorf("couldn't create temp file: %w", err))
