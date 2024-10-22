@@ -23,6 +23,11 @@ gos/linux/lib/libglop.so:
 
 fmt:
 	go fmt ./...
+	go -C test/drawstring fmt ./...
+
+# -l for 'list files'
+checkfmt:
+	@gofmt -l ./
 
 .PHONY: build-check
 .PHONY: compile_commands

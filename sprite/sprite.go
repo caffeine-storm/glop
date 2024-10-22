@@ -979,8 +979,8 @@ type Manager struct {
 
 func MakeManager(rq render.RenderQueueInterface, pixelDataCacheFactory func(string) cache.ByteBank) *Manager {
 	return &Manager{
-		shared:         make(map[string]*sharedSprite),
-		renderQueue:    rq,
+		shared:                make(map[string]*sharedSprite),
+		renderQueue:           rq,
 		pixelDataCacheFactory: pixelDataCacheFactory,
 	}
 }
