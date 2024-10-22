@@ -1,3 +1,5 @@
+tmckee: replace 'ioutil' usage with latest-and-greatest
+
 tmckee: migrate to convey
 (https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
 
