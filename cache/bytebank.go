@@ -12,9 +12,13 @@ type ByteBank interface {
 	Write(key string, data []byte) error
 }
 
-type FsByteBank struct{}
+type fsByteBank struct{}
 
-func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
+func MakeFsByteBank() *fsByteBank {
+	return &fsByteBank{}
+}
+
+func (*fsByteBank) Read(filename string) ([]byte, bool, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -27,7 +31,7 @@ func (*FsByteBank) Read(filename string) ([]byte, bool, error) {
 	return data, true, nil
 }
 
-func (*FsByteBank) Write(filename string, data []byte) error {
+func (*fsByteBank) Write(filename string, data []byte) error {
 	return os.WriteFile(filename, data, 0644)
 }
 

@@ -18,7 +18,7 @@ func TestCacheSpecs(t *testing.T) {
 	r := gospec.NewRunner()
 	r.AddSpec(FsByteBankSpec)
 	r.AddSpec(RamByteBankSpec)
-	r.AddNamedSpec("FsByteBank is a ByteBank", ImplementsByteBank(&cache.FsByteBank{}))
+	r.AddNamedSpec("FsByteBank is a ByteBank", ImplementsByteBank(cache.MakeFsByteBank()))
 	r.AddNamedSpec("ramByteBank is a ByteBank", ImplementsByteBank(cache.MakeRamByteBank()))
 	gospec.MainGoTest(r, t)
 }
@@ -30,7 +30,7 @@ var (
 
 func FsByteBankSpec(c gospec.Context) {
 	c.Specify("An empty FsByteBank", func() {
-		bank := &cache.FsByteBank{}
+		bank := cache.MakeFsByteBank()
 
 		c.Specify("propagates file writing failures", func() {
 			doesNotExistDir := "/does/not/exist/"
@@ -70,7 +70,7 @@ func FsByteBankSpec(c gospec.Context) {
 	})
 
 	c.Specify("An FsByteBank with some data", func() {
-		bank := &cache.FsByteBank{}
+		bank := cache.MakeFsByteBank()
 		f, err := os.CreateTemp("", "glop-test")
 		if err != nil {
 			panic(fmt.Errorf("couldn't create temp file: %w", err))
