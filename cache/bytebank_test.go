@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"testing"
 
 	// TODO(tmckee): use 'convey' instead:
@@ -22,6 +23,36 @@ func withScratchDir(op func(string)) {
 	defer os.RemoveAll(tmpdir)
 
 	op(tmpdir)
+}
+
+func findFilesInDir(path string) map[string]bool {
+	result := make(map[string]bool)
+
+	err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+		if !info.IsDir() {
+			result[path] = true
+		}
+		return err
+	})
+
+	if err != nil {
+		panic(fmt.Errorf("filepath.Walk returned an error: %w", err))
+	}
+
+	return result
+}
+
+func setDifference(included, excluded map[string]bool) map[string]bool {
+	result := make(map[string]bool)
+
+	for keyIncluded := range included {
+		// If the exlcusion set does not contain the key, it's in the difference.
+		if !excluded[keyIncluded] {
+			result[keyIncluded] = true
+		}
+	}
+
+	return result
 }
 
 func TestCacheSpecs(t *testing.T) {
@@ -79,6 +110,19 @@ func FsByteBankSpec(c gospec.Context) {
 					c.Expect(err, gospec.IsNil)
 					c.Expect(ok, gospec.IsFalse)
 				})
+			})
+
+			c.Specify("relative paths refer to the bound directory", func() {
+				filesInTempDirBefore := findFilesInDir(tmpdir)
+
+				err := bank.Write("someKey", someData)
+				c.Assume(err, gospec.IsNil)
+
+				filesInTempDirAfter := findFilesInDir(tmpdir)
+
+				delta := setDifference(filesInTempDirAfter, filesInTempDirBefore)
+
+				c.Expect(len(delta) != 0, gospec.IsTrue)
 			})
 		})
 
