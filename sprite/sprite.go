@@ -991,22 +991,21 @@ func (m *Manager) spriteForPath(path string) (*Sprite, error) {
 
 	cachedSharedSprite, cacheHit := m.shared[path]
 	if !cacheHit {
-		// Release the mutex while we do a potentially expensive load.
-		m.mutex.Unlock()
-
-		// TODO(tmckee): defer a 'm.mutex.Lock()' instead of relying on
-		// loadSharedSprite not panicing
-
 		var err error
-		// TODO(tmckee): support injecting a different type of ByteBank
-		byteBankFactory := func(s string) cache.ByteBank {
-			return cache.MakeFsByteBank(s)
-		}
-		cachedSharedSprite, err = loadSharedSprite(path, byteBankFactory, m.renderQueue)
+		{
+			// Release the mutex while we do a potentially expensive load.
+			m.mutex.Unlock()
 
-		// Acquire the mutex again while we potentially read/write from the
-		// protected map.
-		m.mutex.Lock()
+			// Acquire the mutex again while we potentially read/write from the
+			// protected map.
+			defer m.mutex.Lock()
+
+			// TODO(tmckee): support injecting a different type of ByteBank
+			byteBankFactory := func(s string) cache.ByteBank {
+				return cache.MakeFsByteBank(s)
+			}
+			cachedSharedSprite, err = loadSharedSprite(path, byteBankFactory, m.renderQueue)
+		}
 		if err != nil {
 			return nil, err
 		}
