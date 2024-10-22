@@ -151,6 +151,24 @@ func FsByteBankSpec(c gospec.Context) {
 				c.Expect(fileData, gospec.ContainsInOrder, someData)
 			})
 		})
+
+		c.Specify("FsByteBank construction needs a directory", func() {
+			c.Specify("a temp directory is okay", func() {
+				bank := cache.MakeFsByteBank(tmpdir)
+				c.Expect(bank, gospec.Not(gospec.IsNil))
+			})
+			c.Specify("a missing directory is not okay", func() {
+				bank := cache.MakeFsByteBank("/does/not/exist")
+				c.Expect(bank, gospec.IsNil)
+			})
+			c.Specify("a regular file can't be used as a directory", func() {
+				regfile, err := os.Create(path.Join(tmpdir, "foo.txt"))
+				c.Assume(err, gospec.IsNil)
+
+				bank := cache.MakeFsByteBank(regfile.Name())
+				c.Expect(bank, gospec.IsNil)
+			})
+		})
 	})
 }
 
