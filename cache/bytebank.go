@@ -14,7 +14,7 @@ type ByteBank interface {
 
 type fsByteBank struct{}
 
-func MakeFsByteBank() *fsByteBank {
+func MakeFsByteBank(path string) *fsByteBank {
 	return &fsByteBank{}
 }
 

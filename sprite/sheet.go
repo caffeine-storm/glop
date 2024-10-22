@@ -204,7 +204,7 @@ func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.
 		path:           path,
 		anim:           anim,
 		name:           uniqueName(fids),
-		pixelDataCache: cache.MakeFsByteBank(),
+		pixelDataCache: cache.MakeFsByteBank(path),
 	}
 	s.rects = make(map[frameId]FrameRect)
 	cy := 0
