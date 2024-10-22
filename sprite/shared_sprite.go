@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/util/algorithm"
 	"github.com/runningwild/yedparse"
@@ -31,6 +32,7 @@ type sharedSprite struct {
 	manager *Manager
 }
 
+// TODO(tmckee): support injecting a different type of byteBank
 func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sharedSprite, error) {
 	state, err := yed.ParseFromFile(filepath.Join(path, "state.xgml"))
 	if err != nil {
@@ -105,7 +107,7 @@ func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sh
 		}
 	}
 	sort.Sort(frameIdArray(fids))
-	ss.connector, err = makeSheet(path, &anim.Graph, fids, renderQueue)
+	ss.connector, err = makeSheet(path, &anim.Graph, fids, cache.MakeFsByteBank(path), renderQueue)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +131,7 @@ func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sh
 			}
 		}
 		sort.Sort(frameIdArray(facing_fids))
-		sh, err := makeSheet(path, &anim.Graph, facing_fids, renderQueue)
+		sh, err := makeSheet(path, &anim.Graph, facing_fids, cache.MakeFsByteBank(path), renderQueue)
 		if err != nil {
 			return nil, err
 		}

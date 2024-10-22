@@ -199,13 +199,12 @@ func uniqueName(fids []frameId) string {
 	return fmt.Sprintf("%x.gob", h.Sum64())
 }
 
-// TODO(tmckee): support injecting a different type of byteBank
-func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.RenderQueueInterface) (*sheet, error) {
+func makeSheet(path string, anim *yed.Graph, fids []frameId, byteBank cache.ByteBank, renderQueue render.RenderQueueInterface) (*sheet, error) {
 	s := sheet{
 		spritePath:     path,
 		anim:           anim,
 		name:           uniqueName(fids),
-		pixelDataCache: cache.MakeFsByteBank(path),
+		pixelDataCache: byteBank,
 	}
 	s.rects = make(map[frameId]FrameRect)
 	cy := 0
