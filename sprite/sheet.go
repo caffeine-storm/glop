@@ -40,8 +40,10 @@ func (fia frameIdArray) Swap(i, j int) {
 type sheet struct {
 	rects  map[frameId]FrameRect
 	dx, dy int
-	path   string
-	anim   *yed.Graph
+	// TODO(tmckee): verify correctness.
+	// The 'Sprite_path' for an entity as stored in <entitity>.json files.
+	spritePath string
+	anim       *yed.Graph
 
 	// Unique name that is based on the path of the sprite and the list of
 	// frameIds used to generate this sheet.  This name is used to store the
@@ -83,7 +85,7 @@ func (s *sheet) compose(pixer chan<- []byte) {
 	canvas := image.NewRGBA(rect)
 	for fid, rect := range s.rects {
 		name := s.anim.Node(fid.node).Line(0) + ".png"
-		file, err := os.Open(filepath.Join(s.path, fmt.Sprintf("%d", fid.facing), name))
+		file, err := os.Open(filepath.Join(s.spritePath, fmt.Sprintf("%d", fid.facing), name))
 		// if a file isn't there that's ok
 		if err != nil {
 			continue
@@ -169,7 +171,7 @@ func (s *sheet) routine(renderQueue render.RenderQueueInterface) {
 	for load := range s.reference_chan {
 		if load < 0 {
 			if references == 0 {
-				panic(fmt.Sprintf("Tried to unload a sprite (%s/%s) sheet more times than it was loaded.", s.name, s.path))
+				panic(fmt.Sprintf("Tried to unload a sprite (%s/%s) sheet more times than it was loaded.", s.name, s.spritePath))
 			}
 			references--
 			if references == 0 {
@@ -200,7 +202,7 @@ func uniqueName(fids []frameId) string {
 // TODO(tmckee): support injecting a different type of byteBank
 func makeSheet(path string, anim *yed.Graph, fids []frameId, renderQueue render.RenderQueueInterface) (*sheet, error) {
 	s := sheet{
-		path:           path,
+		spritePath:     path,
 		anim:           anim,
 		name:           uniqueName(fids),
 		pixelDataCache: cache.MakeFsByteBank(path),
