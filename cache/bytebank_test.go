@@ -86,27 +86,28 @@ func FsByteBankSpec(c gospec.Context) {
 			})
 
 			c.Specify("can write to a temp file", func() {
-				f, err := os.CreateTemp(tmpdir, "fs-byte-bank")
+				key := "fs-byte-bank"
+				f, err := os.CreateTemp(tmpdir, key)
 				if err != nil {
 					panic(fmt.Errorf("couldn't create temp file: %w", err))
 				}
 				tmpfile := f.Name()
 				defer os.Remove(tmpfile)
 
-				err = bank.Write(tmpfile, someData)
+				err = bank.Write(key, someData)
 				if err != nil {
 					panic(fmt.Errorf("couldn't write data: %w", err))
 				}
 
 				c.Specify("the data can be read back", func() {
-					data, ok, err := bank.Read(tmpfile)
+					data, ok, err := bank.Read(key)
 					c.Expect(err, gospec.IsNil)
 					c.Expect(ok, gospec.IsTrue)
 					c.Expect(string(data), gospec.Equals, string(someData))
 				})
 
 				c.Specify("still misses for different key", func() {
-					_, ok, err := bank.Read(tmpfile + "-but-miss")
+					_, ok, err := bank.Read(key + "-but-miss")
 					c.Expect(err, gospec.IsNil)
 					c.Expect(ok, gospec.IsFalse)
 				})
@@ -128,14 +129,19 @@ func FsByteBankSpec(c gospec.Context) {
 
 		c.Specify("An FsByteBank with some data", func() {
 			bank := cache.MakeFsByteBank(tmpdir)
-			f, err := os.CreateTemp(tmpdir, "fs-byte-bank")
+			keyBase := "fs-byte-bank"
+			f, err := os.CreateTemp(tmpdir, keyBase)
 			if err != nil {
 				panic(fmt.Errorf("couldn't create temp file: %w", err))
 			}
 			tmpfile := f.Name()
 			defer os.Remove(tmpfile)
 
-			err = bank.Write(tmpfile, someData)
+			// CreateTemp helpfully appends some digits to 'keyBase'; we can only
+			// know what the file is actually called after it's created.
+			_, key := path.Split(f.Name())
+
+			err = bank.Write(key, someData)
 			c.Assume(err, gospec.IsNil)
 
 			c.Specify("uses a flat format/encoding", func() {

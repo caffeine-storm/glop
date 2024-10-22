@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 )
 
 type ByteBank interface {
@@ -12,13 +13,18 @@ type ByteBank interface {
 	Write(key string, data []byte) error
 }
 
-type fsByteBank struct{}
-
-func MakeFsByteBank(path string) *fsByteBank {
-	return &fsByteBank{}
+type fsByteBank struct{
+	root string
 }
 
-func (*fsByteBank) Read(filename string) ([]byte, bool, error) {
+func MakeFsByteBank(path string) *fsByteBank {
+	return &fsByteBank{
+		root: path,
+	}
+}
+
+func (bank *fsByteBank) Read(key string) ([]byte, bool, error) {
+	filename := path.Join(bank.root, key)
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
@@ -31,7 +37,8 @@ func (*fsByteBank) Read(filename string) ([]byte, bool, error) {
 	return data, true, nil
 }
 
-func (*fsByteBank) Write(filename string, data []byte) error {
+func (bank *fsByteBank) Write(key string, data []byte) error {
+	filename := path.Join(bank.root, key)
 	return os.WriteFile(filename, data, 0644)
 }
 

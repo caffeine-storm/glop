@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/draw"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/go-gl-legacy/gl"
@@ -67,7 +66,7 @@ func (s *sheet) Unload() {
 }
 
 func (s *sheet) getCacheKey() string {
-	return path.Join(s.path, s.name)
+	return s.name
 }
 
 func (s *sheet) compose(pixer chan<- []byte) {
