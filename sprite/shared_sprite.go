@@ -32,8 +32,7 @@ type sharedSprite struct {
 	manager *Manager
 }
 
-// TODO(tmckee): support injecting a different type of byteBank
-func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sharedSprite, error) {
+func loadSharedSprite(path string, byteBankFactory func(string) cache.ByteBank, renderQueue render.RenderQueueInterface) (*sharedSprite, error) {
 	state, err := yed.ParseFromFile(filepath.Join(path, "state.xgml"))
 	if err != nil {
 		return nil, err
@@ -107,7 +106,7 @@ func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sh
 		}
 	}
 	sort.Sort(frameIdArray(fids))
-	ss.connector, err = makeSheet(path, &anim.Graph, fids, cache.MakeFsByteBank(path), renderQueue)
+	ss.connector, err = makeSheet(path, &anim.Graph, fids, byteBankFactory(path), renderQueue)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +130,7 @@ func loadSharedSprite(path string, renderQueue render.RenderQueueInterface) (*sh
 			}
 		}
 		sort.Sort(frameIdArray(facing_fids))
-		sh, err := makeSheet(path, &anim.Graph, facing_fids, cache.MakeFsByteBank(path), renderQueue)
+		sh, err := makeSheet(path, &anim.Graph, facing_fids, byteBankFactory(path), renderQueue)
 		if err != nil {
 			return nil, err
 		}

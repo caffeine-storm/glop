@@ -18,7 +18,7 @@ import (
 	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/util/algorithm"
-	"github.com/runningwild/yedparse"
+	yed "github.com/runningwild/yedparse"
 )
 
 const (
@@ -994,8 +994,15 @@ func (m *Manager) spriteForPath(path string) (*Sprite, error) {
 		// Release the mutex while we do a potentially expensive load.
 		m.mutex.Unlock()
 
+		// TODO(tmckee): defer a 'm.mutex.Lock()' instead of relying on
+		// loadSharedSprite not panicing
+
 		var err error
-		cachedSharedSprite, err = loadSharedSprite(path, m.renderQueue)
+		// TODO(tmckee): support injecting a different type of ByteBank
+		byteBankFactory := func(s string) cache.ByteBank {
+			return cache.MakeFsByteBank(s)
+		}
+		cachedSharedSprite, err = loadSharedSprite(path, byteBankFactory, m.renderQueue)
 
 		// Acquire the mutex again while we potentially read/write from the
 		// protected map.
