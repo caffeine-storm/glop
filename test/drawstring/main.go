@@ -55,19 +55,19 @@ func main() {
 
 	region := gui.Region{
 		Point: gui.Point{X: 0, Y: 0},
-		Dims: gui.Dims{Dx: 50, Dy: 50},
+		Dims:  gui.Dims{Dx: 50, Dy: 50},
 	}
 
 	for {
 		sys.Think()
 		render.Queue(func() {
-			gl.Clear(gl.COLOR_BUFFER_BIT);
+			gl.Clear(gl.COLOR_BUFFER_BIT)
 
 			gl.Begin(gl.QUADS)
 			gl.Vertex2d(-0.5, -0.5)
-			gl.Vertex2d( 0.5, -0.5)
-			gl.Vertex2d( 0.5,  0.5)
-			gl.Vertex2d(-0.5,  0.5)
+			gl.Vertex2d(0.5, -0.5)
+			gl.Vertex2d(0.5, 0.5)
+			gl.Vertex2d(-0.5, 0.5)
 			gl.End()
 
 			textLine.Draw(region)
