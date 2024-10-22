@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path"
 )
@@ -17,7 +18,20 @@ type fsByteBank struct {
 	root string
 }
 
+func isDir(path string) bool {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return fileInfo.IsDir()
+}
+
 func MakeFsByteBank(path string) *fsByteBank {
+	if !isDir(path) {
+		log.Printf("need path to existing directory but got %q", path)
+		return nil
+	}
+
 	return &fsByteBank{
 		root: path,
 	}
