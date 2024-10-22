@@ -7,7 +7,7 @@ import (
 )
 
 type SpyedCache struct {
-	Ops []string
+	Ops  []string
 	Impl cache.ByteBank
 }
 

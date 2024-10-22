@@ -13,7 +13,7 @@ type ByteBank interface {
 	Write(key string, data []byte) error
 }
 
-type fsByteBank struct{
+type fsByteBank struct {
 	root string
 }
 
