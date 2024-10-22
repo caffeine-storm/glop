@@ -985,7 +985,7 @@ func MakeManager(rq render.RenderQueueInterface, pixelDataCache cache.ByteBank) 
 	}
 }
 
-func (m *Manager) spriteForPath(path string) (*Sprite, error) {
+func (m *Manager) spriteForPath(path string, byteBankFactory func(string) cache.ByteBank) (*Sprite, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -1000,10 +1000,6 @@ func (m *Manager) spriteForPath(path string) (*Sprite, error) {
 			// protected map.
 			defer m.mutex.Lock()
 
-			// TODO(tmckee): support injecting a different type of ByteBank
-			byteBankFactory := func(s string) cache.ByteBank {
-				return cache.MakeFsByteBank(s)
-			}
 			cachedSharedSprite, err = loadSharedSprite(path, byteBankFactory, m.renderQueue)
 		}
 		if err != nil {
@@ -1042,6 +1038,10 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	// We can't run this during an init() function because it will get queued to
 	// run before the opengl context is created, so we just check here and run
 	// it if we haven't run it before.
+	// TODO(tmckee): the 'do this exactly once' check needs to happen
+	// per-render-queue; otherwise, the second queue to try to LoadSprite won't
+	// generatae an m.error_texture. Right now this is 'enforced' by not making
+	// more than one manager per render queue.
 	m.gen_tex_once.Do(func() {
 		m.renderQueue.Queue((func() {
 			gl.Enable(gl.TEXTURE_2D)
@@ -1059,5 +1059,9 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	})
 
 	path = filepath.Clean(path)
-	return m.spriteForPath(path)
+	// TODO(tmckee): support injecting a different type of ByteBank
+	byteBankFactory := func(s string) cache.ByteBank {
+		return cache.MakeFsByteBank(s)
+	}
+	return m.spriteForPath(path, byteBankFactory)
 }
