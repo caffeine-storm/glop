@@ -13,7 +13,9 @@ import (
 
 func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
 	discardQueue := rendertest.MakeDiscardingRenderQueue()
-	spriteMan := sprite.MakeManager(discardQueue, nil)
+	spriteMan := sprite.MakeManager(discardQueue, func(path string) cache.ByteBank {
+		return cache.MakeRamByteBank()
+	})
 
 	result := []*sprite.Sprite{}
 
@@ -118,6 +120,9 @@ func ManagerSpec(c gospec.Context) {
 		spyCache := &cachetest.SpyedCache{
 			Impl: cache.MakeRamByteBank(),
 		}
-		_ = sprite.MakeManager(discardQueue, spyCache)
+		spyCacheFactory := func(s string) cache.ByteBank {
+			return spyCache
+		}
+		_ = sprite.MakeManager(discardQueue, spyCacheFactory)
 	})
 }

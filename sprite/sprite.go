@@ -968,20 +968,20 @@ type Manager struct {
 
 	renderQueue render.RenderQueueInterface
 
-	// A cache of image.RGBA.Pix data from sprite sheets keyed by a hash of their
-	// content.
-	pixelDataCache cache.ByteBank
+	// A factory for caches of image.RGBA.Pix data. Each sprite sheet uses one to
+	// cache its data in case it is 'unloaded'.
+	pixelDataCacheFactory func(string) cache.ByteBank
 
 	error_texture gl.Texture
 	gen_tex_once  sync.Once
 	mutex         sync.Mutex
 }
 
-func MakeManager(rq render.RenderQueueInterface, pixelDataCache cache.ByteBank) *Manager {
+func MakeManager(rq render.RenderQueueInterface, pixelDataCacheFactory func(string) cache.ByteBank) *Manager {
 	return &Manager{
 		shared:         make(map[string]*sharedSprite),
 		renderQueue:    rq,
-		pixelDataCache: pixelDataCache,
+		pixelDataCacheFactory: pixelDataCacheFactory,
 	}
 }
 
@@ -1059,9 +1059,5 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	})
 
 	path = filepath.Clean(path)
-	// TODO(tmckee): support injecting a different type of ByteBank
-	byteBankFactory := func(s string) cache.ByteBank {
-		return cache.MakeFsByteBank(s)
-	}
-	return m.spriteForPath(path, byteBankFactory)
+	return m.spriteForPath(path, m.pixelDataCacheFactory)
 }

@@ -1,8 +1,3 @@
-tmckee: 'make test' can leave some temporary files behind on success; see
-sprite/test_sprite/<hash>.gob when running sprite spec tests
-	- needs controlled cacheing of pixel data when loading sprite sheets
-	- needs cacheing at sprite.Manager level
-
 tmckee: make a commit hook that blocks non-fmt'd changes
 
 tmckee: migrate to convey
