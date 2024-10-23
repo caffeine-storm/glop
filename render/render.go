@@ -3,18 +3,21 @@ package render
 import (
 	"log"
 	"runtime"
+	"sync/atomic"
 )
 
 type RenderQueueInterface interface {
 	Queue(f func())
 	Purge()
 	StartProcessing()
+	IsPurging() bool
 }
 
 type renderQueue struct {
 	render_funcs chan func()
 	purge        chan bool
 	is_running   bool
+	is_purging   atomic.Bool
 }
 
 func (q *renderQueue) loop() {
@@ -23,6 +26,7 @@ func (q *renderQueue) loop() {
 		case f := <-q.render_funcs:
 			f()
 		case <-q.purge:
+			q.is_purging.Store(true)
 			for {
 				select {
 				case f := <-q.render_funcs:
@@ -32,6 +36,7 @@ func (q *renderQueue) loop() {
 				}
 			}
 		purged:
+			q.is_purging.Store(false)
 			q.purge <- true
 		}
 	}
@@ -42,6 +47,7 @@ func MakeQueue(initialization func()) RenderQueueInterface {
 		render_funcs: make(chan func(), 1000),
 		purge:        make(chan bool),
 		is_running:   false,
+		is_purging:   atomic.Bool{}, // zero-value is false
 	}
 
 	// We're guaranteed that this render job will run first. We can include our
@@ -74,4 +80,8 @@ func (q *renderQueue) StartProcessing() {
 	}
 	q.is_running = true
 	go q.loop()
+}
+
+func (q *renderQueue) IsPurging() bool {
+	return q.is_purging.Load()
 }
