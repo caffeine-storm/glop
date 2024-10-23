@@ -5,7 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
-	"io/ioutil"
+	"os"
 
 	"code.google.com/p/freetype-go/freetype"
 	"code.google.com/p/freetype-go/freetype/raster"
@@ -26,7 +26,7 @@ func MustLoadFontAs(path, name string) {
 	if _, ok := basic_fonts[name]; ok {
 		panic(fmt.Sprintf("Cannot load two fonts with the same name: '%s'.", name))
 	}
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -41,7 +41,7 @@ func LoadFontAs(path, name string) error {
 	if _, ok := basic_fonts[name]; ok {
 		return &guiError{fmt.Sprintf("Cannot load two fonts with the same name: '%s'.", name)}
 	}
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
