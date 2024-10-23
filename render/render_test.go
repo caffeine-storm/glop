@@ -21,11 +21,18 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		q.Queue(func() {
 			sync <- true
 		})
-
 		<-sync
 
 		if q.IsPurging() {
 			t.Fatalf("a running queue shouldn't be purging before any purge requests")
 		}
+
+		q.Queue(func() {
+			if q.IsPurging() {
+				t.Fatalf("a running queue shouldn't be purging before any purge requests even from within a running job")
+			}
+			sync <- true
+		})
+		<-sync
 	})
 }
