@@ -14,5 +14,18 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		if q.IsPurging() {
 			t.Fatalf("a new queue should not be purging")
 		}
+
+		q.StartProcessing()
+
+		sync := make(chan bool)
+		q.Queue(func() {
+			sync <- true
+		})
+
+		<-sync
+
+		if q.IsPurging() {
+			t.Fatalf("a running queue shouldn't be purging before any purge requests")
+		}
 	})
 }
