@@ -1,3 +1,11 @@
+tmckee: there's a subtle bug where, because we use the same channel to request
+and acknowledge render queue purges, two worker goroutines could end up
+synchronizing on the channel instead of the expected synchronization between
+the render loop and one worker goroutine.
+
+tmckee: make render.RenderQueueInterface.Queue take a specific type of
+'RenderJob'; will let us refactor to inject the GL dependecy down the line.
+
 tmckee: replace 'ioutil' usage with latest-and-greatest
 
 tmckee: migrate to convey
@@ -5,9 +13,6 @@ tmckee: migrate to convey
 
 tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
 				using '%w'.
-
-tmckee: make render.RenderQueueInterface.Queue take a specific type of
-'RenderWork'; will let us refactor to inject the GL dependecy down the line.
 
 tmckee: loading a gui.Dictionary from disk should not need a render queue
 
