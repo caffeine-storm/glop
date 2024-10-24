@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"runtime"
 	"strings"
@@ -53,7 +54,7 @@ func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
 	return sys, render, wdx, wdy
 }
 
-func loadDictionaryForTest(render render.RenderQueueInterface, logger *log.Logger) *Dictionary {
+func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
 	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
@@ -67,7 +68,7 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *log.Logge
 	return d
 }
 
-func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, logger *log.Logger) {
+func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
 	render.Queue(func() {
@@ -129,7 +130,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		assert := assert.New(t)
 
 		render := rendertest.MakeDiscardingRenderQueue()
-		d := loadDictionaryForTest(render, log.Default())
+		d := loadDictionaryForTest(render, slog.Default())
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and
@@ -152,7 +153,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
-		renderStringForTest("lol", sys, render, log.Default())
+		renderStringForTest("lol", sys, render, slog.Default())
 
 		var err error
 
@@ -198,7 +199,7 @@ func TestRunTextSpecs(t *testing.T) {
 }
 
 // Runs the given operation and returns a slice of strings that the operation
-// wrote to log.Default().*, stdout and stderr combined.
+// wrote to slog.Default().*, stdout and stderr combined.
 func CollectOutput(operation func()) []string {
 	read, write, err := os.Pipe()
 	if err != nil {
@@ -206,6 +207,8 @@ func CollectOutput(operation func()) []string {
 	}
 
 	go func() {
+		// TODO(tmckee): do we need to worry about the default 'slog' logger? I
+		// think they're kinda aliases, no?
 		stdlogger := log.Default()
 
 		oldLogOut := stdlogger.Writer()
@@ -244,7 +247,9 @@ func CleanLogsPerFrameSpec(c gospec.Context) {
 	c.Specify("stdout isn't spammed by RenderString", func() {
 		sys, render, _, _ := initGlForTest()
 
-		voidLogger := log.New(io.Discard, "", 0)
+		voidLogger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+			Level: slog.Level(-42),
+		}))
 		stdoutLines := CollectOutput(func() {
 			renderStringForTest("lol", sys, render, voidLogger)
 		})

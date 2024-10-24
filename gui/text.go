@@ -6,7 +6,7 @@ import (
 	"image/color"
 	"image/draw"
 	"io"
-	"log"
+	"log/slog"
 	"math"
 	"sort"
 	"unsafe"
@@ -85,7 +85,7 @@ type Dictionary struct {
 	Data dictData
 
 	renderQueue render.RenderQueueInterface
-	logger      *log.Logger
+	logger      *slog.Logger
 
 	// TODO(tmckee): store a gl.Texture instead of a uint32
 	texture uint32
@@ -230,8 +230,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// this out.
 	scale := height / float64(d.Data.Maxy-d.Data.Miny)
 	width_texunits := float32(d.figureWidth(s) * scale)
-	d.logger.Printf("scale: %v, stride: %v, width: %v", scale, stride, width_texunits)
-	d.logger.Printf("d.Data.D{x,y}: %v, %v", d.Data.Dx, d.Data.Dy)
+	d.logger.Debug("sizes", "scale", scale, "stride", stride, "width", width_texunits)
+	d.logger.Debug("dict-dims", "Dx", d.Data.Dx, "Dy", d.Data.Dy)
 	x_pos_geounits := float32(x)
 
 	height_geounits := 1.0
@@ -260,9 +260,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			}
 			prev = r
 			info := d.getInfo(r)
-			d.logger.Printf("render char: x_pos: %f rune: %d\n", x_pos_geounits, r)
-			d.logger.Printf("info: %+v\n", info)
-			d.logger.Printf("d.Data.Maxy: %+v\n", d.Data.Maxy)
+			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", r, "runeInfo", info, "dict-maxy", d.Data.Maxy)
 			xleft_geounits := x_pos_geounits
 			xright_geounits := x_pos_geounits + float32(info.Pos.Max.X-info.Pos.Min.X)*texunits_to_geounits
 			// TODO(tmckee): uh... what? shouldn't it just be ytop_geounits, ybot := scale, 0 ?
@@ -305,8 +303,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			x_pos_geounits += float32(info.Advance) * texunits_to_geounits
 		}
 
-		d.logger.Printf("vxs: %v", strbuf.vs)
-		d.logger.Printf("ixs: %v", strbuf.is)
+		d.logger.Debug("geometry", "verts", strbuf.vs, "idxs", strbuf.is)
 		strbuf.vbuffer = uint32(gl.GenBuffer())
 		gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
@@ -340,7 +337,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	if diff > 0.45 {
 		diff = 0.45
 	}
-	d.logger.Printf("diff: %f", diff)
+	d.logger.Debug("RenderStringDiff", "diff", diff)
 	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
 	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
@@ -354,13 +351,13 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	debug.LogAndClearGlErrors(d.logger)
 
 	{
-		d.logger.Printf("current matrix mode: %q", debug.GetMatrixMode())
+		d.logger.Debug("matrixmode", "mode", debug.GetMatrixMode())
 
 		x, y, w, h := debug.GetViewport()
-		d.logger.Printf("current viewport: %v %v %v %v", x, y, w, h)
+		d.logger.Debug("viewport", "x", x, "y", y, "w", w, "h", h)
 
 		near, far := debug.GetDepthRange()
-		d.logger.Printf("depth range: %v %v", near, far)
+		d.logger.Debug("depth", "near", near, "far", far)
 	}
 
 	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
@@ -653,7 +650,7 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 	return &dict
 }
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *log.Logger) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *slog.Logger) (*Dictionary, error) {
 	var d Dictionary
 	err := gob.NewDecoder(r).Decode(&d.Data)
 	if err != nil {

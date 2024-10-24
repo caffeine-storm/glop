@@ -3,7 +3,7 @@ package main
 import (
 	"image"
 	"image/png"
-	"log"
+	"log/slog"
 	"os"
 	"runtime"
 
@@ -41,7 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	d, err := gui.LoadDictionary(dictReader, render, log.Default())
+	d, err := gui.LoadDictionary(dictReader, render, slog.Default())
 	if err != nil {
 		panic(err)
 	}

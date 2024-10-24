@@ -2,7 +2,7 @@ package debug
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"runtime"
 	"strings"
 
@@ -43,7 +43,7 @@ func GetDepthRange() (float64, float64) {
 	return buffer[0], buffer[1]
 }
 
-func LogAndClearGlErrors(logger *log.Logger) {
+func LogAndClearGlErrors(logger *slog.Logger) {
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
 		panic("couldn't call runtime.Caller(1)")
@@ -58,6 +58,6 @@ func LogAndClearGlErrors(logger *log.Logger) {
 			return
 		}
 
-		logger.Printf("GlError(%s:%d): 0x%04x\n", file, line, glErr)
+		logger.Warn("GlError", "file", file, "line", line, "code", glErr)
 	}
 }

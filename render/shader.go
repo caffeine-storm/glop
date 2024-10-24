@@ -2,7 +2,7 @@ package render
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
@@ -87,6 +87,6 @@ func RegisterShader(name string, vertex, fragment string) error {
 
 	shader_progs[name] = program
 
-	debug.LogAndClearGlErrors(log.Default())
+	debug.LogAndClearGlErrors(slog.Default())
 	return nil
 }
