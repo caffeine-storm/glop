@@ -384,7 +384,6 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
 
-	// TODO(tmckee): let's use gl.QUADS and simplify indices considerably...
 	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
 
 	debug.LogAndClearGlErrors(d.logger)
