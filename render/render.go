@@ -1,7 +1,7 @@
 package render
 
 import (
-	"log"
+	"log/slog"
 	"runtime"
 	"sync/atomic"
 )
@@ -68,7 +68,7 @@ func (q *renderQueue) Queue(f func()) {
 // Waits until all render thread functions have been run
 func (q *renderQueue) Purge() {
 	if !q.is_running {
-		log.Printf("WARNING: render.RenderQueue.Purge called on non-started queue")
+		slog.Warn("render.RenderQueue.Purge called on non-started queue")
 	}
 	q.purge <- true
 	<-q.purge
