@@ -199,7 +199,7 @@ func TestRunTextSpecs(t *testing.T) {
 }
 
 // Runs the given operation and returns a slice of strings that the operation
-// wrote to slog.Default().*, stdout and stderr combined.
+// wrote to log.Default().*, slog.Default().*, stdout and stderr combined.
 func CollectOutput(operation func()) []string {
 	read, write, err := os.Pipe()
 	if err != nil {
@@ -207,13 +207,15 @@ func CollectOutput(operation func()) []string {
 	}
 
 	go func() {
-		// TODO(tmckee): do we need to worry about the default 'slog' logger? I
-		// think they're kinda aliases, no?
 		stdlogger := log.Default()
-
 		oldLogOut := stdlogger.Writer()
 		stdlogger.SetOutput(write)
 		defer stdlogger.SetOutput(oldLogOut)
+
+		stdSlogger := slog.Default()
+		pipeSlogger := slog.New(slog.NewTextHandler(write, nil))
+		slog.SetDefault(pipeSlogger)
+		defer slog.SetDefault(stdSlogger)
 
 		oldStdout := os.Stdout
 		os.Stdout = write
