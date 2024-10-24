@@ -1,3 +1,6 @@
+tmckee: find a better debug-logging sol'n than println
+	- it's slog
+
 tmckee: make render.RenderQueueInterface.Queue take a specific type of
 'RenderJob'; will let us refactor to inject the GL dependecy down the line.
 
@@ -16,9 +19,6 @@ tmckee: installed multilib support to get the build going; is it necessary?
 
 tmckee: use type system to make initialization ordering constraints explicit
 	- need to identify which modules/packages need this
-
-tmckee: find a better debug-logging sol'n than println
-	- it's slog
 
 tmckee: Make it so that 'go test ./...' builds the native library on-demand
 
