@@ -9,7 +9,6 @@ import (
 	"log"
 	"math"
 	"sort"
-	"sync"
 	"unsafe"
 
 	"code.google.com/p/freetype-go/freetype"
@@ -655,24 +654,7 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 	return &dict
 }
 
-// TODO(tmckee): this is wrong; we need on per renderQueue
-var init_once sync.Once
-
 func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *log.Logger) (*Dictionary, error) {
-	// TODO(tmckee): we shouldn't coulple loading a dictionary to registering
-	// shaders.
-	renderQueue.Queue(func() {
-		// TODO(tmckee): consider supporting 'run this once' through the queue
-		// interface as we'd want to track onceness per-queue.
-		init_once.Do(func() {
-			err := render.RegisterShader("glop.font", font_vertex_shader, font_fragment_shader)
-			if err != nil {
-				panic(err)
-			}
-		})
-	})
-	renderQueue.Purge()
-
 	var d Dictionary
 	err := gob.NewDecoder(r).Decode(&d.Data)
 	if err != nil {

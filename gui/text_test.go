@@ -45,6 +45,10 @@ func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
 		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 	})
 	render.StartProcessing()
+	err := Init(render)
+	if err != nil {
+		panic(fmt.Errorf("couldn't gui.Init(): %w", err))
+	}
 
 	return sys, render, wdx, wdy
 }
