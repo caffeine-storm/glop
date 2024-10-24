@@ -1,7 +1,7 @@
 package gin
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"testing"
 
@@ -29,7 +29,7 @@ func TestPressKeyWorksForControlKey(t *testing.T) {
 func TestBindingGetPrimaryPressAmt(t *testing.T) {
 	require := require.New(t)
 
-	inputObj := MakeLogged(log.New(os.Stdout, "herp: ", 0))
+	inputObj := MakeLogged(slog.New(slog.NewTextHandler(os.Stdout, nil)))
 	require.NotNil(inputObj)
 
 	xKey := AnyKeyX
