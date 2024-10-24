@@ -1,5 +1,3 @@
-tmckee: gui/text.go: LoadDictionary tries to lazily initialize the "glop.font" shader program but there's gotta be a better way.
-
 tmckee: make render.RenderQueueInterface.Queue take a specific type of
 'RenderJob'; will let us refactor to inject the GL dependecy down the line.
 
