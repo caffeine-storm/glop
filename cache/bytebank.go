@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"log"
+	"log/slog"
 	"os"
 	"path"
 )
@@ -28,7 +28,7 @@ func isDir(path string) bool {
 
 func MakeFsByteBank(path string) *fsByteBank {
 	if !isDir(path) {
-		log.Printf("need path to existing directory but got %q", path)
+		slog.Error("need path to existing directory", "path", path)
 		return nil
 	}
 
