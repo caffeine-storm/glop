@@ -23,7 +23,6 @@ gos/linux/lib/libglop.so:
 
 fmt:
 	go fmt ./...
-	go -C test/drawstring fmt ./...
 
 # -l for 'list files'
 checkfmt:
