@@ -79,6 +79,42 @@ func renderStringForTest(toDraw string, sys system.System, render render.RenderQ
 	render.Purge()
 }
 
+func expectPixelsMatch(t *testing.T, render render.RenderQueueInterface, pgmFileExpected string, screenSpaceX, screenSpaceY int) {
+	var err error
+
+	// Read all the pixels from the framebuffer through OpenGL
+	var frameBufferBytes []byte
+	render.Queue(func() {
+		frameBufferBytes, err = readPixels(screenSpaceX, screenSpaceY)
+		if err != nil {
+			panic(fmt.Errorf("couldn't readPixels: %v", err))
+		}
+	})
+	render.Purge()
+
+	// Verify that the framebuffer's contents match our expected image.
+	expectedBytes, err := os.ReadFile(pgmFileExpected)
+	if err != nil {
+		panic(err)
+	}
+
+	rejectFileName := "../test/lol.rej.pgm"
+	pgmBytes := append([]byte("P5 512 64 255 "), frameBufferBytes...)
+	cmp := bytes.Compare(expectedBytes, pgmBytes)
+	if cmp != 0 {
+		// For debug purposes, copy the bad frame buffer for offline inspection.
+		rejectFile, err := os.Create(rejectFileName)
+		if err != nil {
+			panic(fmt.Errorf("couldn't open rejection file: %s: %v", rejectFileName, err))
+		}
+		defer rejectFile.Close()
+
+		io.Copy(rejectFile, bytes.NewReader(pgmBytes))
+
+		t.Fatalf("framebuffer mismatch; see %s", rejectFileName)
+	}
+}
+
 func TestDictionaryMaxHeight(t *testing.T) {
 	t.Run("default-height-is-zero", func(t *testing.T) {
 		require := require.New(t)
@@ -155,40 +191,10 @@ func TestDictionaryRenderString(t *testing.T) {
 
 		renderStringForTest("lol", sys, render, slog.Default())
 
-		var err error
+		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
 
-		// Read all the pixels from the framebuffer through OpenGL
-		var frameBufferBytes []byte
-		render.Queue(func() {
-			frameBufferBytes, err = readPixels(wdx, wdy)
-			if err != nil {
-				panic(fmt.Errorf("couldn't readPixels: %v", err))
-			}
-		})
-		render.Purge()
 
-		// Verify that the framebuffer's contents match our expected image.
-		expectedImage := "../testdata/text/lol.pgm"
-		expectedBytes, err := os.ReadFile(expectedImage)
-		if err != nil {
-			panic(err)
-		}
 
-		rejectFileName := "../test/lol.rej.pgm"
-		pgmBytes := append([]byte("P5 512 64 255 "), frameBufferBytes...)
-		cmp := bytes.Compare(expectedBytes, pgmBytes)
-		if cmp != 0 {
-			// For debug purposes, copy the bad frame buffer for offline inspection.
-			rejectFile, err := os.Create(rejectFileName)
-			if err != nil {
-				panic(fmt.Errorf("couldn't open rejection file: %s: %v", rejectFileName, err))
-			}
-			defer rejectFile.Close()
-
-			io.Copy(rejectFile, bytes.NewReader(pgmBytes))
-
-			t.Fatalf("framebuffer mismatch; see %s", rejectFileName)
-		}
 	})
 }
 
