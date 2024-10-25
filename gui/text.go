@@ -125,6 +125,7 @@ func (d *Dictionary) getInfo(r rune) runeInfo {
 func (d *Dictionary) figureWidth(s string) float64 {
 	w := 0.0
 	for _, r := range s {
+		// TODO(tmckee): this should account for kerning too!
 		w += d.getInfo(r).Advance
 	}
 	return w
@@ -219,6 +220,7 @@ func (d *Dictionary) StringWidth(s string) float64 {
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
 func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
+	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "z", z, "height", height, "just", just)
 	debug.LogAndClearGlErrors(d.logger)
 
 	if len(s) == 0 {

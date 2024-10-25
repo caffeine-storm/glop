@@ -55,6 +55,9 @@ func (p Point) Inside(r Region) bool {
 type Dims struct {
 	Dx, Dy int
 }
+
+// TODO(tmckee): are we sure we want to embed Point and Dims? Seems more like
+// they should just be named fields.
 type Region struct {
 	Point
 	Dims
