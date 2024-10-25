@@ -196,9 +196,6 @@ func TestDictionaryGetInfo(t *testing.T) {
 }
 
 func TestDictionaryRenderString(t *testing.T) {
-	// TODO(tmckee): probably need to stop exporting Dictionary from gui and call
-	// LoadDictionary to get an instance instead; it'll register shaders and
-	// such.
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
