@@ -27,8 +27,9 @@ func Relevel(in *slog.Logger, lvl slog.Level) *slog.Logger {
 }
 
 type Opts struct {
-	Output io.Writer
-	Level  slog.Leveler
+	Output         io.Writer
+	Level          slog.Leveler
+	DoNotAddSource bool
 }
 
 func New(options *Opts) *slog.Logger {
@@ -43,7 +44,8 @@ func New(options *Opts) *slog.Logger {
 	}
 
 	slogopts := &slog.HandlerOptions{
-		Level: options.Level,
+		AddSource: !options.DoNotAddSource,
+		Level:     options.Level,
 	}
 	return slog.New(slog.NewTextHandler(options.Output, slogopts))
 }
