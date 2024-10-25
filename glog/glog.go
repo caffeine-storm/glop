@@ -5,6 +5,9 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"path"
+	"path/filepath"
+	"strings"
 )
 
 type handlerAtLevel struct {
@@ -32,6 +35,38 @@ type Opts struct {
 	DoNotAddSource bool
 }
 
+func trimLeadingDir(in string) string {
+	// the 'source' attr gets lots of leading dirs; let's trim away anything
+	// above 'glop'.
+	parts := strings.Split(in, string(filepath.Separator))
+	trimpoints := map[string]bool{
+		"glop": true,
+	}
+
+	for i := len(parts); i > 0; {
+		i--
+		if trimpoints[parts[i]] {
+			return path.Join(parts[i+1:]...)
+		}
+	}
+
+	slog.Default().Warn("glog.trimLeadingDir: no trim point found", "input", in, "trimpoints", trimpoints)
+
+	return in
+}
+
+func trimLeadingDirNoise(groups []string, a slog.Attr) slog.Attr {
+	// Let Attrs that aren't "source" pass through.
+	if a.Key != "source" {
+		return a
+	}
+
+	trimmed := trimLeadingDir(a.Value.String())
+	lastSpace := strings.LastIndex(trimmed, " ")
+	fileColonLine := trimmed[0:lastSpace] + ":" + trimmed[lastSpace+1:]
+	return slog.String("source", fileColonLine)
+}
+
 func New(options *Opts) *slog.Logger {
 	if options == nil {
 		options = &Opts{}
@@ -44,8 +79,9 @@ func New(options *Opts) *slog.Logger {
 	}
 
 	slogopts := &slog.HandlerOptions{
-		AddSource: !options.DoNotAddSource,
-		Level:     options.Level,
+		AddSource:   !options.DoNotAddSource,
+		Level:       options.Level,
+		ReplaceAttr: trimLeadingDirNoise,
 	}
 	return slog.New(slog.NewTextHandler(options.Output, slogopts))
 }
