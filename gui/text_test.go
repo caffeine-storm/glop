@@ -69,11 +69,11 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 	return d
 }
 
-func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, logger *slog.Logger) {
+func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
 	render.Queue(func() {
-		d.RenderString(toDraw, 0, 0, 0, d.MaxHeight(), Left)
+		d.RenderString(toDraw, 0, 0, 0, d.MaxHeight(), just)
 		sys.SwapBuffers()
 	})
 
@@ -201,7 +201,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
-		renderStringForTest("lol", sys, render, slog.Default())
+		renderStringForTest("lol", sys, render, Left, slog.Default())
 
 		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
 
@@ -271,7 +271,7 @@ func CleanLogsPerFrameSpec(c gospec.Context) {
 			Level: slog.Level(-42),
 		}))
 		stdoutLines := CollectOutput(func() {
-			renderStringForTest("lol", sys, render, voidLogger)
+			renderStringForTest("lol", sys, render, Left, voidLogger)
 		})
 
 		c.Expect(stdoutLines, gospec.ContainsExactly, []string{})
