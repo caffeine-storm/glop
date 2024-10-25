@@ -7,6 +7,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"path"
 	"runtime"
 	"strings"
 	"testing"
@@ -79,6 +80,16 @@ func renderStringForTest(toDraw string, sys system.System, render render.RenderQ
 	render.Purge()
 }
 
+// Return the given file but with a '.rej' component to signify a 'rejection'.
+func makeRejectName(exp, suffix string) string {
+	dir, expectedFileName := path.Split(exp)
+	rejectFileNameBase, ok := strings.CutSuffix(expectedFileName, suffix)
+	if !ok {
+		panic(fmt.Errorf("need a %s file, got %s", suffix, exp))
+	}
+	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
+}
+
 func expectPixelsMatch(t *testing.T, render render.RenderQueueInterface, pgmFileExpected string, screenSpaceX, screenSpaceY int) {
 	var err error
 
@@ -98,7 +109,8 @@ func expectPixelsMatch(t *testing.T, render render.RenderQueueInterface, pgmFile
 		panic(err)
 	}
 
-	rejectFileName := "../test/lol.rej.pgm"
+	rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
+
 	pgmBytes := append([]byte("P5 512 64 255 "), frameBufferBytes...)
 	cmp := bytes.Compare(expectedBytes, pgmBytes)
 	if cmp != 0 {

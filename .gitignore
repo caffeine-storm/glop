@@ -11,4 +11,4 @@ _*
 *.sublime-workspace
 
 gos/linux/compile_commands.json
-test/lol.rej.pgm
+testdata/**/*.rej.*
