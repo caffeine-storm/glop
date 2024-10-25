@@ -203,6 +203,15 @@ func TestDictionaryRenderString(t *testing.T) {
 
 		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
 	})
+
+	t.Run("RendersCentred", func(t *testing.T) {
+		sys, render, wdx, wdy := initGlForTest()
+
+		// d.RenderString("Credits", 0, 0, 0, 10, Center)
+		renderStringForTest("Credits", sys, render, Center, slog.Default())
+
+		expectPixelsMatch(t, render, "../testdata/text/credits.pgm", wdx, wdy)
+	})
 }
 
 func TestRunTextSpecs(t *testing.T) {
