@@ -35,8 +35,8 @@ type Dictionary struct {
 
 	texture gl.Texture
 
-	strs map[string]strBuffer
-	pars map[string]strBuffer
+	strs map[string]blitBuffer
+	pars map[string]blitBuffer
 }
 
 type dictData struct {
@@ -97,16 +97,18 @@ type runeInfo struct {
 	Advance float64
 }
 
-type strBuffer struct {
-	// vertex-buffer
-	vbuffer gl.Buffer
-	vs      []dictVert
+// Stores data for blitting from an underlying texture to the screen.
+type blitBuffer struct {
+	vertexBuffer gl.Buffer
+	vertexData   []blitVertex
 
-	// inidices-buffer
-	ibuffer gl.Buffer
-	is      []uint16
+	indicesBuffer gl.Buffer
+	indicesData   []uint16
 }
-type dictVert struct {
+
+// Stores indivdual vertex data for our blitting operations. (x, y) denotes a
+// point on screen. (u, v) denotes a point in the texture.
+type blitVertex struct {
 	x, y float32
 	u, v float32
 }
@@ -220,7 +222,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		return
 	}
 
-	stride := unsafe.Sizeof(dictVert{})
+	stride := unsafe.Sizeof(blitVertex{})
 	// TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
 	// this out.
 	scale := height / float64(d.Data.Maxy-d.Data.Miny)
@@ -261,35 +263,35 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			// TODO(tmckee): uh... what? shouldn't it just be ytop_geounits, ybot := scale, 0 ?
 			ytop_geounits := float32(1.0)
 			ybot_geounits := float32(0.0)
-			start := uint16(len(strbuf.vs))
-			strbuf.is = append(strbuf.is, start+0)
-			strbuf.is = append(strbuf.is, start+1)
-			strbuf.is = append(strbuf.is, start+2)
-			strbuf.is = append(strbuf.is, start+0)
-			strbuf.is = append(strbuf.is, start+2)
-			strbuf.is = append(strbuf.is, start+3)
+			start := uint16(len(strbuf.vertexData))
+			strbuf.indicesData = append(strbuf.indicesData, start+0)
+			strbuf.indicesData = append(strbuf.indicesData, start+1)
+			strbuf.indicesData = append(strbuf.indicesData, start+2)
+			strbuf.indicesData = append(strbuf.indicesData, start+0)
+			strbuf.indicesData = append(strbuf.indicesData, start+2)
+			strbuf.indicesData = append(strbuf.indicesData, start+3)
 
 			// Note: the texture is loaded 'upside down' so we flip our y-coordinates
 			// in texture-space.
-			strbuf.vs = append(strbuf.vs, dictVert{
+			strbuf.vertexData = append(strbuf.vertexData, blitVertex{
 				x: xleft_geounits,
 				y: ytop_geounits,
 				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
-			strbuf.vs = append(strbuf.vs, dictVert{
+			strbuf.vertexData = append(strbuf.vertexData, blitVertex{
 				x: xleft_geounits,
 				y: ybot_geounits,
 				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
-			strbuf.vs = append(strbuf.vs, dictVert{
+			strbuf.vertexData = append(strbuf.vertexData, blitVertex{
 				x: xright_geounits,
 				y: ybot_geounits,
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
-			strbuf.vs = append(strbuf.vs, dictVert{
+			strbuf.vertexData = append(strbuf.vertexData, blitVertex{
 				x: xright_geounits,
 				y: ytop_geounits,
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
@@ -298,14 +300,14 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			x_pos_geounits += float32(info.Advance) * texunits_to_geounits
 		}
 
-		d.logger.Debug("geometry", "verts", strbuf.vs, "idxs", strbuf.is)
-		strbuf.vbuffer = gl.GenBuffer()
-		strbuf.vbuffer.Bind(gl.ARRAY_BUFFER)
-		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
+		d.logger.Debug("geometry", "verts", strbuf.vertexData, "idxs", strbuf.indicesData)
+		strbuf.vertexBuffer = gl.GenBuffer()
+		strbuf.vertexBuffer.Bind(gl.ARRAY_BUFFER)
+		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vertexData), strbuf.vertexData, gl.STATIC_DRAW)
 
-		strbuf.ibuffer = gl.GenBuffer()
-		strbuf.ibuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
+		strbuf.indicesBuffer = gl.GenBuffer()
+		strbuf.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.indicesData[0]))*len(strbuf.indicesData), strbuf.indicesData, gl.STATIC_DRAW)
 		d.strs[s] = strbuf
 	}
 
@@ -368,15 +370,15 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 
 	gl.EnableClientState(gl.VERTEX_ARRAY)
 	defer gl.DisableClientState(gl.VERTEX_ARRAY)
-	strbuf.vbuffer.Bind(gl.ARRAY_BUFFER)
+	strbuf.vertexBuffer.Bind(gl.ARRAY_BUFFER)
 	gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
 
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
 	defer gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
-	strbuf.ibuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
+	strbuf.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vertexData[0].u))
 
-	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
+	gl.DrawElements(gl.TRIANGLES, len(strbuf.indicesData), gl.UNSIGNED_SHORT, nil)
 
 	debug.LogAndClearGlErrors(d.logger)
 }
@@ -486,8 +488,8 @@ func (d *Dictionary) Store(outputStream io.Writer) error {
 // Sets up anything that wouldn't have been loaded from disk, including
 // all opengl data.
 func (d *Dictionary) setupGlStuff() {
-	d.strs = make(map[string]strBuffer)
-	d.pars = make(map[string]strBuffer)
+	d.strs = make(map[string]blitBuffer)
+	d.pars = make(map[string]blitBuffer)
 
 	d.renderQueue.Queue(func() {
 		gl.Enable(gl.TEXTURE_2D)
