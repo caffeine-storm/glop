@@ -205,8 +205,6 @@ func TestDictionaryRenderString(t *testing.T) {
 
 		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
 
-
-
 	})
 }
 

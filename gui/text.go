@@ -48,21 +48,42 @@ const font_fragment_shader string = `
   }
 `
 
+// Describes the location and size of a glyph in a 'grid-of-glyphs' texture
+// that has been 'packed'.
 type runeInfo struct {
-	Pos    image.Rectangle
+	// Texture's minimal sub-image of the glyph's texels.
+	Pos image.Rectangle
+
+	// Padded sub-image of the glyph's texels; like above but has relative
+	// positioning and would include texels that the glyph does not own in the
+	// texture.
 	Bounds image.Rectangle
-	// TODO(tmckee): Full_bounds seems to never get populated... this is either a
-	// problem with the data we're using or we can drop this field.
+
+	// TODO(tmckee): Full_bounds seems to never get populated... presumably this
+	// is the bounds to allocate for the character. We will need to
+	// 'MakeDictionary' with real .ttf fonts to remake the .gob files.
 	Full_bounds image.Rectangle
-	Advance     float64
+
+	// How far to move the rastering position to the right in natural pixels
+	// after having rendered the corresponding rune. Does not account for
+	// kerning.
+	Advance float64
 }
+
 type dictData struct {
-	// The Pix data from the original image.Rgba
+	// The Pix data of an image.RGBA of the packed 'grid of glyphs'.
 	Pix []byte
 
+	// Adjustments to apply to the rastering position while rendering strings of
+	// text. For nice-to-read text, we need to support pushing some character
+	// pairs closer together while pushing others apart. This adjustment is known
+	// as kerning.  This is, effectively, a mapping of ordered character pairs to
+	// an adjustment to apply between them.
+	// TODO(tmckee): this is all zero right now, AFAICT, and should be a float
+	// instead of an int... right!?
 	Kerning map[rune]map[rune]int
 
-	// Dx and Dy of the original image.Rgba
+	// Width and height in pixels of Pix's image.RGBA.
 	Dx, Dy int
 
 	// Map from rune to that rune's runeInfo.
@@ -77,10 +98,14 @@ type dictData struct {
 	Baseline int
 
 	// Amount glyphs were scaled down during packing.
+	// TODO(tmckee): this doesn't seem to be present in old .gob files and nobody
+	// seems to read it; we should remove it.
 	Scale float64
 
+	// The lowest and highest relative pixel position amongst the glyphs.
 	Miny, Maxy int
 }
+
 type Dictionary struct {
 	Data dictData
 
@@ -93,6 +118,7 @@ type Dictionary struct {
 	strs map[string]strBuffer
 	pars map[string]strBuffer
 }
+
 type strBuffer struct {
 	// vertex-buffer
 	vbuffer uint32
@@ -207,11 +233,19 @@ func (d *Dictionary) RenderParagraph(s string, x, y, z, dx, height float64, hali
 	}
 }
 
-func (d *Dictionary) StringWidth(s string) float64 {
+// Figures out how wide a string will be if rendered at its natural size.
+func (d *Dictionary) StringPixelWidth(s string) float64 {
 	width := 0.0
+	var prev rune
 	for _, r := range s {
 		info := d.getInfo(r)
 		width += info.Advance
+
+		// Need to account for kerning adjustments
+		if kernData, ok := d.Data.Kerning[prev]; ok {
+			width += float64(kernData[r])
+		}
+		prev = r
 	}
 	return width
 }
@@ -219,6 +253,7 @@ func (d *Dictionary) StringWidth(s string) float64 {
 // TODO(tmckee): refactor uses of Dictionary to not require calling
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
+// Renders the string 's' at the given (x, y, z) in normalized device co-ordinates and at a height of 'height' in pixels.
 func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
 	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "z", z, "height", height, "just", just)
 	debug.LogAndClearGlErrors(d.logger)
@@ -414,6 +449,9 @@ func (si *subImage) At(x, y int) color.Color {
 // Returns a sub-image of the input image. The bounding rectangle is the
 // smallest possible rectangle that includes all pixels that have alpha > 0,
 // with one pixel of border on all sides.
+// TODO(tmckee): ought to be able to save a lot of effort by skipping internal
+// pixels; i.e. each row has a min/max X pixel set; we don't need to check
+// between them.
 func minimalSubImage(src image.Image) *subImage {
 	bounds := src.Bounds()
 	var new_bounds image.Rectangle
@@ -440,8 +478,8 @@ func minimalSubImage(src image.Image) *subImage {
 		}
 	}
 
-	// // We want one row/col of boundary between characters so that we don't get
-	// // annoying artifacts
+	// We want one row/col of boundary between characters so that we don't get
+	// annoying artifacts
 	new_bounds.Min.X--
 	new_bounds.Min.Y--
 	new_bounds.Max.X++
@@ -491,7 +529,7 @@ func (p *packedImage) Swap(i, j int) {
 	p.ims[i], p.ims[j] = p.ims[j], p.ims[i]
 	p.off[i], p.off[j] = p.off[j], p.off[i]
 }
-func (p *packedImage) GetRect(im image.Image) image.Rectangle {
+func (p *packedImage) GetPackedLocation(im image.Image) image.Rectangle {
 	for i := range p.ims {
 		if im == p.ims[i] {
 			return p.ims[i].Bounds().Add(p.off[i])
@@ -522,6 +560,7 @@ func packImages(ims []image.Image) *packedImage {
 	}
 	p.ims = ims
 	p.off = make([]image.Point, len(p.ims))
+	// Sorts p.ims by height
 	sort.Sort(&p)
 
 	run := 0
@@ -573,6 +612,13 @@ func packImages(ims []image.Image) *packedImage {
 	return &p
 }
 
+func fix24_8_to_float64(n raster.Fix32) float64 {
+	// 'n' is a fractional value packed into an int32 with the 24
+	// most-significant bits representing the 'whole' portion and the 8
+	// least-significant bits representing the fractional part.
+	return float64(n) / (2 ^ 8)
+}
+
 func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
@@ -595,14 +641,14 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 		sub := minimalSubImage(canvas)
 		letters = append(letters, sub)
 		rune_mapping[r] = sub
-		adv_x := float64(advance.X) / 256.0
-		rune_info[r] = runeInfo{Bounds: sub.bounds, Advance: adv_x}
+		adv := fix24_8_to_float64(advance.X)
+		rune_info[r] = runeInfo{Bounds: sub.bounds, Advance: adv}
 	}
 	packed := packImages(letters)
 
 	for _, r := range alphabet {
 		ri := rune_info[r]
-		ri.Pos = packed.GetRect(rune_mapping[r])
+		ri.Pos = packed.GetPackedLocation(rune_mapping[r])
 		rune_info[r] = ri
 	}
 
