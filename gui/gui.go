@@ -233,6 +233,9 @@ type EmbeddedWidget interface {
 	Think(*Gui, int64)
 	Respond(*Gui, EventGroup) (consume bool)
 }
+
+// TODO(tmckee): is a BasicWidget just a way to implement 'Widget' for a
+// CoreWidget?
 type BasicWidget struct {
 	CoreWidget
 }
