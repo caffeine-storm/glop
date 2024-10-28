@@ -13,8 +13,6 @@ github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701 h1:yOXfzNV7q
 github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701/go.mod h1:VtBIF1XX0c1nKkeAPk8i4aXkYopqQgfDqolHUIHPwNI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894 h1:/AbPytcVIuyJwvyorTCxKD8bhTE9uMJJ3Ulf4vO0oc4=
-github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894/go.mod h1:4vpJ5d17O5eEwNBIYIPQeccmFDM2/P/4LBqCtPwTTU4=
 github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81 h1:FTAg+lBCy0v6vvGaykBPATDdUY50MjJ6FdQ9CQeQsAc=
 github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81/go.mod h1:BjqYe08obgSdkjNk2t3EpfJq4ITaQ27tAJoOxv0KXq0=
 github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9 h1:aSky3KZJsEt7N0/MEJJ8Sz1ytHoSLnxld3G8c2xfQ5Q=

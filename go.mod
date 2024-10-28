@@ -14,7 +14,6 @@ require (
 	github.com/go-gl-legacy/glu v0.0.0-20150315173544-b54aa06bc77a
 	github.com/orfjackal/gospec v0.0.0-20140731185859-a21081619255
 	github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701 // indirect
-	github.com/runningwild/memory v0.0.0-20120626004817-db5bb35fd894
 	github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81
 	github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9
 	github.com/stretchr/testify v1.9.0
