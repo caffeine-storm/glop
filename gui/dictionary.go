@@ -99,7 +99,7 @@ type runeInfo struct {
 
 type strBuffer struct {
 	// vertex-buffer
-	vbuffer uint32
+	vbuffer gl.Buffer
 	vs      []dictVert
 
 	// inidices-buffer
@@ -299,8 +299,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		}
 
 		d.logger.Debug("geometry", "verts", strbuf.vs, "idxs", strbuf.is)
-		strbuf.vbuffer = uint32(gl.GenBuffer())
-		gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
+		strbuf.vbuffer = gl.GenBuffer()
+		strbuf.vbuffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
 
 		strbuf.ibuffer = uint32(gl.GenBuffer())
@@ -368,7 +368,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 
 	gl.EnableClientState(gl.VERTEX_ARRAY)
 	defer gl.DisableClientState(gl.VERTEX_ARRAY)
-	gl.Buffer(strbuf.vbuffer).Bind(gl.ARRAY_BUFFER)
+	strbuf.vbuffer.Bind(gl.ARRAY_BUFFER)
 	gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
 
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
