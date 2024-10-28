@@ -22,21 +22,6 @@ func (g *guiError) Error() string {
 	return g.ErrorString
 }
 
-func MustLoadFontAs(path, name string) {
-	if _, ok := basic_fonts[name]; ok {
-		panic(fmt.Sprintf("Cannot load two fonts with the same name: '%s'.", name))
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		panic(err.Error())
-	}
-	font, err := freetype.ParseFont(data)
-	if err != nil {
-		panic(err.Error())
-	}
-	basic_fonts[name] = font
-}
-
 func LoadFontAs(path, name string) error {
 	if _, ok := basic_fonts[name]; ok {
 		return &guiError{fmt.Sprintf("Cannot load two fonts with the same name: '%s'.", name)}
