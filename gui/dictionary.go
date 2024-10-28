@@ -81,14 +81,18 @@ type runeInfo struct {
 	// Texture's minimal sub-image of the glyph's texels.
 	Pos image.Rectangle
 
-	// Padded sub-image of the glyph's texels; like above but has relative
-	// positioning and would include texels that the glyph does not own in the
-	// texture.
+	// Padded sub-image of the glyph's texels; like above but positioned relative
+	// to the glyph. Used to include texels that the glyph does not own in the
+	// texture but should be 'assumed' blank in the texture. That is, the texels
+	// might not be blank in the texture because of tight packing but drawing the
+	// character should operate as if they were.
+	// TODO(tmckee): does that make sense? Is that what this acutally _is_?
 	Bounds image.Rectangle
 
 	// TODO(tmckee): Full_bounds seems to never get populated... presumably this
-	// is the bounds to allocate for the character. We will need to
-	// 'MakeDictionary' with real .ttf fonts to remake the .gob files.
+	// is the bounds to allocate and blit the character into. We will need to
+	// 'MakeDictionary' with real .ttf fonts to remake the pre-packed files
+	// because we need these dimensions.
 	Full_bounds image.Rectangle
 
 	// How far to move the rastering position to the right in natural pixels
