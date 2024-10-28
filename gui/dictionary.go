@@ -390,7 +390,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n) / (2 ^ 8)
 }
 
-func MakeDictionary(font *truetype.Font, size int) *Dictionary {
+func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -461,9 +461,7 @@ func MakeDictionary(font *truetype.Font, size int) *Dictionary {
 		}
 	}
 
-	// TODO(tmckee): we haven't set dict.renderQueue yet; this will panic. It
-	// doesn't matter right now, because nobody calls MakeDictionary, but this is
-	// broken right now.
+	dict.renderQueue = renderQueue
 	dict.setupGlStuff()
 
 	return &dict
