@@ -103,7 +103,7 @@ type strBuffer struct {
 	vs      []dictVert
 
 	// inidices-buffer
-	ibuffer uint32
+	ibuffer gl.Buffer
 	is      []uint16
 }
 type dictVert struct {
@@ -303,8 +303,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		strbuf.vbuffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(strbuf.vs), strbuf.vs, gl.STATIC_DRAW)
 
-		strbuf.ibuffer = uint32(gl.GenBuffer())
-		gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
+		strbuf.ibuffer = gl.GenBuffer()
+		strbuf.ibuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(strbuf.is[0]))*len(strbuf.is), strbuf.is, gl.STATIC_DRAW)
 		d.strs[s] = strbuf
 	}
@@ -373,7 +373,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
 	defer gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
-	gl.Buffer(strbuf.ibuffer).Bind(gl.ELEMENT_ARRAY_BUFFER)
+	strbuf.ibuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(strbuf.vs[0].u))
 
 	gl.DrawElements(gl.TRIANGLES, len(strbuf.is), gl.UNSIGNED_SHORT, nil)
