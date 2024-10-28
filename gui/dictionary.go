@@ -33,6 +33,8 @@ type Dictionary struct {
 	renderQueue render.RenderQueueInterface
 	logger      *slog.Logger
 
+	// TODO(tmckee): we need to call gl.DeleteTexture on this to clean up
+	// properly.
 	texture gl.Texture
 
 	stringBlittingCache    map[string]blitBuffer
@@ -103,9 +105,13 @@ type runeInfo struct {
 
 // Stores data for blitting from an underlying texture to the screen.
 type blitBuffer struct {
+	// TODO(tmckee): we need to call gl.DeleteBuffer on this to clean up
+	// properly.
 	vertexBuffer gl.Buffer
 	vertexData   []blitVertex
 
+	// TODO(tmckee): we need to call gl.DeleteBuffer on this to clean up
+	// properly.
 	indicesBuffer gl.Buffer
 	indicesData   []uint16
 }
