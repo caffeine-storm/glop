@@ -33,8 +33,7 @@ type Dictionary struct {
 	renderQueue render.RenderQueueInterface
 	logger      *slog.Logger
 
-	// TODO(tmckee): store a gl.Texture instead of a uint32
-	texture uint32
+	texture gl.Texture
 
 	strs map[string]strBuffer
 	pars map[string]strBuffer
@@ -365,7 +364,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// https://docs.gl/gl2/glGetError
 	// TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
 	gl.Enable(gl.TEXTURE_2D)
-	gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
+	d.texture.Bind(gl.TEXTURE_2D)
 
 	gl.EnableClientState(gl.VERTEX_ARRAY)
 	defer gl.DisableClientState(gl.VERTEX_ARRAY)
@@ -492,8 +491,8 @@ func (d *Dictionary) setupGlStuff() {
 
 	d.renderQueue.Queue(func() {
 		gl.Enable(gl.TEXTURE_2D)
-		d.texture = uint32(gl.GenTexture())
-		gl.Texture(d.texture).Bind(gl.TEXTURE_2D)
+		d.texture = gl.GenTexture()
+		d.texture.Bind(gl.TEXTURE_2D)
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
 		gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
 		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
