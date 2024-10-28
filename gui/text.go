@@ -147,16 +147,6 @@ func (d *Dictionary) getInfo(r rune) runeInfo {
 	return info
 }
 
-// Figures out how wide a string will be if rendered at its natural size.
-func (d *Dictionary) figureWidth(s string) float64 {
-	w := 0.0
-	for _, r := range s {
-		// TODO(tmckee): this should account for kerning too!
-		w += d.getInfo(r).Advance
-	}
-	return w
-}
-
 type Justification int
 
 const (
@@ -266,7 +256,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	// TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
 	// this out.
 	scale := height / float64(d.Data.Maxy-d.Data.Miny)
-	width_texunits := float32(d.figureWidth(s) * scale)
+	width_texunits := float32(d.StringPixelWidth(s) * scale)
 	d.logger.Debug("sizes", "scale", scale, "stride", stride, "width", width_texunits)
 	d.logger.Debug("dict-dims", "Dx", d.Data.Dx, "Dy", d.Data.Dy)
 	x_pos_geounits := float32(x)
