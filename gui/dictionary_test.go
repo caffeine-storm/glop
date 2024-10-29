@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
-	"strings"
 	"testing"
 
 	"code.google.com/p/freetype-go/freetype"
@@ -15,17 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-// Return the given file but with a '.rej' component to signify a 'rejection'.
-// TODO(tmckee): this is copy-pasta; DRY out making 'rejection' files.
-func makeRejectName(exp, suffix string) string {
-	dir, expectedFileName := path.Split(exp)
-	rejectFileNameBase, ok := strings.CutSuffix(expectedFileName, suffix)
-	if !ok {
-		panic(fmt.Errorf("need a %s file, got %s", suffix, exp))
-	}
-	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
-}
 
 func mustLoadFont(path string) *truetype.Font {
 	data, err := os.ReadFile(path)
