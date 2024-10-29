@@ -3,8 +3,6 @@ package gui_test
 import (
 	"bytes"
 	"fmt"
-	"io"
-	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -56,13 +54,10 @@ func TestDictionarySerialization(t *testing.T) {
 		buf := bytes.Buffer{}
 		d.Store(&buf)
 
-		voidLogger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-			Level: slog.Level(-42),
-		}))
-
 		// Load it back, compare to 'd_prime.Data' to 'd.Data', make sure they
 		// match.
-		d_prime, err := gui.LoadDictionary(bytes.NewReader(buf.Bytes()), discardQueue, voidLogger)
+		d_prime := gui.Dictionary{}
+		err := d_prime.Load(bytes.NewReader(buf.Bytes()))
 		require.Nil(err)
 
 		expectedData := d.Data
