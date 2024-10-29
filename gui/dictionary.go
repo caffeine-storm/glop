@@ -474,13 +474,17 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 
 func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *slog.Logger) (*Dictionary, error) {
 	var d Dictionary
-	err := gob.NewDecoder(r).Decode(&d.Data)
+	err := d.Load(r)
 	if err != nil {
 		return nil, err
 	}
 	d.logger = logger
 	d.uploadGlyphTexture(renderQueue)
 	return &d, nil
+}
+
+func (d *Dictionary) Load(inputStream io.Reader) error {
+	return gob.NewDecoder(inputStream).Decode(&d.Data)
 }
 
 func (d *Dictionary) Store(outputStream io.Writer) error {

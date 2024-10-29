@@ -1,6 +1,3 @@
-tmckee: find a better debug-logging sol'n than println
-	- it's slog
-
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
@@ -12,8 +9,6 @@ tmckee: migrate to convey
 
 tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
 				using '%w'.
-
-tmckee: loading a gui.Dictionary from disk should not need a render queue
 
 tmckee: in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
