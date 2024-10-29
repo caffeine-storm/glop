@@ -94,12 +94,6 @@ type runeInfo struct {
 	// TODO(tmckee): does that make sense? Is that what this acutally _is_?
 	Bounds image.Rectangle
 
-	// TODO(tmckee): Full_bounds seems to never get populated... presumably this
-	// is the bounds to allocate and blit the character into. We will need to
-	// 'MakeDictionary' with real .ttf fonts to remake the pre-packed files
-	// because we need these dimensions.
-	Full_bounds image.Rectangle
-
 	// How far to move the rastering position to the right in natural pixels
 	// after having rendered the corresponding rune. Does not account for
 	// kerning.

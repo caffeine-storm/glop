@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.
@@ -40,39 +43,44 @@ func mustLoadFont(path string) *truetype.Font {
 	return font
 }
 
-func TestMakeDictionary(t *testing.T) {
-	t.Run("CanMakeDict10.gob", func(t *testing.T) {
+func TestDictionarySerialization(t *testing.T) {
+	t.Run("Dictionary.Data must round-trip through encoding/decoding", func(t *testing.T) {
+		assert := assert.New(t)
+		require := require.New(t)
+
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 
 		font := mustLoadFont("../testdata/fonts/skia.ttf")
 		d := gui.MakeDictionary(font, 10, discardQueue)
 
 		buf := bytes.Buffer{}
-		// TODO(tmckee): with the new 'Full_bounds' field, we will never compare
-		// equal to the old .gob file. Consider a smarter comparison than
-		// bytes.Compare.
 		d.Store(&buf)
-		actualBytes := buf.Bytes()
 
-		expectedFilename := "../testdata/fonts/dict_10.gob"
-		expectedBytes, err := os.ReadFile(expectedFilename)
-		if err != nil {
-			panic(fmt.Errorf("couldn't os.ReadFile: %w", err))
-		}
+		voidLogger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+			Level: slog.Level(-42),
+		}))
 
-		rejectFileName := makeRejectName(expectedFilename, ".gob")
+		// Load it back, compare to 'd_prime.Data' to 'd.Data', make sure they
+		// match.
+		d_prime, err := gui.LoadDictionary(bytes.NewReader(buf.Bytes()), discardQueue, voidLogger)
+		require.Nil(err)
 
-		if bytes.Compare(expectedBytes, actualBytes) != 0 {
-			// For debug purposes, copy the bad bytes for offline inspection.
-			rejectFile, err := os.Create(rejectFileName)
-			if err != nil {
-				panic(fmt.Errorf("couldn't open rejection file: %s: %v", rejectFileName, err))
-			}
-			defer rejectFile.Close()
+		expectedData := d.Data
+		reloadedData := d_prime.Data
 
-			io.Copy(rejectFile, bytes.NewReader(actualBytes))
+		assert.Equal(expectedData.Dx, reloadedData.Dx)
+		assert.Equal(expectedData.Dy, reloadedData.Dy)
 
-			t.Fatalf(".gob file mismatch; see %s", rejectFileName)
-		}
+		assert.Equal(expectedData.Baseline, reloadedData.Baseline)
+		assert.Equal(expectedData.Scale, reloadedData.Scale)
+
+		assert.Equal(expectedData.Miny, reloadedData.Miny)
+		assert.Equal(expectedData.Maxy, reloadedData.Maxy)
+
+		assert.Equal(expectedData.Kerning, reloadedData.Kerning)
+		assert.Equal(expectedData.Info, reloadedData.Info)
+		assert.Equal(expectedData.Ascii_info, reloadedData.Ascii_info)
+
+		assert.Exactly(expectedData.Pix, reloadedData.Pix)
 	})
 }
