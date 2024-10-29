@@ -47,3 +47,9 @@ func New(options *Opts) *slog.Logger {
 	}
 	return slog.New(slog.NewTextHandler(options.Output, slogopts))
 }
+
+func DebugLogger() *slog.Logger {
+	return New(&Opts{
+		Level: slog.LevelDebug,
+	})
+}

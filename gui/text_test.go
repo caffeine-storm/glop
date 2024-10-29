@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/orfjackal/gospec/src/gospec"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
@@ -201,10 +202,9 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
-		renderStringForTest("lol", sys, render, Left, slog.Default())
+		renderStringForTest("lol", sys, render, Left, glog.DebugLogger())
 
 		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
-
 	})
 }
 
