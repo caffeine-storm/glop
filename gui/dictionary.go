@@ -62,6 +62,9 @@ type dictData struct {
 
 	// runeInfo for all r < 256 will be stored here as well as in info so we can
 	// avoid map lookups if possible.
+	// TODO(tmckee): don't export this field; we don't need to include it in the
+	// serialization if we remember to rebuild it on load. I don't want to try to
+	// hide it now becuase that might break decoding old .gob files.
 	Ascii_info []runeInfo
 
 	// At what vertical value is the line on which text is logically rendered.
