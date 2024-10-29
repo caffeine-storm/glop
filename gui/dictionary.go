@@ -467,7 +467,7 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 		}
 	}
 
-	dict.setupGlStuff(renderQueue)
+	dict.uploadGlyphTexture(renderQueue)
 
 	return &dict
 }
@@ -479,7 +479,7 @@ func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger
 		return nil, err
 	}
 	d.logger = logger
-	d.setupGlStuff(renderQueue)
+	d.uploadGlyphTexture(renderQueue)
 	return &d, nil
 }
 
@@ -487,9 +487,7 @@ func (d *Dictionary) Store(outputStream io.Writer) error {
 	return gob.NewEncoder(outputStream).Encode(d.Data)
 }
 
-// Sets up anything that wouldn't have been loaded from disk, including
-// all opengl data.
-func (d *Dictionary) setupGlStuff(renderQueue render.RenderQueueInterface) {
+func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface) {
 	d.stringBlittingCache = make(map[string]blitBuffer)
 	d.paragraphBlittingCache = make(map[string]blitBuffer)
 
