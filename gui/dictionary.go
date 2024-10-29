@@ -30,8 +30,7 @@ const (
 type Dictionary struct {
 	Data dictData
 
-	renderQueue render.RenderQueueInterface
-	logger      *slog.Logger
+	logger *slog.Logger
 
 	// TODO(tmckee): we need to call gl.DeleteTexture on this to clean up
 	// properly.
@@ -468,8 +467,7 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 		}
 	}
 
-	dict.renderQueue = renderQueue
-	dict.setupGlStuff()
+	dict.setupGlStuff(renderQueue)
 
 	return &dict
 }
@@ -480,9 +478,8 @@ func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger
 	if err != nil {
 		return nil, err
 	}
-	d.renderQueue = renderQueue
 	d.logger = logger
-	d.setupGlStuff()
+	d.setupGlStuff(renderQueue)
 	return &d, nil
 }
 
@@ -492,11 +489,11 @@ func (d *Dictionary) Store(outputStream io.Writer) error {
 
 // Sets up anything that wouldn't have been loaded from disk, including
 // all opengl data.
-func (d *Dictionary) setupGlStuff() {
+func (d *Dictionary) setupGlStuff(renderQueue render.RenderQueueInterface) {
 	d.stringBlittingCache = make(map[string]blitBuffer)
 	d.paragraphBlittingCache = make(map[string]blitBuffer)
 
-	d.renderQueue.Queue(func() {
+	renderQueue.Queue(func() {
 		gl.Enable(gl.TEXTURE_2D)
 		d.texture = gl.GenTexture()
 		d.texture.Bind(gl.TEXTURE_2D)
