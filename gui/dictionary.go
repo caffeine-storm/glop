@@ -406,6 +406,21 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	dpi := 150.0
 	context.SetFontSize(float64(size))
 	context.SetDPI(dpi)
+
+	// Use a simple glyph packing; each glyph gets a cell in a uniformly sized
+	// grid.
+	// - Each cell will large enough to contain all the texels of any given glyph
+	// such that the baseline and left-pad offsets will be the same for each
+	// cell.
+	//  e.g. we could store (ugly) "0, g, '" glyphs thusly
+	//   -------------------
+	//   | ++  | |O  | '   |
+	//   | ++  | |_  |     |
+	//   |     | \/  |     |
+	//   -------------------
+	// - We need to store the 'advance' to know how far to move the raster
+	// position. The advance does not account for kerning.
+
 	var letters []image.Image
 	rune_mapping := make(map[rune]image.Image)
 	rune_info := make(map[rune]runeInfo)
