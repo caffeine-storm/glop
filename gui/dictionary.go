@@ -6,7 +6,6 @@ import (
 	"image/draw"
 	"io"
 	"log/slog"
-	"math"
 	"unsafe"
 
 	"code.google.com/p/freetype-go/freetype"
@@ -229,44 +228,52 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	}
 
 	stride := unsafe.Sizeof(blitVertex{})
-	// TODO(tmckee): d.data.Maxy-d.data.Miny is d.MaxHeight() ... need to DRY
-	// this out.
-	scale := height / float64(d.Data.Maxy-d.Data.Miny)
-	width_texunits := float32(d.StringPixelWidth(s) * scale)
-	d.logger.Debug("sizes", "scale", scale, "stride", stride, "width", width_texunits)
+	width_texunits := d.StringPixelWidth(s)
+
+	d.logger.Debug("sizes", "stride", stride, "width", width_texunits)
 	d.logger.Debug("dict-dims", "Dx", d.Data.Dx, "Dy", d.Data.Dy)
-	x_pos_geounits := float32(x)
+	x_pos_geounits := float64(x)
 
-	height_geounits := 1.0
-	// TODO(tmckee): gaaah! Dy should not be glyph height!!!
-	height_texunits := float64(d.Data.Dy)
-	texunits_to_geounits := float32(height_geounits / height_texunits)
+	// height_geounits := 1.0
+	// TODO(tmckee): hardcoded to dict_10.gob for now :(
+	height_texunits := float64(32)
+	// screen_pixel_height := 32 // 32 pixels tall in the top-right quad
 
+	screen_pixel_width := d.Data.Dx / 2 // half for top-right quad
+
+	width_texunits_to_pixels := float64(1.0)
+	width_pixels_to_geounits := 1.0 / float64(screen_pixel_width)
+	width_texunits_to_geounits := width_texunits_to_pixels * width_pixels_to_geounits
+
+	string_width_geounits := width_texunits * width_texunits_to_geounits
+	padding_geounits := (1.0 - string_width_geounits)
+
+	d.logger.Debug("widths", "padding_geounits", padding_geounits, "string_width_geounits", string_width_geounits, "width_texunits", width_texunits, "height_texunits", height_texunits)
 	switch just {
 	case Center:
 		// TODO(tmckee): we shouldn't add/substract things that have different units
-		x_pos_geounits -= width_texunits / 2
+		x_pos_geounits += padding_geounits / 2
 	case Right:
 		// TODO(tmckee): we shouldn't add/substract things that have different units
-		x_pos_geounits -= width_texunits
+		x_pos_geounits += padding_geounits
 	}
 
 	blittingData, ok := d.stringBlittingCache[s]
 	if !ok {
 		// We have to actually render a string!
-		x_pos_geounits = 0
 		var prev rune
 		for _, r := range s {
 			// TODO(tmckee): why toss out the mapped value, then look it up again?!
 			if _, ok := d.Data.Kerning[prev]; ok {
-				x_pos_geounits += float32(d.Data.Kerning[prev][r])
+				// TODO(tmckee): XXX: !!!: no, this has to scale; Kerning adjustments
+				// are in 'natural' widths... right?
+				x_pos_geounits += float64(d.Data.Kerning[prev][r])
 			}
 			prev = r
 			info := d.getInfo(r)
-			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", r, "runeInfo", info, "dict-maxy", d.Data.Maxy)
+			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", string(r), "runeInfo", info, "dict-maxy", d.Data.Maxy)
 			xleft_geounits := x_pos_geounits
-			xright_geounits := x_pos_geounits + float32(info.Pos.Max.X-info.Pos.Min.X)*texunits_to_geounits
-			// TODO(tmckee): uh... what? shouldn't it just be ytop_geounits, ybot := scale, 0 ?
+			xright_geounits := x_pos_geounits + float64(info.Bounds.Dx()-2)*width_texunits_to_geounits
 			ytop_geounits := float32(1.0)
 			ybot_geounits := float32(0.0)
 			start := uint16(len(blittingData.vertexData))
@@ -280,30 +287,31 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			// Note: the texture is loaded 'upside down' so we flip our y-coordinates
 			// in texture-space.
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: xleft_geounits,
+				x: float32(xleft_geounits),
 				y: ytop_geounits,
 				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: xleft_geounits,
+				x: float32(xleft_geounits),
 				y: ybot_geounits,
 				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: xright_geounits,
+				x: float32(xright_geounits),
 				y: ybot_geounits,
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: xright_geounits,
+				x: float32(xright_geounits),
 				y: ytop_geounits,
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
-			x_pos_geounits += float32(info.Advance) * texunits_to_geounits
+			d.logger.Debug("adv", "info.Advance", info.Advance, "conv", width_texunits_to_geounits)
+			x_pos_geounits += info.Advance * width_texunits_to_geounits
 		}
 
 		d.logger.Debug("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
@@ -317,15 +325,6 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 		d.stringBlittingCache[s] = blittingData
 	}
 
-	// Reset x-pos
-	x_pos_geounits = float32(x)
-	switch just {
-	case Center:
-		x_pos_geounits -= width_texunits / 2
-	case Right:
-		x_pos_geounits -= width_texunits
-	}
-
 	debug.LogAndClearGlErrors(d.logger)
 
 	err := render.EnableShader("glop.font")
@@ -336,10 +335,14 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 
 	debug.LogAndClearGlErrors(d.logger)
 
-	diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.Data.Scale, 1.0)/math.Pow(height, 1.0)
-	if diff > 0.45 {
-		diff = 0.45
-	}
+	// TODO(tmckee): 'diff' was used for configuring a clamping function
+	// (smoothstep) in the shader. The math is broken, though, and alyways comes
+	// out to something that then gets clamped to 0.45
+	// diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.Data.Scale, 1.0)/math.Pow(height, 1.0)
+	// if diff > 0.45 {
+	// diff = 0.45
+	// }
+	diff := 0.45
 	d.logger.Debug("RenderStringDiff", "diff", diff)
 	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
 	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
@@ -352,16 +355,6 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 	render.SetUniformI("glop.font", "tex", gl.TEXTURE0+0)
 
 	debug.LogAndClearGlErrors(d.logger)
-
-	{
-		d.logger.Debug("matrixmode", "mode", debug.GetMatrixMode())
-
-		x, y, w, h := debug.GetViewport()
-		d.logger.Debug("viewport", "x", x, "y", y, "w", w, "h", h)
-
-		near, far := debug.GetDepthRange()
-		d.logger.Debug("depth", "near", near, "far", far)
-	}
 
 	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
 	defer gl.PopAttrib()

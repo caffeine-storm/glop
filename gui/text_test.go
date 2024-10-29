@@ -199,7 +199,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("CanRenderLol", func(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
-		renderStringForTest("lol", sys, render, Left, glog.DebugLogger())
+		renderStringForTest("lol", sys, render, Left, slog.Default())
 
 		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
 	})
@@ -208,7 +208,7 @@ func TestDictionaryRenderString(t *testing.T) {
 		sys, render, wdx, wdy := initGlForTest()
 
 		// d.RenderString("Credits", 0, 0, 0, 10, Center)
-		renderStringForTest("Credits", sys, render, Center, slog.Default())
+		renderStringForTest("Credits", sys, render, Center, glog.DebugLogger())
 
 		expectPixelsMatch(t, render, "../testdata/text/credits.pgm", wdx, wdy)
 	})
