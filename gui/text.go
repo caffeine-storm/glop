@@ -64,7 +64,7 @@ func (si *subImage) At(x, y int) color.Color {
 // TODO(tmckee): ought to be able to save a lot of effort by skipping internal
 // pixels; i.e. each row has a min/max X pixel set; we don't need to check
 // between them.
-func minimalSubImage(src image.Image) *subImage {
+func MinimalSubImage(src image.Image) *subImage {
 	bounds := src.Bounds()
 	var new_bounds image.Rectangle
 	new_bounds.Max = bounds.Min

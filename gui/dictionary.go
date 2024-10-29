@@ -415,7 +415,7 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 		context.SetClip(canvas.Bounds())
 
 		advance, _ := context.DrawString(string([]rune{r}), raster.Point{})
-		sub := minimalSubImage(canvas)
+		sub := MinimalSubImage(canvas)
 		letters = append(letters, sub)
 		rune_mapping[r] = sub
 		adv := fix24_8_to_float64(advance.X)

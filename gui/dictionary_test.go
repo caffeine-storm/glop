@@ -3,6 +3,8 @@ package gui_test
 import (
 	"bytes"
 	"fmt"
+	"image"
+	"image/color"
 	"os"
 	"testing"
 
@@ -64,5 +66,26 @@ func TestDictionarySerialization(t *testing.T) {
 		assert.Equal(expectedData.Ascii_info, reloadedData.Ascii_info)
 
 		assert.Exactly(expectedData.Pix, reloadedData.Pix)
+	})
+}
+
+func TestMakeDictionary(t *testing.T) {
+	t.Run("minimalSubImage respects the origin", func(t *testing.T) {
+		assert := assert.New(t)
+
+		// Draw something floating above baseline and to the right of (0,0).
+		img := image.NewRGBA(image.Rect(-10, -10, 10, 10))
+		allTheGray := color.Gray{Y: 255}
+		img.Set(3, 4, allTheGray)
+		img.Set(4, 5, allTheGray)
+		img.Set(5, 4, allTheGray)
+		img.Set(6, 6, allTheGray)
+
+		sub := gui.MinimalSubImage(img)
+
+		// Assert that the returned rectangles indicate the correct
+		// padding/distance from the origin.
+		assert.Equal(image.Point{2, 3}, sub.Bounds().Min)
+		assert.Equal(image.Point{7, 7}, sub.Bounds().Max)
 	})
 }
