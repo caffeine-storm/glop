@@ -12,6 +12,9 @@ build-check:
 test:
 	LD_LIBRARY_PATH=`pwd -P`/gos/linux/lib xvfb-run --server-args="-fbdir ./test -screen 0 512x64x24" --auto-servernum go test ${testrunargs} ./...
 
+test-spec:
+	LD_LIBRARY_PATH=`pwd -P`/gos/linux/lib xvfb-run --server-args="-fbdir ./test -screen 0 512x64x24" --auto-servernum go test -run ".*Specs" ${testrunargs} ./...
+
 compile_commands: gos/linux/compile_commands.json
 
 gos/linux/compile_commands.json:
