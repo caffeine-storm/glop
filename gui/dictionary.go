@@ -78,23 +78,40 @@ type dictData struct {
 	Miny, Maxy int
 }
 
-// Describes the location and size of a glyph in a 'grid-of-glyphs' texture
-// that has been 'packed'.
+// Holds the metadata of a glyph in a 'grid-of-glyphs' texture. This metadata
+// is used to blit one of the glyphs while rendering a string of text.
+// E.g. A runeInfo for 'j' could look like
+//
+//	runeInfo{
+//	  Pos: (391,15)-(398,34),
+//	  Bounds: (-3,-15)-(4,4),
+//	  Advance: 5.5390625,
+//	}
+//
+// - 'Pos' defines the sub-image at lower-left corner of (391,15) and an
+// upper-right corner of (398,34). These co-ordinates are relative to the
+// entire 'grid-of-glyphs' texture.
+// - 'Bounds' encodes that, when blitting, take the texels at 'Pos' and write
+// them to the rectangle (-3,-15)-(4,4). The written rectangle is defined with
+// respect to a "current raster position". Practically, this means that the 'j'
+// can set pixels further left or further down than the 'current raster
+// position'.
+// - 'Advance' sets a distance to advance the 'current raster position', after
+// blitting this glyph. This Advance does not account for kerning.
+//
+// In our example, the bottom-most and left-most texel of a 'j' will be drawn
+// below and to the left ofthe current raster position.
+//
+// Note: Each sub-image includes a 1-texel, transparent border around 'real
+// texels'. This ensures texture sampling won't mistakenly blend texels from
+// adjancent glyphs. It means, however, that a 'no-adjustment' 'Bounds' value
+// is (unintuitively) (-1,-1).
+//
+// TODO(tmckee): we don't need a rectangle to encode the adjustment; just a
+// Point.
 type runeInfo struct {
-	// Texture's minimal sub-image of the glyph's texels.
-	Pos image.Rectangle
-
-	// Padded sub-image of the glyph's texels; like above but positioned relative
-	// to the glyph. Used to include texels that the glyph does not own in the
-	// texture but should be 'assumed' blank in the texture. That is, the texels
-	// might not be blank in the texture because of tight packing but drawing the
-	// character should operate as if they were.
-	// TODO(tmckee): does that make sense? Is that what this acutally _is_?
-	Bounds image.Rectangle
-
-	// How far to move the rastering position to the right in natural pixels
-	// after having rendered the corresponding rune. Does not account for
-	// kerning.
+	Pos     image.Rectangle
+	Bounds  image.Rectangle
 	Advance float64
 }
 
