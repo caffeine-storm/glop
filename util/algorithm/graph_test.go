@@ -1,10 +1,18 @@
 package algorithm_test
 
 import (
-	"github.com/orfjackal/gospec/src/gospec"
-	. "github.com/orfjackal/gospec/src/gospec"
+	"testing"
+
 	"github.com/runningwild/glop/util/algorithm"
+	. "github.com/smartystreets/goconvey/convey"
 )
+
+func TestAlgorithmGraphSpecs(t *testing.T) {
+	Convey("DijkstraSpec", t, DijkstraSpec)
+	Convey("ReachableSpec", t, ReachableSpec)
+	Convey("ReachableDestinationsSpec", t, ReachableDestinationsSpec)
+	Convey("TopoSpec", t, TopoSpec)
+}
 
 type board [][]int
 
@@ -35,67 +43,67 @@ func (b board) Adjacent(n int) ([]int, []float64) {
 	return adj, weight
 }
 
-func DijkstraSpec(c gospec.Context) {
+func DijkstraSpec() {
 	b := [][]int{
 		{1, 2, 9, 4, 3, 2, 1}, // 0 - 6
 		{9, 2, 9, 4, 3, 1, 1}, // 7 - 13
 		{2, 1, 5, 5, 5, 2, 1}, // 14 - 20
 		{1, 1, 1, 1, 1, 1, 1}, // 21 - 27
 	}
-	c.Specify("Check Dijkstra's gives the right path and weight", func() {
+	Convey("Check Dijkstra's gives the right path and weight", func() {
 		weight, path := algorithm.Dijkstra(board(b), []int{0}, []int{11})
-		c.Expect(weight, Equals, 16.0)
-		c.Expect(path, ContainsInOrder, []int{0, 1, 8, 15, 22, 23, 24, 25, 26, 19, 12, 11})
+		So(weight, ShouldEqual, 16.0)
+		So(path, ShouldResemble, []int{0, 1, 8, 15, 22, 23, 24, 25, 26, 19, 12, 11})
 	})
-	c.Specify("Check multiple sources", func() {
+	Convey("Check multiple sources", func() {
 		weight, path := algorithm.Dijkstra(board(b), []int{0, 1, 7, 2}, []int{11})
-		c.Expect(weight, Equals, 10.0)
-		c.Expect(path, ContainsInOrder, []int{2, 3, 4, 11})
+		So(weight, ShouldEqual, 10.0)
+		So(path, ShouldResemble, []int{2, 3, 4, 11})
 	})
-	c.Specify("Check multiple destinations", func() {
+	Convey("Check multiple destinations", func() {
 		weight, path := algorithm.Dijkstra(board(b), []int{0}, []int{6, 11, 21})
-		c.Expect(weight, Equals, 7.0)
-		c.Expect(path, ContainsInOrder, []int{0, 1, 8, 15, 22, 21})
+		So(weight, ShouldEqual, 7.0)
+		So(path, ShouldResemble, []int{0, 1, 8, 15, 22, 21})
 	})
 }
 
-func ReachableSpec(c gospec.Context) {
+func ReachableSpec() {
 	b := [][]int{
 		{1, 2, 9, 4, 3, 2, 1}, // 0 - 6
 		{9, 2, 9, 4, 3, 1, 1}, // 7 - 13
 		{2, 1, 5, 5, 5, 2, 1}, // 14 - 20
 		{1, 1, 1, 1, 1, 1, 1}, // 21 - 27
 	}
-	c.Specify("Check reachability", func() {
+	Convey("Check reachability", func() {
 		reach := algorithm.ReachableWithinLimit(board(b), []int{3}, 5)
-		c.Expect(reach, ContainsInOrder, []int{3, 4, 5, 10})
+		So(reach, ShouldResemble, []int{3, 4, 5, 10})
 		reach = algorithm.ReachableWithinLimit(board(b), []int{3}, 10)
-		c.Expect(reach, ContainsInOrder, []int{2, 3, 4, 5, 6, 10, 11, 12, 13, 17, 19, 20, 24, 25, 26, 27})
+		So(reach, ShouldResemble, []int{2, 3, 4, 5, 6, 10, 11, 12, 13, 17, 19, 20, 24, 25, 26, 27})
 	})
-	c.Specify("Check reachability with multiple sources", func() {
+	Convey("Check reachability with multiple sources", func() {
 		reach := algorithm.ReachableWithinLimit(board(b), []int{0, 6}, 3)
-		c.Expect(reach, ContainsInOrder, []int{0, 1, 5, 6, 12, 13, 20, 27})
+		So(reach, ShouldResemble, []int{0, 1, 5, 6, 12, 13, 20, 27})
 		reach = algorithm.ReachableWithinLimit(board(b), []int{21, 27}, 2)
-		c.Expect(reach, ContainsInOrder, []int{13, 14, 15, 20, 21, 22, 23, 25, 26, 27})
+		So(reach, ShouldResemble, []int{13, 14, 15, 20, 21, 22, 23, 25, 26, 27})
 	})
-	c.Specify("Check bounds with multiple sources", func() {
+	Convey("Check bounds with multiple sources", func() {
 		reach := algorithm.ReachableWithinBounds(board(b), []int{0, 6}, 2, 4)
-		c.Expect(reach, ContainsInOrder, []int{1, 5, 8, 12, 19, 20, 26, 27})
+		So(reach, ShouldResemble, []int{1, 5, 8, 12, 19, 20, 26, 27})
 	})
 }
 
-func ReachableDestinationsSpec(c gospec.Context) {
+func ReachableDestinationsSpec() {
 	b := [][]int{
 		{1, 2, 9, 4, 0, 2, 1}, // 0 - 6
 		{0, 0, 0, 0, 0, 1, 1}, // 7 - 13
 		{2, 1, 5, 5, 0, 2, 1}, // 14 - 20
 		{1, 1, 1, 9, 0, 1, 1}, // 21 - 27
 	}
-	c.Specify("Check reachability", func() {
+	Convey("Check reachability", func() {
 		reachable := algorithm.ReachableDestinations(board(b), []int{14}, []int{0, 2, 5, 13, 17, 22})
-		c.Expect(reachable, ContainsInOrder, []int{17, 22})
+		So(reachable, ShouldResemble, []int{17, 22})
 		reachable = algorithm.ReachableDestinations(board(b), []int{1, 26}, []int{0, 2, 5, 13, 17, 22})
-		c.Expect(reachable, ContainsInOrder, []int{0, 2, 5, 13})
+		So(reachable, ShouldResemble, []int{0, 2, 5, 13})
 	})
 }
 
@@ -121,19 +129,19 @@ func (a adag) AllSuccessors(n int) map[int]bool {
 	a.allSuccessorsHelper(n, m)
 	return m
 }
-func checkOrder(c gospec.Context, a adag, order []int) {
-	c.Expect(len(a), Equals, len(order))
-	c.Specify("Ordering contains all vertices exactly once", func() {
+func checkOrder(a adag, order []int) {
+	So(len(a), ShouldEqual, len(order))
+	Convey("Ordering contains all vertices exactly once", func() {
 		all := make(map[int]bool)
 		for _, v := range order {
 			all[v] = true
 		}
-		c.Expect(len(all), Equals, len(order))
+		So(len(all), ShouldEqual, len(order))
 		for i := 0; i < len(a); i++ {
-			c.Expect(all[i], Equals, true)
+			So(all[i], ShouldEqual, true)
 		}
 	})
-	c.Specify("Successors of a vertex always occur later in the ordering", func() {
+	Convey("Successors of a vertex always occur later in the ordering", func() {
 		for i := 0; i < len(order); i++ {
 			all := a.AllSuccessors(order[i])
 			for j := range order {
@@ -142,16 +150,16 @@ func checkOrder(c gospec.Context, a adag, order []int) {
 				}
 				succ, ok := all[order[j]]
 				if j < i {
-					c.Expect(!ok, Equals, true)
+					So(!ok, ShouldEqual, true)
 				} else {
-					c.Expect(!ok || succ, Equals, true)
+					So(!ok || succ, ShouldEqual, true)
 				}
 			}
 		}
 	})
 }
-func TopoSpec(c gospec.Context) {
-	c.Specify("Check toposort on linked list", func() {
+func TopoSpec() {
+	Convey("Check toposort on linked list", func() {
 		a := adag{
 			[]int{1},
 			[]int{2},
@@ -162,19 +170,19 @@ func TopoSpec(c gospec.Context) {
 			[]int{},
 		}
 		order := algorithm.TopoSort(a)
-		checkOrder(c, a, order)
+		checkOrder(a, order)
 	})
 
-	c.Specify("multi-edges don't mess up toposort", func() {
+	Convey("multi-edges don't mess up toposort", func() {
 		a := adag{
 			[]int{1, 1, 1},
 			[]int{},
 		}
 		order := algorithm.TopoSort(a)
-		checkOrder(c, a, order)
+		checkOrder(a, order)
 	})
 
-	c.Specify("Check toposort on a more complicated digraph", func() {
+	Convey("Check toposort on a more complicated digraph", func() {
 		a := adag{
 			[]int{8, 7, 4}, // 0
 			[]int{5},
@@ -199,10 +207,10 @@ func TopoSpec(c gospec.Context) {
 			[]int{},
 		}
 		order := algorithm.TopoSort(a)
-		checkOrder(c, a, order)
+		checkOrder(a, order)
 	})
 
-	c.Specify("A cyclic digraph returns nil", func() {
+	Convey("A cyclic digraph returns nil", func() {
 		a := adag{
 			[]int{8, 7, 4}, // 0
 			[]int{5},
@@ -227,6 +235,6 @@ func TopoSpec(c gospec.Context) {
 			[]int{},
 		}
 		order := algorithm.TopoSort(a)
-		c.Expect(len(order), Equals, 0)
+		So(len(order), ShouldEqual, 0)
 	})
 }

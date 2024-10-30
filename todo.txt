@@ -1,6 +1,3 @@
-in-progress: migrate to convey
-(https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
-
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
