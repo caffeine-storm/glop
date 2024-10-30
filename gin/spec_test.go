@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestAllSpecs(t *testing.T) {
+func TestGinSpecs(t *testing.T) {
 	r := gospec.NewRunner()
 	r.AddSpec(NaturalKeySpec)
 	r.AddSpec(DerivedKeySpec)

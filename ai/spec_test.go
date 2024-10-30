@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestAllSpecs(t *testing.T) {
+func TestAiSpecs(t *testing.T) {
 	r := gospec.NewRunner()
 	r.AddSpec(AiSpec)
 	r.AddSpec(TermSpec)
