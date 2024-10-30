@@ -2,14 +2,22 @@ package sprite_test
 
 import (
 	"fmt"
+	"testing"
 
-	"github.com/orfjackal/gospec/src/gospec"
-	. "github.com/orfjackal/gospec/src/gospec"
 	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/cache/cachetest"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/sprite"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
+
+func TestSpriteSpecs(t *testing.T) {
+	Convey("LoadSpriteSpec", t, LoadSpriteSpec)
+	Convey("CommandNSpec", t, CommandNSpec)
+	Convey("SyncSpec", t, SyncSpec)
+	Convey("ManagerSpec", t, ManagerSpec)
+}
 
 func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
 	discardQueue := rendertest.MakeDiscardingRenderQueue()
@@ -30,10 +38,10 @@ func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
 	return result, nil
 }
 
-func LoadSpriteSpec(c gospec.Context) {
-	c.Specify("Sample sprite loads correctly", func() {
+func LoadSpriteSpec() {
+	Convey("Sample sprite loads correctly", func() {
 		sList, err := loadSprites("test_sprite")
-		c.Expect(err, Equals, nil)
+		So(err, ShouldEqual, nil)
 		s := sList[0]
 		for i := 0; i < 2000; i++ {
 			s.Think(50)
@@ -62,14 +70,14 @@ func LoadSpriteSpec(c gospec.Context) {
 		for i := 0; i < 300; i++ {
 			s.Think(50)
 		}
-		c.Expect(s.Facing(), Equals, 1)
+		So(s.Facing(), ShouldEqual, 1)
 	})
 }
 
-func CommandNSpec(c gospec.Context) {
-	c.Specify("Sample sprite loads correctly", func() {
+func CommandNSpec() {
+	Convey("Sample sprite loads correctly", func() {
 		sList, err := loadSprites("test_sprite")
-		c.Expect(err, Equals, nil)
+		So(err, ShouldEqual, nil)
 		s := sList[0]
 		for i := 0; i < 2000; i++ {
 			s.Think(50)
@@ -89,17 +97,17 @@ func CommandNSpec(c gospec.Context) {
 			"turn_left",
 			"turn_left"})
 		s.Think(5000)
-		c.Expect(s.Facing(), Equals, 1)
+		So(s.Facing(), ShouldEqual, 1)
 		for i := 0; i < 3000; i++ {
 			s.Think(50)
 		}
 	})
 }
 
-func SyncSpec(c gospec.Context) {
-	c.Specify("Sample sprite loads correctly", func() {
+func SyncSpec() {
+	Convey("Sample sprite loads correctly", func() {
 		sList, err := loadSprites("test_sprite", "test_sprite")
-		c.Expect(err, Equals, nil)
+		So(err, ShouldEqual, nil)
 		s1, s2 := sList[0], sList[1]
 		sprite.CommandSync([]*sprite.Sprite{s1, s2}, [][]string{[]string{"melee"}, []string{"defend", "damaged"}}, "hit")
 		hit := false
@@ -110,12 +118,12 @@ func SyncSpec(c gospec.Context) {
 				hit = true
 			}
 		}
-		c.Expect(hit, Equals, true)
+		So(hit, ShouldEqual, true)
 	})
 }
 
-func ManagerSpec(c gospec.Context) {
-	c.Specify("A manager must take a cacheing dependency", func() {
+func ManagerSpec() {
+	Convey("A manager must take a cacheing dependency", func() {
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 		spyCache := &cachetest.SpyedCache{
 			Impl: cache.MakeRamByteBank(),
