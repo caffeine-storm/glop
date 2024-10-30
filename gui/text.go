@@ -101,7 +101,10 @@ func MinimalSubImage(src image.Image) *subImage {
 		new_bounds = image.Rect(0, 0, 0, 0)
 	}
 
-	return &subImage{src, new_bounds}
+	return &subImage{
+		im:     src,
+		bounds: new_bounds,
+	}
 }
 
 // This stupid thing is just so that our idiot-packedImage can answer queries
