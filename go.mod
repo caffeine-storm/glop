@@ -16,5 +16,6 @@ require (
 	github.com/orfjackal/nanospec.go v0.0.0-20120727230329-de4694c1d701 // indirect
 	github.com/runningwild/polish v0.0.0-20120524023733-9d9a1194cd81
 	github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9
+	github.com/smartystreets/goconvey v1.8.1
 	github.com/stretchr/testify v1.9.0
 )

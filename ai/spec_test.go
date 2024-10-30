@@ -1,14 +1,15 @@
 package ai_test
 
 import (
-	"github.com/orfjackal/gospec/src/gospec"
 	"testing"
+
+	"github.com/smartystreets/goconvey/convey"
 )
 
 func TestAiSpecs(t *testing.T) {
-	r := gospec.NewRunner()
-	r.AddSpec(AiSpec)
-	r.AddSpec(TermSpec)
-	r.AddSpec(ChunkSpec)
-	gospec.MainGoTest(r, t)
+	convey.Convey("Specs for the AI package", t, func() {
+		convey.Convey("XGML Load", XgmlLoadSpec)
+		convey.Convey("Term", TermSpec)
+		convey.Convey("Chunk", ChunkSpec)
+	})
 }

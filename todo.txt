@@ -1,11 +1,11 @@
+in-progress: migrate to convey
+(https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
+
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
 tmckee: make render.RenderQueueInterface.Queue take a specific type of
 'RenderJob'; will let us refactor to inject the GL dependecy down the line.
-
-tmckee: migrate to convey
-(https://pkg.go.dev/github.com/smartystreets/goconvey/convey) instead of gospec
 
 tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
 				using '%w'.

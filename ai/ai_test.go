@@ -1,17 +1,16 @@
 package ai_test
 
 import (
-	"github.com/orfjackal/gospec/src/gospec"
-	. "github.com/orfjackal/gospec/src/gospec"
 	"github.com/runningwild/glop/ai"
 	"github.com/runningwild/polish"
-	"github.com/runningwild/yedparse"
+	yed "github.com/runningwild/yedparse"
+	"github.com/smartystreets/goconvey/convey"
 )
 
-func AiSpec(c gospec.Context) {
-	c.Specify("Load a simple .xgml file.", func() {
+func XgmlLoadSpec() {
+	convey.Convey("Load a simple .xgml file", func() {
 		g, err := yed.ParseFromFile("state.xgml")
-		c.Assume(err, Equals, nil)
+		convey.So(err, convey.ShouldEqual, nil)
 		aig := ai.NewGraph()
 		aig.Graph = &g.Graph
 		aig.Context = polish.MakeContext()
@@ -40,20 +39,21 @@ func AiSpec(c gospec.Context) {
 		aig.Context.AddFunc("attack", attack_func)
 		aig.Eval(2, func() bool { return true })
 
-		c.Expect(attacks, Equals, 0)
-		c.Expect(nearest, Equals, 4)
+		convey.So(attacks, convey.ShouldEqual, 0)
+		convey.So(nearest, convey.ShouldEqual, 4)
 	})
 }
 
-func TermSpec(c gospec.Context) {
+func TermSpec() {
 	g, err := yed.ParseFromFile("state.xgml")
-	c.Assume(err, Equals, nil)
+	convey.So(err, convey.ShouldEqual, nil)
 	aig := ai.NewGraph()
 	aig.Graph = &g.Graph
 	aig.Context = polish.MakeContext()
 	polish.AddIntMathContext(aig.Context)
 	polish.AddIntMathContext(aig.Context)
-	c.Specify("Calling AiGraph.Term() will terminate evaluation early.", func() {
+
+	convey.Convey("Calling AiGraph.Term() will terminate evaluation early.", func() {
 		var nearest int = 7
 		nearest_func := func() int {
 			return nearest
@@ -81,24 +81,24 @@ func TermSpec(c gospec.Context) {
 		aig.Context.AddFunc("attack", attack_func)
 		aig.Eval(2, func() bool { return true })
 
-		c.Expect(attacks, Equals, 0)
-		c.Expect(nearest, Equals, 6)
+		convey.So(attacks, convey.ShouldEqual, 0)
+		convey.So(nearest, convey.ShouldEqual, 6)
 
 		term = false
 		aig.Eval(2, func() bool { return true })
-		c.Expect(nearest, Equals, 4)
+		convey.So(nearest, convey.ShouldEqual, 4)
 	})
 }
 
-func ChunkSpec(c gospec.Context) {
+func ChunkSpec() {
 	g, err := yed.ParseFromFile("state.xgml")
-	c.Assume(err, Equals, nil)
+	convey.So(err, convey.ShouldEqual, nil)
 	aig := ai.NewGraph()
 	aig.Graph = &g.Graph
 	aig.Context = polish.MakeContext()
 	polish.AddIntMathContext(aig.Context)
 	polish.AddIntMathContext(aig.Context)
-	c.Specify("cont() returning false will terminate evaluation early.", func() {
+	convey.Convey("cont() returning false will terminate evaluation early.", func() {
 		var nearest int = 7
 		nearest_func := func() int {
 			return nearest
@@ -126,7 +126,7 @@ func ChunkSpec(c gospec.Context) {
 		aig.Context.AddFunc("attack", attack_func)
 		_, err := aig.Eval(4, func() bool { return false })
 		// Only have time for 1 move before we terminate early
-		c.Expect(err, Equals, nil)
-		c.Expect(nearest, Equals, 6)
+		convey.So(err, convey.ShouldEqual, nil)
+		convey.So(nearest, convey.ShouldEqual, 6)
 	})
 }
