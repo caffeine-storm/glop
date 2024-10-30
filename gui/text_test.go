@@ -12,8 +12,9 @@ import (
 	"strings"
 	"testing"
 
+	. "github.com/smartystreets/goconvey/convey"
+
 	"github.com/go-gl-legacy/gl"
-	"github.com/orfjackal/gospec/src/gospec"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
@@ -215,9 +216,7 @@ func TestDictionaryRenderString(t *testing.T) {
 }
 
 func TestRunTextSpecs(t *testing.T) {
-	r := gospec.NewRunner()
-	r.AddSpec(CleanLogsPerFrameSpec)
-	gospec.MainGoTest(r, t)
+	Convey("CleanLogsPerFrameSpec", t, CleanLogsPerFrameSpec)
 }
 
 // Runs the given operation and returns a slice of strings that the operation
@@ -267,8 +266,8 @@ func CollectOutput(operation func()) []string {
 	return strings.Split(string(byteList), "\n")
 }
 
-func CleanLogsPerFrameSpec(c gospec.Context) {
-	c.Specify("stdout isn't spammed by RenderString", func() {
+func CleanLogsPerFrameSpec() {
+	Convey("stdout isn't spammed by RenderString", func() {
 		sys, render, _, _ := initGlForTest()
 
 		voidLogger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
@@ -278,6 +277,6 @@ func CleanLogsPerFrameSpec(c gospec.Context) {
 			renderStringForTest("lol", sys, render, Left, voidLogger)
 		})
 
-		c.Expect(stdoutLines, gospec.ContainsExactly, []string{})
+		So(stdoutLines, ShouldEqual, []string{})
 	})
 }
