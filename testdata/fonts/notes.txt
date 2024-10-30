@@ -1,0 +1,4 @@
+AFAICT, 'dict_10.gob' is a serialization of a 'dictData' built over the 'tomnr.ttf' font at a 10pt size rendering.
+
+'dict_10.png' is a dump of the texture data that gets uploaded to OpenGL when
+loading 'dict_10.gob'.
