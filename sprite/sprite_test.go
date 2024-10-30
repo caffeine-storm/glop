@@ -109,7 +109,7 @@ func SyncSpec() {
 		sList, err := loadSprites("test_sprite", "test_sprite")
 		So(err, ShouldEqual, nil)
 		s1, s2 := sList[0], sList[1]
-		sprite.CommandSync([]*sprite.Sprite{s1, s2}, [][]string{[]string{"melee"}, []string{"defend", "damaged"}}, "hit")
+		sprite.CommandSync([]*sprite.Sprite{s1, s2}, [][]string{{"melee"}, {"defend", "damaged"}}, "hit")
 		hit := false
 		for i := 0; i < 20; i++ {
 			s1.Think(50)

@@ -37,10 +37,10 @@ func (b board) Adjacent(n int) ([]int, []float64) {
 
 func DijkstraSpec(c gospec.Context) {
 	b := [][]int{
-		[]int{1, 2, 9, 4, 3, 2, 1}, // 0 - 6
-		[]int{9, 2, 9, 4, 3, 1, 1}, // 7 - 13
-		[]int{2, 1, 5, 5, 5, 2, 1}, // 14 - 20
-		[]int{1, 1, 1, 1, 1, 1, 1}, // 21 - 27
+		{1, 2, 9, 4, 3, 2, 1}, // 0 - 6
+		{9, 2, 9, 4, 3, 1, 1}, // 7 - 13
+		{2, 1, 5, 5, 5, 2, 1}, // 14 - 20
+		{1, 1, 1, 1, 1, 1, 1}, // 21 - 27
 	}
 	c.Specify("Check Dijkstra's gives the right path and weight", func() {
 		weight, path := algorithm.Dijkstra(board(b), []int{0}, []int{11})
@@ -61,10 +61,10 @@ func DijkstraSpec(c gospec.Context) {
 
 func ReachableSpec(c gospec.Context) {
 	b := [][]int{
-		[]int{1, 2, 9, 4, 3, 2, 1}, // 0 - 6
-		[]int{9, 2, 9, 4, 3, 1, 1}, // 7 - 13
-		[]int{2, 1, 5, 5, 5, 2, 1}, // 14 - 20
-		[]int{1, 1, 1, 1, 1, 1, 1}, // 21 - 27
+		{1, 2, 9, 4, 3, 2, 1}, // 0 - 6
+		{9, 2, 9, 4, 3, 1, 1}, // 7 - 13
+		{2, 1, 5, 5, 5, 2, 1}, // 14 - 20
+		{1, 1, 1, 1, 1, 1, 1}, // 21 - 27
 	}
 	c.Specify("Check reachability", func() {
 		reach := algorithm.ReachableWithinLimit(board(b), []int{3}, 5)
@@ -86,10 +86,10 @@ func ReachableSpec(c gospec.Context) {
 
 func ReachableDestinationsSpec(c gospec.Context) {
 	b := [][]int{
-		[]int{1, 2, 9, 4, 0, 2, 1}, // 0 - 6
-		[]int{0, 0, 0, 0, 0, 1, 1}, // 7 - 13
-		[]int{2, 1, 5, 5, 0, 2, 1}, // 14 - 20
-		[]int{1, 1, 1, 9, 0, 1, 1}, // 21 - 27
+		{1, 2, 9, 4, 0, 2, 1}, // 0 - 6
+		{0, 0, 0, 0, 0, 1, 1}, // 7 - 13
+		{2, 1, 5, 5, 0, 2, 1}, // 14 - 20
+		{1, 1, 1, 9, 0, 1, 1}, // 21 - 27
 	}
 	c.Specify("Check reachability", func() {
 		reachable := algorithm.ReachableDestinations(board(b), []int{14}, []int{0, 2, 5, 13, 17, 22})
