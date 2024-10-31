@@ -90,7 +90,7 @@ func makeRejectName(exp, suffix string) string {
 	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }
 
-func expectPixelsMatch(t *testing.T, render render.RenderQueueInterface, pgmFileExpected string, screenSpaceX, screenSpaceY int) {
+func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string, screenSpaceX, screenSpaceY int) {
 	var err error
 
 	// Read all the pixels from the framebuffer through OpenGL
@@ -123,7 +123,7 @@ func expectPixelsMatch(t *testing.T, render render.RenderQueueInterface, pgmFile
 
 		io.Copy(rejectFile, bytes.NewReader(pgmBytes))
 
-		t.Fatalf("framebuffer mismatch; see %s", rejectFileName)
+		panic(fmt.Errorf("framebuffer mismatch; see %s", rejectFileName))
 	}
 }
 
@@ -194,27 +194,30 @@ func TestDictionaryGetInfo(t *testing.T) {
 	// TODO(tmckee): verify texture image in GL matches expectations
 }
 
-func TestDictionaryRenderString(t *testing.T) {
-	t.Run("CanRenderLol", func(t *testing.T) {
+func DictionaryRenderStringSpec() {
+	Convey("Can render 'lol'", func() {
 		sys, render, wdx, wdy := initGlForTest()
 
 		renderStringForTest("lol", sys, render, Left, slog.Default())
 
-		expectPixelsMatch(t, render, "../testdata/text/lol.pgm", wdx, wdy)
+		expectPixelsMatch(render, "../testdata/text/lol.pgm", wdx, wdy)
 	})
 
-	t.Run("RendersCentred", func(t *testing.T) {
+	Convey("Can render 'credits' centred", func() {
 		sys, render, wdx, wdy := initGlForTest()
 
 		// d.RenderString("Credits", 0, 0, 0, 10, Center)
 		renderStringForTest("Credits", sys, render, Center, glog.DebugLogger())
 
-		expectPixelsMatch(t, render, "../testdata/text/credits.pgm", wdx, wdy)
+		expectPixelsMatch(render, "../testdata/text/credits.pgm", wdx, wdy)
 	})
 }
 
 func TestRunTextSpecs(t *testing.T) {
-	Convey("CleanLogsPerFrameSpec", t, CleanLogsPerFrameSpec)
+	Convey("Text Specifications", t, func() {
+		Convey("Dictionaries should render strings", DictionaryRenderStringSpec)
+		Convey("CleanLogsPerFrameSpec", CleanLogsPerFrameSpec)
+	})
 }
 
 // Runs the given operation and returns a slice of strings that the operation
