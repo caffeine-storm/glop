@@ -220,7 +220,7 @@ func DictionaryRenderStringSpec() {
 
 	Convey("Can render 'offset' somewhere other than the origin", func() {
 		Convey("can render at the bottom left", func() {
-			renderStringAtOffsetForTest("offset", -(screenPixelWidth / 2), (screenPixelHeight / 2), sys, render, Left, glog.DebugLogger())
+			renderStringAtOffsetForTest("offset", -(screenPixelWidth / 2), -(screenPixelHeight / 2), sys, render, Left, glog.DebugLogger())
 
 			expectPixelsMatch(render, "../testdata/text/offset.pgm")
 		})

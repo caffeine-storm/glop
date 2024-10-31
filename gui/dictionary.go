@@ -291,8 +291,9 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", string(r), "runeInfo", info, "dict-maxy", d.Data.Maxy)
 			xleft_geounits := x_pos_geounits
 			xright_geounits := x_pos_geounits + float64(info.Bounds.Dx()-2)*width_texunits_to_geounits
-			ytop_geounits := float32(1.0)
-			ybot_geounits := float32(0.0)
+			height_geounits := 1.0
+			ytop_geounits := float32(y + height_geounits)
+			ybot_geounits := float32(y)
 			start := uint16(len(blittingData.vertexData))
 			blittingData.indicesData = append(blittingData.indicesData, start+0)
 			blittingData.indicesData = append(blittingData.indicesData, start+1)
