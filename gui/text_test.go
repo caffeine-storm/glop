@@ -32,6 +32,24 @@ func readPixels(width, height int) ([]byte, error) {
 	return ret, nil
 }
 
+func ShouldLookLike(actual interface{}, expected ...interface{}) string {
+	render, ok := actual.(render.RenderQueueInterface)
+	if !ok {
+		panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
+	}
+	filename, ok := expected[0].(string)
+	if !ok {
+		panic(fmt.Errorf("ShouldLookLike needs a filename but got %T", expected))
+	}
+
+	ok, rejectFile := expectPixelsMatch(render, filename)
+	if ok {
+		return ""
+	}
+
+	return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
+}
+
 func initGlForTest() (system.System, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
@@ -83,11 +101,12 @@ func renderStringForTest(toDraw string, sys system.System, render render.RenderQ
 func renderStringAtScreenPosition(toDraw string, xpixels, ypixels int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
-	xndc := float64(xpixels-(screenPixelWidth/2)) * (2.0 / float64(screenPixelWidth))
-	yndc := float64(ypixels-(screenPixelHeight/2)) * (2.0 / float64(screenPixelHeight))
+	// Need to adjust from 'Screen Space' to the inverted screen space with
+	// origin at the top-left.
+	ypixels = screenPixelHeight - ypixels
 
 	render.Queue(func() {
-		d.RenderString(toDraw, xndc, yndc, 0, d.MaxHeight(), just)
+		d.RenderString(toDraw, xpixels, ypixels, 0, d.MaxHeight(), just)
 		sys.SwapBuffers()
 	})
 
@@ -104,7 +123,7 @@ func makeRejectName(exp, suffix string) string {
 	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }
 
-func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string) {
+func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string) (bool, string) {
 	var err error
 
 	// Read all the pixels from the framebuffer through OpenGL
@@ -137,9 +156,11 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 		defer rejectFile.Close()
 
 		io.Copy(rejectFile, bytes.NewReader(pgmBytes))
+
+		return false, rejectFileName
 	}
 
-	SoMsg("pixels should match", cmp, ShouldEqual, 0)
+	return true, ""
 }
 
 func TestDictionaryMaxHeight(t *testing.T) {
@@ -148,43 +169,43 @@ func TestDictionaryMaxHeight(t *testing.T) {
 
 		d := Dictionary{}
 
-		require.Equal(0.0, d.MaxHeight())
+		require.Equal(0, d.MaxHeight())
 	})
 	t.Run("zero-height-at-non-zero-offset", func(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
 			Data: dictData{
-				Miny: 42.0,
-				Maxy: 42.0,
+				Miny: 42,
+				Maxy: 42,
 			},
 		}
 
-		require.Equal(0.0, d.MaxHeight())
+		require.Equal(0, d.MaxHeight())
 	})
 	t.Run("height-clamped-non-negative", func(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
 			Data: dictData{
-				Miny: 42.0,
-				Maxy: 0.0,
+				Miny: 42,
+				Maxy: 0,
 			},
 		}
 
-		require.Equal(0.0, d.MaxHeight())
+		require.Equal(0, d.MaxHeight())
 	})
 	t.Run("height-is-delta-min-max", func(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
 			Data: dictData{
-				Miny: 0.0,
-				Maxy: 42.0,
+				Miny: 0,
+				Maxy: 42,
 			},
 		}
 
-		require.InDelta(42.0, d.MaxHeight(), 0.001)
+		require.Equal(42, d.MaxHeight())
 	})
 }
 
@@ -228,7 +249,7 @@ func DictionaryRenderStringSpec() {
 		Convey("can render at the bottom left", func() {
 			renderStringAtScreenPosition("offset", 0, 0, sys, render, Left, glog.DebugLogger())
 
-			expectPixelsMatch(render, "../testdata/text/offset.pgm")
+			So(render, ShouldLookLike, "../testdata/text/offset.pgm")
 		})
 	})
 }

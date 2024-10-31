@@ -149,19 +149,19 @@ func (d *Dictionary) getInfo(r rune) runeInfo {
 	return info
 }
 
-func (d *Dictionary) MaxHeight() float64 {
+func (d *Dictionary) MaxHeight() int {
 	res := d.Data.Maxy - d.Data.Miny
 	if res < 0 {
 		res = 0
 	}
-	return float64(res)
+	return res
 }
 
-func (d *Dictionary) split(s string, dx, height float64) []string {
+func (d *Dictionary) split(s string, lineWidth int) []string {
 	var lines []string
 	var line []rune
 	var word []rune
-	pos := 0.0
+	pos := 0.0 // Sub-pixel precision
 	for _, r := range s {
 		if r == ' ' {
 			if len(line) > 0 {
@@ -175,7 +175,7 @@ func (d *Dictionary) split(s string, dx, height float64) []string {
 			word = append(word, r)
 		}
 		pos += d.getInfo(r).Advance
-		if pos >= dx {
+		if pos >= float64(lineWidth) {
 			pos = 0.0
 			for _, r := range word {
 				pos += d.getInfo(r).Advance
@@ -184,7 +184,7 @@ func (d *Dictionary) split(s string, dx, height float64) []string {
 			line = line[0:0]
 		}
 	}
-	if pos < dx {
+	if pos < float64(lineWidth) {
 		if len(line) > 0 {
 			line = append(line, ' ')
 		}
@@ -199,10 +199,10 @@ func (d *Dictionary) split(s string, dx, height float64) []string {
 	return lines
 }
 
-// TODO: This isn't working - not even a little
-func (d *Dictionary) RenderParagraph(s string, x, y, z, dx, height float64, halign, valign Justification) {
-	lines := d.split(s, dx, height)
-	total_height := height * float64(len(lines)-1)
+// TODO: This isn't working - not being tested yet
+func (d *Dictionary) RenderParagraph(s string, x, y, z, boundingWidth, lineHeight int, halign, valign Justification) {
+	lines := d.split(s, boundingWidth)
+	total_height := lineHeight * len(lines)
 	switch valign {
 	case Bottom:
 		y += total_height
@@ -210,8 +210,8 @@ func (d *Dictionary) RenderParagraph(s string, x, y, z, dx, height float64, hali
 		y += total_height / 2
 	}
 	for _, line := range lines {
-		d.RenderString(line, x, y, z, height, halign)
-		y -= height
+		d.RenderString(line, x, y, z, lineHeight, halign)
+		y -= lineHeight
 	}
 }
 
@@ -235,8 +235,11 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 // TODO(tmckee): refactor uses of Dictionary to not require calling
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
-// Renders the string 's' at the given (x, y, z) in normalized device co-ordinates and at a height of 'height' in pixels.
-func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justification) {
+// TODO(tmckee): don't take a 'z', we don't use it!
+// Renders the string 's' with its lower-left corner at the given position with
+// the given height. Values are in units of pixels w.r.t. an origin at the
+// top-left of the screen.
+func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justification) {
 	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "z", z, "height", height, "just", just)
 	debug.LogAndClearGlErrors(d.logger)
 
@@ -249,17 +252,27 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 
 	d.logger.Debug("sizes", "stride", stride, "width", width_texunits)
 	d.logger.Debug("dict-dims", "Dx", d.Data.Dx, "Dy", d.Data.Dy)
-	x_pos_geounits := float64(x)
 
-	// height_geounits := 1.0
+	// TODO(tmckee): d.Data.Dx is not always the screen width!
+	screenPixelWidth := d.Data.Dx
+	// TODO(tmckee): d.Data.Dy is not always the screen height!
+	screenPixelHeight := d.Data.Dy
+
+	width_pixels_to_geounits := 2.0 / float64(screenPixelWidth)
+	height_pixels_to_geounits := 2.0 / float64(screenPixelHeight)
+	d.logger.Debug("screenpix", "width", screenPixelWidth, "height", screenPixelHeight)
+
+	// To convert from screen space to NDC, move the origin half a screen in the
+	// positive direction, then scale distances by a factor of
+	// width-of-screen-in-pixels == 2.0 NDC
+	x_pos_geounits := float64(x-screenPixelWidth/2) * width_pixels_to_geounits
+	y_pos_geounits := -float64(y-(screenPixelHeight/2)) * height_pixels_to_geounits
+
+	height_geounits := 1.0
 	// TODO(tmckee): hardcoded to dict_10.gob for now :(
 	height_texunits := float64(32)
-	// screen_pixel_height := 32 // 32 pixels tall in the top-right quad
-
-	screen_pixel_width := d.Data.Dx / 2 // half for top-right quad
 
 	width_texunits_to_pixels := float64(1.0)
-	width_pixels_to_geounits := 1.0 / float64(screen_pixel_width)
 	width_texunits_to_geounits := width_texunits_to_pixels * width_pixels_to_geounits
 
 	string_width_geounits := width_texunits * width_texunits_to_geounits
@@ -291,9 +304,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height float64, just Justif
 			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", string(r), "runeInfo", info, "dict-maxy", d.Data.Maxy)
 			xleft_geounits := x_pos_geounits
 			xright_geounits := x_pos_geounits + float64(info.Bounds.Dx()-2)*width_texunits_to_geounits
-			height_geounits := 1.0
-			ytop_geounits := float32(y + height_geounits)
-			ybot_geounits := float32(y)
+			ytop_geounits := float32(y_pos_geounits + height_geounits)
+			ybot_geounits := float32(y_pos_geounits)
 			start := uint16(len(blittingData.vertexData))
 			blittingData.indicesData = append(blittingData.indicesData, start+0)
 			blittingData.indicesData = append(blittingData.indicesData, start+1)
