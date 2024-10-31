@@ -135,7 +135,7 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 		io.Copy(rejectFile, bytes.NewReader(pgmBytes))
 	}
 
-	So(cmp, ShouldEqual, 0)
+	SoMsg("pixels should match", cmp, ShouldEqual, 0)
 }
 
 func TestDictionaryMaxHeight(t *testing.T) {
