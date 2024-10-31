@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"os"
 	"path"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -31,7 +30,6 @@ func readPixels(width, height int) ([]byte, error) {
 }
 
 func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
-	runtime.LockOSThread()
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
 	wdx := 512
