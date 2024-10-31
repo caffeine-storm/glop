@@ -70,15 +70,21 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 	return d
 }
 
+// Renders the given string with the bottom-left at the middle of the screen.
 func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
-	renderStringAtOffsetForTest(toDraw, 0, 0, sys, render, just, logger)
+	screenWidthCentre := screenPixelWidth / 2
+	screenHeightCentre := screenPixelHeight / 2
+	renderStringAtScreenPosition(toDraw, screenWidthCentre, screenHeightCentre, sys, render, just, logger)
 }
 
-func renderStringAtOffsetForTest(toDraw string, xpixels, ypixels int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+// Renders the given string with the bottom-left at the given position in
+// 'Screen Space'; units of pixels with the origin at the bottom left of the
+// screen. See https://learnopengl.com/Getting-started/Coordinate-Systems.
+func renderStringAtScreenPosition(toDraw string, xpixels, ypixels int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
-	xndc := float64(xpixels) / (float64(screenPixelWidth) / 2)
-	yndc := float64(ypixels) / (float64(screenPixelHeight) / 2)
+	xndc := float64(xpixels-(screenPixelWidth/2)) * (2.0 / float64(screenPixelWidth))
+	yndc := float64(ypixels-(screenPixelHeight/2)) * (2.0 / float64(screenPixelHeight))
 
 	render.Queue(func() {
 		d.RenderString(toDraw, xndc, yndc, 0, d.MaxHeight(), just)
@@ -218,9 +224,9 @@ func DictionaryRenderStringSpec() {
 		expectPixelsMatch(render, "../testdata/text/credits.pgm")
 	})
 
-	Convey("Can render 'offset' somewhere other than the origin", func() {
+	Convey("Can render somewhere other than the origin", func() {
 		Convey("can render at the bottom left", func() {
-			renderStringAtOffsetForTest("offset", -(screenPixelWidth / 2), -(screenPixelHeight / 2), sys, render, Left, glog.DebugLogger())
+			renderStringAtScreenPosition("offset", 0, 0, sys, render, Left, glog.DebugLogger())
 
 			expectPixelsMatch(render, "../testdata/text/offset.pgm")
 		})
