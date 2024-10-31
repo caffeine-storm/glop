@@ -195,18 +195,15 @@ func TestDictionaryGetInfo(t *testing.T) {
 }
 
 func DictionaryRenderStringSpec() {
-	Convey("Can render 'lol'", func() {
-		sys, render, wdx, wdy := initGlForTest()
+	sys, render, wdx, wdy := initGlForTest()
 
+	Convey("Can render 'lol'", func() {
 		renderStringForTest("lol", sys, render, Left, slog.Default())
 
 		expectPixelsMatch(render, "../testdata/text/lol.pgm", wdx, wdy)
 	})
 
 	Convey("Can render 'credits' centred", func() {
-		sys, render, wdx, wdy := initGlForTest()
-
-		// d.RenderString("Credits", 0, 0, 0, 10, Center)
 		renderStringForTest("Credits", sys, render, Center, glog.DebugLogger())
 
 		expectPixelsMatch(render, "../testdata/text/credits.pgm", wdx, wdy)
