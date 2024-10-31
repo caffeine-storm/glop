@@ -122,9 +122,9 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 		defer rejectFile.Close()
 
 		io.Copy(rejectFile, bytes.NewReader(pgmBytes))
-
-		panic(fmt.Errorf("framebuffer mismatch; see %s", rejectFileName))
 	}
+
+	So(cmp, ShouldEqual, 0)
 }
 
 func TestDictionaryMaxHeight(t *testing.T) {
