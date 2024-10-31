@@ -70,10 +70,21 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 }
 
 func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+	renderStringAtOffsetForTest(toDraw, 0, 0, sys, render, just, logger)
+}
+
+func renderStringAtOffsetForTest(toDraw string, xpixels, ypixels int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
+	// TODO(tmckee): we should be using sys.GetWindowDims() but that seems to
+	// fail.
+	screenwidth := float64(512)
+	screenheight := float64(64)
+	xndc := float64(xpixels) / (screenwidth / 2)
+	yndc := float64(ypixels) / (screenheight / 2)
+
 	render.Queue(func() {
-		d.RenderString(toDraw, 0, 0, 0, d.MaxHeight(), just)
+		d.RenderString(toDraw, xndc, yndc, 0, d.MaxHeight(), just)
 		sys.SwapBuffers()
 	})
 
