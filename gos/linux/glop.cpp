@@ -364,7 +364,10 @@ void GlopSetTitle(OsWindowData* data, const string& title) {
 }
 
 void glopSetCurrentContext(OsWindowData* data) {
-  glXMakeCurrent(display, data->window, data->context);
+  if (!glXMakeCurrent(display, data->window, data->context)) {
+		fprintf(stderr, "glop.cpp: glxMakeCurrent failed\n");
+		exit(1);
+	}
 }
 
 GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int height) {
