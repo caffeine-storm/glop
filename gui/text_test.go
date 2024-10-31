@@ -23,21 +23,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const screenPixelWidth = 512
+const screenPixelHeight = 64
+
 func readPixels(width, height int) ([]byte, error) {
 	ret := make([]byte, width*height)
 	gl.ReadPixels(0, 0, width, height, gl.RED, gl.UNSIGNED_BYTE, ret)
 	return ret, nil
 }
 
-func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
+func initGlForTest() (system.System, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
-	wdx := 512
-	wdy := 64
 
 	sys.Startup()
 	render := render.MakeQueue(func() {
-		sys.CreateWindow(0, 0, wdx, wdy)
+		sys.CreateWindow(0, 0, screenPixelWidth, screenPixelHeight)
 		sys.EnableVSync(true)
 		err := gl.Init()
 		if err != 0 {
@@ -52,7 +53,7 @@ func initGlForTest() (system.System, render.RenderQueueInterface, int, int) {
 		panic(fmt.Errorf("couldn't gui.Init(): %w", err))
 	}
 
-	return sys, render, wdx, wdy
+	return sys, render
 }
 
 func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
@@ -76,12 +77,8 @@ func renderStringForTest(toDraw string, sys system.System, render render.RenderQ
 func renderStringAtOffsetForTest(toDraw string, xpixels, ypixels int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
-	// TODO(tmckee): we should be using sys.GetWindowDims() but that seems to
-	// fail.
-	screenwidth := float64(512)
-	screenheight := float64(64)
-	xndc := float64(xpixels) / (screenwidth / 2)
-	yndc := float64(ypixels) / (screenheight / 2)
+	xndc := float64(xpixels) / (float64(screenPixelWidth) / 2)
+	yndc := float64(ypixels) / (float64(screenPixelHeight) / 2)
 
 	render.Queue(func() {
 		d.RenderString(toDraw, xndc, yndc, 0, d.MaxHeight(), just)
@@ -101,13 +98,13 @@ func makeRejectName(exp, suffix string) string {
 	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }
 
-func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string, screenSpaceX, screenSpaceY int) {
+func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string) {
 	var err error
 
 	// Read all the pixels from the framebuffer through OpenGL
 	var frameBufferBytes []byte
 	render.Queue(func() {
-		frameBufferBytes, err = readPixels(screenSpaceX, screenSpaceY)
+		frameBufferBytes, err = readPixels(screenPixelWidth, screenPixelHeight)
 		if err != nil {
 			panic(fmt.Errorf("couldn't readPixels: %v", err))
 		}
@@ -122,7 +119,8 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 
 	rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
 
-	pgmBytes := append([]byte("P5 512 64 255 "), frameBufferBytes...)
+	magicHeader := fmt.Sprintf("P5 %d %d 255 ", screenPixelWidth, screenPixelHeight)
+	pgmBytes := append([]byte(magicHeader), frameBufferBytes...)
 	cmp := bytes.Compare(expectedBytes, pgmBytes)
 	if cmp != 0 {
 		// For debug purposes, copy the bad frame buffer for offline inspection.
@@ -206,18 +204,18 @@ func TestDictionaryGetInfo(t *testing.T) {
 }
 
 func DictionaryRenderStringSpec() {
-	sys, render, wdx, wdy := initGlForTest()
+	sys, render := initGlForTest()
 
 	Convey("Can render 'lol'", func() {
 		renderStringForTest("lol", sys, render, Left, slog.Default())
 
-		expectPixelsMatch(render, "../testdata/text/lol.pgm", wdx, wdy)
+		expectPixelsMatch(render, "../testdata/text/lol.pgm")
 	})
 
 	Convey("Can render 'credits' centred", func() {
 		renderStringForTest("Credits", sys, render, Center, glog.DebugLogger())
 
-		expectPixelsMatch(render, "../testdata/text/credits.pgm", wdx, wdy)
+		expectPixelsMatch(render, "../testdata/text/credits.pgm")
 	})
 }
 
@@ -277,7 +275,7 @@ func CollectOutput(operation func()) []string {
 
 func CleanLogsPerFrameSpec() {
 	Convey("stdout isn't spammed by RenderString", func() {
-		sys, render, _, _ := initGlForTest()
+		sys, render := initGlForTest()
 
 		voidLogger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
 			Level: slog.Level(-42),
