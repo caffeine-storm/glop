@@ -241,7 +241,6 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 // top-left of the screen.
 func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justification) {
 	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "z", z, "height", height, "just", just)
-	debug.LogAndClearGlErrors(d.logger)
 
 	if len(s) == 0 {
 		return
@@ -355,15 +354,11 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 		d.stringBlittingCache[s] = blittingData
 	}
 
-	debug.LogAndClearGlErrors(d.logger)
-
 	err := render.EnableShader("glop.font")
 	if err != nil {
 		panic(err)
 	}
 	defer render.EnableShader("")
-
-	debug.LogAndClearGlErrors(d.logger)
 
 	// TODO(tmckee): 'diff' was used for configuring a clamping function
 	// (smoothstep) in the shader. The math is broken, though, and alyways comes
@@ -376,8 +371,6 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 	d.logger.Debug("RenderStringDiff", "diff", diff)
 	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
 	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
-
-	debug.LogAndClearGlErrors(d.logger)
 
 	// We want to use the 0'th texture unit.
 	render.SetUniformI("glop.font", "tex", 0)
