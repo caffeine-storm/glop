@@ -240,13 +240,13 @@ func DictionaryRenderStringSpec() {
 	Convey("Can render 'lol'", func() {
 		renderStringForTest("lol", sys, render, Left, slog.Default())
 
-		expectPixelsMatch(render, "../testdata/text/lol.pgm")
+		So(render, ShouldLookLike, "../testdata/text/lol.pgm")
 	})
 
 	Convey("Can render 'credits' centred", func() {
 		renderStringForTest("Credits", sys, render, Center, glog.DebugLogger())
 
-		expectPixelsMatch(render, "../testdata/text/credits.pgm")
+		So(render, ShouldLookLike, "../testdata/text/credits.pgm")
 	})
 
 	Convey("Can render somewhere other than the origin", func() {
