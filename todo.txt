@@ -1,5 +1,3 @@
-tmckee: our render tests have upside down expected files because of how we readPixels and write the .pgm files. We should not have flipped expectations.
-
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
