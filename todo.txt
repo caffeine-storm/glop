@@ -1,3 +1,23 @@
+tmckee: rarely, we hit a concurrent map write crash with
+	cache.ramByteBank.Write when running tests
+	- commit: d7cb5d92d72100479b1d5801e3ca6890e9fc1a0a
+	- goroutine 72 [running]:
+github.com/runningwild/glop/cache.ramByteBank.Write(0xc000246f28?, {0xc000020138?, 0x0?}, {0xc0013aa000, 0x200000, 0x200000})
+        /home/tmckee/workspace/deps-for-haunts/glop/cache/bytebank.go:74 +0x45
+github.com/runningwild/glop/sprite.(*sheet).compose(0xc00015a000, 0xc000200070)
+        /home/tmckee/workspace/deps-for-haunts/glop/sprite/sheet.go:104 +0x414
+created by github.com/runningwild/glop/sprite.(*sheet).loadRoutine in goroutine 32
+        /home/tmckee/workspace/deps-for-haunts/glop/sprite/sheet.go:145 +0xd4
+	- goroutine 115 [semacquire]:
+github.com/runningwild/glop/cache.ramByteBank.Write(0xc000495f28?, {0xc000020138?, 0x0?}, {0xc001986000, 0x200000, 0x200000})
+        /home/tmckee/workspace/deps-for-haunts/glop/cache/bytebank.go:74 +0x45
+github.com/runningwild/glop/sprite.(*sheet).compose(0xc00015a000, 0xc000200070)
+        /home/tmckee/workspace/deps-for-haunts/glop/sprite/sheet.go:104 +0x414
+created by github.com/runningwild/glop/sprite.(*sheet).loadRoutine in goroutine 32
+        /home/tmckee/workspace/deps-for-haunts/glop/sprite/sheet.go:145 +0xd4
+	- ----> need to protect the sprite.sheet's pixelDataCache field
+
+
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
