@@ -153,13 +153,10 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 	cmp := bytes.Compare(expectedBytes, pgmBytes)
 	if cmp != 0 {
 		// For debug purposes, copy the bad frame buffer for offline inspection.
-		rejectFile, err := os.Create(rejectFileName)
+		err := os.WriteFile(rejectFileName, pgmBytes, 0644)
 		if err != nil {
-			panic(fmt.Errorf("couldn't open rejection file: %s: %w", rejectFileName, err))
+			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
 		}
-		defer rejectFile.Close()
-
-		io.Copy(rejectFile, bytes.NewReader(pgmBytes))
 
 		return false, rejectFileName
 	}
