@@ -303,8 +303,8 @@ func DictionaryRenderStringSpec() {
 
 	Convey("Can render somewhere other than the origin", func() {
 		Convey("can render at the bottom left", func() {
-			leftPixel = 0
-			bottomPixel = 0
+			leftPixel = 10
+			bottomPixel = 10
 			logger = glog.DebugLogger()
 			doRenderString("offset")
 
