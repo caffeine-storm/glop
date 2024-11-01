@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -32,6 +33,78 @@ func readPgmFile(path string) []byte {
 		panic(fmt.Errorf("couldn't os.ReadFile(%q): %w", path, err))
 	}
 	return pgmBytes
+}
+
+// Convert from .pgm's top-row-first to OpenGL's bottom-row-first.
+// TODO(tmckee): maybe just use golang's image package;
+//   - image.Register("pgm" ...)
+//   - image.Decode
+//   - image.Transform( y -> -y )
+func pgmToFrameBuffer(pgmBytes []byte) ([]byte, int, int) {
+	// .pgm is of the format "P5 <width> <height> <depth> <payload>"
+	parts := bytes.SplitN(pgmBytes, []byte(" "), 5)
+	if len(parts) != 5 {
+		panic(fmt.Errorf("couldn't split on space to 5 subslices: got %d", len(parts)))
+	}
+
+	magic := string(parts[0])
+	if magic != "P5" {
+		panic(fmt.Errorf("expected file doesn't have right magic number: got: %q expected %q", magic, "P5"))
+	}
+
+	width, err := strconv.Atoi(string(parts[1]))
+	if err != nil {
+		panic(fmt.Errorf("couldn't parse an int for the width from %q: %w", parts[1], err))
+	}
+
+	height, err := strconv.Atoi(string(parts[2]))
+	if err != nil {
+		panic(fmt.Errorf("couldn't parse an int for the height from %q: %w", parts[2], err))
+	}
+
+	depth, err := strconv.Atoi(string(parts[3]))
+	if err != nil {
+		panic(fmt.Errorf("couldn't parse an int for the depth from %q: %w", parts[3], err))
+	}
+
+	if depth != 255 {
+		panic(fmt.Errorf("expected .pgm depth of %d but got %d", 255, depth))
+	}
+
+	// payload should have width*height bytes
+	payload := parts[4]
+	if len(payload) != width*height {
+		panic(fmt.Errorf("expected %dX%d bytes in image payload but got %d", width, height, len(payload)))
+	}
+
+	result := make([]byte, len(payload))
+
+	for row := 0; row < height; row++ {
+		resultRowIdx := row * width
+		resultRowEnd := resultRowIdx + width
+		inputRowIdx := (height - row - 1) * width
+		inputRowEnd := inputRowIdx + width
+
+		copy(result[resultRowIdx:resultRowEnd], payload[inputRowIdx:inputRowEnd])
+	}
+
+	return result, width, height
+}
+
+func frameBufferToPgm(openglBytes []byte, width, height int) []byte {
+	result := make([]byte, len(openglBytes))
+
+	// Convert from bottom-first-row to top-first-row.
+	for row := 0; row < height; row++ {
+		resultRowIdx := row * width
+		resultRowEnd := resultRowIdx + width
+		inputRowIdx := (height - row - 1) * width
+		inputRowEnd := inputRowIdx + width
+
+		copy(result[resultRowIdx:resultRowEnd], openglBytes[inputRowIdx:inputRowEnd])
+	}
+
+	return append([]byte(fmt.Sprintf("P5 %d %d 255 ", width, height)), result...)
 }
 
 func readPixels(width, height int) ([]byte, error) {
@@ -145,15 +218,22 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 	render.Purge()
 
 	// Verify that the framebuffer's contents match our expected image.
-	expectedBytes := readPgmFile(pgmFileExpected)
-	rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
+	pgmBytes := readPgmFile(pgmFileExpected)
+	expectedBytes, expectedWidth, expectedHeight := pgmToFrameBuffer(pgmBytes)
 
-	magicHeader := fmt.Sprintf("P5 %d %d 255 ", screenPixelWidth, screenPixelHeight)
-	pgmBytes := append([]byte(magicHeader), frameBufferBytes...)
-	cmp := bytes.Compare(expectedBytes, pgmBytes)
+	if expectedWidth != screenPixelWidth {
+		panic(fmt.Errorf("read expected data with width %d but need %d", expectedWidth, screenPixelWidth))
+	}
+
+	if expectedHeight != screenPixelHeight {
+		panic(fmt.Errorf("read expected data with width %d but need %d", expectedHeight, screenPixelHeight))
+	}
+
+	cmp := bytes.Compare(expectedBytes, frameBufferBytes)
 	if cmp != 0 {
 		// For debug purposes, copy the bad frame buffer for offline inspection.
-		err := os.WriteFile(rejectFileName, pgmBytes, 0644)
+		rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
+		err := os.WriteFile(rejectFileName, frameBufferToPgm(frameBufferBytes, screenPixelWidth, screenPixelHeight), 0644)
 		if err != nil {
 			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
 		}
