@@ -267,7 +267,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 	x_pos_geounits := float64(x-screenPixelWidth/2) * width_pixels_to_geounits
 	y_pos_geounits := -float64(y-(screenPixelHeight/2)) * height_pixels_to_geounits
 
-	height_geounits := 1.0
+	height_geounits := float64(height) * height_pixels_to_geounits
 	// TODO(tmckee): hardcoded to dict_10.gob for now :(
 	height_texunits := float64(32)
 
