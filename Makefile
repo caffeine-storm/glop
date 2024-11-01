@@ -22,6 +22,12 @@ test-spec:
 test-nocache:
 	${testing_env} go test -count=1       ${testrunargs} ./...
 
+test-fresh: |clean_rejects
+test-fresh: test-nocache
+
+clean_rejects:
+	rm -f testdata/text/*.rej.*
+
 compile_commands: gos/linux/compile_commands.json
 
 gos/linux/compile_commands.json:
@@ -40,5 +46,6 @@ checkfmt:
 
 .PHONY: build-check
 .PHONY: compile_commands
-.PHONY: test
+.PHONY: test test-spec test-nocache test-fresh
 .PHONY: fmt
+.PHONY: clean_rejects
