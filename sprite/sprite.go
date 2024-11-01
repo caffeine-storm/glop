@@ -33,6 +33,12 @@ func (e *spriteError) Error() string {
 	return e.Msg
 }
 
+func newSpriteError(msg string) *spriteError {
+	return &spriteError{
+		Msg: msg,
+	}
+}
+
 // attempt to make a relative path, otherwise leaves it alone
 func tryRelPath(base, path string) string {
 	rel, err := filepath.Rel(base, path)
@@ -72,7 +78,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 	for i := 0; i < graph.NumNodes(); i++ {
 		node := graph.Node(i)
 		if node.NumLines() == 0 || strings.Contains(node.Line(0), ":") {
-			return &spriteError{"contains an unlabeled node"}
+			return newSpriteError("contains an unlabeled node")
 		}
 	}
 
@@ -83,12 +89,12 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 			if start == nil {
 				start = graph.Node(i)
 			} else {
-				return &spriteError{"more than one node is marked as the start node"}
+				return newSpriteError("more than one node is marked as the start node")
 			}
 		}
 	}
 	if start == nil {
-		return &spriteError{"no start node was found"}
+		return newSpriteError("no start node was found")
 	}
 
 	// Check that all nodes can be reached by the start node
@@ -125,7 +131,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 		}
 	}
 	if len(used) != graph.NumNodes() {
-		return &spriteError{"not all nodes are reachable from the start node"}
+		return newSpriteError("not all nodes are reachable from the start node")
 	}
 
 	// Check that nodes only have the specified tags
@@ -133,7 +139,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 		node := graph.Node(i)
 		for _, tag := range node.TagKeys() {
 			if !(valid_node_tags[tag] || (node == start && tag == "mark")) {
-				return &spriteError{fmt.Sprintf("a node has an unknown tag (%s)", tag)}
+				return newSpriteError(fmt.Sprintf("a node has an unknown tag (%s)", tag))
 			}
 		}
 	}
@@ -143,7 +149,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 		edge := graph.Edge(i)
 		for _, tag := range edge.TagKeys() {
 			if !valid_edge_tags[tag] {
-				return &spriteError{fmt.Sprintf("an edge has an unknown tag (%s)", tag)}
+				return newSpriteError(fmt.Sprintf("an edge has an unknown tag (%s)", tag))
 			}
 		}
 	}
@@ -160,7 +166,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 func verifyStateGraph(graph *yed.Graph) error {
 	err := verifyAnyGraph(graph, []string{}, []string{"facing"})
 	if err != nil {
-		return &spriteError{fmt.Sprintf("State graph: %v", err)}
+		return newSpriteError(fmt.Sprintf("State graph: %v", err))
 	}
 
 	start := getStartNode(graph)
@@ -169,7 +175,7 @@ func verifyStateGraph(graph *yed.Graph) error {
 	for i := 0; i < start.NumOutputs(); i++ {
 		edge := start.Output(i)
 		if edge.NumLines() == 0 || strings.Contains(edge.Line(0), ":") {
-			return &spriteError{"State graph: The start node has an unlabeled output edge"}
+			return newSpriteError("State graph: The start node has an unlabeled output edge")
 		}
 	}
 
@@ -184,7 +190,7 @@ func verifyStateGraph(graph *yed.Graph) error {
 			}
 		}
 		if num_labels < node.NumOutputs()-1 {
-			return &spriteError{fmt.Sprintf("State graph: Found more than one unlabeled output edge on node '%s'", node.Line(0))}
+			return newSpriteError(fmt.Sprintf("State graph: Found more than one unlabeled output edge on node '%s'", node.Line(0)))
 		}
 	}
 
@@ -192,7 +198,7 @@ func verifyStateGraph(graph *yed.Graph) error {
 	for i := 0; i < graph.NumNodes(); i++ {
 		node := graph.Node(i)
 		if node.NumChildren() > 0 {
-			return &spriteError{"State graph: cannot contain groups"}
+			return newSpriteError("State graph: cannot contain groups")
 		}
 	}
 
@@ -203,7 +209,7 @@ func verifyStateGraph(graph *yed.Graph) error {
 func verifyAnimGraph(graph *yed.Graph) error {
 	err := verifyAnyGraph(graph, []string{"time", "sync", "func", "state"}, []string{"facing", "weight"})
 	if err != nil {
-		return &spriteError{fmt.Sprintf("Anim graph: %v", err)}
+		return newSpriteError(fmt.Sprintf("Anim graph: %v", err))
 	}
 
 	return nil
@@ -239,7 +245,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 			case info.Name() == "thumb.png":
 			case strings.HasSuffix(info.Name(), ".gob"):
 			default:
-				err = &spriteError{fmt.Sprintf("Unexpected file found in sprite directory, %s", tryRelPath(path, cpath))}
+				err = newSpriteError(fmt.Sprintf("Unexpected file found in sprite directory, %s", tryRelPath(path, cpath)))
 				return err
 			}
 		}
@@ -249,7 +255,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 		return
 	}
 	if num_facings == 0 {
-		err = &spriteError{"Found no facings in the sprite directory"}
+		err = newSpriteError("Found no facings in the sprite directory")
 		return
 	}
 
@@ -279,7 +285,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 			}
 
 			if info.IsDir() {
-				err = &spriteError{fmt.Sprintf("Found a directory inside facing directory %d, %s", facing, tryRelPath(path, cpath))}
+				err = newSpriteError(fmt.Sprintf("Found a directory inside facing directory %d, %s", facing, tryRelPath(path, cpath)))
 				return err
 			}
 			if filepath.Ext(cpath) == ".png" {
@@ -287,7 +293,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 				if valid_names[base] {
 					filenames_map[base] = true
 				} else {
-					err = &spriteError{fmt.Sprintf("Found an unused .png file: %s", tryRelPath(path, cpath))}
+					err = newSpriteError(fmt.Sprintf("Found an unused .png file: %s", tryRelPath(path, cpath)))
 				}
 				return err
 			}
