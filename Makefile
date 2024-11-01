@@ -1,3 +1,5 @@
+SHELL:=/bin/bash
+
 ifneq "${testrun}" ""
 testrunargs:=-run ${testrun}
 else
@@ -28,6 +30,13 @@ test-fresh: test-nocache
 clean_rejects:
 	rm -f testdata/text/*.rej.*
 
+promote_rejects:
+	@shopt -s nullglob ; \
+	for i in testdata/text/*.rej.* ; do \
+		echo mv $$i $${i/.rej} ; \
+		mv $$i $${i/.rej} ; \
+	done
+
 compile_commands: gos/linux/compile_commands.json
 
 gos/linux/compile_commands.json:
@@ -48,4 +57,4 @@ checkfmt:
 .PHONY: compile_commands
 .PHONY: test test-spec test-nocache test-fresh
 .PHONY: fmt
-.PHONY: clean_rejects
+.PHONY: clean_rejects promote_rejects
