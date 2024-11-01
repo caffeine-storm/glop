@@ -6,9 +6,6 @@ gl.QUADS
 tmckee: make render.RenderQueueInterface.Queue take a specific type of
 'RenderJob'; will let us refactor to inject the GL dependecy down the line.
 
-tmckee: I've been wrapping errors with 'fmt.Errorf( ... %v ... )' but should be
-				using '%w'.
-
 tmckee: in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
 tmckee: installed multilib support to get the build going; is it necessary?

@@ -26,16 +26,12 @@ const (
 )
 
 type spriteError struct {
-	Msg string
+	error
 }
 
-func (e *spriteError) Error() string {
-	return e.Msg
-}
-
-func newSpriteError(msg string) *spriteError {
+func newSpriteError(format string, args ...interface{}) *spriteError {
 	return &spriteError{
-		Msg: msg,
+		error: fmt.Errorf(format, args...),
 	}
 }
 
@@ -139,7 +135,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 		node := graph.Node(i)
 		for _, tag := range node.TagKeys() {
 			if !(valid_node_tags[tag] || (node == start && tag == "mark")) {
-				return newSpriteError(fmt.Sprintf("a node has an unknown tag (%s)", tag))
+				return newSpriteError("a node has an unknown tag: %q", tag)
 			}
 		}
 	}
@@ -149,7 +145,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 		edge := graph.Edge(i)
 		for _, tag := range edge.TagKeys() {
 			if !valid_edge_tags[tag] {
-				return newSpriteError(fmt.Sprintf("an edge has an unknown tag (%s)", tag))
+				return newSpriteError("an edge has an unknown tag: %q", tag)
 			}
 		}
 	}
@@ -166,7 +162,7 @@ func verifyAnyGraph(graph *yed.Graph, node_tags, edge_tags []string) error {
 func verifyStateGraph(graph *yed.Graph) error {
 	err := verifyAnyGraph(graph, []string{}, []string{"facing"})
 	if err != nil {
-		return newSpriteError(fmt.Sprintf("State graph: %v", err))
+		return newSpriteError("verifyAnyGraph failed: %w", err)
 	}
 
 	start := getStartNode(graph)
@@ -190,7 +186,7 @@ func verifyStateGraph(graph *yed.Graph) error {
 			}
 		}
 		if num_labels < node.NumOutputs()-1 {
-			return newSpriteError(fmt.Sprintf("State graph: Found more than one unlabeled output edge on node '%s'", node.Line(0)))
+			return newSpriteError("State graph: Found more than one unlabeled output edge on node '%s'", node.Line(0))
 		}
 	}
 
@@ -209,7 +205,7 @@ func verifyStateGraph(graph *yed.Graph) error {
 func verifyAnimGraph(graph *yed.Graph) error {
 	err := verifyAnyGraph(graph, []string{"time", "sync", "func", "state"}, []string{"facing", "weight"})
 	if err != nil {
-		return newSpriteError(fmt.Sprintf("Anim graph: %v", err))
+		return newSpriteError("Anim graph: %w", err)
 	}
 
 	return nil
@@ -245,7 +241,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 			case info.Name() == "thumb.png":
 			case strings.HasSuffix(info.Name(), ".gob"):
 			default:
-				err = newSpriteError(fmt.Sprintf("Unexpected file found in sprite directory, %s", tryRelPath(path, cpath)))
+				err = newSpriteError("Unexpected file found in sprite directory, %s", tryRelPath(path, cpath))
 				return err
 			}
 		}
@@ -285,7 +281,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 			}
 
 			if info.IsDir() {
-				err = newSpriteError(fmt.Sprintf("Found a directory inside facing directory %d, %s", facing, tryRelPath(path, cpath)))
+				err = newSpriteError("Found a directory inside facing directory %d, %s", facing, tryRelPath(path, cpath))
 				return err
 			}
 			if filepath.Ext(cpath) == ".png" {
@@ -293,7 +289,7 @@ func verifyDirectoryStructure(path string, graph *yed.Graph) (num_facings int, f
 				if valid_names[base] {
 					filenames_map[base] = true
 				} else {
-					err = newSpriteError(fmt.Sprintf("Found an unused .png file: %s", tryRelPath(path, cpath)))
+					err = newSpriteError("Found an unused .png file: %s", tryRelPath(path, cpath))
 				}
 				return err
 			}
