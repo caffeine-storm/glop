@@ -155,6 +155,19 @@ func renderStringAtScreenPosition(toDraw string, xpixels, ypixels int, sys syste
 	render.Purge()
 }
 
+func renderStringToHeight(toDraw string, pixelHeight int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+	d := loadDictionaryForTest(render, logger)
+
+	screenWidthCentre := screenPixelWidth / 2
+	screenHeightCentre := screenPixelHeight / 2
+	render.Queue(func() {
+		d.RenderString(toDraw, screenWidthCentre, screenHeightCentre, 0, pixelHeight, just)
+		sys.SwapBuffers()
+	})
+
+	render.Purge()
+}
+
 // Return the given file but with a '.rej' component to signify a 'rejection'.
 func makeRejectName(exp, suffix string) string {
 	dir, expectedFileName := path.Split(exp)
@@ -305,6 +318,12 @@ func DictionaryRenderStringSpec() {
 
 			So(render, ShouldLookLike, "../testdata/text/offset.pgm")
 		})
+	})
+
+	Convey("Can render to a given height", func() {
+		renderStringToHeight("tall-or-small", 5, sys, render, Left, glog.DebugLogger())
+
+		So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
 	})
 }
 
