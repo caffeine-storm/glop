@@ -130,38 +130,16 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 	return d
 }
 
-// Renders the given string with the bottom-left at the middle of the screen.
-func renderStringForTest(toDraw string, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
-	screenWidthCentre := screenPixelWidth / 2
-	screenHeightCentre := screenPixelHeight / 2
-	renderStringAtScreenPosition(toDraw, screenWidthCentre, screenHeightCentre, sys, render, just, logger)
-}
-
-// Renders the given string with the bottom-left at the given position in
-// 'Screen Space'; units of pixels with the origin at the bottom left of the
-// screen. See https://learnopengl.com/Getting-started/Coordinate-Systems.
-func renderStringAtScreenPosition(toDraw string, xpixels, ypixels int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+// Renders the given string with pixel units and an origin at the bottom-left.
+func renderStringForTest(toDraw string, x, y, height int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
-	// Need to adjust from 'Screen Space' to the inverted screen space with
-	// origin at the top-left.
-	ypixels = screenPixelHeight - ypixels
+	// d.RenderString assumes an origin at the top-left so we need to mirror our
+	// y co-ordinate.
+	y = screenPixelHeight - y
 
 	render.Queue(func() {
-		d.RenderString(toDraw, xpixels, ypixels, 0, d.MaxHeight(), just)
-		sys.SwapBuffers()
-	})
-
-	render.Purge()
-}
-
-func renderStringToHeight(toDraw string, pixelHeight int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
-	d := loadDictionaryForTest(render, logger)
-
-	screenWidthCentre := screenPixelWidth / 2
-	screenHeightCentre := screenPixelHeight / 2
-	render.Queue(func() {
-		d.RenderString(toDraw, screenWidthCentre, screenHeightCentre, 0, pixelHeight, just)
+		d.RenderString(toDraw, x, y, 0, height, just)
 		sys.SwapBuffers()
 	})
 
@@ -300,38 +278,63 @@ func TestDictionaryGetInfo(t *testing.T) {
 func DictionaryRenderStringSpec() {
 	sys, render := initGlForTest()
 
+	leftPixel := screenPixelWidth / 2
+	bottomPixel := screenPixelHeight / 2
+	height := 22
+	just := Left
+	logger := slog.Default()
+
+	doRenderString := func(toDraw string) {
+		renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
+	}
+
 	Convey("Can render 'lol'", func() {
-		renderStringForTest("lol", sys, render, Left, slog.Default())
+		doRenderString("lol")
 
 		So(render, ShouldLookLike, "../testdata/text/lol.pgm")
 	})
 
 	Convey("Can render 'credits' centred", func() {
-		renderStringForTest("Credits", sys, render, Center, glog.DebugLogger())
+		just = Center
+		doRenderString("Credits")
 
 		So(render, ShouldLookLike, "../testdata/text/credits.pgm")
 	})
 
 	Convey("Can render somewhere other than the origin", func() {
 		Convey("can render at the bottom left", func() {
-			renderStringAtScreenPosition("offset", 0, 0, sys, render, Left, glog.DebugLogger())
+			leftPixel = 0
+			bottomPixel = 0
+			logger = glog.DebugLogger()
+			doRenderString("offset")
 
 			So(render, ShouldLookLike, "../testdata/text/offset.pgm")
 		})
 	})
 
 	Convey("Can render to a given height", func() {
-		renderStringToHeight("tall-or-small", 5, sys, render, Left, glog.DebugLogger())
+		height = 5
+		logger = glog.DebugLogger()
+		doRenderString("tall-or-small")
 
 		So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
+	})
+
+	Convey("stdout isn't spammed by RenderString", func() {
+		logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+			Level: slog.Level(-42),
+		}))
+
+		stdoutLines := CollectOutput(func() {
+			doRenderString("lol")
+		})
+
+		So(stdoutLines, ShouldEqual, []string{})
 	})
 }
 
 func TestRunTextSpecs(t *testing.T) {
-	Convey("Text Specifications", t, func() {
-		Convey("Dictionaries should render strings", DictionaryRenderStringSpec)
-		Convey("CleanLogsPerFrameSpec", CleanLogsPerFrameSpec)
-	})
+	Convey("Dictionaries should render strings", t, DictionaryRenderStringSpec)
 }
 
 // Runs the given operation and returns a slice of strings that the operation
@@ -379,19 +382,4 @@ func CollectOutput(operation func()) []string {
 	}
 
 	return strings.Split(string(byteList), "\n")
-}
-
-func CleanLogsPerFrameSpec() {
-	Convey("stdout isn't spammed by RenderString", func() {
-		sys, render := initGlForTest()
-
-		voidLogger := slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-			Level: slog.Level(-42),
-		}))
-		stdoutLines := CollectOutput(func() {
-			renderStringForTest("lol", sys, render, Left, voidLogger)
-		})
-
-		So(stdoutLines, ShouldEqual, []string{})
-	})
 }
