@@ -380,9 +380,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 	debug.LogAndClearGlErrors(d.logger)
 
 	// We want to use the 0'th texture unit.
-	// TODO(tmckee): this seems to be getting an 'INVALID_VALUE' glerror back.
-	// Look into whether we've correctly looked up the uniform location.
-	render.SetUniformI("glop.font", "tex", gl.TEXTURE0+0)
+	render.SetUniformI("glop.font", "tex", 0)
 
 	debug.LogAndClearGlErrors(d.logger)
 
