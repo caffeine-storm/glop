@@ -60,6 +60,7 @@ func TestCacheSpecs(t *testing.T) {
 
 		Convey("FsByteBank is a ByteBank", t, ImplementsByteBank(cache.MakeFsByteBank(tmpdir)))
 		Convey("RamByteBank is a ByteBank", t, ImplementsByteBank(cache.MakeRamByteBank()))
+		Convey("LockingByteBank is a ByteBank", t, ImplementsByteBank(cache.MakeLockingByteBank(cache.MakeRamByteBank())))
 	})
 }
 
