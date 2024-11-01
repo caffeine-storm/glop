@@ -139,7 +139,7 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 	render.Queue(func() {
 		frameBufferBytes, err = readPixels(screenPixelWidth, screenPixelHeight)
 		if err != nil {
-			panic(fmt.Errorf("couldn't readPixels: %v", err))
+			panic(fmt.Errorf("couldn't readPixels: %w", err))
 		}
 	})
 	render.Purge()
@@ -155,7 +155,7 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 		// For debug purposes, copy the bad frame buffer for offline inspection.
 		rejectFile, err := os.Create(rejectFileName)
 		if err != nil {
-			panic(fmt.Errorf("couldn't open rejection file: %s: %v", rejectFileName, err))
+			panic(fmt.Errorf("couldn't open rejection file: %s: %w", rejectFileName, err))
 		}
 		defer rejectFile.Close()
 

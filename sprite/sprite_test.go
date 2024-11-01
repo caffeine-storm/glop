@@ -30,7 +30,7 @@ func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
 	for _, spritePath := range sprite_paths {
 		s, err := spriteMan.LoadSprite(spritePath)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't load sprite at path %q: %v", spritePath, err)
+			return nil, fmt.Errorf("couldn't load sprite at path %q: %w", spritePath, err)
 		}
 		result = append(result, s)
 	}

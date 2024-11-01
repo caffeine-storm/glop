@@ -46,7 +46,7 @@ func (bank *fsByteBank) Read(key string) ([]byte, bool, error) {
 			return nil, false, nil
 		}
 		// Other errors indicate something fatal.
-		return nil, false, fmt.Errorf("couldn't open file %q: %v", filename, err)
+		return nil, false, fmt.Errorf("couldn't open file %q: %w", filename, err)
 	}
 	return data, true, nil
 }

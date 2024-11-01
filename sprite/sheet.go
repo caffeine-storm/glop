@@ -74,7 +74,7 @@ func (s *sheet) getCacheKey() string {
 func (s *sheet) compose(pixer chan<- []byte) {
 	bytes, ok, err := s.pixelDataCache.Read(s.getCacheKey())
 	if err != nil {
-		panic(fmt.Errorf("couldn't read from pixelDataCache: %v", err))
+		panic(fmt.Errorf("couldn't read from pixelDataCache: %w", err))
 	}
 	if ok {
 		pixer <- bytes
@@ -103,7 +103,7 @@ func (s *sheet) compose(pixer chan<- []byte) {
 	// Cache the bytes for later use.
 	err = s.pixelDataCache.Write(s.getCacheKey(), canvas.Pix)
 	if err != nil {
-		panic(fmt.Errorf("couldn't write byte source: %v", err))
+		panic(fmt.Errorf("couldn't write byte source: %w", err))
 	}
 	pixer <- canvas.Pix
 }
