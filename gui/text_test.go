@@ -26,9 +26,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const screenPixelWidth = 512
-const screenPixelHeight = 64
-
 func verticalFlipPix(pixels []byte, width, height int) []byte {
 	result := make([]byte, len(pixels))
 
@@ -74,31 +71,13 @@ func readPixels(width, height int) ([]byte, error) {
 	return ret, nil
 }
 
-func ShouldLookLike(actual interface{}, expected ...interface{}) string {
-	render, ok := actual.(render.RenderQueueInterface)
-	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
-	}
-	filename, ok := expected[0].(string)
-	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a filename but got %T", expected))
-	}
-
-	ok, rejectFile := expectPixelsMatch(render, filename)
-	if ok {
-		return ""
-	}
-
-	return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
-}
-
-func initGlForTest() (system.System, render.RenderQueueInterface) {
+func initGlForTest(width, height int) (system.System, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
 
 	sys.Startup()
 	render := render.MakeQueue(func() {
-		sys.CreateWindow(0, 0, screenPixelWidth, screenPixelHeight)
+		sys.CreateWindow(0, 0, width, height)
 		sys.EnableVSync(true)
 		err := gl.Init()
 		if err != 0 {
@@ -131,7 +110,7 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 }
 
 // Renders the given string with pixel units and an origin at the bottom-left.
-func renderStringForTest(toDraw string, x, y, height int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+func renderStringForTest(toDraw string, x, y, height int, screenPixelWidth, screenPixelHeight int, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := loadDictionaryForTest(render, logger)
 
 	// d.RenderString assumes an origin at the top-left so we need to mirror our
@@ -156,13 +135,13 @@ func makeRejectName(exp, suffix string) string {
 	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }
 
-func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string) (bool, string) {
+func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string, screenWidth, screenHeight int) (bool, string) {
 	var err error
 
 	// Read all the pixels from the framebuffer through OpenGL
 	var frameBufferBytes []byte
 	render.Queue(func() {
-		frameBufferBytes, err = readPixels(screenPixelWidth, screenPixelHeight)
+		frameBufferBytes, err = readPixels(screenWidth, screenHeight)
 		if err != nil {
 			panic(fmt.Errorf("couldn't readPixels: %w", err))
 		}
@@ -181,9 +160,9 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 	cmp := bytes.Compare(expectedImage.Pix, frameBufferBytes)
 	if cmp != 0 {
 		// For debug purposes, copy the bad frame buffer for offline inspection.
-		actualImage := netpbm.NewGrayM(image.Rect(0, 0, screenPixelWidth, screenPixelHeight), 255)
+		actualImage := netpbm.NewGrayM(image.Rect(0, 0, screenWidth, screenHeight), 255)
 		// Need to flip from bottom-row-first to top-row-first.
-		actualImage.Pix = verticalFlipPix(frameBufferBytes, screenPixelWidth, screenPixelHeight)
+		actualImage.Pix = verticalFlipPix(frameBufferBytes, screenWidth, screenHeight)
 
 		rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
 		rejectFile, err := os.Create(rejectFileName)
@@ -275,62 +254,113 @@ func TestDictionaryGetInfo(t *testing.T) {
 	// TODO(tmckee): verify texture image in GL matches expectations
 }
 
-func DictionaryRenderStringSpec() {
-	sys, render := initGlForTest()
-
-	leftPixel := screenPixelWidth / 2
-	bottomPixel := screenPixelHeight / 2
-	height := 22
-	just := Left
-	logger := slog.Default()
-
-	doRenderString := func(toDraw string) {
-		renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
+func includeIndex(pgmFilename string, index int) string {
+	head, ok := strings.CutSuffix(pgmFilename, ".pgm")
+	if !ok {
+		panic(fmt.Errorf("expected a .pgm filename but got %q", pgmFilename))
 	}
+	return fmt.Sprintf("%s.%d.pgm", head, index)
+}
 
-	Convey("Can render 'lol'", func() {
-		doRenderString("lol")
+func DictionaryRenderStringSpec() {
+	screenSizeCases := []struct {
+		label  string
+		width  int
+		height int
+	}{
+		{
+			label:  "natural match to dict dimensions",
+			width:  512,
+			height: 64,
+		},
+		{
+			label:  "unnatural dimensions",
+			width:  1024,
+			height: 512,
+		},
+	}
+	for testnumber, testcase := range screenSizeCases {
+		screenPixelWidth := testcase.width
+		screenPixelHeight := testcase.height
 
-		So(render, ShouldLookLike, "../testdata/text/lol.pgm")
-	})
+		ShouldLookLike := func(actual interface{}, expected ...interface{}) string {
+			render, ok := actual.(render.RenderQueueInterface)
+			if !ok {
+				panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
+			}
+			filename, ok := expected[0].(string)
+			if !ok {
+				panic(fmt.Errorf("ShouldLookLike needs a filename but got %T", expected))
+			}
 
-	Convey("Can render 'credits' centred", func() {
-		just = Center
-		doRenderString("Credits")
+			filename = includeIndex(filename, testnumber)
 
-		So(render, ShouldLookLike, "../testdata/text/credits.pgm")
-	})
+			ok, rejectFile := expectPixelsMatch(render, filename, screenPixelWidth, screenPixelHeight)
+			if ok {
+				return ""
+			}
 
-	Convey("Can render somewhere other than the origin", func() {
-		Convey("can render at the bottom left", func() {
-			leftPixel = 10
-			bottomPixel = 10
-			logger = glog.DebugLogger()
-			doRenderString("offset")
+			return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
+		}
 
-			So(render, ShouldLookLike, "../testdata/text/offset.pgm")
+		sys, render := initGlForTest(screenPixelWidth, screenPixelHeight)
+
+		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
+			leftPixel := screenPixelWidth / 2
+			bottomPixel := screenPixelHeight / 2
+			height := 22
+			just := Left
+			logger := slog.Default()
+
+			doRenderString := func(toDraw string) {
+				renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenPixelWidth, screenPixelHeight, sys, render, just, logger)
+			}
+
+			Convey("Can render 'lol'", func() {
+				doRenderString("lol")
+
+				So(render, ShouldLookLike, "../testdata/text/lol.pgm")
+			})
+
+			Convey("Can render 'credits' centred", func() {
+				just = Center
+				doRenderString("Credits")
+
+				So(render, ShouldLookLike, "../testdata/text/credits.pgm")
+			})
+
+			Convey("Can render somewhere other than the origin", func() {
+				Convey("can render at the bottom left", func() {
+					leftPixel = 10
+					bottomPixel = 10
+					logger = glog.DebugLogger()
+					doRenderString("offset")
+
+					So(render, ShouldLookLike, "../testdata/text/offset.pgm")
+				})
+			})
+
+			Convey("Can render to a given height", func() {
+				height = 5
+				logger = glog.DebugLogger()
+				doRenderString("tall-or-small")
+
+				So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
+			})
+
+			Convey("stdout isn't spammed by RenderString", func() {
+				logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+					Level: slog.Level(-42),
+				}))
+
+				stdoutLines := CollectOutput(func() {
+					doRenderString("lol")
+				})
+
+				So(stdoutLines, ShouldEqual, []string{})
+			})
 		})
-	})
-
-	Convey("Can render to a given height", func() {
-		height = 5
-		logger = glog.DebugLogger()
-		doRenderString("tall-or-small")
-
-		So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
-	})
-
-	Convey("stdout isn't spammed by RenderString", func() {
-		logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-			Level: slog.Level(-42),
-		}))
-
-		stdoutLines := CollectOutput(func() {
-			doRenderString("lol")
-		})
-
-		So(stdoutLines, ShouldEqual, []string{})
-	})
+	}
 }
 
 func TestRunTextSpecs(t *testing.T) {
