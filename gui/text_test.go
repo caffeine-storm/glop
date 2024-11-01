@@ -26,6 +26,14 @@ import (
 const screenPixelWidth = 512
 const screenPixelHeight = 64
 
+func readPgmFile(path string) []byte {
+	pgmBytes, err := os.ReadFile(path)
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.ReadFile(%q): %w", path, err))
+	}
+	return pgmBytes
+}
+
 func readPixels(width, height int) ([]byte, error) {
 	ret := make([]byte, width*height)
 	gl.ReadPixels(0, 0, width, height, gl.RED, gl.UNSIGNED_BYTE, ret)
@@ -137,11 +145,7 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 	render.Purge()
 
 	// Verify that the framebuffer's contents match our expected image.
-	expectedBytes, err := os.ReadFile(pgmFileExpected)
-	if err != nil {
-		panic(err)
-	}
-
+	expectedBytes := readPgmFile(pgmFileExpected)
 	rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
 
 	magicHeader := fmt.Sprintf("P5 %d %d 255 ", screenPixelWidth, screenPixelHeight)
@@ -298,7 +302,7 @@ func CollectOutput(operation func()) []string {
 
 	byteList, err := io.ReadAll(read)
 	if err != nil {
-		panic(fmt.Errorf("couldn't os.ReadFile on the read end of the pipe: %w", err))
+		panic(fmt.Errorf("couldn't io.ReadAll on the read end of the pipe: %w", err))
 	}
 
 	if len(byteList) == 0 {
