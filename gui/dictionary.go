@@ -354,6 +354,8 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 		d.stringBlittingCache[s] = blittingData
 	}
 
+	d.logger.Debug("renderstring blittingData", "todraw", s, "data", blittingData)
+
 	err := render.EnableShader("glop.font")
 	if err != nil {
 		panic(err)
