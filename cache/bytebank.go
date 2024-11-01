@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path"
+	"sync"
 )
 
 type ByteBank interface {
@@ -74,4 +75,27 @@ func (bank ramByteBank) Write(key string, data []byte) error {
 	bank[key] = data
 
 	return nil
+}
+
+type lockingByteBank struct {
+	wrapped ByteBank
+	mut     sync.RWMutex
+}
+
+func (bank *lockingByteBank) Read(key string) ([]byte, bool, error) {
+	bank.mut.RLock()
+	defer bank.mut.RUnlock()
+	return bank.wrapped.Read(key)
+}
+
+func (bank *lockingByteBank) Write(key string, data []byte) error {
+	bank.mut.Lock()
+	defer bank.mut.Unlock()
+	return bank.wrapped.Write(key, data)
+}
+
+func MakeLockingByteBank(wrapped ByteBank) *lockingByteBank {
+	return &lockingByteBank{
+		wrapped: wrapped,
+	}
 }
