@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"image"
-	"image/color"
 	"io"
 	"log"
 	"log/slog"
@@ -30,21 +29,6 @@ import (
 const screenPixelWidth = 512
 const screenPixelHeight = 64
 
-type verticalFlip struct {
-	*netpbm.GrayM
-}
-
-func (vf *verticalFlip) At(x, y int) color.Color {
-	height := vf.GrayM.Bounds().Dy()
-	return vf.GrayM.At(x, height-y-1)
-}
-
-// Like looking at the .Pix of an image.Gray but we need to shuffle the
-// ordering of rows.
-func (vf *verticalFlip) Pix() []uint8 {
-	return verticalFlipPix(vf.GrayM.Pix, vf.Bounds().Dx(), vf.Bounds().Dy())
-}
-
 func verticalFlipPix(pixels []byte, width, height int) []byte {
 	result := make([]byte, len(pixels))
 
@@ -62,7 +46,7 @@ func verticalFlipPix(pixels []byte, width, height int) []byte {
 }
 
 // Load and convert from .pgm's top-row-first to OpenGL's bottom-row-first.
-func readAndFlipPgm(reader io.Reader) *verticalFlip {
+func readAndFlipPgm(reader io.Reader) *netpbm.GrayM {
 	img, magic, err := image.Decode(reader)
 	if err != nil {
 		panic(fmt.Errorf("image.Decode failed: %w", err))
@@ -77,7 +61,11 @@ func readAndFlipPgm(reader io.Reader) *verticalFlip {
 		panic(fmt.Errorf("the expected image should have been a netpbm.GrayM image"))
 	}
 
-	return &verticalFlip{grayImage}
+	width := grayImage.Bounds().Dx()
+	height := grayImage.Bounds().Dy()
+	grayImage.Pix = verticalFlipPix(grayImage.Pix, width, height)
+
+	return grayImage
 }
 
 func readPixels(width, height int) ([]byte, error) {
@@ -199,11 +187,12 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 
 	expectedImage := readAndFlipPgm(pgmFile)
 
-	cmp := bytes.Compare(expectedImage.Pix(), frameBufferBytes)
+	cmp := bytes.Compare(expectedImage.Pix, frameBufferBytes)
 	if cmp != 0 {
 		// For debug purposes, copy the bad frame buffer for offline inspection.
 		actualImage := netpbm.NewGrayM(image.Rect(0, 0, screenPixelWidth, screenPixelHeight), 255)
-		actualImage.Pix = frameBufferBytes
+		// Need to flip from bottom-row-first to top-row-first.
+		actualImage.Pix = verticalFlipPix(frameBufferBytes, screenPixelWidth, screenPixelHeight)
 
 		rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
 		rejectFile, err := os.Create(rejectFileName)
@@ -217,7 +206,7 @@ func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected strin
 			MaxValue: 255,
 			Plain:    false,
 		}
-		err = netpbm.Encode(rejectFile, &verticalFlip{actualImage}, &pgmOpts)
+		err = netpbm.Encode(rejectFile, actualImage, &pgmOpts)
 		if err != nil {
 			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
 		}
