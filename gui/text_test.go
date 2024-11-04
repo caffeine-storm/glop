@@ -95,7 +95,7 @@ func initGlForTest(width, height int) (system.System, render.RenderQueueInterfac
 	return sys, render
 }
 
-func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
+func LoadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
 	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
@@ -111,7 +111,7 @@ func loadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 
 // Renders the given string with pixel units and an origin at the bottom-left.
 func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
-	d := loadDictionaryForTest(render, logger)
+	d := LoadDictionaryForTest(render, logger)
 
 	// d.RenderString assumes an origin at the top-left so we need to mirror our
 	// y co-ordinate.
@@ -238,7 +238,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		assert := assert.New(t)
 
 		render := rendertest.MakeDiscardingRenderQueue()
-		d := loadDictionaryForTest(render, slog.Default())
+		d := LoadDictionaryForTest(render, slog.Default())
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and
