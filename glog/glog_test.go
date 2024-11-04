@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/glog"
+	"github.com/runningwild/glop/gloptest"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGlogRelevel(t *testing.T) {
@@ -27,4 +29,17 @@ func TestGlogRelevel(t *testing.T) {
 	if len(result) == 0 {
 		t.Fatalf("there should have been log output")
 	}
+}
+
+func TestVoidLogger(t *testing.T) {
+	assert := assert.New(t)
+
+	logger := glog.VoidLogger()
+
+	outputLines := gloptest.CollectOutput(func() {
+		// Log at Error+42 to make sure we're not just under-leveled.
+		logger.Log(context.Background(), slog.LevelError+42, "some stuff", "and", "things")
+	})
+
+	assert.Empty(outputLines)
 }
