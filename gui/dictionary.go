@@ -214,7 +214,7 @@ func (d *Dictionary) split(s string, lineWidth int) []string {
 }
 
 // TODO: This isn't working - not being tested yet
-func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, screenDims Dims, lineHeight int, halign, valign Justification) {
+func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, lineHeight int, halign, valign Justification) {
 	lines := d.split(s, boundingWidth)
 	total_height := lineHeight * len(lines)
 	switch valign {
