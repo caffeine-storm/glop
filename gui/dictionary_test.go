@@ -39,7 +39,7 @@ func TestDictionarySerialization(t *testing.T) {
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 
 		font := mustLoadFont("../testdata/fonts/skia.ttf")
-		d := gui.MakeDictionary(font, 10, discardQueue, &gui.ConstDimser{})
+		d := gui.MakeDictionary(font, 10, discardQueue, &gui.ConstDimser{}, glog.VoidLogger())
 
 		buf := bytes.Buffer{}
 		d.Store(&buf)

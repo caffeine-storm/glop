@@ -427,7 +427,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n) / (2 ^ 8)
 }
 
-func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, dimser Dimser) *Dictionary {
+func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, dimser Dimser, logger *slog.Logger) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -514,6 +514,7 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	}
 
 	dict.dims = dimser
+	dict.logger = logger
 
 	dict.uploadGlyphTexture(renderQueue)
 
