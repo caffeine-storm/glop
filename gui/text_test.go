@@ -264,25 +264,25 @@ func includeIndex(pgmFilename string, index int) string {
 
 func DictionaryRenderStringSpec() {
 	screenSizeCases := []struct {
-		label  string
-		width  int
-		height int
+		label            string
+		screenDimensions Dims
 	}{
 		{
-			label:  "natural match to dict dimensions",
-			width:  512,
-			height: 64,
+			label: "natural match to dict dimensions",
+			screenDimensions: Dims{
+				Dx: 512,
+				Dy: 64,
+			},
 		},
 		{
-			label:  "unnatural dimensions",
-			width:  1024,
-			height: 512,
+			label: "unnatural dimensions",
+			screenDimensions: Dims{
+				Dx: 1024,
+				Dy: 512,
+			},
 		},
 	}
 	for testnumber, testcase := range screenSizeCases {
-		screenPixelWidth := testcase.width
-		screenPixelHeight := testcase.height
-
 		ShouldLookLike := func(actual interface{}, expected ...interface{}) string {
 			render, ok := actual.(render.RenderQueueInterface)
 			if !ok {
@@ -295,7 +295,7 @@ func DictionaryRenderStringSpec() {
 
 			filename = includeIndex(filename, testnumber)
 
-			ok, rejectFile := expectPixelsMatch(render, filename, screenPixelWidth, screenPixelHeight)
+			ok, rejectFile := expectPixelsMatch(render, filename, testcase.screenDimensions.Dx, testcase.screenDimensions.Dy)
 			if ok {
 				return ""
 			}
@@ -303,18 +303,18 @@ func DictionaryRenderStringSpec() {
 			return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
 		}
 
-		sys, render := initGlForTest(screenPixelWidth, screenPixelHeight)
+		sys, render := initGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy)
 
 		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
-			leftPixel := screenPixelWidth / 2
-			bottomPixel := screenPixelHeight / 2
+			leftPixel := testcase.screenDimensions.Dx / 2
+			bottomPixel := testcase.screenDimensions.Dy / 2
 			height := 22
 			just := Left
 			logger := slog.Default()
 
 			screenDims := Dims{
-				Dx: screenPixelWidth,
-				Dy: screenPixelHeight,
+				Dx: testcase.screenDimensions.Dx,
+				Dy: testcase.screenDimensions.Dy,
 			}
 			doRenderString := func(toDraw string) {
 				renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenDims, sys, render, just, logger)
