@@ -118,7 +118,8 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 	y = screenDims.Dy - y
 
 	render.Queue(func() {
-		d.RenderString(toDraw, x, y, height, screenDims, just)
+		d.screenDims = screenDims
+		d.RenderString(toDraw, Point{x, y}, height, just)
 		sys.SwapBuffers()
 	})
 

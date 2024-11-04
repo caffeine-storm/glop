@@ -35,6 +35,8 @@ type Dictionary struct {
 	// properly.
 	texture gl.Texture
 
+	screenDims Dims
+
 	stringBlittingCache    map[string]blitBuffer
 	paragraphBlittingCache map[string]blitBuffer
 }
@@ -210,7 +212,7 @@ func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, screenDi
 		y += total_height / 2
 	}
 	for _, line := range lines {
-		d.RenderString(line, x, y, lineHeight, screenDims, halign)
+		d.RenderString(line, Point{X: x, Y: y}, lineHeight, halign)
 		y -= lineHeight
 	}
 }
@@ -232,14 +234,18 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 	return width
 }
 
+func (d *Dictionary) getScreenDimensions() Dims {
+	return d.screenDims
+}
+
 // TODO(tmckee): refactor uses of Dictionary to not require calling
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
 // Renders the string 's' with its lower-left corner at the given position with
 // the given height. Values are in units of pixels w.r.t. an origin at the
 // top-left of the screen and a screen size as given.
-func (d *Dictionary) RenderString(s string, x, y, height int, screenDims Dims, just Justification) {
-	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "height", height, "screenDims", screenDims, "just", just)
+func (d *Dictionary) RenderString(s string, target Point, height int, just Justification) {
+	d.logger.Debug("RenderString called", "s", s, "target", target, "height", height, "just", just)
 
 	if len(s) == 0 {
 		return
@@ -251,6 +257,7 @@ func (d *Dictionary) RenderString(s string, x, y, height int, screenDims Dims, j
 	d.logger.Debug("sizes", "stride", stride, "width", width_texunits)
 	d.logger.Debug("dict-dims", "Dx", d.Data.Dx, "Dy", d.Data.Dy)
 
+	screenDims := d.getScreenDimensions()
 	screenPixelWidth, screenPixelHeight := screenDims.Dx, screenDims.Dy
 
 	width_pixels_to_geounits := 2.0 / float64(screenPixelWidth)
@@ -260,8 +267,8 @@ func (d *Dictionary) RenderString(s string, x, y, height int, screenDims Dims, j
 	// To convert from screen space to NDC, move the origin half a screen in the
 	// positive direction, then scale distances by a factor of
 	// width-of-screen-in-pixels == 2.0 NDC
-	x_pos_geounits := float64(x-screenPixelWidth/2) * width_pixels_to_geounits
-	y_pos_geounits := -float64(y-(screenPixelHeight/2)) * height_pixels_to_geounits
+	x_pos_geounits := float64(target.X-screenPixelWidth/2) * width_pixels_to_geounits
+	y_pos_geounits := -float64(target.Y-(screenPixelHeight/2)) * height_pixels_to_geounits
 
 	height_geounits := float64(height) * height_pixels_to_geounits
 	// TODO(tmckee): hardcoded to dict_10.gob for now :(
