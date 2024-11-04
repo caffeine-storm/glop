@@ -26,6 +26,18 @@ const (
 	Bottom
 )
 
+type Dimser interface {
+	Dims() Dims
+}
+
+type ConstDimser struct {
+	Value Dims
+}
+
+func (c *ConstDimser) Dims() Dims {
+	return c.Value
+}
+
 type Dictionary struct {
 	Data dictData
 
@@ -35,7 +47,7 @@ type Dictionary struct {
 	// properly.
 	texture gl.Texture
 
-	screenDims Dims
+	dims Dimser
 
 	stringBlittingCache    map[string]blitBuffer
 	paragraphBlittingCache map[string]blitBuffer
@@ -235,7 +247,7 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 }
 
 func (d *Dictionary) getScreenDimensions() Dims {
-	return d.screenDims
+	return d.dims.Dims()
 }
 
 // TODO(tmckee): refactor uses of Dictionary to not require calling
@@ -415,7 +427,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n) / (2 ^ 8)
 }
 
-func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface) *Dictionary {
+func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, dimser Dimser) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -501,17 +513,20 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 		}
 	}
 
+	dict.dims = dimser
+
 	dict.uploadGlyphTexture(renderQueue)
 
 	return &dict
 }
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *slog.Logger) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, dimser Dimser, logger *slog.Logger) (*Dictionary, error) {
 	var d Dictionary
 	err := d.Load(r)
 	if err != nil {
 		return nil, err
 	}
+	d.dims = dimser
 	d.logger = logger
 	d.uploadGlyphTexture(renderQueue)
 	return &d, nil

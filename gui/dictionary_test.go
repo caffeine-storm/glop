@@ -39,7 +39,7 @@ func TestDictionarySerialization(t *testing.T) {
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 
 		font := mustLoadFont("../testdata/fonts/skia.ttf")
-		d := gui.MakeDictionary(font, 10, discardQueue)
+		d := gui.MakeDictionary(font, 10, discardQueue, &gui.ConstDimser{})
 
 		buf := bytes.Buffer{}
 		d.Store(&buf)
@@ -93,7 +93,7 @@ func TestMakeDictionary(t *testing.T) {
 
 func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
-		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), glog.DebugLogger())
+		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, glog.DebugLogger())
 
 		d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left)
 	})
