@@ -10,6 +10,7 @@ import (
 
 	"code.google.com/p/freetype-go/freetype"
 	"code.google.com/p/freetype-go/freetype/truetype"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
@@ -87,5 +88,13 @@ func TestMakeDictionary(t *testing.T) {
 		// padding/distance from the origin.
 		assert.Equal(image.Point{2, 3}, sub.Bounds().Min)
 		assert.Equal(image.Point{7, 7}, sub.Bounds().Max)
+	})
+}
+
+func TestDictionaryRenderString(t *testing.T) {
+	t.Run("has a reasonable API", func(t *testing.T) {
+		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), glog.DebugLogger())
+
+		d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left)
 	})
 }
