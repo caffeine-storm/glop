@@ -200,7 +200,7 @@ func (d *Dictionary) split(s string, lineWidth int) []string {
 }
 
 // TODO: This isn't working - not being tested yet
-func (d *Dictionary) RenderParagraph(s string, x, y, z, boundingWidth, lineHeight int, halign, valign Justification) {
+func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, screenDims Dims, lineHeight int, halign, valign Justification) {
 	lines := d.split(s, boundingWidth)
 	total_height := lineHeight * len(lines)
 	switch valign {
@@ -210,7 +210,7 @@ func (d *Dictionary) RenderParagraph(s string, x, y, z, boundingWidth, lineHeigh
 		y += total_height / 2
 	}
 	for _, line := range lines {
-		d.RenderString(line, x, y, z, lineHeight, halign)
+		d.RenderString(line, x, y, lineHeight, screenDims, halign)
 		y -= lineHeight
 	}
 }
@@ -235,12 +235,11 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 // TODO(tmckee): refactor uses of Dictionary to not require calling
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
-// TODO(tmckee): don't take a 'z', we don't use it!
 // Renders the string 's' with its lower-left corner at the given position with
 // the given height. Values are in units of pixels w.r.t. an origin at the
-// top-left of the screen.
-func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justification) {
-	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "z", z, "height", height, "just", just)
+// top-left of the screen and a screen size as given.
+func (d *Dictionary) RenderString(s string, x, y, height int, screenDims Dims, just Justification) {
+	d.logger.Debug("RenderString called", "s", s, "x", x, "y", y, "height", height, "screenDims", screenDims, "just", just)
 
 	if len(s) == 0 {
 		return
@@ -252,10 +251,7 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 	d.logger.Debug("sizes", "stride", stride, "width", width_texunits)
 	d.logger.Debug("dict-dims", "Dx", d.Data.Dx, "Dy", d.Data.Dy)
 
-	// TODO(tmckee): d.Data.Dx is not always the screen width!
-	screenPixelWidth := d.Data.Dx
-	// TODO(tmckee): d.Data.Dy is not always the screen height!
-	screenPixelHeight := d.Data.Dy
+	screenPixelWidth, screenPixelHeight := screenDims.Dx, screenDims.Dy
 
 	width_pixels_to_geounits := 2.0 / float64(screenPixelWidth)
 	height_pixels_to_geounits := 2.0 / float64(screenPixelHeight)
@@ -300,7 +296,6 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 			}
 			prev = r
 			info := d.getInfo(r)
-			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", string(r), "runeInfo", info, "dict-maxy", d.Data.Maxy)
 			xleft_geounits := x_pos_geounits
 			xright_geounits := x_pos_geounits + float64(info.Bounds.Dx()-2)*width_texunits_to_geounits
 			ytop_geounits := float32(y_pos_geounits + height_geounits)
@@ -339,8 +334,9 @@ func (d *Dictionary) RenderString(s string, x, y, z, height int, just Justificat
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
-			d.logger.Debug("adv", "info.Advance", info.Advance, "conv", width_texunits_to_geounits)
+			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
 			x_pos_geounits += info.Advance * width_texunits_to_geounits
+
 		}
 
 		d.logger.Debug("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
