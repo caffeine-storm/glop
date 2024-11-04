@@ -203,8 +203,7 @@ type WidgetParent interface {
 type Widget interface {
 	Zone
 
-	// Called regularly with a timestamp and a function that checkes whether a Widget is
-	// the widget that currently has focus
+	// Called regularly with a timestamp and a reference to the root widget.
 	Think(*Gui, int64)
 
 	// Returns true if this widget or any of its children consumed the
@@ -436,6 +435,10 @@ func Make(dispatcher gin.EventDispatcher, dims Dims, font_path string) (*Gui, er
 	g.root.Render_region.Dims = dims
 	dispatcher.RegisterEventListener(&g)
 	return &g, nil
+}
+
+func (g *Gui) GetWindowDimensions() Dims {
+	return g.root.Request_dims
 }
 
 func (g *Gui) Draw() {
