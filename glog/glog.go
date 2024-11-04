@@ -91,3 +91,9 @@ func DebugLogger() *slog.Logger {
 		Level: slog.LevelDebug,
 	})
 }
+
+func VoidLogger() *slog.Logger {
+	return New(&Opts{
+		Output: io.Discard,
+	})
+}

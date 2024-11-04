@@ -34,9 +34,9 @@ func TestGlogRelevel(t *testing.T) {
 func TestVoidLogger(t *testing.T) {
 	assert := assert.New(t)
 
-	logger := glog.VoidLogger()
-
 	outputLines := gloptest.CollectOutput(func() {
+		logger := glog.VoidLogger()
+
 		// Log at Error+42 to make sure we're not just under-leveled.
 		logger.Log(context.Background(), slog.LevelError+42, "some stuff", "and", "things")
 	})
