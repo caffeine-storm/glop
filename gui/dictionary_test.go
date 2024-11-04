@@ -89,6 +89,13 @@ func TestMakeDictionary(t *testing.T) {
 		assert.Equal(image.Point{2, 3}, sub.Bounds().Min)
 		assert.Equal(image.Point{7, 7}, sub.Bounds().Max)
 	})
+
+	t.Run("MakeDictionary takes a logger", func(t *testing.T) {
+		logger := glog.VoidLogger()
+		font := mustLoadFont("../testdata/fonts/skia.ttf")
+
+		_ = gui.MakeDictionary(font, 42, rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, logger)
+	})
 }
 
 func TestDictionaryRenderString(t *testing.T) {
