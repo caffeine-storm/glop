@@ -96,6 +96,24 @@ func TestMakeDictionary(t *testing.T) {
 
 		_ = gui.MakeDictionary(font, 42, rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, logger)
 	})
+
+	t.Run("fonts are correctly interpreted", func(t *testing.T) {
+		logger := glog.VoidLogger()
+		font := mustLoadFont("../testdata/fonts/skia.ttf")
+
+		d := gui.MakeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, logger)
+
+		assert.NotEmpty(t, d.Data.Pix)
+
+		t.Run("rune info for 'M' should make sense", func(t *testing.T) {
+			minfo, ok := d.Data.Info['M']
+			require.True(t, ok)
+
+			// The 'Advance' for an M ought to be about as much as the glyph is wide.
+			// We'll check that the advance isn't more than double the width.
+			assert.Less(t, minfo.Advance, float64(minfo.Bounds.Dx()*2))
+		})
+	})
 }
 
 func TestDictionaryRenderString(t *testing.T) {
