@@ -429,7 +429,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	// 'n' is a fractional value packed into an int32 with the 24
 	// most-significant bits representing the 'whole' portion and the 8
 	// least-significant bits representing the fractional part.
-	return float64(n) / (2 ^ 8)
+	return float64(n/256) + float64(n%256)/256.0
 }
 
 func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, dimser Dimser, logger *slog.Logger) *Dictionary {
