@@ -297,7 +297,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	string_width_geounits := width_texunits * width_texunits_to_geounits
 	padding_geounits := (1.0 - string_width_geounits)
 
-	d.logger.Debug("widths", "padding_geounits", padding_geounits, "string_width_geounits", string_width_geounits, "width_texunits", width_texunits, "height_texunits", height_texunits)
+	d.logger.Debug("widths", "xpos_geo", x_pos_geounits, "padding_geounits", padding_geounits, "string_width_geounits", string_width_geounits, "width_texunits", width_texunits, "height_texunits", height_texunits)
 	switch just {
 	case Center:
 		// TODO(tmckee): we shouldn't add/substract things that have different units
