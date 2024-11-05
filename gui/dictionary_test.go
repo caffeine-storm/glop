@@ -31,6 +31,10 @@ func mustLoadFont(path string) *truetype.Font {
 	return font
 }
 
+func givenAFont() *truetype.Font {
+	return mustLoadFont("../testdata/fonts/skia.ttf")
+}
+
 func TestDictionarySerialization(t *testing.T) {
 	t.Run("Dictionary.Data must round-trip through encoding/decoding", func(t *testing.T) {
 		assert := assert.New(t)
@@ -38,7 +42,7 @@ func TestDictionarySerialization(t *testing.T) {
 
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 
-		font := mustLoadFont("../testdata/fonts/skia.ttf")
+		font := givenAFont()
 		d := gui.MakeDictionary(font, 10, discardQueue, &gui.ConstDimser{}, glog.VoidLogger())
 
 		buf := bytes.Buffer{}
@@ -90,20 +94,15 @@ func TestMakeDictionary(t *testing.T) {
 		assert.Equal(image.Point{7, 7}, sub.Bounds().Max)
 	})
 
-	t.Run("MakeDictionary takes a logger", func(t *testing.T) {
-		logger := glog.VoidLogger()
-		font := mustLoadFont("../testdata/fonts/skia.ttf")
-
-		_ = gui.MakeDictionary(font, 42, rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, logger)
-	})
-
 	t.Run("fonts are correctly interpreted", func(t *testing.T) {
 		logger := glog.VoidLogger()
-		font := mustLoadFont("../testdata/fonts/skia.ttf")
+		font := givenAFont()
 
 		d := gui.MakeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, logger)
 
-		assert.NotEmpty(t, d.Data.Pix)
+		t.Run("grid of glyphs constructed", func(t *testing.T) {
+			assert.NotEmpty(t, d.Data.Pix)
+		})
 
 		t.Run("rune info for 'M' should make sense", func(t *testing.T) {
 			minfo, ok := d.Data.Info['M']
