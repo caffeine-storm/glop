@@ -1,5 +1,6 @@
 SHELL:=/bin/bash
 
+testrunpackages=./...
 ifneq "${testrun}" ""
 testrunargs:=-run ${testrun}
 else
@@ -16,13 +17,13 @@ testing_with_xvfb=xvfb-run --server-args="-screen 0 512x64x24" --auto-servernum
 testing_env=${testing_with_ld_library_path} ${testing_with_xvfb}
 
 test:
-	${testing_env} go test                ${testrunargs} ./...
+	${testing_env} go test                ${testrunargs} ${testrunpackages}
 
 test-spec:
-	${testing_env} go test -run ".*Specs" ${testrunargs} ./...
+	${testing_env} go test -run ".*Specs" ${testrunargs} ${testrunpackages}
 
 test-nocache:
-	${testing_env} go test -count=1       ${testrunargs} ./...
+	${testing_env} go test -count=1       ${testrunargs} ${testrunpackages}
 
 test-fresh: |clean_rejects
 test-fresh: test-nocache
