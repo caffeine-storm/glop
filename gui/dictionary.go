@@ -438,18 +438,15 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	context.SetFontSize(float64(size))
 	context.SetDPI(dpi)
 
-	// Use a simple glyph packing; each glyph gets a cell in a uniformly sized
-	// grid.
-	// - Each cell will large enough to contain all the texels of any given glyph
-	// such that the baseline and left-pad offsets will be the same for each
-	// cell.
-	//  e.g. we could store (ugly) "0, g, '" glyphs thusly
-	//   -------------------
-	//   | ++  | |O  | '   |
-	//   | ++  | |_  |     |
-	//   |     | \/  |     |
-	//   -------------------
-	// - We need to store the 'advance' to know how far to move the raster
+	// Use a glyph packing scheme. Each glyph gets a cell in a grid.
+	// - Each cell is only large enough to contain all the texels of that glyph
+	// plus a one-texel wide border. The 1-texel border can be shared by separate
+	// glyphs.
+	// - Each cell has an associated 'offset' so that the contained glyph can be
+	// adjusted w.r.t. the baseline and the current raster position. That way,
+	// something like a 'j' can get moved down or a '^' can get moved up and we
+	// don't need a bunch of spacer texels loaded into the GPU.
+	// - We also need to store the 'advance' to know how far to move the raster
 	// position. The advance does not account for kerning.
 
 	var letters []image.Image
@@ -488,8 +485,6 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
 	var dict Dictionary
 	dict.Data.Pix = pim.Pix
-	// TODO(tmckee): Dy will be two glyphs tall in some cases; Dy should _not_
-	// get used as the height of a glyph!!!
 	dict.Data.Dx = pim.Bounds().Dx()
 	dict.Data.Dy = pim.Bounds().Dy()
 	dict.Data.Info = rune_info
