@@ -2,6 +2,7 @@ package gui
 
 import (
 	"encoding/gob"
+	"fmt"
 	"image"
 	"image/draw"
 	"io"
@@ -127,6 +128,10 @@ type runeInfo struct {
 	Pos     image.Rectangle
 	Bounds  image.Rectangle
 	Advance float64
+}
+
+func (r *runeInfo) String() string {
+	return fmt.Sprintf("Pos: %+v, Bounds: %+v, Advance: %f", r.Pos, r.Bounds, r.Advance)
 }
 
 // Stores data for blitting from an underlying texture to the screen.
