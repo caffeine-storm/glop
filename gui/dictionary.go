@@ -277,34 +277,34 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	screenDims := d.getScreenDimensions()
 	screenPixelWidth, screenPixelHeight := screenDims.Dx, screenDims.Dy
 
-	width_pixels_to_geounits := 2.0 / float64(screenPixelWidth)
-	height_pixels_to_geounits := 2.0 / float64(screenPixelHeight)
+	width_pixels_to_ndc := 2.0 / float64(screenPixelWidth)
+	height_pixels_to_ndc := 2.0 / float64(screenPixelHeight)
 	d.logger.Debug("screenpix", "width", screenPixelWidth, "height", screenPixelHeight)
 
 	// To convert from screen space to NDC, move the origin half a screen in the
 	// positive direction, then scale distances by a factor of
 	// width-of-screen-in-pixels == 2.0 NDC
-	x_pos_geounits := float64(target.X-screenPixelWidth/2) * width_pixels_to_geounits
-	y_pos_geounits := -float64(target.Y-(screenPixelHeight/2)) * height_pixels_to_geounits
+	x_pos_ndc := float64(target.X-screenPixelWidth/2) * width_pixels_to_ndc
+	y_pos_ndc := -float64(target.Y-(screenPixelHeight/2)) * height_pixels_to_ndc
 
-	height_geounits := float64(height) * height_pixels_to_geounits
+	height_ndc := float64(height) * height_pixels_to_ndc
 	// TODO(tmckee): hardcoded to dict_10.gob for now :(
 	height_texunits := float64(32)
 
 	width_texunits_to_pixels := float64(1.0)
-	width_texunits_to_geounits := width_texunits_to_pixels * width_pixels_to_geounits
+	width_texunits_to_ndc := width_texunits_to_pixels * width_pixels_to_ndc
 
-	string_width_geounits := width_texunits * width_texunits_to_geounits
-	padding_geounits := (1.0 - string_width_geounits)
+	string_width_ndc := width_texunits * width_texunits_to_ndc
+	// TODO(tmckee): this assumes we want the string centred w.r.t. the quad, not
+	// a 'bounding box'.
+	padding_ndc := (1.0 - string_width_ndc)
 
-	d.logger.Debug("widths", "xpos_geo", x_pos_geounits, "padding_geounits", padding_geounits, "string_width_geounits", string_width_geounits, "width_texunits", width_texunits, "height_texunits", height_texunits)
+	d.logger.Debug("widths", "x_pos_ndc", x_pos_ndc, "padding_ndc", padding_ndc, "string_width_ndc", string_width_ndc, "width_texunits", width_texunits, "height_texunits", height_texunits)
 	switch just {
 	case Center:
-		// TODO(tmckee): we shouldn't add/substract things that have different units
-		x_pos_geounits += padding_geounits / 2
+		x_pos_ndc += padding_ndc / 2
 	case Right:
-		// TODO(tmckee): we shouldn't add/substract things that have different units
-		x_pos_geounits += padding_geounits
+		x_pos_ndc += padding_ndc
 	}
 
 	blittingData, ok := d.stringBlittingCache[s]
@@ -316,14 +316,14 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 			if _, ok := d.Data.Kerning[prev]; ok {
 				// TODO(tmckee): XXX: !!!: no, this has to scale; Kerning adjustments
 				// are in 'natural' widths... right?
-				x_pos_geounits += float64(d.Data.Kerning[prev][r])
+				x_pos_ndc += float64(d.Data.Kerning[prev][r])
 			}
 			prev = r
 			info := d.getInfo(r)
-			xleft_geounits := x_pos_geounits
-			xright_geounits := x_pos_geounits + float64(info.Bounds.Dx()-2)*width_texunits_to_geounits
-			ytop_geounits := float32(y_pos_geounits + height_geounits)
-			ybot_geounits := float32(y_pos_geounits)
+			xleft_ndc := x_pos_ndc
+			xright_ndc := x_pos_ndc + float64(info.Bounds.Dx()-2)*width_texunits_to_ndc
+			ytop_ndc := float32(y_pos_ndc + height_ndc)
+			ybot_ndc := float32(y_pos_ndc)
 			start := uint16(len(blittingData.vertexData))
 			blittingData.indicesData = append(blittingData.indicesData, start+0)
 			blittingData.indicesData = append(blittingData.indicesData, start+1)
@@ -335,31 +335,31 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 			// Note: the texture is loaded 'upside down' so we flip our y-coordinates
 			// in texture-space.
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xleft_geounits),
-				y: ytop_geounits,
+				x: float32(xleft_ndc),
+				y: ytop_ndc,
 				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xleft_geounits),
-				y: ybot_geounits,
+				x: float32(xleft_ndc),
+				y: ybot_ndc,
 				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xright_geounits),
-				y: ybot_geounits,
+				x: float32(xright_ndc),
+				y: ybot_ndc,
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
 			})
 			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xright_geounits),
-				y: ytop_geounits,
+				x: float32(xright_ndc),
+				y: ytop_ndc,
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
-			d.logger.Debug("render-char", "x_pos", x_pos_geounits, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
-			x_pos_geounits += info.Advance * width_texunits_to_geounits
+			d.logger.Debug("render-char", "x_pos", x_pos_ndc, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
+			x_pos_ndc += info.Advance * width_texunits_to_ndc
 
 		}
 
