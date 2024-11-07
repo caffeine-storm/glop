@@ -98,11 +98,10 @@ func LoadDictionaryForTest(render render.RenderQueueInterface, dimser Dimser, lo
 func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := LoadDictionaryForTest(render, &ConstDimser{Value: screenDims}, logger)
 
-	// d.RenderString assumes an origin at the top-left so we need to mirror our
-	// y co-ordinate.
-	y = screenDims.Dy - y
-
 	render.Queue(func() {
+		// Use an orthonormal projection because all the gui code assumes it's
+		// rendering with such a projection.
+		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
 		d.RenderString(toDraw, Point{x, y}, height, just)
 		sys.SwapBuffers()
 	})
