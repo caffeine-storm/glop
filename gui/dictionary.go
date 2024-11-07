@@ -251,6 +251,8 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 	return width
 }
 
+// TODO(tmckee): clean: this might be better named as 'getRegionDims' ; get the
+// dims for the region we're gui.Draw'ing to.
 func (d *Dictionary) getScreenDimensions() Dims {
 	return d.dims.Dims()
 }
@@ -258,9 +260,13 @@ func (d *Dictionary) getScreenDimensions() Dims {
 // TODO(tmckee): refactor uses of Dictionary to not require calling
 // RenderString/RenderParagraph from a render queue but dispatch the op
 // internally.
-// Renders the string 's' with its lower-left corner at the given position with
-// the given height. Values are in units of pixels w.r.t. an origin at the
-// top-left of the screen and a screen size as given.
+// Renders the string 's' at the given position with the given height. Values
+// are in units of pixels w.r.t. an origin at the top-left of the screen. The
+// text is positioned based on the given justification:
+//
+//	Left: use 'target.X' for the left-hand extent of what's drawn
+//	Centre: use 'target.X' for the middle of what's drawn
+//	Right: use 'target.X' for the right-hand extent of what's drawn
 func (d *Dictionary) RenderString(s string, target Point, height int, just Justification) {
 	d.logger.Debug("RenderString called", "s", s, "target", target, "height", height, "just", just)
 
@@ -295,16 +301,13 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	width_texunits_to_ndc := width_texunits_to_pixels * width_pixels_to_ndc
 
 	string_width_ndc := width_texunits * width_texunits_to_ndc
-	// TODO(tmckee): this assumes we want the string centred w.r.t. the quad, not
-	// a 'bounding box'.
-	padding_ndc := (1.0 - string_width_ndc)
 
-	d.logger.Debug("widths", "x_pos_ndc", x_pos_ndc, "padding_ndc", padding_ndc, "string_width_ndc", string_width_ndc, "width_texunits", width_texunits, "height_texunits", height_texunits)
+	d.logger.Debug("widths", "x_pos_ndc", x_pos_ndc, "string_width_ndc", string_width_ndc, "width_texunits", width_texunits, "height_texunits", height_texunits)
 	switch just {
 	case Center:
-		x_pos_ndc += padding_ndc / 2
+		x_pos_ndc -= string_width_ndc / 2
 	case Right:
-		x_pos_ndc += padding_ndc
+		x_pos_ndc -= string_width_ndc
 	}
 
 	blittingData, ok := d.stringBlittingCache[s]
@@ -360,7 +363,6 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 			})
 			d.logger.Debug("render-char", "x_pos", x_pos_ndc, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
 			x_pos_ndc += info.Advance * width_texunits_to_ndc
-
 		}
 
 		d.logger.Debug("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
