@@ -10,7 +10,7 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-func InitGlForTest(width, height int) (system.System, render.RenderQueueInterface) {
+func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
 
@@ -30,31 +30,37 @@ func InitGlForTest(width, height int) (system.System, render.RenderQueueInterfac
 	return sys, render
 }
 
+func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+	sys, render := newGlWindowForTest(width, height)
+	fn(sys, render)
+}
+
 func WithGl(fn func()) {
-	_, render := InitGlForTest(50, 50)
-	logger := glog.ErrorLogger()
+	WithGlForTest(50, 50, func(sys system.System, render render.RenderQueueInterface) {
+		logger := glog.ErrorLogger()
 
-	errors := []gl.GLenum{}
-	render.Queue(func() {
-		// Clear out GL's error queue so that a leaky test doesn't break us by
-		// accident.
-		for err := gl.GetError(); err != 0; err = gl.GetError() {
-			logger.Error("glErrors before given func", "error_code", err)
-			err = gl.GetError()
-		}
+		errors := []gl.GLenum{}
+		render.Queue(func() {
+			// Clear out GL's error queue so that a leaky test doesn't break us by
+			// accident.
+			for err := gl.GetError(); err != 0; err = gl.GetError() {
+				logger.Error("glErrors before given func", "error_code", err)
+				err = gl.GetError()
+			}
 
-		fn()
+			fn()
 
-		for err := gl.GetError(); err != 0; err = gl.GetError() {
-			errors = append(errors, err)
-			err = gl.GetError()
+			for err := gl.GetError(); err != 0; err = gl.GetError() {
+				errors = append(errors, err)
+				err = gl.GetError()
+			}
+		})
+		render.Purge()
+
+		// If there were GL errors _caused_ by the given func, fail!
+		if len(errors) > 0 {
+			// TODO(tmckee): add a helper to strerror error codes from GL.
+			panic(fmt.Errorf("WithGl ran a func that produced %d GL errors: %v", len(errors), errors))
 		}
 	})
-	render.Purge()
-
-	// If there were GL errors _caused_ by the given func, fail!
-	if len(errors) > 0 {
-		// TODO(tmckee): add a helper to strerror error codes from GL.
-		panic(fmt.Errorf("WithGl ran a func that produced %d GL errors: %v", len(errors), errors))
-	}
 }

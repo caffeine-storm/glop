@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/system"
 )
 
 type pixel struct {
@@ -15,14 +17,16 @@ type pixel struct {
 
 func TestDrawRect(t *testing.T) {
 	width, height := 50, 50
-	sys, queue := rendertest.InitGlForTest(width, height)
 	buffer := &bytes.Buffer{}
-	queue.Queue(func() {
-		debug.DrawRectNdc(-1, -1, 1, 1)
-		sys.SwapBuffers()
-		debug.ScreenShotRgba(width, height, buffer)
+
+	rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
+		queue.Queue(func() {
+			debug.DrawRectNdc(-1, -1, 1, 1)
+			sys.SwapBuffers()
+			debug.ScreenShotRgba(width, height, buffer)
+		})
+		queue.Purge()
 	})
-	queue.Purge()
 
 	rgbaBytes := buffer.Bytes()
 	if len(rgbaBytes) != width*height*4 {

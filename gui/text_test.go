@@ -70,14 +70,15 @@ func readPixels(width, height int) ([]byte, error) {
 	return ret, nil
 }
 
-func initGlForTest(width, height int) (system.System, render.RenderQueueInterface) {
-	sys, render := rendertest.InitGlForTest(width, height)
-	err := Init(render)
-	if err != nil {
-		panic(fmt.Errorf("couldn't gui.Init(): %w", err))
-	}
+func withGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+	rendertest.WithGlForTest(width, height, func(sys system.System, render render.RenderQueueInterface) {
+		err := Init(render)
+		if err != nil {
+			panic(fmt.Errorf("couldn't gui.Init(): %w", err))
+		}
 
-	return sys, render
+		fn(sys, render)
+	})
 }
 
 func LoadDictionaryForTest(render render.RenderQueueInterface, dimser Dimser, logger *slog.Logger) *Dictionary {
@@ -287,65 +288,66 @@ func DictionaryRenderStringSpec() {
 			return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
 		}
 
-		sys, render := initGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy)
+		withGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 
-		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
-			leftPixel := testcase.screenDimensions.Dx / 2
-			bottomPixel := testcase.screenDimensions.Dy / 2
-			height := 22
-			just := Left
-			logger := slog.Default()
+			Convey(fmt.Sprintf("[%s]", testcase.label), func() {
+				leftPixel := testcase.screenDimensions.Dx / 2
+				bottomPixel := testcase.screenDimensions.Dy / 2
+				height := 22
+				just := Left
+				logger := slog.Default()
 
-			screenDims := Dims{
-				Dx: testcase.screenDimensions.Dx,
-				Dy: testcase.screenDimensions.Dy,
-			}
-			doRenderString := func(toDraw string) {
-				renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenDims, sys, render, just, logger)
-			}
+				screenDims := Dims{
+					Dx: testcase.screenDimensions.Dx,
+					Dy: testcase.screenDimensions.Dy,
+				}
+				doRenderString := func(toDraw string) {
+					renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenDims, sys, render, just, logger)
+				}
 
-			Convey("Can render 'lol'", func() {
-				doRenderString("lol")
-
-				So(render, ShouldLookLike, "../testdata/text/lol.pgm")
-			})
-
-			Convey("Can render 'credits' centred", func() {
-				just = Center
-				doRenderString("Credits")
-
-				So(render, ShouldLookLike, "../testdata/text/credits.pgm")
-			})
-
-			Convey("Can render somewhere other than the origin", func() {
-				Convey("can render at the bottom left", func() {
-					leftPixel = 10
-					bottomPixel = 10
-					logger = glog.DebugLogger()
-					doRenderString("offset")
-
-					So(render, ShouldLookLike, "../testdata/text/offset.pgm")
-				})
-			})
-
-			Convey("Can render to a given height", func() {
-				height = 5
-				logger = glog.DebugLogger()
-				doRenderString("tall-or-small")
-
-				So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
-			})
-
-			Convey("stdout isn't spammed by RenderString", func() {
-				logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-					Level: slog.Level(-42),
-				}))
-
-				stdoutLines := gloptest.CollectOutput(func() {
+				Convey("Can render 'lol'", func() {
 					doRenderString("lol")
+
+					So(render, ShouldLookLike, "../testdata/text/lol.pgm")
 				})
 
-				So(stdoutLines, ShouldEqual, []string{})
+				Convey("Can render 'credits' centred", func() {
+					just = Center
+					doRenderString("Credits")
+
+					So(render, ShouldLookLike, "../testdata/text/credits.pgm")
+				})
+
+				Convey("Can render somewhere other than the origin", func() {
+					Convey("can render at the bottom left", func() {
+						leftPixel = 10
+						bottomPixel = 10
+						logger = glog.DebugLogger()
+						doRenderString("offset")
+
+						So(render, ShouldLookLike, "../testdata/text/offset.pgm")
+					})
+				})
+
+				Convey("Can render to a given height", func() {
+					height = 5
+					logger = glog.DebugLogger()
+					doRenderString("tall-or-small")
+
+					So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
+				})
+
+				Convey("stdout isn't spammed by RenderString", func() {
+					logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
+						Level: slog.Level(-42),
+					}))
+
+					stdoutLines := gloptest.CollectOutput(func() {
+						doRenderString("lol")
+					})
+
+					So(stdoutLines, ShouldEqual, []string{})
+				})
 			})
 		})
 	}
