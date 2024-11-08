@@ -1,11 +1,16 @@
 package render_test
 
 import (
+	"errors"
 	"fmt"
+	"runtime"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
+	"github.com/stretchr/testify/assert"
 )
 
 var nop = func() {}
@@ -23,7 +28,14 @@ func requeueUntilPurging(q render.RenderQueueInterface, success chan bool) {
 
 func runWithDeadline(deadline time.Duration, op func()) error {
 	completed := make(chan bool)
+	errchan := make(chan error)
 	go func() {
+		defer func() {
+			// If 'op' panics, return the error value it paniced on.
+			if err := recover(); err != nil {
+				errchan <- err.(error)
+			}
+		}()
 		op()
 		completed <- true
 	}()
@@ -31,6 +43,8 @@ func runWithDeadline(deadline time.Duration, op func()) error {
 	select {
 	case <-completed:
 		return nil
+	case err := <-errchan:
+		return err
 	case <-time.After(deadline):
 		return fmt.Errorf("deadline (%s) exceeded", deadline)
 	}
@@ -124,5 +138,45 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		}
 
 		<-success
+	})
+}
+
+type everythingIsFine struct{}
+
+func (e *everythingIsFine) Error() string {
+	return "everything is fine"
+}
+
+func TestExitOnRenderQueue(t *testing.T) {
+	t.Run("runtime.GoexitOnRenderQueueIsDetectable", func(t *testing.T) {
+		output := gloptest.CollectOutput(func() {
+			queue := render.MakeQueue(nop)
+			queue.Queue(func() {
+				fmt.Printf("we expect to see this string in the logs\n")
+				runtime.Goexit()
+			})
+			queue.StartProcessing()
+
+			shouldTimeout := runWithDeadline(5*time.Millisecond, func() {
+				defer func() {
+					if err := recover(); err != nil {
+						// re-panic with a specific error for detection
+						panic(&everythingIsFine{})
+					}
+				}()
+				queue.Purge()
+				t.Fatalf("queue.Purge() should not have returned; panic is okay")
+			})
+
+			if errors.Is(shouldTimeout, &everythingIsFine{}) {
+				fmt.Printf("Everything is fine!\n")
+			} else {
+				fmt.Printf("timeout presumably! %v\n", shouldTimeout)
+				assert.NotNil(t, shouldTimeout)
+			}
+		})
+
+		allOutput := strings.Join(output, "\n")
+		assert.Contains(t, allOutput, "we expect to see this string in the logs")
 	})
 }

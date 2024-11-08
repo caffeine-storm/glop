@@ -15,17 +15,19 @@ type RenderQueueInterface interface {
 
 type renderQueue struct {
 	render_funcs chan func()
-	purge        chan bool
+	purge        chan chan bool
 	is_running   bool
 	is_purging   atomic.Bool
 }
 
 func (q *renderQueue) loop() {
+	defer close(q.purge)
 	for {
 		select {
 		case f := <-q.render_funcs:
 			f()
-		case <-q.purge:
+		case ack := <-q.purge:
+			defer close(ack)
 			q.is_purging.Store(true)
 			for {
 				select {
@@ -37,7 +39,7 @@ func (q *renderQueue) loop() {
 			}
 		purged:
 			q.is_purging.Store(false)
-			q.purge <- true
+			ack <- true
 		}
 	}
 }
@@ -45,7 +47,7 @@ func (q *renderQueue) loop() {
 func MakeQueue(initialization func()) RenderQueueInterface {
 	result := renderQueue{
 		render_funcs: make(chan func(), 1000),
-		purge:        make(chan bool),
+		purge:        make(chan chan bool),
 		is_running:   false,
 		is_purging:   atomic.Bool{}, // zero-value is false
 	}
@@ -70,8 +72,12 @@ func (q *renderQueue) Purge() {
 	if !q.is_running {
 		slog.Warn("render.RenderQueue.Purge called on non-started queue")
 	}
-	q.purge <- true
-	<-q.purge
+	ack := make(chan bool)
+	q.purge <- ack
+	_, ok := <-ack
+	if !ok {
+		panic("ack channel was closed!")
+	}
 }
 
 func (q *renderQueue) StartProcessing() {
