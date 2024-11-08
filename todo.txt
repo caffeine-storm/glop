@@ -9,6 +9,8 @@ tmckee: make tests fast
 
 tmckee: add tests for gui.TextEditLine and gui.TextLine
 
+----
+
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
