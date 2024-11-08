@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glew"
 )
 
 func mappedSymbols() map[gl.GLenum]string {
@@ -32,6 +33,13 @@ func getMatrix(paramName gl.GLenum) []float64 {
 }
 
 func GetColorMatrix() []float64 {
+	// The 'Color Matrix' is part of an optional piece of the core OpenGL API.
+	// Nobody is required to implement it and they'll return an error if we try
+	// to query for it blindly. If the imaging extensions aren't supported, we'll
+	// return nil instead.
+	if !glew.GL_ARB_imaging {
+		return nil
+	}
 	return getMatrix(gl.COLOR_MATRIX)
 }
 

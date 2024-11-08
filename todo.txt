@@ -1,3 +1,14 @@
+tmckee: if a render thread crashes, we don't complain loud enough!
+
+tmckee: there's a race condition in render.Purge where a request-to-purge could
+be interpreted by a sibling goroutine as a purge-completed message
+
+tmckee: add dlv-testing helpers to Makefile
+
+tmckee: make tests fast
+
+tmckee: add tests for gui.TextEditLine and gui.TextLine
+
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
