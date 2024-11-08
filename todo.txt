@@ -1,5 +1,3 @@
-tmckee: add dlv-testing helpers to Makefile
-
 tmckee: make tests fast
 
 tmckee: add tests for gui.TextEditLine and gui.TextLine

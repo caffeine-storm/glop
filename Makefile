@@ -7,6 +7,14 @@ else
 testrunargs:=
 endif
 
+ifeq "${debugtest}" ""
+testsinglepackageargs:=--set-'debugtest'-to-a-package-dir
+else
+testsinglepackageargs="${debugtest}"
+# Replace each -$elem of 'testrunargs' with '-test.$elem'
+newtestrunargs:=$(subst -,-test.,${testrunargs})
+endif
+
 all: build-check compile_commands
 
 build-check:
@@ -24,6 +32,12 @@ test-spec:
 
 test-nocache:
 	${testing_env} go test -count=1          ${testrunargs} ${testrunpackages}
+
+test-dlv:
+# delve wants exactly one package at a time so 'testrunpackages' better be a
+# literal directory
+	[ -d ${testsinglepackageargs} ] && \
+	${testing_env} dlv test ${testsinglepackageargs} -- ${newtestrunargs}
 
 cpu_profile_file=cpu-pprof.gz
 profile_dir=profiling
