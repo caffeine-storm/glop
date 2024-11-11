@@ -108,6 +108,10 @@ func (linux *linuxSystemObject) GetWindowDims() (int, int, int, int) {
 	return int(x), int(y), int(dx), int(dy)
 }
 
+func (linux *linuxSystemObject) SetWindowSize(width, height int) {
+	C.GlopSetWindowSize(C.int(width), C.int(height))
+}
+
 func (linux *linuxSystemObject) EnableVSync(enable bool) {
 	var _enable C.int
 	if enable {

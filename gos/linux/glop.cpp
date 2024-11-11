@@ -533,6 +533,9 @@ void GlopGetWindowDims(int* x, int* y, int* dx, int* dy) {
   glopGetWindowSize(windowdata, dx, dy);
 }
 
+void GlopSetWindowSize(int dx, int dy) {
+	XResizeWindow(display, windowdata->window, dx, dy);
+}
 
 // Input functions
 // ===============

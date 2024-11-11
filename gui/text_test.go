@@ -97,14 +97,25 @@ func LoadDictionaryForTest(render render.RenderQueueInterface, dimser Dimser, lo
 
 // Renders the given string with pixel units and an origin at the bottom-left.
 func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+	fmt.Printf("todraw: %q, screenDims: %+v x: %d, y: %d\n", toDraw, screenDims, x, y)
 	d := LoadDictionaryForTest(render, &ConstDimser{Value: screenDims}, logger)
 
 	render.Queue(func() {
 		// Use an orthonormal projection because all the gui code assumes it's
 		// rendering with such a projection.
+		gl.ClearColor(0, 0, 0, 1)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+		gl.MatrixMode(gl.PROJECTION)
+		gl.PushMatrix()
+		gl.LoadIdentity()
+		// TODO(tmckee): oddly enough, we seem to be applying the orthonormal
+		// projection twice iff the window is bigger ... we might need to do more
+		// than just XResizeWindow ... ?
 		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
 		d.RenderString(toDraw, Point{x, y}, height, just)
 		sys.SwapBuffers()
+		gl.PopMatrix()
 	})
 
 	render.Purge()
@@ -288,34 +299,37 @@ func DictionaryRenderStringSpec() {
 			return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
 		}
 
-		withGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
+		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
+			leftPixel := testcase.screenDimensions.Dx / 2
+			bottomPixel := testcase.screenDimensions.Dy / 2
+			height := 22
+			just := Left
+			logger := slog.Default()
 
-			Convey(fmt.Sprintf("[%s]", testcase.label), func() {
-				leftPixel := testcase.screenDimensions.Dx / 2
-				bottomPixel := testcase.screenDimensions.Dy / 2
-				height := 22
-				just := Left
-				logger := slog.Default()
+			screenDims := Dims{
+				Dx: testcase.screenDimensions.Dx,
+				Dy: testcase.screenDimensions.Dy,
+			}
 
-				screenDims := Dims{
-					Dx: testcase.screenDimensions.Dx,
-					Dy: testcase.screenDimensions.Dy,
-				}
+			withGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
 					renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenDims, sys, render, just, logger)
 				}
 
+				Convey("Can render 'credits' centred", func() {
+					just = Center
+
+					doRenderString("Credits")
+
+					fmt.Printf("Credits: %s: render: %+v\n", testcase.label, render)
+					So(render, ShouldLookLike, "../testdata/text/credits.pgm")
+				})
+
 				Convey("Can render 'lol'", func() {
 					doRenderString("lol")
 
+					fmt.Printf("lol: %s: render: %+v\n", testcase.label, render)
 					So(render, ShouldLookLike, "../testdata/text/lol.pgm")
-				})
-
-				Convey("Can render 'credits' centred", func() {
-					just = Center
-					doRenderString("Credits")
-
-					So(render, ShouldLookLike, "../testdata/text/credits.pgm")
 				})
 
 				Convey("Can render somewhere other than the origin", func() {
@@ -325,6 +339,7 @@ func DictionaryRenderStringSpec() {
 						logger = glog.DebugLogger()
 						doRenderString("offset")
 
+						fmt.Printf("offset: %s: render: %+v\n", testcase.label, render)
 						So(render, ShouldLookLike, "../testdata/text/offset.pgm")
 					})
 				})
@@ -334,6 +349,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("tall-or-small")
 
+					fmt.Printf("tall-or-small: %s: render: %+v\n", testcase.label, render)
 					So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
 				})
 
@@ -343,7 +359,7 @@ func DictionaryRenderStringSpec() {
 					}))
 
 					stdoutLines := gloptest.CollectOutput(func() {
-						doRenderString("lol")
+						doRenderString("spam check")
 					})
 
 					So(stdoutLines, ShouldEqual, []string{})

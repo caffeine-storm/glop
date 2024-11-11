@@ -57,3 +57,9 @@ func TestDrawRect(t *testing.T) {
 		}
 	}
 }
+
+func TestDrawManyRects(t *testing.T) {
+	for i := 0; i < 500; i++ {
+		TestDrawRect(t)
+	}
+}

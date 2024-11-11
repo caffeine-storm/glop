@@ -277,12 +277,10 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	stride := unsafe.Sizeof(blitVertex{})
 	string_width_px := d.StringPixelWidth(s)
 
-	d.logger.Debug("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy)
-
 	screenDims := d.getScreenDimensions()
 	screenPixelWidth, screenPixelHeight := screenDims.Dx, screenDims.Dy
 
-	d.logger.Debug("screenpix", "width", screenPixelWidth, "height", screenPixelHeight)
+	d.logger.Debug("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "screen-width", screenPixelWidth, "screen-height", screenPixelHeight, "glstate", debug.GetGlState().String())
 
 	x_pos_px := float64(target.X)
 	y_pos_px := float64(target.Y)

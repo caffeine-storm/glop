@@ -30,9 +30,76 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 	return sys, render
 }
 
-func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+type glContext struct {
+	sys system.System
+	render render.RenderQueueInterface
+}
+
+func (ctx *glContext) Prep(width, height int) {
+	ctx.render.Queue(func() {
+		ctx.sys.SetWindowSize(width, height)
+
+		gl.MatrixMode(gl.MODELVIEW)
+		gl.PushMatrix()
+		gl.LoadIdentity()
+
+		gl.MatrixMode(gl.PROJECTION)
+		gl.PushMatrix()
+		gl.LoadIdentity()
+
+		gl.MatrixMode(gl.TEXTURE)
+		gl.PushMatrix()
+		gl.LoadIdentity()
+
+		gl.ClearColor(0, 0, 0, 1.0)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		ctx.sys.SwapBuffers()
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		ctx.sys.SwapBuffers()
+	})
+	ctx.render.Purge()
+}
+
+func (ctx *glContext) Clean() {
+	// Undo matrix mode identity loads
+	gl.MatrixMode(gl.TEXTURE)
+	gl.PopMatrix()
+
+	gl.MatrixMode(gl.PROJECTION)
+	gl.PopMatrix()
+	
+	gl.MatrixMode(gl.MODELVIEW)
+	gl.PopMatrix()
+}
+
+func (ctx *glContext) Run(fn func(system.System, render.RenderQueueInterface)) {
+	fn(ctx.sys, ctx.render)
+}
+
+func newGlContextForTest(width, height int) *glContext {
+	fmt.Printf(" --- new gl context: %dx%d --- \n", width, height)
 	sys, render := newGlWindowForTest(width, height)
-	fn(sys, render)
+	return &glContext {
+		sys: sys,
+		render: render,
+	}
+}
+
+var glTestContextSource = make(chan *glContext, 24)
+
+func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+	select {
+	case cachedContext := <- glTestContextSource:
+		cachedContext.Prep(width, height)
+		cachedContext.Run(fn)
+		cachedContext.Clean()
+		// glTestContextSource <- cachedContext
+	default:
+		newContext := newGlContextForTest(width, height)
+		newContext.Run(fn)
+		newContext.Clean()
+		// glTestContextSource <- newContext
+	}
 }
 
 func WithGl(fn func()) {

@@ -25,6 +25,7 @@ type System interface {
 	HideCursor(bool)
 
 	GetWindowDims() (x, y, dx, dy int)
+	SetWindowSize(width, height int)
 
 	SwapBuffers()
 	GetInputEvents() []gin.EventGroup
@@ -65,6 +66,7 @@ type Os interface {
 	HideCursor(bool)
 
 	GetWindowDims() (x, y, dx, dy int)
+	SetWindowSize(width, height int)
 
 	// Swap the OpenGl buffers on this window
 	SwapBuffers()
@@ -116,6 +118,9 @@ func (sys *sysObj) HideCursor(hide bool) {
 }
 func (sys *sysObj) GetWindowDims() (int, int, int, int) {
 	return sys.os.GetWindowDims()
+}
+func (sys *sysObj) SetWindowSize(width, height int) {
+	sys.os.SetWindowSize(width, height)
 }
 func (sys *sysObj) SwapBuffers() {
 	sys.os.SwapBuffers()
