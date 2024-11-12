@@ -58,8 +58,11 @@ func TestDrawRect(t *testing.T) {
 	}
 }
 
-func TestDrawManyRects(t *testing.T) {
-	for i := 0; i < 500; i++ {
-		TestDrawRect(t)
-	}
+/* DANGER WILL ROBINSON! XXX: this has been crashing windows when running on
+* WSL. Run at your PERIL!
+* func TestDrawManyRects(t *testing.T) {
+* for i := 0; i < 500; i++ {
+*   TestDrawRect(t)
+* }
 }
+*/
