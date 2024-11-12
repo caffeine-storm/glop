@@ -31,7 +31,7 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 }
 
 type glContext struct {
-	sys system.System
+	sys    system.System
 	render render.RenderQueueInterface
 }
 
@@ -67,7 +67,7 @@ func (ctx *glContext) Clean() {
 
 	gl.MatrixMode(gl.PROJECTION)
 	gl.PopMatrix()
-	
+
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.PopMatrix()
 }
@@ -79,8 +79,8 @@ func (ctx *glContext) Run(fn func(system.System, render.RenderQueueInterface)) {
 func newGlContextForTest(width, height int) *glContext {
 	fmt.Printf(" --- new gl context: %dx%d --- \n", width, height)
 	sys, render := newGlWindowForTest(width, height)
-	return &glContext {
-		sys: sys,
+	return &glContext{
+		sys:    sys,
 		render: render,
 	}
 }
@@ -89,7 +89,7 @@ var glTestContextSource = make(chan *glContext, 24)
 
 func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
 	select {
-	case cachedContext := <- glTestContextSource:
+	case cachedContext := <-glTestContextSource:
 		cachedContext.Prep(width, height)
 		cachedContext.Run(fn)
 		cachedContext.Clean()
