@@ -315,18 +315,18 @@ func DictionaryRenderStringSpec() {
 					renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenDims, sys, render, just, logger)
 				}
 
+				Convey("Can render 'lol'", func() {
+					doRenderString("lol")
+
+					So(render, ShouldLookLike, "../testdata/text/lol.pgm")
+				})
+
 				Convey("Can render 'credits' centred", func() {
 					just = Center
 
 					doRenderString("Credits")
 
 					So(render, ShouldLookLike, "../testdata/text/credits.pgm")
-				})
-
-				Convey("Can render 'lol'", func() {
-					doRenderString("lol")
-
-					So(render, ShouldLookLike, "../testdata/text/lol.pgm")
 				})
 
 				Convey("Can render somewhere other than the origin", func() {
