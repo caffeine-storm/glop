@@ -77,7 +77,6 @@ func (ctx *glContext) Run(fn func(system.System, render.RenderQueueInterface)) {
 }
 
 func newGlContextForTest(width, height int) *glContext {
-	fmt.Printf(" --- new gl context: %dx%d --- \n", width, height)
 	sys, render := newGlWindowForTest(width, height)
 	return &glContext{
 		sys:    sys,

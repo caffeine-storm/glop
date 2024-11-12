@@ -97,7 +97,6 @@ func LoadDictionaryForTest(render render.RenderQueueInterface, dimser Dimser, lo
 
 // Renders the given string with pixel units and an origin at the bottom-left.
 func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
-	fmt.Printf("todraw: %q, screenDims: %+v x: %d, y: %d\n", toDraw, screenDims, x, y)
 	d := LoadDictionaryForTest(render, &ConstDimser{Value: screenDims}, logger)
 
 	render.Queue(func() {
@@ -321,14 +320,12 @@ func DictionaryRenderStringSpec() {
 
 					doRenderString("Credits")
 
-					fmt.Printf("Credits: %s: render: %+v\n", testcase.label, render)
 					So(render, ShouldLookLike, "../testdata/text/credits.pgm")
 				})
 
 				Convey("Can render 'lol'", func() {
 					doRenderString("lol")
 
-					fmt.Printf("lol: %s: render: %+v\n", testcase.label, render)
 					So(render, ShouldLookLike, "../testdata/text/lol.pgm")
 				})
 
@@ -339,7 +336,6 @@ func DictionaryRenderStringSpec() {
 						logger = glog.DebugLogger()
 						doRenderString("offset")
 
-						fmt.Printf("offset: %s: render: %+v\n", testcase.label, render)
 						So(render, ShouldLookLike, "../testdata/text/offset.pgm")
 					})
 				})
@@ -349,7 +345,6 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("tall-or-small")
 
-					fmt.Printf("tall-or-small: %s: render: %+v\n", testcase.label, render)
 					So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
 				})
 
