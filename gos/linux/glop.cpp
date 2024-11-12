@@ -395,11 +395,11 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
 
   // Define the window attributes
   XSetWindowAttributes attribs;
-  attribs.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask | PointerMotionMask | FocusChangeMask |
-
-  FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
-                                                    PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
-                                                    EnterWindowMask | LeaveWindowMask;
+  attribs.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
+    ButtonReleaseMask | ButtonMotionMask | PointerMotionMask | FocusChangeMask
+    | FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
+    | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
+    EnterWindowMask | LeaveWindowMask;
   attribs.colormap = XCreateColormap( display, RootWindow(display, screen), vinfo->visual, AllocNone);
 
 
