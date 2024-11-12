@@ -1,3 +1,6 @@
+tmckee: make render.RenderQueueInterface.Queue take a specific type of
+'RenderJob'; will let us refactor to inject the GL dependecy down the line.
+
 tmckee: make tests fast
 
 tmckee: add tests for gui.TextEditLine and gui.TextLine
@@ -6,9 +9,6 @@ tmckee: add tests for gui.TextEditLine and gui.TextLine
 
 tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
-
-tmckee: make render.RenderQueueInterface.Queue take a specific type of
-'RenderJob'; will let us refactor to inject the GL dependecy down the line.
 
 tmckee: in gos/cgo_linux.go, mouse position needs to get un-stubbed
 

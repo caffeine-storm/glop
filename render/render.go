@@ -6,15 +6,17 @@ import (
 	"sync/atomic"
 )
 
+type RenderJob func()
+
 type RenderQueueInterface interface {
-	Queue(f func())
+	Queue(f RenderJob)
 	Purge()
 	StartProcessing()
 	IsPurging() bool
 }
 
 type renderQueue struct {
-	render_funcs chan func()
+	render_funcs chan RenderJob
 	purge        chan chan bool
 	is_running   bool
 	is_purging   atomic.Bool
@@ -44,9 +46,9 @@ func (q *renderQueue) loop() {
 	}
 }
 
-func MakeQueue(initialization func()) RenderQueueInterface {
+func MakeQueue(initialization RenderJob) RenderQueueInterface {
 	result := renderQueue{
-		render_funcs: make(chan func(), 1000),
+		render_funcs: make(chan RenderJob, 1000),
 		purge:        make(chan chan bool),
 		is_running:   false,
 		is_purging:   atomic.Bool{}, // zero-value is false
@@ -63,7 +65,7 @@ func MakeQueue(initialization func()) RenderQueueInterface {
 
 // TODO(tmckee): inject a GL dependency to given func for testability and to
 // keep arbitrary code from calling GL off of the render thread.
-func (q *renderQueue) Queue(f func()) {
+func (q *renderQueue) Queue(f RenderJob) {
 	q.render_funcs <- f
 }
 

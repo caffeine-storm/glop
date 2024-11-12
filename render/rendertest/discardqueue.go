@@ -7,10 +7,10 @@ type discardQueue struct{}
 
 var _ render.RenderQueueInterface = (*discardQueue)(nil)
 
-func (*discardQueue) Queue(f func())   {}
-func (*discardQueue) Purge()           {}
-func (*discardQueue) StartProcessing() {}
-func (*discardQueue) IsPurging() bool  { return false }
+func (*discardQueue) Queue(job render.RenderJob) {}
+func (*discardQueue) Purge()                     {}
+func (*discardQueue) StartProcessing()           {}
+func (*discardQueue) IsPurging() bool            { return false }
 
 func MakeDiscardingRenderQueue() render.RenderQueueInterface {
 	return &discardQueue{}
