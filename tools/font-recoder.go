@@ -24,7 +24,7 @@ func main() {
 	wdy := 750
 
 	sys.Startup()
-	render := render.MakeQueue(func() {
+	render := render.MakeQueue(func(render.RenderQueueState) {
 		sys.CreateWindow(10, 10, wdx, wdy)
 		sys.EnableVSync(true)
 		err := gl.Init()

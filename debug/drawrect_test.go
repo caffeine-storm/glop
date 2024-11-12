@@ -20,7 +20,7 @@ func TestDrawRect(t *testing.T) {
 	buffer := &bytes.Buffer{}
 
 	rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
-		queue.Queue(func() {
+		queue.Queue(func(render.RenderQueueState) {
 			debug.DrawRectNdc(-1, -1, 1, 1)
 			sys.SwapBuffers()
 			debug.ScreenShotRgba(width, height, buffer)

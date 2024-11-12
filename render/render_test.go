@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var nop = func() {}
+var nop = func(render.RenderQueueState) {}
 
 func requeueUntilPurging(q render.RenderQueueInterface, success chan bool) {
 	if q.IsPurging() {
@@ -21,7 +21,7 @@ func requeueUntilPurging(q render.RenderQueueInterface, success chan bool) {
 		return
 	}
 
-	q.Queue(func() {
+	q.Queue(func(render.RenderQueueState) {
 		requeueUntilPurging(q, success)
 	})
 }
@@ -60,7 +60,7 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		q.StartProcessing()
 
 		sync := make(chan bool)
-		q.Queue(func() {
+		q.Queue(func(render.RenderQueueState) {
 			sync <- true
 		})
 		<-sync
@@ -69,7 +69,7 @@ func TestRenderQueueIsPurging(t *testing.T) {
 			t.Fatalf("a running queue shouldn't be purging before any purge requests")
 		}
 
-		q.Queue(func() {
+		q.Queue(func(render.RenderQueueState) {
 			if q.IsPurging() {
 				t.Fatalf("a running queue shouldn't be purging before any purge requests even from within a running job")
 			}
@@ -109,7 +109,7 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		success := make(chan bool, 1)
 
 		q := render.MakeQueue(nop)
-		q.Queue(func() {
+		q.Queue(func(render.RenderQueueState) {
 			// Note that, by requeueing from a render job, we guarantee that the
 			// channel buffering render jobs always has at least one job.
 			requeueUntilPurging(q, success)
@@ -151,7 +151,7 @@ func TestExitOnRenderQueue(t *testing.T) {
 	t.Run("runtime.GoexitOnRenderQueueIsDetectable", func(t *testing.T) {
 		output := gloptest.CollectOutput(func() {
 			queue := render.MakeQueue(nop)
-			queue.Queue(func() {
+			queue.Queue(func(render.RenderQueueState) {
 				fmt.Printf("we expect to see this string in the logs\n")
 				runtime.Goexit()
 			})

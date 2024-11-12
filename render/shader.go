@@ -8,10 +8,14 @@ import (
 	"github.com/runningwild/glop/debug"
 )
 
-var shader_progs map[string]gl.Program
+type ShaderBank struct {
+	ShaderProgs map[string]gl.Program
+}
 
-func init() {
-	shader_progs = make(map[string]gl.Program)
+func MakeShaderBank() *ShaderBank {
+	return &ShaderBank{
+		ShaderProgs: make(map[string]gl.Program),
+	}
 }
 
 type shaderError string
@@ -21,12 +25,12 @@ func (err shaderError) Error() string {
 }
 
 // TODO(tmckee): refactor: There should be a 'DisableShader' to 'UseProgram(0)'
-func EnableShader(name string) error {
+func (bank *ShaderBank) EnableShader(name string) error {
 	if name == "" {
 		gl.Program(0).Use()
 		return nil
 	}
-	prog, ok := shader_progs[name]
+	prog, ok := bank.ShaderProgs[name]
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to use unknown shader '%s'", name))
 	}
@@ -34,8 +38,8 @@ func EnableShader(name string) error {
 	return nil
 }
 
-func SetUniformI(shader, variable string, n int) error {
-	prog, ok := shader_progs[shader]
+func (bank *ShaderBank) SetUniformI(shader, variable string, n int) error {
+	prog, ok := bank.ShaderProgs[shader]
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to set a uniform in an unknown shader '%s'", shader))
 	}
@@ -44,8 +48,8 @@ func SetUniformI(shader, variable string, n int) error {
 	return nil
 }
 
-func SetUniformF(shader, variable string, f float32) error {
-	prog, ok := shader_progs[shader]
+func (bank *ShaderBank) SetUniformF(shader, variable string, f float32) error {
+	prog, ok := bank.ShaderProgs[shader]
 	if !ok {
 		return shaderError(fmt.Sprintf("Tried to set a uniform in an unknown shader '%s'", shader))
 	}
@@ -54,8 +58,8 @@ func SetUniformF(shader, variable string, f float32) error {
 	return nil
 }
 
-func RegisterShader(name string, vertex, fragment string) error {
-	if _, notOk := shader_progs[name]; notOk {
+func (bank *ShaderBank) RegisterShader(name string, vertex, fragment string) error {
+	if _, notOk := bank.ShaderProgs[name]; notOk {
 		return shaderError(fmt.Sprintf("Tried to register a shader called '%s' twice", name))
 	}
 
@@ -85,7 +89,7 @@ func RegisterShader(name string, vertex, fragment string) error {
 		return shaderError(fmt.Sprintf("Failed to link shader '%s': %v", name, did_compile))
 	}
 
-	shader_progs[name] = program
+	bank.ShaderProgs[name] = program
 
 	debug.LogAndClearGlErrors(slog.Default())
 	return nil

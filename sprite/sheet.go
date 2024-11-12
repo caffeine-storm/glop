@@ -146,7 +146,7 @@ func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {
 			// TODO(tmckee): clean: we don't need to spawn a go-routine to send a
 			// func on a chan.
 			go func() {
-				renderQueue.Queue(func() {
+				renderQueue.Queue(func(render.RenderQueueState) {
 					s.makeTexture(pixer)
 					ready <- true
 				})
@@ -154,7 +154,7 @@ func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {
 		} else {
 			go func() {
 				<-ready
-				renderQueue.Queue(func() {
+				renderQueue.Queue(func(render.RenderQueueState) {
 					s.texture.Delete()
 					s.texture = 0
 				})

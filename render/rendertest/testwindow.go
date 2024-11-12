@@ -15,7 +15,7 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 	sys := system.Make(linuxSystemObject)
 
 	sys.Startup()
-	render := render.MakeQueue(func() {
+	render := render.MakeQueue(func(render.RenderQueueState) {
 		sys.CreateWindow(0, 0, width, height)
 		sys.EnableVSync(true)
 		err := gl.Init()
@@ -36,7 +36,7 @@ type glContext struct {
 }
 
 func (ctx *glContext) Prep(width, height int) {
-	ctx.render.Queue(func() {
+	ctx.render.Queue(func(render.RenderQueueState) {
 		ctx.sys.SetWindowSize(width, height)
 
 		gl.MatrixMode(gl.MODELVIEW)
@@ -102,11 +102,11 @@ func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueI
 }
 
 func WithGl(fn func()) {
-	WithGlForTest(50, 50, func(sys system.System, render render.RenderQueueInterface) {
+	WithGlForTest(50, 50, func(sys system.System, renderQueue render.RenderQueueInterface) {
 		logger := glog.ErrorLogger()
 
 		errors := []gl.GLenum{}
-		render.Queue(func() {
+		renderQueue.Queue(func(render.RenderQueueState) {
 			// Clear out GL's error queue so that a leaky test doesn't break us by
 			// accident.
 			for err := gl.GetError(); err != 0; err = gl.GetError() {
@@ -121,7 +121,7 @@ func WithGl(fn func()) {
 				err = gl.GetError()
 			}
 		})
-		render.Purge()
+		renderQueue.Purge()
 
 		// If there were GL errors _caused_ by the given func, fail!
 		if len(errors) > 0 {

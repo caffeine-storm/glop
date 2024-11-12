@@ -6,7 +6,12 @@ import (
 	"sync/atomic"
 )
 
-type RenderJob func()
+// TODO(tmckee): clean: is there a better name for this? RenderContext?
+type RenderQueueState interface {
+	Shaders() *ShaderBank
+}
+
+type RenderJob func(RenderQueueState)
 
 type RenderQueueInterface interface {
 	Queue(f RenderJob)
@@ -15,7 +20,18 @@ type RenderQueueInterface interface {
 	IsPurging() bool
 }
 
+type renderQueueState struct {
+	shaders *ShaderBank
+}
+
+var _ RenderQueueState = (*renderQueueState)(nil)
+
+func (state *renderQueueState) Shaders() *ShaderBank {
+	return state.shaders
+}
+
 type renderQueue struct {
+	queue_state  *renderQueueState
 	render_funcs chan RenderJob
 	purge        chan chan bool
 	is_running   bool
@@ -27,14 +43,14 @@ func (q *renderQueue) loop() {
 	for {
 		select {
 		case f := <-q.render_funcs:
-			f()
+			f(q.queue_state)
 		case ack := <-q.purge:
 			defer close(ack)
 			q.is_purging.Store(true)
 			for {
 				select {
 				case f := <-q.render_funcs:
-					f()
+					f(q.queue_state)
 				default:
 					goto purged
 				}
@@ -48,6 +64,9 @@ func (q *renderQueue) loop() {
 
 func MakeQueue(initialization RenderJob) RenderQueueInterface {
 	result := renderQueue{
+		queue_state: &renderQueueState{
+			shaders: MakeShaderBank(),
+		},
 		render_funcs: make(chan RenderJob, 1000),
 		purge:        make(chan chan bool),
 		is_running:   false,
@@ -56,9 +75,9 @@ func MakeQueue(initialization RenderJob) RenderQueueInterface {
 
 	// We're guaranteed that this render job will run first. We can include our
 	// own initialization that should happen on the loop's thread.
-	result.Queue(func() {
+	result.Queue(func(st RenderQueueState) {
 		runtime.LockOSThread()
-		initialization()
+		initialization(st)
 	})
 	return &result
 }

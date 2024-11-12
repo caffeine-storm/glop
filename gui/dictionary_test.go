@@ -119,6 +119,8 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
 		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, glog.DebugLogger())
 
-		d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left)
+		// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
+		// copy-pasta.
+		d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left, rendertest.StubShaderBank("glop.font"))
 	})
 }

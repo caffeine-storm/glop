@@ -96,10 +96,10 @@ func LoadDictionaryForTest(render render.RenderQueueInterface, dimser Dimser, lo
 }
 
 // Renders the given string with pixel units and an origin at the bottom-left.
-func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, render render.RenderQueueInterface, just Justification, logger *slog.Logger) {
-	d := LoadDictionaryForTest(render, &ConstDimser{Value: screenDims}, logger)
+func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, queue render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+	d := LoadDictionaryForTest(queue, &ConstDimser{Value: screenDims}, logger)
 
-	render.Queue(func() {
+	queue.Queue(func(st render.RenderQueueState) {
 		// Use an orthonormal projection because all the gui code assumes it's
 		// rendering with such a projection.
 		gl.ClearColor(0, 0, 0, 1)
@@ -112,12 +112,12 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 		// projection twice iff the window is bigger ... we might need to do more
 		// than just XResizeWindow ... ?
 		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
-		d.RenderString(toDraw, Point{x, y}, height, just)
+		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
 		sys.SwapBuffers()
 		gl.PopMatrix()
 	})
 
-	render.Purge()
+	queue.Purge()
 }
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.
@@ -130,18 +130,18 @@ func makeRejectName(exp, suffix string) string {
 	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }
 
-func expectPixelsMatch(render render.RenderQueueInterface, pgmFileExpected string, screenWidth, screenHeight int) (bool, string) {
+func expectPixelsMatch(queue render.RenderQueueInterface, pgmFileExpected string, screenWidth, screenHeight int) (bool, string) {
 	var err error
 
 	// Read all the pixels from the framebuffer through OpenGL
 	var frameBufferBytes []byte
-	render.Queue(func() {
+	queue.Queue(func(render.RenderQueueState) {
 		frameBufferBytes, err = readPixels(screenWidth, screenHeight)
 		if err != nil {
 			panic(fmt.Errorf("couldn't readPixels: %w", err))
 		}
 	})
-	render.Purge()
+	queue.Purge()
 
 	// Verify that the framebuffer's contents match our expected image.
 	pgmFile, err := os.Open(pgmFileExpected)
@@ -232,8 +232,8 @@ func TestDictionaryGetInfo(t *testing.T) {
 	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		render := rendertest.MakeDiscardingRenderQueue()
-		d := LoadDictionaryForTest(render, &ConstDimser{}, slog.Default())
+		queue := rendertest.MakeDiscardingRenderQueue()
+		d := LoadDictionaryForTest(queue, &ConstDimser{}, slog.Default())
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and

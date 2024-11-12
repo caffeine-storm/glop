@@ -219,7 +219,7 @@ func (d *Dictionary) split(s string, lineWidth int) []string {
 }
 
 // TODO: This isn't working - not being tested yet
-func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, lineHeight int, halign, valign Justification) {
+func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, lineHeight int, halign, valign Justification, shaders *render.ShaderBank) {
 	lines := d.split(s, boundingWidth)
 	total_height := lineHeight * len(lines)
 	switch valign {
@@ -229,7 +229,7 @@ func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, lineHeig
 		y += total_height / 2
 	}
 	for _, line := range lines {
-		d.RenderString(line, Point{X: x, Y: y}, lineHeight, halign)
+		d.RenderString(line, Point{X: x, Y: y}, lineHeight, halign, shaders)
 		y -= lineHeight
 	}
 }
@@ -257,9 +257,6 @@ func (d *Dictionary) getScreenDimensions() Dims {
 	return d.dims.Dims()
 }
 
-// TODO(tmckee): refactor uses of Dictionary to not require calling
-// RenderString/RenderParagraph from a render queue but dispatch the op
-// internally.
 // Renders the string 's' at the given position with the given height. Values
 // are in units of pixels w.r.t. an origin at the top-left of the screen. The
 // text is positioned based on the given justification:
@@ -267,7 +264,7 @@ func (d *Dictionary) getScreenDimensions() Dims {
 //	Left: use 'target.X' for the left-hand extent of what's drawn
 //	Centre: use 'target.X' for the middle of what's drawn
 //	Right: use 'target.X' for the right-hand extent of what's drawn
-func (d *Dictionary) RenderString(s string, target Point, height int, just Justification) {
+func (d *Dictionary) RenderString(s string, target Point, height int, just Justification, shaders *render.ShaderBank) {
 	d.logger.Debug("RenderString called", "s", s, "target", target, "height", height, "just", just)
 
 	if len(s) == 0 {
@@ -359,11 +356,11 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 
 	d.logger.Debug("renderstring blittingData", "todraw", s, "data", blittingData)
 
-	err := render.EnableShader("glop.font")
+	err := shaders.EnableShader("glop.font")
 	if err != nil {
 		panic(err)
 	}
-	defer render.EnableShader("")
+	defer shaders.EnableShader("")
 
 	// TODO(tmckee): 'diff' was used for configuring a clamping function
 	// (smoothstep) in the shader. The math is broken, though, and alyways comes
@@ -374,11 +371,11 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	// }
 	diff := 0.45
 	d.logger.Debug("RenderStringDiff", "diff", diff)
-	render.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
-	render.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
+	shaders.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
+	shaders.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
 	// We want to use the 0'th texture unit.
-	render.SetUniformI("glop.font", "tex", 0)
+	shaders.SetUniformI("glop.font", "tex", 0)
 
 	debug.LogAndClearGlErrors(d.logger)
 
@@ -528,7 +525,7 @@ func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface)
 	d.stringBlittingCache = make(map[string]blitBuffer)
 	d.paragraphBlittingCache = make(map[string]blitBuffer)
 
-	renderQueue.Queue(func() {
+	renderQueue.Queue(func(render.RenderQueueState) {
 		gl.Enable(gl.TEXTURE_2D)
 		d.texture = gl.GenTexture()
 		d.texture.Bind(gl.TEXTURE_2D)

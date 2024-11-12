@@ -1,28 +1,19 @@
 package gui
 
 import (
-	"sync"
-
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/render"
 )
 
-// TODO(tmckee): don't have a module-level init; use the type system to force
-// anyone calling post-init-expecting-things to call them through a handle you
-// get when you 'init'
-var shader_init sync.Once
-
 func Init(renderQueue render.RenderQueueInterface) error {
 	var err error
-	shader_init.Do(func() {
-		// TODO(tmckee): need to have the queue manager per-queue state; not
-		// approximate with module state.
-		renderQueue.Queue(func() {
-			err = render.RegisterShader("glop.font", font_vertex_shader, font_fragment_shader)
-		})
-		renderQueue.Purge()
-	})
+	// TODO(tmckee): need to have the queue manager per-queue state; not
+	// approximate with module state.
+	renderQueue.Queue(render.RenderJob(func(queue render.RenderQueueState) {
+		err = queue.Shaders().RegisterShader("glop.font", font_vertex_shader, font_fragment_shader)
+	}))
+	renderQueue.Purge()
 	return err
 }
 
