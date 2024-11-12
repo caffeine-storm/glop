@@ -534,6 +534,9 @@ void GlopGetWindowDims(int* x, int* y, int* dx, int* dy) {
 }
 
 void GlopSetWindowSize(int dx, int dy) {
+	// TODO(tmckee): This can generate 'BadValue' or 'BadWindow' errors. We
+	// should check for them. See
+	// https://tronche.com/gui/x/xlib/event-handling/protocol-errors/XSetErrorHandler.html
 	XResizeWindow(display, windowdata->window, dx, dy);
 }
 
