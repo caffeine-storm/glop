@@ -8,10 +8,13 @@ import (
 
 func Init(renderQueue render.RenderQueueInterface) error {
 	var err error
-	// TODO(tmckee): need to have the queue manager per-queue state; not
-	// approximate with module state.
-	renderQueue.Queue(render.RenderJob(func(queue render.RenderQueueState) {
-		err = queue.Shaders().RegisterShader("glop.font", font_vertex_shader, font_fragment_shader)
+	renderQueue.Queue(render.RenderJob(func(st render.RenderQueueState) {
+		fontShaderName := "glop.font"
+		if st.Shaders().HasShader(fontShaderName) {
+			return
+		}
+
+		err = st.Shaders().RegisterShader(fontShaderName, font_vertex_shader, font_fragment_shader)
 	}))
 	renderQueue.Purge()
 	return err

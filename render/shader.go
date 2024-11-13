@@ -18,6 +18,11 @@ func MakeShaderBank() *ShaderBank {
 	}
 }
 
+func (bank *ShaderBank) HasShader(shaderName string) bool {
+	_, found := bank.ShaderProgs[shaderName]
+	return found
+}
+
 type shaderError string
 
 func (err shaderError) Error() string {
