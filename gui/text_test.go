@@ -14,6 +14,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
@@ -102,19 +103,14 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 	queue.Queue(func(st render.RenderQueueState) {
 		// Use an orthonormal projection because all the gui code assumes it's
 		// rendering with such a projection.
-		gl.ClearColor(0, 0, 0, 1)
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-		gl.MatrixMode(gl.PROJECTION)
-		gl.PushMatrix()
-		gl.LoadIdentity()
 		// TODO(tmckee): oddly enough, we seem to be applying the orthonormal
-		// projection twice iff the window is bigger ... we might need to do more
-		// than just XResizeWindow ... ?
+		// projection twice iff the aspect ratio changes... we might need to do
+		// more than just XResizeWindow ... ?
 		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
+
+		glog.ErrorLogger().Error("pre-renderstring", "glstate", debug.GetGlState())
 		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
 		sys.SwapBuffers()
-		gl.PopMatrix()
 	})
 
 	queue.Purge()
