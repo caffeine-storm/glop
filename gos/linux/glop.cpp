@@ -40,10 +40,12 @@ struct OsWindowData {
   ~OsWindowData() {
     glXDestroyContext(display, context);
     XDestroyIC(inputcontext);
+    XFree(vinfo);
     XDestroyWindow(display, window);
   }
 
   Window window;
+  XVisualInfo *vinfo;
   GLXContext context;
   XIC inputcontext;
 };
@@ -365,9 +367,9 @@ void GlopSetTitle(OsWindowData* data, const string& title) {
 
 void glopSetCurrentContext(OsWindowData* data) {
   if (!glXMakeCurrent(display, data->window, data->context)) {
-		fprintf(stderr, "glop.cpp: glxMakeCurrent failed\n");
-		exit(1);
-	}
+    fprintf(stderr, "glop.cpp: glxMakeCurrent failed\n");
+    exit(1);
+  }
 }
 
 GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int height) {
@@ -390,8 +392,8 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
     GLX_STENCIL_SIZE, 8,
     None
   };
-  XVisualInfo *vinfo = glXChooseVisual(display, screen, glxcv_params);
-//  ASSERT(vinfo);
+  nw->vinfo = glXChooseVisual(display, screen, glxcv_params);
+//  ASSERT(nw->vinfo);
 
   // Define the window attributes
   XSetWindowAttributes attribs;
@@ -400,10 +402,10 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
     | FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
     | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
     EnterWindowMask | LeaveWindowMask;
-  attribs.colormap = XCreateColormap( display, RootWindow(display, screen), vinfo->visual, AllocNone);
+  attribs.colormap = XCreateColormap( display, RootWindow(display, screen), nw->vinfo->visual, AllocNone);
 
 
-  nw->window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, 0, vinfo->depth, InputOutput, vinfo->visual, CWColormap | CWEventMask, &attribs); // I don't know if I need anything further here
+  nw->window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, 0, nw->vinfo->depth, InputOutput, nw->vinfo->visual, CWColormap | CWEventMask, &attribs); // I don't know if I need anything further here
 
 
 
@@ -483,7 +485,7 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
 
   XMapWindow(display, nw->window);
 
-  nw->context = glXCreateContext(display, vinfo, NULL, True);
+  nw->context = glXCreateContext(display, nw->vinfo, NULL, True);
 //  ASSERT(nw->context);
 
   glopSetCurrentContext(nw);
@@ -534,10 +536,10 @@ void GlopGetWindowDims(int* x, int* y, int* dx, int* dy) {
 }
 
 void GlopSetWindowSize(int dx, int dy) {
-	// TODO(tmckee): This can generate 'BadValue' or 'BadWindow' errors. We
-	// should check for them. See
-	// https://tronche.com/gui/x/xlib/event-handling/protocol-errors/XSetErrorHandler.html
-	XResizeWindow(display, windowdata->window, dx, dy);
+  // TODO(tmckee): This can generate 'BadValue' or 'BadWindow' errors. We
+  // should check for them. See
+  // https://tronche.com/gui/x/xlib/event-handling/protocol-errors/XSetErrorHandler.html
+  XResizeWindow(display, windowdata->window, dx, dy);
 }
 
 // Input functions
