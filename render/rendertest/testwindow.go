@@ -92,12 +92,12 @@ func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueI
 		cachedContext.Prep(width, height)
 		cachedContext.Run(fn)
 		cachedContext.Clean()
-		// glTestContextSource <- cachedContext
+		glTestContextSource <- cachedContext
 	default:
 		newContext := newGlContextForTest(width, height)
 		newContext.Run(fn)
 		newContext.Clean()
-		// glTestContextSource <- newContext
+		glTestContextSource <- newContext
 	}
 }
 
