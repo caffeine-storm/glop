@@ -53,23 +53,23 @@ func (ctx *glContext) Prep(width, height int) {
 
 		gl.ClearColor(0, 0, 0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		ctx.sys.SwapBuffers()
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-		ctx.sys.SwapBuffers()
 	})
 	ctx.render.Purge()
 }
 
 func (ctx *glContext) Clean() {
-	// Undo matrix mode identity loads
-	gl.MatrixMode(gl.TEXTURE)
-	gl.PopMatrix()
+	ctx.render.Queue(func(render.RenderQueueState) {
+		// Undo matrix mode identity loads
+		gl.MatrixMode(gl.TEXTURE)
+		gl.PopMatrix()
 
-	gl.MatrixMode(gl.PROJECTION)
-	gl.PopMatrix()
+		gl.MatrixMode(gl.PROJECTION)
+		gl.PopMatrix()
 
-	gl.MatrixMode(gl.MODELVIEW)
-	gl.PopMatrix()
+		gl.MatrixMode(gl.MODELVIEW)
+		gl.PopMatrix()
+	})
+	ctx.render.Purge()
 }
 
 func (ctx *glContext) Run(fn func(system.System, render.RenderQueueInterface)) {

@@ -103,14 +103,32 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 	queue.Queue(func(st render.RenderQueueState) {
 		// Use an orthonormal projection because all the gui code assumes it's
 		// rendering with such a projection.
-		// TODO(tmckee): oddly enough, we seem to be applying the orthonormal
-		// projection twice iff the aspect ratio changes... we might need to do
-		// more than just XResizeWindow ... ?
-		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
+		gl.ClearColor(0, 0, 0, 1)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		glog.ErrorLogger().Error("pre-renderstring", "glstate", debug.GetGlState())
-		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
+		gl.MatrixMode(gl.PROJECTION)
+		gl.PushMatrix()
+		gl.LoadIdentity()
+
+		winX, winY, winDx, winDy := sys.GetWindowDims()
+		vpx, vpy, vpDx, vpDy := debug.GetViewport()
+
+		logger.Error("pre-ortho", "window", image.Rect(winX, winY, winDx, winDy), "viewport", image.Rect(int(vpx), int(vpy), int(vpDx), int(vpDy)))
+
+		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
+		gl.Viewport(winX, winY, winDx, winDy)
+
+		// SwapBuffers should flush the GL command queue and synchronize with the
+		// X-server. Without doing so, things break!
 		sys.SwapBuffers()
+
+		winX, winY, winDx, winDy = sys.GetWindowDims()
+		vpx, vpy, vpDx, vpDy = debug.GetViewport()
+
+		logger.Error("post-ortho", "window", image.Rect(winX, winY, winDx, winDy), "viewport", image.Rect(int(vpx), int(vpy), int(vpDx), int(vpDy)))
+
+		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
+		gl.PopMatrix()
 	})
 
 	queue.Purge()
@@ -272,6 +290,43 @@ func DictionaryRenderStringSpec() {
 				Dy: 512,
 			},
 		},
+		{
+			label: "wait, wut?",
+			screenDimensions: Dims{
+				Dx: 512,
+				Dy: 64,
+			},
+		},
+		{
+			label: "same aspect ratio but bigger",
+			screenDimensions: Dims{
+				Dx: 1024,
+				Dy: 128,
+			},
+		},
+		/*
+			{
+				label: "other dimensions",
+				screenDimensions: Dims{
+					Dx: 800,
+					Dy: 640,
+				},
+			},
+			{
+				label: "natural match to dict dimensions",
+				screenDimensions: Dims{
+					Dx: 512,
+					Dy: 64,
+				},
+			},
+			{
+				label: "original dimensions",
+				screenDimensions: Dims{
+					Dx: 64,
+					Dy: 64,
+				},
+			},
+		*/
 	}
 	for testnumber, testcase := range screenSizeCases {
 		ShouldLookLike := func(actual interface{}, expected ...interface{}) string {
@@ -312,6 +367,7 @@ func DictionaryRenderStringSpec() {
 				}
 
 				Convey("Can render 'lol'", func() {
+					logger = glog.DebugLogger()
 					doRenderString("lol")
 
 					So(render, ShouldLookLike, "../testdata/text/lol.pgm")

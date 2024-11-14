@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/glog"
 )
 
 type ShaderBank struct {
@@ -40,6 +41,7 @@ func (bank *ShaderBank) EnableShader(name string) error {
 		return shaderError(fmt.Sprintf("Tried to use unknown shader '%s'", name))
 	}
 	prog.Use()
+	debug.LogAndClearGlErrors(glog.DebugLogger())
 	return nil
 }
 
