@@ -61,11 +61,11 @@ test-fresh: |clean_rejects
 test-fresh: test-nocache
 
 clean_rejects:
-	rm -f testdata/text/*/*.rej.*
+	find testdata/ -name '*.rej*' -exec rm "{}" +
 
 promote_rejects:
 	@shopt -s nullglob ; \
-	for i in testdata/text/*/*.rej.* ; do \
+	find testdata/ -name '*.rej*' | while read i ; do \
 		echo mv $$i $${i/.rej} ; \
 		mv $$i $${i/.rej} ; \
 	done
