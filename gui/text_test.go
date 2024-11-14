@@ -133,6 +133,11 @@ func makeRejectName(exp, suffix string) string {
 	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }
 
+func TestMakeRejectName(t *testing.T) {
+	reject0 := makeRejectName("../testdata/text/lol/0.pgm", ".pgm")
+	assert.Equal(t, "../testdata/text/lol/0.rej.pgm", reject0)
+}
+
 func expectPixelsMatch(queue render.RenderQueueInterface, pgmFileExpected string, screenWidth, screenHeight int) (bool, string) {
 	var err error
 
@@ -260,6 +265,15 @@ func includeIndex(pgmFilename string, index int) string {
 	return fmt.Sprintf("%s.%d.pgm", head, index)
 }
 
+func expectationFile(testDataKey string, testnumber int) string {
+	return fmt.Sprintf("../testdata/text/%s/%d.pgm", testDataKey, testnumber)
+}
+
+func TestExpectationFile(t *testing.T) {
+	result := expectationFile("lol", 42)
+	assert.Equal(t, "../testdata/text/lol/42.pgm", result)
+}
+
 func DictionaryRenderStringSpec() {
 	screenSizeCases := []struct {
 		label            string
@@ -323,12 +337,12 @@ func DictionaryRenderStringSpec() {
 			if !ok {
 				panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
 			}
-			filename, ok := expected[0].(string)
+			testDataKey, ok := expected[0].(string)
 			if !ok {
-				panic(fmt.Errorf("ShouldLookLike needs a filename but got %T", expected))
+				panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
 			}
 
-			filename = includeIndex(filename, testnumber)
+			filename := expectationFile(testDataKey, testnumber)
 
 			ok, rejectFile := expectPixelsMatch(render, filename, testcase.screenDimensions.Dx, testcase.screenDimensions.Dy)
 			if ok {
@@ -359,7 +373,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("lol")
 
-					So(render, ShouldLookLike, "../testdata/text/lol.pgm")
+					So(render, ShouldLookLike, "lol")
 				})
 
 				Convey("Can render 'credits' centred", func() {
@@ -367,7 +381,7 @@ func DictionaryRenderStringSpec() {
 
 					doRenderString("Credits")
 
-					So(render, ShouldLookLike, "../testdata/text/credits.pgm")
+					So(render, ShouldLookLike, "credits")
 				})
 
 				Convey("Can render somewhere other than the origin", func() {
@@ -377,7 +391,7 @@ func DictionaryRenderStringSpec() {
 						logger = glog.DebugLogger()
 						doRenderString("offset")
 
-						So(render, ShouldLookLike, "../testdata/text/offset.pgm")
+						So(render, ShouldLookLike, "offset")
 					})
 				})
 
@@ -386,7 +400,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("tall-or-small")
 
-					So(render, ShouldLookLike, "../testdata/text/tall-or-small.pgm")
+					So(render, ShouldLookLike, "tall-or-small")
 				})
 
 				Convey("stdout isn't spammed by RenderString", func() {
