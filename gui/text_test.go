@@ -110,22 +110,12 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 		gl.PushMatrix()
 		gl.LoadIdentity()
 
-		winX, winY, winDx, winDy := sys.GetWindowDims()
-		vpx, vpy, vpDx, vpDy := debug.GetViewport()
-
-		logger.Error("pre-ortho", "window", image.Rect(winX, winY, winDx, winDy), "viewport", image.Rect(int(vpx), int(vpy), int(vpDx), int(vpDy)))
-
 		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
-		gl.Viewport(winX, winY, winDx, winDy)
+		gl.Viewport(0, 0, screenDims.Dx, screenDims.Dy)
 
 		// SwapBuffers should flush the GL command queue and synchronize with the
 		// X-server. Without doing so, things break!
 		sys.SwapBuffers()
-
-		winX, winY, winDx, winDy = sys.GetWindowDims()
-		vpx, vpy, vpDx, vpDy = debug.GetViewport()
-
-		logger.Error("post-ortho", "window", image.Rect(winX, winY, winDx, winDy), "viewport", image.Rect(int(vpx), int(vpy), int(vpDx), int(vpDy)))
 
 		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
 		gl.PopMatrix()
