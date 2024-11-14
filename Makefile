@@ -17,7 +17,7 @@ endif
 
 all: build-check compile_commands
 
-build-check:
+build-check: ./gos/linux/lib/libglop.so
 	go build ./...
 
 testing_with_ld_library_path=LD_LIBRARY_PATH=`pwd -P`/gos/linux/lib
@@ -77,7 +77,7 @@ gos/linux/compile_commands.json:
 
 gos/linux/lib/libglop.so:
 	mkdir -p $(dir $@)
-	${MAKE} -C $(dir $@)
+	${MAKE} -C $(dir $@)/..
 
 fmt:
 	go fmt ./...
