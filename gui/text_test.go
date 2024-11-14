@@ -307,29 +307,20 @@ func DictionaryRenderStringSpec() {
 				Dy: 128,
 			},
 		},
-		/*
-			{
-				label: "other dimensions",
-				screenDimensions: Dims{
-					Dx: 800,
-					Dy: 640,
-				},
+		{
+			label: "other dimensions",
+			screenDimensions: Dims{
+				Dx: 800,
+				Dy: 640,
 			},
-			{
-				label: "natural match to dict dimensions",
-				screenDimensions: Dims{
-					Dx: 512,
-					Dy: 64,
-				},
+		},
+		{
+			label: "small dimensions",
+			screenDimensions: Dims{
+				Dx: 64,
+				Dy: 64,
 			},
-			{
-				label: "original dimensions",
-				screenDimensions: Dims{
-					Dx: 64,
-					Dy: 64,
-				},
-			},
-		*/
+		},
 	}
 	for testnumber, testcase := range screenSizeCases {
 		ShouldLookLike := func(actual interface{}, expected ...interface{}) string {
