@@ -1,8 +1,3 @@
-tmckee: make render.RenderQueueInterface.Queue take a specific type of
-'RenderJob'; will let us refactor to inject the GL dependecy down the line.
-
-tmckee: make tests fast
-
 tmckee: add tests for gui.TextEditLine and gui.TextLine
 
 ----
