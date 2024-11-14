@@ -11,7 +11,6 @@ import (
 	"code.google.com/p/freetype-go/freetype/raster"
 	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
 )
 
 type guiError struct {
@@ -37,18 +36,6 @@ func LoadFontAs(path, name string) error {
 	basic_fonts[name] = font
 	return nil
 }
-
-// TODO(tmckee): clean: this function doesn't seem to be referenced anywhere.
-/*
-func GetDict(name string) *Dictionary {
-	d, ok := basic_dicts[name]
-	if ok {
-		return d
-	}
-	basic_dicts[name] = MakeDictionary(basic_fonts[name], 15)
-	return basic_dicts[name]
-}
-*/
 
 func drawText(font *truetype.Font, c *freetype.Context, color color.Color, rgba *image.RGBA, text string) (int, int) {
 	// Make 'rgba' transparent.
@@ -80,14 +67,19 @@ func drawText(font *truetype.Font, c *freetype.Context, color color.Color, rgba 
 }
 
 var basic_fonts map[string]*truetype.Font
-
-// TODO(tmckee): is basic_dicts redundant? Only written in `GetDict` which is
-// redundanat?
 var basic_dicts map[string]*Dictionary
 
 func init() {
 	basic_fonts = make(map[string]*truetype.Font)
 	basic_dicts = make(map[string]*Dictionary)
+}
+
+func AddDictForTest(key string, val *Dictionary) {
+	basic_dicts[key] = val
+}
+
+func GetDictForTest(key string) *Dictionary {
+	return basic_dicts[key]
 }
 
 type TextLine struct {
@@ -96,17 +88,18 @@ type TextLine struct {
 	NonResponder
 	NonFocuser
 	BasicZone
-	text      string
-	next_text string
-	initted   bool
-	rdims     Dims
-	font      *truetype.Font
-	context   *freetype.Context
-	glyph_buf *truetype.GlyphBuf
-	texture   gl.Texture
-	rgba      *image.RGBA
-	color     color.Color
-	scale     float64
+	text       string
+	next_text  string
+	dictionary *Dictionary
+	initted    bool
+	rdims      Dims
+	font       *truetype.Font
+	context    *freetype.Context
+	glyph_buf  *truetype.GlyphBuf
+	texture    gl.Texture
+	rgba       *image.RGBA
+	color      color.Color
+	scale      float64
 }
 
 func (w *TextLine) String() string {
@@ -126,29 +119,6 @@ func nextPowerOf2(n uint32) uint32 {
 	return 0
 }
 
-// TODO(tmckee): this is a bad name; we're calling drawText!!!
-func (w *TextLine) figureDims() {
-	// Always draw the text as white on a transparent background so that we can change
-	// the color easily through opengl
-	w.rdims.Dx, w.rdims.Dy = drawText(w.font, w.context, color.RGBA{255, 255, 255, 255}, image.NewRGBA(image.Rect(0, 0, 1, 1)), w.text)
-	texture_dims := Dims{
-		Dx: int(nextPowerOf2(uint32(w.rdims.Dx))),
-		Dy: int(nextPowerOf2(uint32(w.rdims.Dy))),
-	}
-	w.rgba = image.NewRGBA(image.Rect(0, 0, texture_dims.Dx, texture_dims.Dy))
-	drawText(w.font, w.context, color.RGBA{255, 255, 255, 255}, w.rgba, w.text)
-
-	gl.Enable(gl.TEXTURE_2D)
-	w.texture.Bind(gl.TEXTURE_2D)
-	gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, w.rgba.Bounds().Dx(), w.rgba.Bounds().Dy(), gl.RGBA, gl.INT, w.rgba.Pix)
-	gl.Disable(gl.TEXTURE_2D)
-}
-
 type Button struct {
 	*TextLine
 	Clickable
@@ -162,19 +132,18 @@ func MakeButton(font_name, text string, width int, r, g, b, a float64, f func(in
 	return &btn
 }
 
+// TODO(tmckee): we should take a font by reference instead of by
+// stringified-name. That way, the compiler can check for us that the font is
+// loaded.
 func MakeTextLine(font_name, text string, width int, r, g, b, a float64) *TextLine {
 	var w TextLine
-	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
-	font, ok := basic_fonts[font_name]
+	d, ok := basic_dicts[font_name]
 	if !ok {
-		panic(fmt.Sprintf("Unable to find a font registered as '%s'.", font_name))
+		panic(fmt.Errorf("no font found for %q", font_name))
 	}
-	w.font = font
-	w.glyph_buf = truetype.NewGlyphBuf()
-	w.next_text = text
-	w.context = freetype.NewContext()
-	w.context.SetDPI(132)
-	w.context.SetFontSize(12)
+	w.dictionary = d
+	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
+	// w.SetFontSize(12) // TODO(tmckee) ... waat?
 	w.SetColor(r, g, b, a)
 	w.Request_dims = Dims{width, 35}
 	return &w
@@ -203,25 +172,6 @@ func (w *TextLine) DoThink(int64, bool) {
 }
 
 func (w *TextLine) preDraw(region Region) {
-	if !w.initted {
-		w.initted = true
-		// TODO(tmckee): we need a way to clean up after ourselves; we never
-		// deallocate this texture.
-		w.texture = gl.GenTexture()
-		w.text = w.next_text
-		w.figureDims()
-	}
-	if w.text != w.next_text {
-		w.text = w.next_text
-		w.figureDims()
-	}
-
-	gl.PushMatrix()
-	err := gl.GetError()
-	if err != gl.NO_ERROR {
-		panic(err)
-	}
-
 	// Draw a black rectangle over the region to erase what might be there
 	// already.
 	gl.Color3d(0, 0, 0)
@@ -231,20 +181,9 @@ func (w *TextLine) preDraw(region Region) {
 	gl.Vertex2i(region.X+region.Dx, region.Y+region.Dy)
 	gl.Vertex2i(region.X+region.Dx, region.Y)
 	gl.End()
-
-	gl.PushAttrib(gl.TEXTURE_BIT)
-	gl.Enable(gl.TEXTURE_2D)
-	w.texture.Bind(gl.TEXTURE_2D)
-
-	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
-	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 }
 
 func (w *TextLine) postDraw(region Region) {
-	gl.PopAttrib()
-	gl.PopAttrib()
-	gl.PopMatrix()
 }
 
 func (w *TextLine) Draw(region Region) {
