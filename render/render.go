@@ -13,10 +13,29 @@ type RenderQueueState interface {
 
 type RenderJob func(RenderQueueState)
 
+// Accepts jobs for running on a dedicated, internal thread of control. Helpful
+// for ensuring certain preconditions needed for calling into OpenGL.
 type RenderQueueInterface interface {
+	// Eventually runs the given closure on a thread dedicated to OpenGL
+	// operations. Jobs are run sequentially in the order queued. Each job is
+	// passed a reference to data that must only be used on this
+	// RenderQueueInterface's render thread. Callers may assume that the
+	// RenderQueueState instance passed to each RenderJob is the same object
+	// per-queue.
 	Queue(f RenderJob)
+
+	// Blocks until all Queue'd jobs have completed. Note that, if other
+	// goroutines are queueing jobs, this will block waiting for them as well!
 	Purge()
+
+	// StartProcessing() needs to be called exactly once per queue in order to
+	// start running jobs. Queue()ing is allowed before processing has started.
+	// Purge()ing is allowed before processing has started with the caveat that
+	// even an empty queue will block Purge()ers from continuing until
+	// StartProcessing() _is_ called.
 	StartProcessing()
+
+	// For debugability, polls the queue's current Purging/NotPurging status.
 	IsPurging() bool
 }
 
