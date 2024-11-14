@@ -488,6 +488,10 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
   nw->context = glXCreateContext(display, nw->vinfo, NULL, True);
 //  ASSERT(nw->context);
 
+	// TODO(tmckee): Use GLFW for window management so that we can do something like
+	// glfwSetFramebufferSizeCallback(glfwWindow, setViewportOnResize)
+	// Shoutout to @Hermie02 for the suggestion!
+
   glopSetCurrentContext(nw);
 
   return GlopWindowHandle{nw};

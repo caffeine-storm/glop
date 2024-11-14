@@ -14,7 +14,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/go-gl-legacy/gl"
-	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
