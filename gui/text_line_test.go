@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/draw"
+	"image/png"
 	"io"
 	"os"
 	"path"
@@ -16,25 +18,19 @@ import (
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
-	"github.com/spakin/netpbm"
 )
 
-// Load a .pam image from the given stream.
-func readPam(reader io.Reader) *netpbm.RGBAM {
-	img, magic, err := image.Decode(reader)
+// Load a .png image from the given stream.
+func readPng(reader io.Reader) *image.RGBA {
+	img, err := png.Decode(reader)
 	if err != nil {
-		panic(fmt.Errorf("image.Decode failed: %w", err))
+		panic(fmt.Errorf("png.Decode failed: %w", err))
 	}
 
-	if magic != "pam" {
-		panic(fmt.Errorf("expected .pam file but got %q", magic))
-	}
-
-	result, ok := img.(*netpbm.RGBAM)
-	if !ok {
-		panic(fmt.Errorf("the expected image should have been a image.RGBA image, got %T", img))
-	}
-
+	// Need to redraw the decoded image to get the right byte format out for
+	// comparisons.
+	result := image.NewRGBA(img.Bounds())
+	draw.Draw(result, img.Bounds(), img, image.Point{}, draw.Src)
 	return result
 }
 
@@ -111,33 +107,27 @@ func TestTextLine(t *testing.T) {
 			})
 			queue.Purge()
 
-			pamFileExpected := "../testdata/text/some-text/0.pam"
-			pamReader, err := os.Open(pamFileExpected)
+			pngFileExpected := "../testdata/text/some-text/0.png"
+			pngReader, err := os.Open(pngFileExpected)
 			if err != nil {
-				panic(fmt.Errorf("couldn't read expectaction file %q, err: %w", pamFileExpected, err))
+				panic(fmt.Errorf("couldn't read expectaction file %q, err: %w", pngFileExpected, err))
 			}
 
-			expected := readPam(pamReader)
+			expected := readPng(pngReader)
 
 			if bytes.Compare(actualBytes, expected.Pix) != 0 {
 				// For debug purposes, copy the bad frame buffer for offline inspection.
 				actualImage := image.NewRGBA(image.Rect(0, 0, screenWidth, screenHeight))
 				actualImage.Pix = actualBytes
 
-				rejectFileName := makeRejectName(pamFileExpected, ".pam")
+				rejectFileName := makeRejectName(pngFileExpected, ".png")
 				rejectFile, err := os.Create(rejectFileName)
 				if err != nil {
 					panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
 				}
 				defer rejectFile.Close()
 
-				pamOpts := netpbm.EncodeOptions{
-					Format:    netpbm.PAM,
-					MaxValue:  255,
-					TupleType: "RGB_ALPHA",
-					Plain:     false,
-				}
-				err = netpbm.Encode(rejectFile, actualImage, &pamOpts)
+				err = png.Encode(rejectFile, actualImage)
 				if err != nil {
 					panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
 				}

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/draw"
+	"image/png"
 	"io"
 	"os"
 	"path"
@@ -11,8 +13,6 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/render"
-	"github.com/spakin/netpbm"
-	_ "github.com/spakin/netpbm"
 )
 
 func ExpectationFile(testDataKey, fileExt string, testnumber int) string {
@@ -30,59 +30,69 @@ func MakeRejectName(exp, suffix string) string {
 }
 
 func readPixels(width, height int) ([]byte, error) {
-	ret := make([]byte, width*height)
-	gl.ReadPixels(0, 0, width, height, gl.RED, gl.UNSIGNED_BYTE, ret)
+	ret := make([]byte, width*height*4)
+	gl.ReadPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, ret)
 	return ret, nil
 }
 
-// Load and convert from .pgm's top-row-first to OpenGL's bottom-row-first.
-func readAndFlipPgm(reader io.Reader) (*netpbm.GrayM, int, int) {
-	img, magic, err := image.Decode(reader)
+// Load a .png
+func readPng(reader io.Reader) (image.Image, int, int) {
+	img, err := png.Decode(reader)
 	if err != nil {
 		panic(fmt.Errorf("image.Decode failed: %w", err))
 	}
 
-	if magic != "pgm" {
-		panic(fmt.Errorf("expected .pgm file but got %q", magic))
-	}
+	width := img.Bounds().Dx()
+	height := img.Bounds().Dy()
 
-	grayImage, ok := img.(*netpbm.GrayM)
-	if !ok {
-		panic(fmt.Errorf("the expected image should have been a netpbm.GrayM image"))
-	}
-
-	width := grayImage.Bounds().Dx()
-	height := grayImage.Bounds().Dy()
-	grayImage.Pix = verticalFlipPix(grayImage.Pix, width, height)
-
-	return grayImage, width, height
+	return img, width, height
 }
 
-func verticalFlipPix(pixels []byte, width, height int) []byte {
-	result := make([]byte, len(pixels))
+func verticalFlipRgbaPixels(rgbaPixels []byte, width, height int) []byte {
+	result := make([]byte, len(rgbaPixels))
 
 	// Convert from bottom-first-row to top-first-row.
+	byteWidth := width * 4
 	for row := 0; row < height; row++ {
-		resultRowIdx := row * width
-		resultRowEnd := resultRowIdx + width
-		inputRowIdx := (height - row - 1) * width
-		inputRowEnd := inputRowIdx + width
+		resultRowIdx := row * byteWidth
+		resultRowEnd := resultRowIdx + byteWidth
+		inputRowIdx := (height - row - 1) * byteWidth
+		inputRowEnd := inputRowIdx + byteWidth
 
-		copy(result[resultRowIdx:resultRowEnd], pixels[inputRowIdx:inputRowEnd])
+		copy(result[resultRowIdx:resultRowEnd], rgbaPixels[inputRowIdx:inputRowEnd])
 	}
 
 	return result
 }
 
-// Verify that the framebuffer's contents match our expected image.
-func expectPixelsMatch(queue render.RenderQueueInterface, pgmFileExpected string) (bool, string) {
-	pgmFile, err := os.Open(pgmFileExpected)
-	if err != nil {
-		panic(fmt.Errorf("couldn't os.Open %q: %w", pgmFileExpected, err))
+func drawAsRgba(img image.Image) *image.RGBA {
+	if ret, ok := img.(*image.RGBA); ok {
+		return ret
 	}
-	defer pgmFile.Close()
 
-	expectedImage, screenWidth, screenHeight := readAndFlipPgm(pgmFile)
+	ret := image.NewRGBA(img.Bounds())
+	draw.Draw(ret, img.Bounds(), img, image.Point{}, draw.Src)
+
+	return ret
+}
+
+func identicalImages(lhs, rhs image.Image) bool {
+	lhsrgba := drawAsRgba(lhs)
+	rhsrgba := drawAsRgba(rhs)
+
+	return bytes.Compare(lhsrgba.Pix, rhsrgba.Pix) == 0
+}
+
+// Verify that the framebuffer's contents match our expected image.
+func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string) (bool, string) {
+	pngFile, err := os.Open(pngFileExpected)
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.Open %q: %w", pngFileExpected, err))
+	}
+	defer pngFile.Close()
+
+	expectedImage, screenWidth, screenHeight := readPng(pngFile)
+
 	// Read all the pixels from the framebuffer through OpenGL
 	var frameBufferBytes []byte
 	queue.Queue(func(render.RenderQueueState) {
@@ -93,26 +103,17 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pgmFileExpected string
 	})
 	queue.Purge()
 
-	cmp := bytes.Compare(expectedImage.Pix, frameBufferBytes)
-	if cmp != 0 {
-		// For debug purposes, copy the bad frame buffer for offline inspection.
-		actualImage := netpbm.NewGrayM(image.Rect(0, 0, screenWidth, screenHeight), 255)
-		// Need to flip from bottom-row-first to top-row-first.
-		actualImage.Pix = verticalFlipPix(frameBufferBytes, screenWidth, screenHeight)
-
-		rejectFileName := MakeRejectName(pgmFileExpected, ".pgm")
+	actualImage := image.NewRGBA(image.Rect(0, 0, screenWidth, screenHeight))
+	actualImage.Pix = verticalFlipRgbaPixels(frameBufferBytes, screenWidth, screenHeight)
+	if !identicalImages(expectedImage, actualImage) {
+		rejectFileName := MakeRejectName(pngFileExpected, ".png")
 		rejectFile, err := os.Create(rejectFileName)
 		if err != nil {
 			panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
 		}
 		defer rejectFile.Close()
 
-		pgmOpts := netpbm.EncodeOptions{
-			Format:   netpbm.PGM,
-			MaxValue: 255,
-			Plain:    false,
-		}
-		err = netpbm.Encode(rejectFile, actualImage, &pgmOpts)
+		err = png.Encode(rejectFile, actualImage)
 		if err != nil {
 			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
 		}
@@ -144,7 +145,7 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 		}
 	}
 
-	filename := ExpectationFile(testDataKey, "pgm", testnumber)
+	filename := ExpectationFile(testDataKey, "png", testnumber)
 
 	ok, rejectFile := expectPixelsMatch(render, filename)
 	if ok {
