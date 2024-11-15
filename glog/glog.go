@@ -92,6 +92,12 @@ func DebugLogger() *slog.Logger {
 	})
 }
 
+func WarningLogger() *slog.Logger {
+	return New(&Opts{
+		Level: slog.LevelWarn,
+	})
+}
+
 func ErrorLogger() *slog.Logger {
 	return New(&Opts{
 		Level: slog.LevelError,

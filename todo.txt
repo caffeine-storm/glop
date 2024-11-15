@@ -2,7 +2,6 @@ tmckee: clean up after big 'green' step
 	- un-stub gui.go's Make function
 		- needs a way to load a font but no render queue is present
 	- TextEditLine's findOffsetatIndex comments+stubbing need cleaning
-	- Decide on region.Size() == 0 handling; probably log-and-return
 	- Less verbose logging in TextLine.coreDraw
 	- text height aribirarily chosen as 12 in TextLine.coreDraw
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw

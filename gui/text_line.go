@@ -138,7 +138,7 @@ func (w *TextLine) Draw(region Region) {
 
 func (w *TextLine) coreDraw(region Region) {
 	if region.Size() == 0 {
-		panic("but whayyy!?")
+		glog.WarningLogger().Warn("TextLine.coreDraw given empty region; no-oping", "w.text", w.text)
 		return
 	}
 	gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
