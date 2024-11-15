@@ -9,13 +9,16 @@ func BlankAndDrawRectNdc(x1, y1, x2, y2 float64) {
 }
 
 func DrawRectNdc(x1, y1, x2, y2 float64) {
-	gl.MatrixMode(gl.PROJECTION_MATRIX)
+	gl.MatrixMode(gl.PROJECTION)
 	gl.PushMatrix()
 	gl.LoadIdentity()
-	gl.Begin(gl.QUADS)
+	gl.Begin(gl.TRIANGLES)
 	gl.Color3f(1, 0, 0)
 	gl.Vertex2d(x1, y1)
 	gl.Vertex2d(x1, y2)
+	gl.Vertex2d(x2, y2)
+
+	gl.Vertex2d(x1, y1)
 	gl.Vertex2d(x2, y2)
 	gl.Vertex2d(x2, y1)
 	gl.End()
