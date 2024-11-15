@@ -100,24 +100,10 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 	d := LoadDictionaryForTest(queue, &ConstDimser{Value: screenDims}, logger)
 
 	queue.Queue(func(st render.RenderQueueState) {
-		// Use an orthonormal projection because all the gui code assumes it's
-		// rendering with such a projection.
 		gl.ClearColor(0, 0, 0, 1)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		gl.MatrixMode(gl.PROJECTION)
-		gl.PushMatrix()
-		gl.LoadIdentity()
-
-		gl.Ortho(0, float64(screenDims.Dx), 0, float64(screenDims.Dy), 10, -10)
-		gl.Viewport(0, 0, screenDims.Dx, screenDims.Dy)
-
-		// SwapBuffers should flush the GL command queue and synchronize with the
-		// X-server. Without doing so, things break!
-		sys.SwapBuffers()
-
 		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
-		gl.PopMatrix()
 	})
 
 	queue.Purge()
