@@ -7,12 +7,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExpectationFile(t *testing.T) {
-	result := rendertest.ExpectationFile("lol", "pgm", 42)
-	assert.Equal(t, "../testdata/text/lol/42.pgm", result)
-}
+func TestFileNameHelpers(t *testing.T) {
+	t.Run("TestExpectationFile", func(t *testing.T) {
+		result := rendertest.ExpectationFile("text/lol", "pgm", 42)
+		assert.Equal(t, "../testdata/text/lol/42.pgm", result)
+	})
 
-func TestMakeRejectName(t *testing.T) {
-	reject0 := rendertest.MakeRejectName("../testdata/text/lol/0.pgm", ".pgm")
-	assert.Equal(t, "../testdata/text/lol/0.rej.pgm", reject0)
+	t.Run("TestMakeRejectName", func(t *testing.T) {
+		reject0 := rendertest.MakeRejectName("../testdata/text/lol/0.pgm", ".pgm")
+		assert.Equal(t, "../testdata/text/lol/0.rej.pgm", reject0)
+	})
 }

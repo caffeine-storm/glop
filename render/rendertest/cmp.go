@@ -12,11 +12,13 @@ import (
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )
 
 func ExpectationFile(testDataKey, fileExt string, testnumber int) string {
-	return fmt.Sprintf("../testdata/text/%s/%d.%s", testDataKey, testnumber, fileExt)
+	return fmt.Sprintf("../testdata/%s/%d.%s", testDataKey, testnumber, fileExt)
 }
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.
@@ -48,23 +50,6 @@ func readPng(reader io.Reader) (image.Image, int, int) {
 	return img, width, height
 }
 
-func verticalFlipRgbaPixels(rgbaPixels []byte, width, height int) []byte {
-	result := make([]byte, len(rgbaPixels))
-
-	// Convert from bottom-first-row to top-first-row.
-	byteWidth := width * 4
-	for row := 0; row < height; row++ {
-		resultRowIdx := row * byteWidth
-		resultRowEnd := resultRowIdx + byteWidth
-		inputRowIdx := (height - row - 1) * byteWidth
-		inputRowEnd := inputRowIdx + byteWidth
-
-		copy(result[resultRowIdx:resultRowEnd], rgbaPixels[inputRowIdx:inputRowEnd])
-	}
-
-	return result
-}
-
 func drawAsRgba(img image.Image) *image.RGBA {
 	if ret, ok := img.(*image.RGBA); ok {
 		return ret
@@ -76,9 +61,15 @@ func drawAsRgba(img image.Image) *image.RGBA {
 	return ret
 }
 
-func identicalImages(lhs, rhs image.Image) bool {
-	lhsrgba := drawAsRgba(lhs)
-	rhsrgba := drawAsRgba(rhs)
+func identicalImages(expected, actual image.Image) bool {
+	// Do a size check first so that we don't read out of bounds.
+	if expected.Bounds() != actual.Bounds() {
+		glog.ErrorLogger().Error("size mismatch", "expected", expected.Bounds(), "actual", actual.Bounds())
+		return false
+	}
+
+	lhsrgba := drawAsRgba(expected)
+	rhsrgba := drawAsRgba(actual)
 
 	return bytes.Compare(lhsrgba.Pix, rhsrgba.Pix) == 0
 }
@@ -91,20 +82,20 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	}
 	defer pngFile.Close()
 
-	expectedImage, screenWidth, screenHeight := readPng(pngFile)
+	expectedImage, _, _ := readPng(pngFile)
+	var actualScreenWidth, actualScreenHeight uint32
 
 	// Read all the pixels from the framebuffer through OpenGL
-	var frameBufferBytes []byte
+	frameBufferBytes := &bytes.Buffer{}
 	queue.Queue(func(render.RenderQueueState) {
-		frameBufferBytes, err = readPixels(screenWidth, screenHeight)
-		if err != nil {
-			panic(fmt.Errorf("couldn't readPixels: %w", err))
-		}
+		_, _, actualScreenWidth, actualScreenHeight = debug.GetViewport()
+		debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight), frameBufferBytes)
 	})
 	queue.Purge()
 
-	actualImage := image.NewRGBA(image.Rect(0, 0, screenWidth, screenHeight))
-	actualImage.Pix = verticalFlipRgbaPixels(frameBufferBytes, screenWidth, screenHeight)
+	actualImage := image.NewRGBA(image.Rect(0, 0, int(actualScreenWidth), int(actualScreenHeight)))
+	actualImage.Pix = frameBufferBytes.Bytes()
+
 	if !identicalImages(expectedImage, actualImage) {
 		rejectFileName := MakeRejectName(pngFileExpected, ".png")
 		rejectFile, err := os.Create(rejectFileName)
@@ -124,7 +115,7 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	return true, ""
 }
 
-func ShouldLookLike(actual interface{}, expected ...interface{}) string {
+func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	render, ok := actual.(render.RenderQueueInterface)
 	if !ok {
 		panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
@@ -146,6 +137,37 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 	}
 
 	filename := ExpectationFile(testDataKey, "png", testnumber)
+
+	ok, rejectFile := expectPixelsMatch(render, filename)
+	if ok {
+		return ""
+	}
+
+	return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
+}
+
+func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
+	render, ok := actual.(render.RenderQueueInterface)
+	if !ok {
+		panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
+	}
+	testDataKey, ok := expected[0].(string)
+	if !ok {
+		panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
+	}
+
+	// For table-tests, usage is
+	//   'So(render, ShouldLookLike, "test-case-family", testNumberN)'
+	// Use a default 'testnumber = 0' for non-table tests.
+	testnumber := 0
+	if len(expected) > 1 {
+		testnumber, ok = expected[1].(int)
+		if !ok {
+			panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
+		}
+	}
+
+	filename := ExpectationFile("text/"+testDataKey, "png", testnumber)
 
 	ok, rejectFile := expectPixelsMatch(render, filename)
 	if ok {

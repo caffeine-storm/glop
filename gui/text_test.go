@@ -195,7 +195,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("lol")
 
-					So(render, rendertest.ShouldLookLike, "lol", testnumber)
+					So(render, rendertest.ShouldLookLikeText, "lol", testnumber)
 				})
 
 				Convey("Can render 'credits' centred", func() {
@@ -203,7 +203,7 @@ func DictionaryRenderStringSpec() {
 
 					doRenderString("Credits")
 
-					So(render, rendertest.ShouldLookLike, "credits", testnumber)
+					So(render, rendertest.ShouldLookLikeText, "credits", testnumber)
 				})
 
 				Convey("Can render somewhere other than the origin", func() {
@@ -213,7 +213,7 @@ func DictionaryRenderStringSpec() {
 						logger = glog.DebugLogger()
 						doRenderString("offset")
 
-						So(render, rendertest.ShouldLookLike, "offset", testnumber)
+						So(render, rendertest.ShouldLookLikeText, "offset", testnumber)
 					})
 				})
 
@@ -222,7 +222,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("tall-or-small")
 
-					So(render, rendertest.ShouldLookLike, "tall-or-small", testnumber)
+					So(render, rendertest.ShouldLookLikeText, "tall-or-small", testnumber)
 				})
 
 				Convey("stdout isn't spammed by RenderString", func() {
