@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/png"
 	"os"
 	"testing"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
-	"github.com/spakin/netpbm"
 )
 
 // TODO(tmckee): clean: we can probably just use a color.RGBA
@@ -39,7 +39,7 @@ func boundedUniform(bounds image.Rectangle, colour color.Color) image.Image {
 // Write the expectation file lazily; it's not in source control b/c it's
 // (somewhat?) easily generated on demand.
 func writeExpectationFile(fileKey string, width, height int, expectedPixel pixel) {
-	expectedFilename := fmt.Sprintf("testdata/%s.pam", fileKey)
+	expectedFilename := fmt.Sprintf("testdata/%s.png", fileKey)
 	out, err := os.Create(expectedFilename)
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Create: %w", err))
@@ -54,20 +54,14 @@ func writeExpectationFile(fileKey string, width, height int, expectedPixel pixel
 	}
 	expectedImage := boundedUniform(image.Rect(0, 0, width, height), expectedColour)
 
-	pamOpts := netpbm.EncodeOptions{
-		Format:    netpbm.PAM,
-		MaxValue:  255,
-		TupleType: "RGB_ALPHA",
-		Plain:     false,
-	}
-	err = netpbm.Encode(out, expectedImage, &pamOpts)
+	err = png.Encode(out, expectedImage)
 	if err != nil {
-		panic(fmt.Errorf("couldn't netpbm.Encode: %w", err))
+		panic(fmt.Errorf("couldn't png.Encode: %w", err))
 	}
 }
 
 func writeRejectionFile(fileKey string, width, height int, data []byte) {
-	rejectionFile := fmt.Sprintf("testdata/%s.rej.pam", fileKey)
+	rejectionFile := fmt.Sprintf("testdata/%s.rej.png", fileKey)
 	out, err := os.Create(rejectionFile)
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Create: %w", err))
@@ -76,15 +70,9 @@ func writeRejectionFile(fileKey string, width, height int, data []byte) {
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	img.Pix = data
-	pamOpts := netpbm.EncodeOptions{
-		Format:    netpbm.PAM,
-		MaxValue:  255,
-		TupleType: "RGB_ALPHA",
-		Plain:     false,
-	}
-	err = netpbm.Encode(out, img, &pamOpts)
+	err = png.Encode(out, img)
 	if err != nil {
-		panic(fmt.Errorf("couldn't netpbm.Encode: %w", err))
+		panic(fmt.Errorf("couldn't png.Encode: %w", err))
 	}
 }
 
