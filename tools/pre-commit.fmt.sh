@@ -3,17 +3,29 @@
 # Called by "git commit" with no arguments.  The hook should
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
-#
-# To enable this hook, copy this file to ".git/hooks/pre-commit".
+
 output=`make checkfmt`
-if [ -z "$output" ]; then
-	exit 0
+
+if [ $? -ne 0 ]; then
+	cat 1>&2 <<EOF
+'make checkfmt' failed
+this usually indicates a compile failure
+
+fix the failure then try again
+(or pass '--no-verify' to 'git commit')
+EOF
+
+	exit 1
 fi
 
-echo 1>&2 "please run 'make fmt' first"
-echo 1>&2 "(or pass '--no-verify' to 'git commit')"
-echo 1>&2
-echo 1>&2 "these files need formatting:"
-echo 1>&2 "$output"
+if [ -n "$output" ]; then
+	cat 1>&2 <<EOF
+please run 'make fmt' first
+(or pass '--no-verify' to 'git commit')
 
-exit 1
+these files need formatting:
+$output
+EOF
+
+	exit 1
+fi
