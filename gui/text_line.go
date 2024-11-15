@@ -2,84 +2,29 @@ package gui
 
 import (
 	"fmt"
-	"image"
 	"image/color"
-	"image/draw"
-	"os"
 
-	"code.google.com/p/freetype-go/freetype"
-	"code.google.com/p/freetype-go/freetype/raster"
-	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glog"
+	"github.com/runningwild/glop/render"
 )
 
-type guiError struct {
-	ErrorString string
-}
-
-func (g *guiError) Error() string {
-	return g.ErrorString
-}
-
-func LoadFontAs(path, name string) error {
-	if _, ok := basic_fonts[name]; ok {
-		return &guiError{fmt.Sprintf("Cannot load two fonts with the same name: '%s'.", name)}
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	font, err := freetype.ParseFont(data)
-	if err != nil {
-		return err
-	}
-	basic_fonts[name] = font
-	return nil
-}
-
-func drawText(font *truetype.Font, c *freetype.Context, color color.Color, rgba *image.RGBA, text string) (int, int) {
-	// Make 'rgba' transparent.
-	bg := image.Transparent
-	draw.Draw(rgba, rgba.Bounds(), bg, image.Point{}, draw.Src)
-
-	// Tell freetype to use the given colour.
-	fg := image.NewUniform(color)
-	c.SetSrc(fg)
-
-	c.SetFont(font)
-	c.SetDst(rgba)
-	c.SetClip(rgba.Bounds())
-
-	pt := raster.Point{
-		X: 0,
-		// TODO(tmckee): always a 10pt font?
-		Y: c.PointToFix32(10),
-	}
-	// TODO(tmckee): aiming at (0, 0) for debugging; we need to point at x=0,
-	// y=baseline
-	adv, err := c.DrawString(text, pt)
-	if err != nil {
-		panic(err)
-	}
-	pt.X += adv.X
-
-	return int(pt.X >> 8), int(pt.Y >> 8)
-}
-
-var basic_fonts map[string]*truetype.Font
-var basic_dicts map[string]*Dictionary
+var fontRegistry map[string]fontTool
 
 func init() {
-	basic_fonts = make(map[string]*truetype.Font)
-	basic_dicts = make(map[string]*Dictionary)
+	fontRegistry = make(map[string]fontTool)
 }
 
-func AddDictForTest(key string, val *Dictionary) {
-	basic_dicts[key] = val
+type fontTool struct {
+	dictionary *Dictionary
+	shaders    *render.ShaderBank
 }
 
-func GetDictForTest(key string) *Dictionary {
-	return basic_dicts[key]
+func AddDictForTest(key string, dict *Dictionary, shaders *render.ShaderBank) {
+	fontRegistry[key] = fontTool{
+		dictionary: dict,
+		shaders:    shaders,
+	}
 }
 
 type TextLine struct {
@@ -91,13 +36,9 @@ type TextLine struct {
 	text       string
 	next_text  string
 	dictionary *Dictionary
+	shaderBank *render.ShaderBank
 	initted    bool
 	rdims      Dims
-	font       *truetype.Font
-	context    *freetype.Context
-	glyph_buf  *truetype.GlyphBuf
-	texture    gl.Texture
-	rgba       *image.RGBA
 	color      color.Color
 	scale      float64
 }
@@ -137,11 +78,14 @@ func MakeButton(font_name, text string, width int, r, g, b, a float64, f func(in
 // loaded.
 func MakeTextLine(font_name, text string, width int, r, g, b, a float64) *TextLine {
 	var w TextLine
-	d, ok := basic_dicts[font_name]
+	fontTools, ok := fontRegistry[font_name]
 	if !ok {
 		panic(fmt.Errorf("no font found for %q", font_name))
 	}
-	w.dictionary = d
+
+	w.text = text
+	w.dictionary = fontTools.dictionary
+	w.shaderBank = fontTools.shaders
 	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
 	// w.SetFontSize(12) // TODO(tmckee) ... waat?
 	w.SetColor(r, g, b, a)
@@ -159,13 +103,11 @@ func (w *TextLine) SetColor(r, g, b, a float64) {
 }
 
 func (w *TextLine) GetText() string {
-	return w.next_text
+	return w.text
 }
 
 func (w *TextLine) SetText(str string) {
-	if w.text != str {
-		w.next_text = str
-	}
+	w.text = str
 }
 
 func (w *TextLine) DoThink(int64, bool) {
@@ -196,6 +138,7 @@ func (w *TextLine) Draw(region Region) {
 
 func (w *TextLine) coreDraw(region Region) {
 	if region.Size() == 0 {
+		panic("but whayyy!?")
 		return
 	}
 	gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
@@ -214,26 +157,16 @@ func (w *TextLine) coreDraw(region Region) {
 	}
 	w.Render_region.Dims = req
 	w.Render_region.Point = region.Point
-	// tx := float64(w.rdims.Dx) / float64(w.rgba.Bounds().Dx())
-	// ty := float64(w.rdims.Dy) / float64(w.rgba.Bounds().Dy())
-	tx := 21.0
-	ty := 18.0
-	//  w.scale = float64(w.Render_region.Dx) / float64(w.rdims.Dx)
 
+	glog.ErrorLogger().Error("coreDraw", "w.Request_dims", w.Request_dims, "w.Render_region", w.Render_region)
 	{
 		r, g, b, a := w.color.RGBA()
 		gl.Color4d(float64(r)/65535, float64(g)/65535, float64(b)/65535, float64(a)/65535)
 	}
 
-	// Blit the texture onto the Region.
-	gl.Begin(gl.QUADS)
-	gl.TexCoord2d(0, 0)
-	gl.Vertex2i(region.X, region.Y)
-	gl.TexCoord2d(0, -ty)
-	gl.Vertex2i(region.X, region.Y+w.rdims.Dy)
-	gl.TexCoord2d(tx, -ty)
-	gl.Vertex2i(region.X+w.rdims.Dx, region.Y+w.rdims.Dy)
-	gl.TexCoord2d(tx, 0)
-	gl.Vertex2i(region.X+w.rdims.Dx, region.Y)
-	gl.End()
+	// TODO(tmckee): arbitrary!
+	height := 12
+	target := w.Render_region.Point
+	target.Y = w.Render_region.Dims.Dy - target.Y
+	w.dictionary.RenderString(w.text, target, height, Left, w.shaderBank)
 }

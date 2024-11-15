@@ -419,10 +419,11 @@ type Gui struct {
 }
 
 func Make(dispatcher gin.EventDispatcher, dims Dims, font_path string) (*Gui, error) {
-	err := LoadFontAs(font_path, "standard")
-	if err != nil {
-		return nil, err
-	}
+	panic("stubbed!")
+	// err := LoadFontAs(font_path, "standard")
+	// if err != nil {
+	// return nil, err
+	// }
 	var g Gui
 	g.root.EmbeddedWidget = &BasicWidget{CoreWidget: &g.root}
 	g.root.Request_dims = dims

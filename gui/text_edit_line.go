@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"code.google.com/p/freetype-go/freetype"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
 )
@@ -71,15 +70,18 @@ func (w *TextEditLine) findIndexAtOffset(offset int) int {
 }
 
 func (w *TextEditLine) findOffsetAtIndex(index int) float64 {
-	pt := freetype.Pt(0, 0)
+	// pt := freetype.Pt(0, 0)
 	if index > len(w.text) {
 		index = len(w.text)
 	}
 	if index < 0 {
 		index = 0
 	}
-	adv, _ := w.context.DrawString(w.text[:index], pt)
-	return float64(adv.X>>8) * w.scale
+	// TODO(tmckee): XXX: STUBBED!
+	// adv, _ := w.context.DrawString(w.text[:index], pt)
+	// return float64(adv.X>>8) * w.scale
+	panic("NIY")
+	return 42
 }
 
 func (w *TextEditLine) DoThink(t int64, focus bool) {

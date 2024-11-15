@@ -264,6 +264,11 @@ func (d *Dictionary) getScreenDimensions() Dims {
 //	Left: use 'target.X' for the left-hand extent of what's drawn
 //	Centre: use 'target.X' for the middle of what's drawn
 //	Right: use 'target.X' for the right-hand extent of what's drawn
+//
+// The bottom of text's bounding box is aligned to the Y co-ordinate of the
+// target.
+// TODO(tmckee): change it so that the given Y is the top. It'll simplify a
+// bunch of stuffs.
 func (d *Dictionary) RenderString(s string, target Point, height int, just Justification, shaders *render.ShaderBank) {
 	d.logger.Debug("RenderString called", "s", s, "target", target, "height", height, "just", just)
 
