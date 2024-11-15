@@ -1,6 +1,7 @@
 SHELL:=/bin/bash
 
 TEST_REPORT_TAR:=testdata/report.tar.gz
+LIBGLOP:=gos/linux/lib/libglop.so
 
 testrunpackages=./...
 ifneq "${testrun}" ""
@@ -19,23 +20,23 @@ endif
 
 all: build-check compile_commands
 
-build-check: ./gos/linux/lib/libglop.so
+build-check: ${LIBGLOP}
 	go build ./...
 
 testing_with_ld_library_path=LD_LIBRARY_PATH=`pwd -P`/gos/linux/lib
 testing_with_xvfb=xvfb-run --server-args="-screen 0 512x64x24" --auto-servernum
 testing_env=${testing_with_ld_library_path} ${testing_with_xvfb}
 
-test:
+test: pre-test
 	${testing_env} go test                   ${testrunargs} ${testrunpackages}
 
-test-spec:
+test-spec: pre-test
 	${testing_env} go test -run ".*Specs"    ${testrunargs} ${testrunpackages}
 
-test-nocache:
+test-nocache: pre-test
 	${testing_env} go test -count=1          ${testrunargs} ${testrunpackages}
 
-test-dlv:
+test-dlv: pre-test
 # delve wants exactly one package at a time so 'testrunpackages' better be a
 # literal directory
 	[ -d ${testsinglepackageargs} ] && \
@@ -91,9 +92,11 @@ compile_commands: gos/linux/compile_commands.json
 gos/linux/compile_commands.json:
 	cd $(dir $@) && bear -- ${MAKE}
 
-gos/linux/lib/libglop.so:
+${LIBGLOP}:
 	mkdir -p $(dir $@)
 	${MAKE} -C $(dir $@)/..
+
+pre-test: ${LIBGLOP}
 
 fmt:
 	go fmt ./...
@@ -110,5 +113,5 @@ clean:
 .PHONY: compile_commands
 .PHONY: fmt
 .PHONY: profiling/*.view
-.PHONY: test test-spec test-nocache test-fresh test-report
+.PHONY: pre-test test test-spec test-nocache test-fresh test-report
 .PHONY: ${TEST_REPORT_TAR}

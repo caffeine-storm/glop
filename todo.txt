@@ -20,6 +20,8 @@ tmckee: clean up after big 'green' step
 
 tmckee: make Dictionary.RenderString render w.r.t. the top of the bounding box
 
+----
+
 tmckee: add tests for gui.TextEditLine
 
 ----
@@ -34,8 +36,6 @@ tmckee: installed multilib support to get the build going; is it necessary?
 
 tmckee: use type system to make initialization ordering constraints explicit
 	- need to identify which modules/packages need this
-
-tmckee: Make it so that 'go test ./...' builds the native library on-demand
 
 tmckee: find a way to work around needing LD_LIBRARY_PATH when running tests in
 subdirectories
