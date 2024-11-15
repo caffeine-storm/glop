@@ -1,5 +1,4 @@
 tmckee: clean up after big 'green' step
-	- YOU SHALL NOT PASS can be better
 	- un-stub gui.go's Make function
 		- needs a way to load a font but no render queue is present
 	- TextEditLine's findOffsetatIndex comments+stubbing need cleaning
@@ -9,7 +8,7 @@ tmckee: clean up after big 'green' step
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw
 	- Lots of duplication-and-edit between gui/text_text.go and
 	  gui/text_line_test.go; should make helper functions/packages
-		- comparing against expectations and writing rejection files
+		!!! - comparing against expectations and writing rejection files
 		- vertically flipping when translating between OpenGL and on-disk formats
 	- gui.AddDictForTest is not what we want
 	- having to remember to call gui.Init before rendering any text is a foot-gun

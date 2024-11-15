@@ -132,7 +132,7 @@ func TestTextLine(t *testing.T) {
 					panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
 				}
 
-				t.Fatalf("YOU SHALL NOT PASS!")
+				t.Fatalf("framebuffer mismatch; see %q", rejectFileName)
 			}
 		})
 	})
