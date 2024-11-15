@@ -8,7 +8,7 @@ import (
 )
 
 func TestExpectationFile(t *testing.T) {
-	result := rendertest.ExpectationFile("lol", 42)
+	result := rendertest.ExpectationFile("lol", "pgm", 42)
 	assert.Equal(t, "../testdata/text/lol/42.pgm", result)
 }
 

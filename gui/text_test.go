@@ -5,7 +5,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"strings"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -124,14 +123,6 @@ func TestDictionaryGetInfo(t *testing.T) {
 	// TODO(tmckee): verify slices of texture by runeInfo correspond to correct
 	// letters
 	// TODO(tmckee): verify texture image in GL matches expectations
-}
-
-func includeIndex(pgmFilename string, index int) string {
-	head, ok := strings.CutSuffix(pgmFilename, ".pgm")
-	if !ok {
-		panic(fmt.Errorf("expected a .pgm filename but got %q", pgmFilename))
-	}
-	return fmt.Sprintf("%s.%d.pgm", head, index)
 }
 
 func DictionaryRenderStringSpec() {

@@ -15,8 +15,8 @@ import (
 	_ "github.com/spakin/netpbm"
 )
 
-func ExpectationFile(testDataKey string, testnumber int) string {
-	return fmt.Sprintf("../testdata/text/%s/%d.pgm", testDataKey, testnumber)
+func ExpectationFile(testDataKey, fileExt string, testnumber int) string {
+	return fmt.Sprintf("../testdata/text/%s/%d.%s", testDataKey, testnumber, fileExt)
 }
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.
@@ -144,7 +144,7 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 		}
 	}
 
-	filename := ExpectationFile(testDataKey, testnumber)
+	filename := ExpectationFile(testDataKey, "pgm", testnumber)
 
 	ok, rejectFile := expectPixelsMatch(render, filename)
 	if ok {
