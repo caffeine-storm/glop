@@ -15,11 +15,6 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-// TODO(tmckee): clean: we can probably just use a color.RGBA
-type pixel struct {
-	r, g, b, a byte
-}
-
 type bounded struct {
 	*image.Uniform
 	bounds image.Rectangle
@@ -38,7 +33,7 @@ func boundedUniform(bounds image.Rectangle, colour color.Color) image.Image {
 
 // Write the expectation file lazily; it's not in source control b/c it's
 // (somewhat?) easily generated on demand.
-func writeExpectationFile(fileKey string, width, height int, expectedPixel pixel) {
+func writeExpectationFile(fileKey string, width, height int, expectedColour *color.RGBA) {
 	expectedFilename := fmt.Sprintf("testdata/%s.png", fileKey)
 	out, err := os.Create(expectedFilename)
 	if err != nil {
@@ -46,12 +41,6 @@ func writeExpectationFile(fileKey string, width, height int, expectedPixel pixel
 	}
 	defer out.Close()
 
-	expectedColour := color.RGBA{
-		R: expectedPixel.r,
-		G: expectedPixel.g,
-		B: expectedPixel.b,
-		A: expectedPixel.a,
-	}
 	expectedImage := boundedUniform(image.Rect(0, 0, width, height), expectedColour)
 
 	err = png.Encode(out, expectedImage)
@@ -76,7 +65,7 @@ func writeRejectionFile(fileKey string, width, height int, data []byte) {
 	}
 }
 
-func writeFailureArtifacts(width, height int, expected pixel, rgbaBytes []byte) {
+func writeFailureArtifacts(width, height int, expected *color.RGBA, rgbaBytes []byte) {
 	writeExpectationFile("test-draw-rect", width, height, expected)
 	writeRejectionFile("test-draw-rect", width, height, rgbaBytes)
 }
@@ -104,20 +93,20 @@ func TestDrawRect(t *testing.T) {
 			// The whole screen should be {255, 0, 0, 255}
 			idx := x*4 + y*50*4
 			r, g, b, a := rgbaBytes[idx], rgbaBytes[idx+1], rgbaBytes[idx+2], rgbaBytes[idx+3]
-			px := pixel{
-				r: r,
-				g: g,
-				b: b,
-				a: a,
+			px := color.RGBA{
+				R: r,
+				G: g,
+				B: b,
+				A: a,
 			}
-			expected := pixel{
-				r: 255,
-				g: 0,
-				b: 0,
-				a: 255,
+			expected := color.RGBA{
+				R: 255,
+				G: 0,
+				B: 0,
+				A: 255,
 			}
 			if px != expected {
-				writeFailureArtifacts(width, height, expected, rgbaBytes)
+				writeFailureArtifacts(width, height, &expected, rgbaBytes)
 				t.Fatalf("pixel mismatch at (%d, %d): %+v", x, y, px)
 			}
 		}
