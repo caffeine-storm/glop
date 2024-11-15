@@ -17,3 +17,10 @@ build_script:
 
 test_script:
   - make test
+
+after_test:
+  - make test-report
+
+artifacts:
+  - path: testdata/test-report.tar.gz
+    name: test-report.tar.gz

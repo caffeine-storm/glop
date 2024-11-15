@@ -1,5 +1,7 @@
 SHELL:=/bin/bash
 
+TEST_REPORT_TAR:=testdata/report.tar.gz
+
 testrunpackages=./...
 ifneq "${testrun}" ""
 testrunargs:=-run ${testrun}
@@ -70,6 +72,20 @@ promote_rejects:
 		mv $$i $${i/.rej} ; \
 	done
 
+test-report: ${TEST_REPORT_TAR}
+
+${TEST_REPORT_TAR}:
+	tar \
+		--auto-compress \
+		--create \
+		--file $@ \
+		--directory testdata/ \
+		--files-from <(cd testdata; find  . -name '*.rej.*' | while read fname ; do \
+				echo $$fname ; \
+				echo $${fname/.rej} ; \
+			done \
+		)
+
 compile_commands: gos/linux/compile_commands.json
 
 gos/linux/compile_commands.json:
@@ -86,9 +102,13 @@ fmt:
 checkfmt:
 	@gofmt -l ./
 
+clean:
+	rm -f ${TEST_REPORT_TAR}
+
 .PHONY: build-check
-.PHONY: compile_commands
-.PHONY: test test-spec test-nocache test-fresh
-.PHONY: profiling/*.view
-.PHONY: fmt
 .PHONY: clean_rejects promote_rejects
+.PHONY: compile_commands
+.PHONY: fmt
+.PHONY: profiling/*.view
+.PHONY: test test-spec test-nocache test-fresh test-report
+.PHONY: ${TEST_REPORT_TAR}

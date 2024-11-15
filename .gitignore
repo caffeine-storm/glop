@@ -13,3 +13,4 @@ _*
 gos/linux/compile_commands.json
 testdata/**/*.rej.*
 profiling/
+testdata/report.tar.gz
