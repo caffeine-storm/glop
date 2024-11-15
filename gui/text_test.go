@@ -1,13 +1,10 @@
 package gui
 
 import (
-	"bytes"
 	"fmt"
-	"image"
 	"io"
 	"log/slog"
 	"os"
-	"path"
 	"strings"
 	"testing"
 
@@ -19,56 +16,9 @@ import (
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
-	"github.com/spakin/netpbm"
-	_ "github.com/spakin/netpbm"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func verticalFlipPix(pixels []byte, width, height int) []byte {
-	result := make([]byte, len(pixels))
-
-	// Convert from bottom-first-row to top-first-row.
-	for row := 0; row < height; row++ {
-		resultRowIdx := row * width
-		resultRowEnd := resultRowIdx + width
-		inputRowIdx := (height - row - 1) * width
-		inputRowEnd := inputRowIdx + width
-
-		copy(result[resultRowIdx:resultRowEnd], pixels[inputRowIdx:inputRowEnd])
-	}
-
-	return result
-}
-
-// Load and convert from .pgm's top-row-first to OpenGL's bottom-row-first.
-func readAndFlipPgm(reader io.Reader) *netpbm.GrayM {
-	img, magic, err := image.Decode(reader)
-	if err != nil {
-		panic(fmt.Errorf("image.Decode failed: %w", err))
-	}
-
-	if magic != "pgm" {
-		panic(fmt.Errorf("expected .pgm file but got %q", magic))
-	}
-
-	grayImage, ok := img.(*netpbm.GrayM)
-	if !ok {
-		panic(fmt.Errorf("the expected image should have been a netpbm.GrayM image"))
-	}
-
-	width := grayImage.Bounds().Dx()
-	height := grayImage.Bounds().Dy()
-	grayImage.Pix = verticalFlipPix(grayImage.Pix, width, height)
-
-	return grayImage
-}
-
-func readPixels(width, height int) ([]byte, error) {
-	ret := make([]byte, width*height)
-	gl.ReadPixels(0, 0, width, height, gl.RED, gl.UNSIGNED_BYTE, ret)
-	return ret, nil
-}
 
 func withGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
 	rendertest.WithGlForTest(width, height, func(sys system.System, render render.RenderQueueInterface) {
@@ -107,73 +57,6 @@ func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys s
 	})
 
 	queue.Purge()
-}
-
-// Return the given file but with a '.rej' component to signify a 'rejection'.
-func makeRejectName(exp, suffix string) string {
-	dir, expectedFileName := path.Split(exp)
-	rejectFileNameBase, ok := strings.CutSuffix(expectedFileName, suffix)
-	if !ok {
-		panic(fmt.Errorf("need a %s file, got %s", suffix, exp))
-	}
-	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
-}
-
-func TestMakeRejectName(t *testing.T) {
-	reject0 := makeRejectName("../testdata/text/lol/0.pgm", ".pgm")
-	assert.Equal(t, "../testdata/text/lol/0.rej.pgm", reject0)
-}
-
-func expectPixelsMatch(queue render.RenderQueueInterface, pgmFileExpected string, screenWidth, screenHeight int) (bool, string) {
-	var err error
-
-	// Read all the pixels from the framebuffer through OpenGL
-	var frameBufferBytes []byte
-	queue.Queue(func(render.RenderQueueState) {
-		frameBufferBytes, err = readPixels(screenWidth, screenHeight)
-		if err != nil {
-			panic(fmt.Errorf("couldn't readPixels: %w", err))
-		}
-	})
-	queue.Purge()
-
-	// Verify that the framebuffer's contents match our expected image.
-	pgmFile, err := os.Open(pgmFileExpected)
-	if err != nil {
-		panic(fmt.Errorf("couldn't os.Open %q: %w", pgmFileExpected, err))
-	}
-	defer pgmFile.Close()
-
-	expectedImage := readAndFlipPgm(pgmFile)
-
-	cmp := bytes.Compare(expectedImage.Pix, frameBufferBytes)
-	if cmp != 0 {
-		// For debug purposes, copy the bad frame buffer for offline inspection.
-		actualImage := netpbm.NewGrayM(image.Rect(0, 0, screenWidth, screenHeight), 255)
-		// Need to flip from bottom-row-first to top-row-first.
-		actualImage.Pix = verticalFlipPix(frameBufferBytes, screenWidth, screenHeight)
-
-		rejectFileName := makeRejectName(pgmFileExpected, ".pgm")
-		rejectFile, err := os.Create(rejectFileName)
-		if err != nil {
-			panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
-		}
-		defer rejectFile.Close()
-
-		pgmOpts := netpbm.EncodeOptions{
-			Format:   netpbm.PGM,
-			MaxValue: 255,
-			Plain:    false,
-		}
-		err = netpbm.Encode(rejectFile, actualImage, &pgmOpts)
-		if err != nil {
-			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
-		}
-
-		return false, rejectFileName
-	}
-
-	return true, ""
 }
 
 func TestDictionaryMaxHeight(t *testing.T) {
@@ -251,15 +134,6 @@ func includeIndex(pgmFilename string, index int) string {
 	return fmt.Sprintf("%s.%d.pgm", head, index)
 }
 
-func expectationFile(testDataKey string, testnumber int) string {
-	return fmt.Sprintf("../testdata/text/%s/%d.pgm", testDataKey, testnumber)
-}
-
-func TestExpectationFile(t *testing.T) {
-	result := expectationFile("lol", 42)
-	assert.Equal(t, "../testdata/text/lol/42.pgm", result)
-}
-
 func DictionaryRenderStringSpec() {
 	screenSizeCases := []struct {
 		label            string
@@ -309,26 +183,6 @@ func DictionaryRenderStringSpec() {
 		},
 	}
 	for testnumber, testcase := range screenSizeCases {
-		ShouldLookLike := func(actual interface{}, expected ...interface{}) string {
-			render, ok := actual.(render.RenderQueueInterface)
-			if !ok {
-				panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
-			}
-			testDataKey, ok := expected[0].(string)
-			if !ok {
-				panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
-			}
-
-			filename := expectationFile(testDataKey, testnumber)
-
-			ok, rejectFile := expectPixelsMatch(render, filename, testcase.screenDimensions.Dx, testcase.screenDimensions.Dy)
-			if ok {
-				return ""
-			}
-
-			return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
-		}
-
 		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
 			leftPixel := testcase.screenDimensions.Dx / 2
 			bottomPixel := testcase.screenDimensions.Dy / 2
@@ -350,7 +204,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("lol")
 
-					So(render, ShouldLookLike, "lol")
+					So(render, rendertest.ShouldLookLike, "lol", testnumber)
 				})
 
 				Convey("Can render 'credits' centred", func() {
@@ -358,7 +212,7 @@ func DictionaryRenderStringSpec() {
 
 					doRenderString("Credits")
 
-					So(render, ShouldLookLike, "credits")
+					So(render, rendertest.ShouldLookLike, "credits", testnumber)
 				})
 
 				Convey("Can render somewhere other than the origin", func() {
@@ -368,7 +222,7 @@ func DictionaryRenderStringSpec() {
 						logger = glog.DebugLogger()
 						doRenderString("offset")
 
-						So(render, ShouldLookLike, "offset")
+						So(render, rendertest.ShouldLookLike, "offset", testnumber)
 					})
 				})
 
@@ -377,7 +231,7 @@ func DictionaryRenderStringSpec() {
 					logger = glog.DebugLogger()
 					doRenderString("tall-or-small")
 
-					So(render, ShouldLookLike, "tall-or-small")
+					So(render, rendertest.ShouldLookLike, "tall-or-small", testnumber)
 				})
 
 				Convey("stdout isn't spammed by RenderString", func() {
