@@ -16,8 +16,8 @@ build_script:
   - make
 
 test_script:
-  - make test || make test-report && appveyor PushArtifact testdata/test-report.tar.gz
+  - make test || make test-report && appveyor PushArtifact testdata/report.tar.gz
 
 artifacts:
-  - name: test-report.tar.gz
-    path: testdata/test-report.tar.gz
+  - name: test report tarball
+    path: testdata/report.tar.gz
