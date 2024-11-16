@@ -1,7 +1,6 @@
-	- TextEditLine's findOffsetatIndex comments+stubbing need cleaning
-
 tmckee: clean up after big 'green' step
 	- text_line_test.go should use the rendertest.cmp helpers
+	- TextEditLine needs rendertests
 	- 'screen shot'ing returns a slice of bytes but it's confusing about what
 	  layout/invariants apply
 	- un-stub gui.go's Make function

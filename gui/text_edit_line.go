@@ -80,7 +80,6 @@ func (w *TextEditLine) findOffsetAtIndex(index int) float64 {
 	// TODO(tmckee): XXX: STUBBED!
 	// adv, _ := w.context.DrawString(w.text[:index], pt)
 	// return float64(adv.X>>8) * w.scale
-	panic("NIY")
 	return 42
 }
 
