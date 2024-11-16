@@ -118,11 +118,11 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	render, ok := actual.(render.RenderQueueInterface)
 	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
+		panic(fmt.Errorf("ShouldLookLikeFile needs a render queue but got %T", actual))
 	}
 	testDataKey, ok := expected[0].(string)
 	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
+		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
 	}
 
 	// For table-tests, usage is
@@ -132,7 +132,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	if len(expected) > 1 {
 		testnumber, ok = expected[1].(int)
 		if !ok {
-			panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
+			panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
 		}
 	}
 
@@ -147,32 +147,11 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
-	render, ok := actual.(render.RenderQueueInterface)
-	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a render queue but got %T", actual))
-	}
 	testDataKey, ok := expected[0].(string)
 	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
+		panic(fmt.Errorf("ShouldLookLikeText needs a string but got %T", expected[0]))
 	}
 
-	// For table-tests, usage is
-	//   'So(render, ShouldLookLike, "test-case-family", testNumberN)'
-	// Use a default 'testnumber = 0' for non-table tests.
-	testnumber := 0
-	if len(expected) > 1 {
-		testnumber, ok = expected[1].(int)
-		if !ok {
-			panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
-		}
-	}
-
-	filename := ExpectationFile("text/"+testDataKey, "png", testnumber)
-
-	ok, rejectFile := expectPixelsMatch(render, filename)
-	if ok {
-		return ""
-	}
-
-	return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
+	expected[0] = "text/" + testDataKey
+	return ShouldLookLikeFile(actual, expected...)
 }
