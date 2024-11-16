@@ -158,7 +158,7 @@ func (w *TextLine) coreDraw(region Region) {
 	w.Render_region.Dims = req
 	w.Render_region.Point = region.Point
 
-	glog.ErrorLogger().Error("coreDraw", "w.Request_dims", w.Request_dims, "w.Render_region", w.Render_region)
+	glog.TraceLogger().Trace("coreDraw", "w.Request_dims", w.Request_dims, "w.Render_region", w.Render_region)
 	{
 		r, g, b, a := w.color.RGBA()
 		gl.Color4d(float64(r)/65535, float64(g)/65535, float64(b)/65535, float64(a)/65535)

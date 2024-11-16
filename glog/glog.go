@@ -86,8 +86,28 @@ func New(options *Opts) *slog.Logger {
 	return slog.New(slog.NewTextHandler(options.Output, slogopts))
 }
 
+type traceLogger struct {
+	*slog.Logger
+}
+
+func (log *traceLogger) Trace(msg string, args ...interface{}) {
+	log.Log(context.Background(), slog.LevelDebug-4, msg, args...)
+}
+
+func TraceLogger() *traceLogger {
+	return &traceLogger{
+		Logger: New(&Opts{
+			Level: slog.LevelInfo, // Trace calls will be ignored unless the caller re-levels
+		}),
+	}
+}
+
 func DebugLogger() *slog.Logger {
 	return New(&Opts{
+		// TODO(tmckee): we should use LevelInfo and expect callers who _really_
+		// want the message to re-level.
+		// Even better, have a 'current level' in glog that we read from on
+		// construction.
 		Level: slog.LevelDebug,
 	})
 }
