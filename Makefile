@@ -73,6 +73,12 @@ promote_rejects:
 		mv $$i $${i/.rej} ; \
 	done
 
+# Deliberately signal failure from this recipe so that CI notices failing tests
+# are red.
+appveyor-test-report-and-fail: test-report
+	appveyor PushArtifact ${TEST_REPORT_TAR}
+	false
+
 test-report: ${TEST_REPORT_TAR}
 
 ${TEST_REPORT_TAR}:
