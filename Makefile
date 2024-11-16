@@ -76,7 +76,7 @@ promote_rejects:
 # Deliberately signal failure from this recipe so that CI notices failing tests
 # are red.
 appveyor-test-report-and-fail: test-report
-	appveyor PushArtifact ${TEST_REPORT_TAR}
+	appveyor PushArtifact ${TEST_REPORT_TAR} -DeploymentName "test report tarball"
 	false
 
 test-report: ${TEST_REPORT_TAR}
@@ -119,5 +119,6 @@ clean:
 .PHONY: compile_commands
 .PHONY: fmt
 .PHONY: profiling/*.view
+.PHONY: appveyor-test-report-and-fail
 .PHONY: pre-test test test-spec test-nocache test-fresh test-report
 .PHONY: ${TEST_REPORT_TAR}

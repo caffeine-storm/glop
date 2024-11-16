@@ -17,7 +17,3 @@ build_script:
 
 test_script:
   - make test || make appveyor-test-report-and-fail
-
-artifacts:
-  - name: test report tarball
-    path: testdata/report.tar.gz
