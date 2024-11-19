@@ -1,5 +1,4 @@
 tmckee: clean up after big 'green' step
-	- TextEditLine needs rendertests
 	- 'screen shot'ing returns a slice of bytes but it's confusing about what
 	  layout/invariants apply
 	- un-stub gui.go's Make function
@@ -16,7 +15,11 @@ tmckee: make Dictionary.RenderString render w.r.t. the top of the bounding box
 
 ----
 
-tmckee: add tests for gui.TextEditLine
+tmckee: we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
+
+----
+
+tmckee: de-dupe gui/text[_edit]_line_test.go
 
 ----
 
