@@ -447,6 +447,8 @@ func (g *Gui) GetShaders(fontname string) *render.ShaderBank {
 }
 
 func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
+	// Note that, since each Gui should only be used in once RenderQueue, we
+	// don't have to worry about font name collisions here.
 	g := Gui{
 		dictionaries: map[string]*Dictionary{},
 		shaders:      map[string]*render.ShaderBank{},
