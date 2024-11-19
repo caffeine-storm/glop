@@ -194,7 +194,10 @@ type WidgetParent interface {
 	GetChildren() []Widget
 }
 
-type DrawingContext interface{}
+type DrawingContext interface {
+	GetDictionary() *Dictionary
+	GetShaders() *render.ShaderBank
+}
 
 type Widget interface {
 	Zone
@@ -418,6 +421,16 @@ type Gui struct {
 
 	// Stack of widgets that have focus
 	focus []Widget
+}
+
+var _ DrawingContext = (*Gui)(nil)
+
+func (g *Gui) GetDictionary() *Dictionary {
+	return nil
+}
+
+func (g *Gui) GetShaders() *render.ShaderBank {
+	return nil
 }
 
 func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
