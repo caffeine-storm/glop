@@ -1,6 +1,7 @@
-tmckee: clean up after big 'green' step
 	- un-stub gui.go's Make function
 		- needs a way to load a font but no render queue is present
+
+tmckee: clean up after big 'green' step
 	- storing the render queue's shaderBank alongside a Dictionary in a
 	  module-level variable is the barfness
 		- would have to teach widgets how to look up such things...
