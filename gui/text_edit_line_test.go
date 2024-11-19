@@ -12,18 +12,6 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-func TestTextEditLine(t *testing.T) {
-	t.Run("can construct", func(t *testing.T) {
-		renderQueue := rendertest.MakeDiscardingRenderQueue()
-		dict := gui.LoadDictionaryForTest(renderQueue, &gui.ConstDimser{}, glog.VoidLogger())
-		gui.AddDictForTest("glop.font", dict, &render.ShaderBank{})
-		result := gui.MakeTextEditLine("glop.font", "some text for editing", 42, 1, 1, 1, 1)
-		if result == nil {
-			t.Fatalf("gui.MakeTextEditLine returned nil!")
-		}
-	})
-}
-
 func TestRunTextEditLineSpecs(t *testing.T) {
 	Convey("TextEditLine should work", t, TextEditLineSpecs)
 }
@@ -34,7 +22,8 @@ func TextEditLineSpecs() {
 	Convey("Can make a 'lol' edit line", func() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
 		dict := gui.LoadDictionaryForTest(renderQueue, &gui.ConstDimser{}, glog.VoidLogger())
-		gui.AddDictForTest("glop.font", dict, &render.ShaderBank{})
+		g := MakeStubbedGui()
+		gui.AddDictForTest(g, "glop.font", dict, &render.ShaderBank{})
 		textLine := gui.MakeTextEditLine("glop.font", "lol", 42, 1, 1, 1, 1)
 		So(textLine, ShouldNotBeNil)
 	})
@@ -53,7 +42,7 @@ func TextEditLineSpecs() {
 			})
 			queue.Purge()
 
-			gui.AddDictForTest("glop.font", dict, shaderBank)
+			gui.AddDictForTest(g, "glop.font", dict, shaderBank)
 
 			textLine := gui.MakeTextEditLine("glop.font", "some text to edit", 32, 1, 1, 1, 1)
 

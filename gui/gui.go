@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"fmt"
+
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/render"
@@ -195,8 +197,8 @@ type WidgetParent interface {
 }
 
 type DrawingContext interface {
-	GetDictionary() *Dictionary
-	GetShaders() *render.ShaderBank
+	GetDictionary(fontname string) *Dictionary
+	GetShaders(fontname string) *render.ShaderBank
 }
 
 type Widget interface {
@@ -419,22 +421,36 @@ func (r *rootWidget) Draw(region Region, ctx DrawingContext) {
 type Gui struct {
 	root rootWidget
 
+	dictionaries map[string]*Dictionary
+	shaders      map[string]*render.ShaderBank
+
 	// Stack of widgets that have focus
 	focus []Widget
 }
 
 var _ DrawingContext = (*Gui)(nil)
 
-func (g *Gui) GetDictionary() *Dictionary {
-	return nil
+func (g *Gui) GetDictionary(fontname string) *Dictionary {
+	ret, ok := g.dictionaries[fontname]
+	if !ok {
+		panic(fmt.Errorf("no registered font named %q", fontname))
+	}
+	return ret
 }
 
-func (g *Gui) GetShaders() *render.ShaderBank {
-	return nil
+func (g *Gui) GetShaders(fontname string) *render.ShaderBank {
+	ret, ok := g.shaders[fontname]
+	if !ok {
+		panic(fmt.Errorf("no registered shaders for font %q", fontname))
+	}
+	return ret
 }
 
 func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
-	var g Gui
+	g := Gui{
+		dictionaries: map[string]*Dictionary{},
+		shaders:      map[string]*render.ShaderBank{},
+	}
 	g.root.EmbeddedWidget = &BasicWidget{CoreWidget: &g.root}
 	g.root.Request_dims = dims
 	g.root.Render_region.Dims = dims
@@ -504,4 +520,9 @@ func (g *Gui) FocusWidget() Widget {
 		return nil
 	}
 	return g.focus[len(g.focus)-1]
+}
+
+func AddDictForTest(g *Gui, fontname string, d *Dictionary, shaders *render.ShaderBank) {
+	g.dictionaries[fontname] = d
+	g.shaders[fontname] = shaders
 }

@@ -1,31 +1,11 @@
 package gui
 
 import (
-	"fmt"
 	"image/color"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
 )
-
-var fontRegistry map[string]fontTool
-
-func init() {
-	fontRegistry = make(map[string]fontTool)
-}
-
-type fontTool struct {
-	dictionary *Dictionary
-	shaders    *render.ShaderBank
-}
-
-func AddDictForTest(key string, dict *Dictionary, shaders *render.ShaderBank) {
-	fontRegistry[key] = fontTool{
-		dictionary: dict,
-		shaders:    shaders,
-	}
-}
 
 type TextLine struct {
 	EmbeddedWidget
@@ -33,14 +13,13 @@ type TextLine struct {
 	NonResponder
 	NonFocuser
 	BasicZone
-	text       string
-	next_text  string
-	dictionary *Dictionary
-	shaderBank *render.ShaderBank
-	initted    bool
-	rdims      Dims
-	color      color.Color
-	scale      float64
+	text      string
+	next_text string
+	font_name string
+	initted   bool
+	rdims     Dims
+	color     color.Color
+	scale     float64
 }
 
 func (w *TextLine) String() string {
@@ -78,14 +57,9 @@ func MakeButton(font_name, text string, width int, r, g, b, a float64, f func(in
 // loaded.
 func MakeTextLine(font_name, text string, width int, r, g, b, a float64) *TextLine {
 	var w TextLine
-	fontTools, ok := fontRegistry[font_name]
-	if !ok {
-		panic(fmt.Errorf("no font found for %q", font_name))
-	}
 
+	w.font_name = font_name
 	w.text = text
-	w.dictionary = fontTools.dictionary
-	w.shaderBank = fontTools.shaders
 	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
 	// w.SetFontSize(12) // TODO(tmckee) ... waat?
 	w.SetColor(r, g, b, a)
@@ -168,5 +142,7 @@ func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	height := 12
 	target := w.Render_region.Point
 	target.Y = w.Render_region.Dims.Dy - target.Y
-	w.dictionary.RenderString(w.text, target, height, Left, w.shaderBank)
+	d := ctx.GetDictionary(w.font_name)
+	shaders := ctx.GetShaders(w.font_name)
+	d.RenderString(w.text, target, height, Left, shaders)
 }
