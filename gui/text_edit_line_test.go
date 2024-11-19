@@ -30,8 +30,6 @@ func TextEditLineSpecs() {
 
 	Convey("TextEditLine draws its text", func() {
 		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
-			// TODO(tmckee): XXX: having to remember to gui.Init is ... sad-making
-			gui.Init(queue)
 			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
 			g := MakeStubbedGui()
 

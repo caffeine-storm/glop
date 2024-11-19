@@ -19,26 +19,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func withGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
-	rendertest.WithGlForTest(width, height, func(sys system.System, render render.RenderQueueInterface) {
-		err := Init(render)
-		if err != nil {
-			panic(fmt.Errorf("couldn't gui.Init(): %w", err))
-		}
-
-		fn(sys, render)
-	})
-}
-
-func LoadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
+func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
 	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
 	}
 
-	d, err := LoadDictionary(dictReader, render, logger)
+	d, err := LoadDictionary(dictReader, renderQueue, logger)
 	if err != nil {
 		panic(fmt.Errorf("couldn't LoadDictionary: %w", err))
+	}
+
+	renderQueue.Queue(render.RenderJob(func(st render.RenderQueueState) {
+		fontShaderName := "glop.font"
+		if st.Shaders().HasShader(fontShaderName) {
+			return
+		}
+
+		err = st.Shaders().RegisterShader(fontShaderName, font_vertex_shader, font_fragment_shader)
+	}))
+	renderQueue.Purge()
+	if err != nil {
+		panic(fmt.Errorf("couldn't register glop.font!: %w", err))
 	}
 
 	return d
@@ -181,7 +183,7 @@ func DictionaryRenderStringSpec() {
 			just := Left
 			logger := slog.Default()
 
-			withGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
+			rendertest.WithGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
 					renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
 				}

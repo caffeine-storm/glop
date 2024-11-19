@@ -8,20 +8,6 @@ import (
 	"github.com/runningwild/glop/render"
 )
 
-func Init(renderQueue render.RenderQueueInterface) error {
-	var err error
-	renderQueue.Queue(render.RenderJob(func(st render.RenderQueueState) {
-		fontShaderName := "glop.font"
-		if st.Shaders().HasShader(fontShaderName) {
-			return
-		}
-
-		err = st.Shaders().RegisterShader(fontShaderName, font_vertex_shader, font_fragment_shader)
-	}))
-	renderQueue.Purge()
-	return err
-}
-
 type Point struct {
 	X, Y int
 }
