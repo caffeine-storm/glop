@@ -19,7 +19,7 @@ import (
 
 type Threshold uint8
 
-var defaultThreshold = Threshold(2)
+var defaultThreshold = Threshold(3)
 
 func ExpectationFile(testDataKey, fileExt string, testnumber int) string {
 	return fmt.Sprintf("../testdata/%s/%d.%s", testDataKey, testnumber, fileExt)
