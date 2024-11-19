@@ -74,6 +74,23 @@ func identicalImages(expected, actual image.Image) bool {
 	return bytes.Compare(lhsrgba.Pix, rhsrgba.Pix) == 0
 }
 
+func expectReadersMatch(actual, expected io.Reader) (bool, []byte) {
+	actualBytes, err := io.ReadAll(actual)
+	if err != nil {
+		panic(fmt.Errorf("couldn't io.ReadAll from 'actual': %w", err))
+	}
+	expectedBytes, err := io.ReadAll(expected)
+	if err != nil {
+		panic(fmt.Errorf("couldn't io.ReadAll from 'expected': %w", err))
+	}
+
+	if bytes.Compare(actualBytes, expectedBytes) != 0 {
+		return false, actualBytes
+	}
+
+	return true, nil
+}
+
 // Verify that the framebuffer's contents match our expected image.
 func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string) (bool, string) {
 	pngFile, err := os.Open(pngFileExpected)
@@ -113,6 +130,24 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	}
 
 	return true, ""
+}
+
+func ShouldLookLike(actual interface{}, expected ...interface{}) string {
+	actualReader, ok := actual.(io.Reader)
+	if !ok {
+		panic(fmt.Errorf("ShouldLookLike needs a io.Reader but got %T", actual))
+	}
+	expectedReader, ok := expected[0].(io.Reader)
+	if !ok {
+		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
+	}
+
+	ok, _ = expectReadersMatch(actualReader, expectedReader)
+	if ok {
+		return ""
+	}
+
+	return fmt.Sprintf("io.Readers mismatched")
 }
 
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
