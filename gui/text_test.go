@@ -45,7 +45,7 @@ func LoadDictionaryForTest(render render.RenderQueueInterface, logger *slog.Logg
 }
 
 // Renders the given string with pixel units and an origin at the bottom-left.
-func renderStringForTest(toDraw string, x, y, height int, screenDims Dims, sys system.System, queue render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+func renderStringForTest(toDraw string, x, y, height int, sys system.System, queue render.RenderQueueInterface, just Justification, logger *slog.Logger) {
 	d := LoadDictionaryForTest(queue, logger)
 
 	queue.Queue(func(st render.RenderQueueState) {
@@ -181,14 +181,9 @@ func DictionaryRenderStringSpec() {
 			just := Left
 			logger := slog.Default()
 
-			screenDims := Dims{
-				Dx: testcase.screenDimensions.Dx,
-				Dy: testcase.screenDimensions.Dy,
-			}
-
 			withGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
-					renderStringForTest(toDraw, leftPixel, bottomPixel, height, screenDims, sys, render, just, logger)
+					renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
 				}
 
 				Convey("Can render 'lol'", func() {
