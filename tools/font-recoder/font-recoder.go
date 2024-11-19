@@ -41,12 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	d, err := gui.LoadDictionary(dictReader, render, &gui.ConstDimser{
-		Value: gui.Dims{
-			Dx: wdx,
-			Dy: wdy,
-		},
-	}, slog.Default())
+	d, err := gui.LoadDictionary(dictReader, render, slog.Default())
 	if err != nil {
 		panic(err)
 	}

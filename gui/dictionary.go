@@ -27,18 +27,6 @@ const (
 	Bottom
 )
 
-type Dimser interface {
-	Dims() Dims
-}
-
-type ConstDimser struct {
-	Value Dims
-}
-
-func (c *ConstDimser) Dims() Dims {
-	return c.Value
-}
-
 type Dictionary struct {
 	Data dictData
 
@@ -47,8 +35,6 @@ type Dictionary struct {
 	// TODO(tmckee): we need to call gl.DeleteTexture on this to clean up
 	// properly.
 	texture gl.Texture
-
-	dims Dimser
 
 	stringBlittingCache    map[string]blitBuffer
 	paragraphBlittingCache map[string]blitBuffer
@@ -251,12 +237,6 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 	return width
 }
 
-// TODO(tmckee): clean: this might be better named as 'getRegionDims' ; get the
-// dims for the region we're gui.Draw'ing to.
-func (d *Dictionary) getScreenDimensions() Dims {
-	return d.dims.Dims()
-}
-
 // Renders the string 's' at the given position with the given height. Values
 // are in units of pixels w.r.t. an origin at the top-left of the screen. The
 // text is positioned based on the given justification:
@@ -279,10 +259,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	stride := unsafe.Sizeof(blitVertex{})
 	string_width_px := d.StringPixelWidth(s)
 
-	screenDims := d.getScreenDimensions()
-	screenPixelWidth, screenPixelHeight := screenDims.Dx, screenDims.Dy
-
-	d.logger.Debug("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "screen-width", screenPixelWidth, "screen-height", screenPixelHeight, "glstate", debug.GetGlState().String())
+	d.logger.Debug("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "glstate", debug.GetGlState().String())
 
 	x_pos_px := float64(target.X)
 	y_pos_px := float64(target.Y)
@@ -417,7 +394,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n/256) + float64(n%256)/256.0
 }
 
-func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, dimser Dimser, logger *slog.Logger) *Dictionary {
+func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -498,7 +475,6 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 		}
 	}
 
-	dict.dims = dimser
 	dict.logger = logger
 
 	dict.uploadGlyphTexture(renderQueue)
@@ -506,13 +482,12 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	return &dict
 }
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, dimser Dimser, logger *slog.Logger) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *slog.Logger) (*Dictionary, error) {
 	var d Dictionary
 	err := d.Load(r)
 	if err != nil {
 		return nil, err
 	}
-	d.dims = dimser
 	d.logger = logger
 	d.uploadGlyphTexture(renderQueue)
 	return &d, nil

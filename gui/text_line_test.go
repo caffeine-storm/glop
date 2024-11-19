@@ -21,7 +21,7 @@ func TextLineSpecs() {
 
 	Convey("Can make a 'lol' line", func() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
-		dict := gui.LoadDictionaryForTest(renderQueue, &gui.ConstDimser{}, glog.VoidLogger())
+		dict := gui.LoadDictionaryForTest(renderQueue, glog.VoidLogger())
 		g := MakeStubbedGui()
 		gui.AddDictForTest(g, "glop.font", dict, &render.ShaderBank{})
 
@@ -33,8 +33,7 @@ func TextLineSpecs() {
 		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
 			// TODO(tmckee): XXX: having to remember to gui.Init is ... sad-making
 			gui.Init(queue)
-			dimser := &gui.ConstDimser{Value: gui.Dims{screenWidth, screenHeight}}
-			dict := gui.LoadDictionaryForTest(queue, dimser, glog.DebugLogger())
+			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
 			g := MakeStubbedGui()
 
 			var shaderBank *render.ShaderBank

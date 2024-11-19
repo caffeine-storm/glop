@@ -43,7 +43,7 @@ func TestDictionarySerialization(t *testing.T) {
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 
 		font := givenAFont()
-		d := gui.MakeDictionary(font, 10, discardQueue, &gui.ConstDimser{}, glog.VoidLogger())
+		d := gui.MakeDictionary(font, 10, discardQueue, glog.VoidLogger())
 
 		buf := bytes.Buffer{}
 		d.Store(&buf)
@@ -98,7 +98,7 @@ func TestMakeDictionary(t *testing.T) {
 		logger := glog.VoidLogger()
 		font := givenAFont()
 
-		d := gui.MakeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, logger)
+		d := gui.MakeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), logger)
 
 		t.Run("grid of glyphs constructed", func(t *testing.T) {
 			assert.NotEmpty(t, d.Data.Pix)
@@ -117,7 +117,7 @@ func TestMakeDictionary(t *testing.T) {
 
 func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
-		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), &gui.ConstDimser{}, glog.DebugLogger())
+		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), glog.DebugLogger())
 
 		// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
 		// copy-pasta.
