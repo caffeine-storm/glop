@@ -1,8 +1,8 @@
 package debug_test
 
 import (
-	"bytes"
 	"fmt"
+	"image"
 	"testing"
 
 	"github.com/runningwild/glop/debug"
@@ -18,18 +18,17 @@ func TestDrawRect(t *testing.T) {
 
 func DrawRectSpec() {
 	width, height := 50, 50
-	buffer := &bytes.Buffer{}
+	var result *image.RGBA
 
 	rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
 		queue.Queue(func(render.RenderQueueState) {
 			debug.BlankAndDrawRectNdc(-1, -1, 1, 1)
-			debug.ScreenShotRgba(width, height, buffer)
+			result = debug.ScreenShotRgba(width, height)
 		})
 		queue.Purge()
 
-		rgbaBytes := buffer.Bytes()
-		if len(rgbaBytes) != width*height*4 {
-			panic(fmt.Errorf("wrong number of bytes, expected %d got %d", width*height*4, len(rgbaBytes)))
+		if len(result.Pix) != width*height*4 {
+			panic(fmt.Errorf("wrong number of bytes, expected %d got %d", width*height*4, len(result.Pix)))
 		}
 
 		Convey("Should see red pixels", func() {

@@ -30,21 +30,25 @@ func ScreenShot(width, height int, out io.Writer) {
 	}
 }
 
-func ScreenShotRgba(width, height int, out io.Writer) {
+func ScreenShotRgba(width, height int) *image.RGBA {
 	// 4 bytes per pixel; one byte per RGBA component
 	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
 	gl.ReadPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, rgba.Pix)
 
 	// Flip the rows of pixels vertically so that the leading bytes correspond to
 	// the 'top' row of pixels.
-	for rowIdx := height - 1; rowIdx >= 0; rowIdx-- {
-		row := rgba.Pix[rowIdx*width*4 : (rowIdx+1)*width*4]
-		n, err := out.Write(row)
-		if err != nil {
-			panic(fmt.Errorf("out.Write failed: %w", err))
+	tmp := make([]byte, width*4)
+	for rowIdx := 0; rowIdx < height/2; rowIdx++ {
+		a, b := rowIdx, height-rowIdx-1
+		if a == b {
+			break
 		}
-		if n != len(row) {
-			panic(fmt.Errorf("only wrote %d elements, not %d", n, len(row)))
-		}
+		arow := rgba.Pix[a*width*4 : (a+1)*width*4]
+		brow := rgba.Pix[b*width*4 : (b+1)*width*4]
+		copy(tmp, arow)
+		copy(arow, brow)
+		copy(brow, tmp)
 	}
+
+	return rgba
 }

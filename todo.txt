@@ -1,6 +1,4 @@
 tmckee: clean up after big 'green' step
-	- 'screen shot'ing returns a slice of bytes but it's confusing about what
-	  layout/invariants apply
 	- un-stub gui.go's Make function
 		- needs a way to load a font but no render queue is present
 	- storing the render queue's shaderBank alongside a Dictionary in a

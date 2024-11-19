@@ -1,7 +1,6 @@
 package rendertest
 
 import (
-	"bytes"
 	"fmt"
 	"image"
 	"image/draw"
@@ -160,15 +159,12 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	var actualScreenWidth, actualScreenHeight uint32
 
 	// Read all the pixels from the framebuffer through OpenGL
-	frameBufferBytes := &bytes.Buffer{}
+	var actualImage *image.RGBA
 	queue.Queue(func(render.RenderQueueState) {
 		_, _, actualScreenWidth, actualScreenHeight = debug.GetViewport()
-		debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight), frameBufferBytes)
+		actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
 	})
 	queue.Purge()
-
-	actualImage := image.NewRGBA(image.Rect(0, 0, int(actualScreenWidth), int(actualScreenHeight)))
-	actualImage.Pix = frameBufferBytes.Bytes()
 
 	if !imagesAreWithinThreshold(expectedImage, actualImage, thresh) {
 		rejectFileName := MakeRejectName(pngFileExpected, ".png")
