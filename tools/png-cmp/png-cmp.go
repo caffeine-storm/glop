@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"image"
 	"image/color"
@@ -28,13 +27,47 @@ type Delta struct {
 	location  image.Point
 }
 
-func imageCompare(lhs, rhs image.Image) ([]Delta, int) {
+func colourDistance(lhs, rhs color.Color) (dr, dg, db int) {
+	lr, lg, lb, _ := lhs.RGBA()
+	rr, rg, rb, _ := rhs.RGBA()
+
+	dr = int(rr) - int(lr)
+	dg = int(rg) - int(lg)
+	db = int(rb) - int(lb)
+
+	if dr < 0 {
+		dr = -dr
+	}
+	if dg < 0 {
+		dg = -dg
+	}
+	if db < 0 {
+		db = -db
+	}
+
+	return
+}
+
+func MyMax(a, b, c int) int {
+	ret := a
+	if b > ret {
+		ret = b
+	}
+	if c > ret {
+		ret = c
+	}
+	return ret
+}
+
+func imageCompare(lhs, rhs image.Image) ([]Delta, int, Delta) {
 	bounds := lhs.Bounds()
 	if bounds != rhs.Bounds() {
-		return nil, 0
+		return nil, 0, Delta{}
 	}
 
 	baddies := []Delta{}
+	maxDelta := Delta{}
+	maxDist := 0
 	for x := bounds.Min.X; x < bounds.Max.X; x++ {
 		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 			lhsColour := lhs.At(x, y)
@@ -48,11 +81,17 @@ func imageCompare(lhs, rhs image.Image) ([]Delta, int) {
 						Y: y,
 					},
 				})
+				dr, dg, db := colourDistance(lhs.At(x, y), rhs.At(x, y))
+				if MyMax(dr, dg, db) > maxDist {
+					maxDist = MyMax(dr, dg, db)
+					maxDelta = baddies[len(baddies)-1]
+				}
+
 			}
 		}
 	}
 
-	return baddies, bounds.Dx() * bounds.Dy()
+	return baddies, bounds.Dx() * bounds.Dy(), maxDelta
 }
 
 func mustPng(fname string) image.Image {
@@ -83,20 +122,21 @@ func main() {
 	lhsRgba := mustRgba(lhsPng)
 	rhsRgba := mustRgba(rhsPng)
 
-	fmt.Println(bytes.Compare(lhsRgba.Pix, rhsRgba.Pix))
-	deltas, _ := imageCompare(lhsRgba, rhsRgba)
+	deltas, _, maxdelta := imageCompare(lhsRgba, rhsRgba)
 
 	for _, delta := range deltas {
 		fmt.Printf("%+v\n", delta)
 
-		r, g, b, _ := delta.lhsColour.RGBA()
-		if r != g || g != b {
+		lr, lg, lb, _ := delta.lhsColour.RGBA()
+		if lr != lg || lg != lb {
 			fmt.Println("not-grey", delta.location, delta.lhsColour)
 		}
 
-		r, g, b, _ = delta.lhsColour.RGBA()
-		if r != g || g != b {
+		rr, rg, rb, _ := delta.rhsColour.RGBA()
+		if rr != rg || rg != rb {
 			fmt.Println("not-grey", delta.location, delta.rhsColour)
 		}
 	}
+
+	fmt.Printf("maxdelta: %+v\n", maxdelta)
 }
