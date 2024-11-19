@@ -418,7 +418,7 @@ type Gui struct {
 	focus []Widget
 }
 
-func Make(dispatcher gin.EventDispatcher, dims Dims, font_path string) (*Gui, error) {
+func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
 	var g Gui
 	g.root.EmbeddedWidget = &BasicWidget{CoreWidget: &g.root}
 	g.root.Request_dims = dims
