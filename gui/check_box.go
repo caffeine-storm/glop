@@ -48,7 +48,7 @@ func (cb *checkBox) Click() {
 		cb.selected = checkBoxSelected
 	}
 }
-func (cb *checkBox) Draw(region Region) {
+func (cb *checkBox) Draw(region Region, ctx DrawingContext) {
 	cb.Render_region = region
 	if cb.disabled {
 		gl.Color3d(0.6, 0.6, 0.6)

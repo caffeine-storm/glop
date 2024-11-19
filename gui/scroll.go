@@ -45,7 +45,7 @@ func (w *ScrollFrame) DoRespond(group EventGroup) (consume, take_focus bool) {
 	}
 	return
 }
-func (w *ScrollFrame) Draw(region Region) {
+func (w *ScrollFrame) Draw(region Region, ctx DrawingContext) {
 	if region.Dx > w.Request_dims.Dx {
 		region.Dx = w.Request_dims.Dx
 	}
@@ -55,7 +55,7 @@ func (w *ScrollFrame) Draw(region Region) {
 	region.PushClipPlanes()
 	defer region.PopClipPlanes()
 	if region.Dy >= w.Children[0].Requested().Dy {
-		w.Children[0].Draw(region)
+		w.Children[0].Draw(region, ctx)
 		w.Render_region = w.Children[0].Rendered()
 		return
 	}
@@ -64,5 +64,5 @@ func (w *ScrollFrame) Draw(region Region) {
 	if w.amt > w.max {
 		w.amt = w.max
 	}
-	w.Children[0].Draw(Region{region.Point, w.Children[0].Requested()}.Add(Point{0, -int(w.amt)}))
+	w.Children[0].Draw(Region{region.Point, w.Children[0].Requested()}.Add(Point{0, -int(w.amt)}), ctx)
 }

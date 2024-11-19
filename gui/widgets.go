@@ -57,7 +57,7 @@ func (w *AnchorBox) RemoveChild(widget Widget) {
 func (w *AnchorBox) GetChildren() []Widget {
 	return w.children
 }
-func (w *AnchorBox) Draw(region Region) {
+func (w *AnchorBox) Draw(region Region, ctx DrawingContext) {
 	w.Render_region = region
 	for i := range w.children {
 		widget := w.children[i]
@@ -91,7 +91,7 @@ func (w *AnchorBox) Draw(region Region) {
 			child_region.Y = region.Y
 			child_region.Dy = region.Dy
 		}
-		widget.Draw(child_region)
+		widget.Draw(child_region, ctx)
 	}
 }
 
@@ -182,7 +182,7 @@ func (w *ImageBox) SetImage(path string) {
 
 	w.active = true
 }
-func (w *ImageBox) Draw(region Region) {
+func (w *ImageBox) Draw(region Region, ctx DrawingContext) {
 	w.Render_region = region
 
 	// We check texture == 0 and not active because active only indicates if we
@@ -233,12 +233,12 @@ func (w *CollapseWrapper) DoThink(int64, bool) {
 	w.Render_region = w.Child.Rendered()
 }
 
-func (w *CollapseWrapper) Draw(region Region) {
+func (w *CollapseWrapper) Draw(region Region, ctx DrawingContext) {
 	if w.Collapsed {
 		w.Render_region = Region{}
 		return
 	}
-	w.Child.Draw(region)
+	w.Child.Draw(region, ctx)
 	w.Render_region = region
 }
 

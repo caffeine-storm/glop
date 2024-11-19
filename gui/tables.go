@@ -71,7 +71,7 @@ func (w *VerticalTable) DoThink(int64, bool) {
 	}
 	w.Request_dims.Dy += w.params.Spacing * len(w.Children)
 }
-func (w *VerticalTable) Draw(region Region) {
+func (w *VerticalTable) Draw(region Region, ctx DrawingContext) {
 	gl.Enable(gl.BLEND)
 	gl.Disable(gl.TEXTURE_2D)
 	dx := region.Dx
@@ -142,7 +142,7 @@ func (w *VerticalTable) Draw(region Region) {
 		child_region.X = region.X
 		child_region.Y -= child_region.Dy
 		child_region.Y -= w.params.Spacing
-		child.Draw(child_region)
+		child.Draw(child_region, ctx)
 	}
 	w.Render_region = region
 }
@@ -187,7 +187,7 @@ func (w *HorizontalTable) DoThink(int64, bool) {
 	}
 	w.Request_dims.Dx += w.params.Spacing * len(w.Children)
 }
-func (w *HorizontalTable) Draw(region Region) {
+func (w *HorizontalTable) Draw(region Region, ctx DrawingContext) {
 	gl.Enable(gl.BLEND)
 	gl.Disable(gl.TEXTURE_2D)
 	dx := region.Dx
@@ -256,7 +256,7 @@ func (w *HorizontalTable) Draw(region Region) {
 			child_region.Dy = region.Dy
 		}
 		child_region.Y = region.Y + region.Dy - child_region.Dy
-		child.Draw(child_region)
+		child.Draw(child_region, ctx)
 		child_region.X += child_region.Dx
 		child_region.X += w.params.Spacing
 	}

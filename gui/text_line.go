@@ -113,7 +113,7 @@ func (w *TextLine) SetText(str string) {
 func (w *TextLine) DoThink(int64, bool) {
 }
 
-func (w *TextLine) preDraw(region Region) {
+func (w *TextLine) preDraw(region Region, ctx DrawingContext) {
 	// Draw a black rectangle over the region to erase what might be there
 	// already.
 	gl.Color3d(0, 0, 0)
@@ -125,18 +125,18 @@ func (w *TextLine) preDraw(region Region) {
 	gl.End()
 }
 
-func (w *TextLine) postDraw(region Region) {
+func (w *TextLine) postDraw(region Region, ctx DrawingContext) {
 }
 
-func (w *TextLine) Draw(region Region) {
+func (w *TextLine) Draw(region Region, ctx DrawingContext) {
 	region.PushClipPlanes()
 	defer region.PopClipPlanes()
-	w.preDraw(region)
-	w.coreDraw(region)
-	w.postDraw(region)
+	w.preDraw(region, ctx)
+	w.coreDraw(region, ctx)
+	w.postDraw(region, ctx)
 }
 
-func (w *TextLine) coreDraw(region Region) {
+func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	if region.Size() == 0 {
 		glog.WarningLogger().Warn("TextLine.coreDraw given empty region; no-oping", "w.text", w.text)
 		return

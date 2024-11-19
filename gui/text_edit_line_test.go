@@ -45,6 +45,7 @@ func TextEditLineSpecs() {
 			gui.Init(queue)
 			dimser := &gui.ConstDimser{Value: gui.Dims{screenWidth, screenHeight}}
 			dict := gui.LoadDictionaryForTest(queue, dimser, glog.DebugLogger())
+			g := MakeStubbedGui()
 
 			var shaderBank *render.ShaderBank
 			queue.Queue(func(rqs render.RenderQueueState) {
@@ -60,7 +61,7 @@ func TextEditLineSpecs() {
 				textLine.Draw(gui.Region{
 					Point: gui.Point{},
 					Dims:  gui.Dims{screenWidth, screenHeight},
-				})
+				}, g)
 			})
 			queue.Purge()
 

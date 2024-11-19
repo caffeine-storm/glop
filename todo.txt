@@ -1,7 +1,8 @@
-tmckee: clean up after big 'green' step
 	- storing the render queue's shaderBank alongside a Dictionary in a
 	  module-level variable is the barfness
 		- would have to teach widgets how to look up such things...
+
+tmckee: clean up after big 'green' step
 	- text height aribirarily chosen as 12 in TextLine.coreDraw
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw
 	- having to remember to call gui.Init before rendering any text is a foot-gun

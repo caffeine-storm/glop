@@ -194,6 +194,8 @@ type WidgetParent interface {
 	GetChildren() []Widget
 }
 
+type DrawingContext interface{}
+
 type Widget interface {
 	Zone
 
@@ -204,8 +206,8 @@ type Widget interface {
 	// event group
 	Respond(*Gui, EventGroup) bool
 
-	Draw(Region)
-	DrawFocused(Region)
+	Draw(Region, DrawingContext)
+	DrawFocused(Region, DrawingContext)
 	String() string
 }
 type CoreWidget interface {
@@ -216,8 +218,8 @@ type CoreWidget interface {
 	DoRespond(EventGroup) (consume, change_focus bool)
 	Zone
 
-	Draw(Region)
-	DrawFocused(Region)
+	Draw(Region, DrawingContext)
+	DrawFocused(Region, DrawingContext)
 
 	GetChildren() []Widget
 	String() string
@@ -331,7 +333,7 @@ func (c Clickable) DoRespond(event_group EventGroup) (bool, bool) {
 
 type NonFocuser struct{}
 
-func (n NonFocuser) DrawFocused(Region) {}
+func (n NonFocuser) DrawFocused(Region, DrawingContext) {}
 
 type NonThinker struct{}
 
@@ -356,8 +358,8 @@ type Wrapper struct {
 }
 
 func (w Wrapper) GetChildren() []Widget { return []Widget{w.Child} }
-func (w Wrapper) Draw(region Region) {
-	w.Child.Draw(region)
+func (w Wrapper) Draw(region Region, ctx DrawingContext) {
+	w.Child.Draw(region, ctx)
 }
 
 type StandardParent struct {
@@ -404,10 +406,10 @@ func (r *rootWidget) String() string {
 	return "root"
 }
 
-func (r *rootWidget) Draw(region Region) {
+func (r *rootWidget) Draw(region Region, ctx DrawingContext) {
 	r.Render_region = region
 	for i := range r.Children {
-		r.Children[i].Draw(region)
+		r.Children[i].Draw(region, ctx)
 	}
 }
 
@@ -440,9 +442,9 @@ func (g *Gui) Draw() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
-	g.root.Draw(region)
+	g.root.Draw(region, g)
 	if g.FocusWidget() != nil {
-		g.FocusWidget().DrawFocused(region)
+		g.FocusWidget().DrawFocused(region, g)
 	}
 }
 

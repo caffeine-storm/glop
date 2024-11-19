@@ -55,8 +55,8 @@ func (w *TabFrame) Think(gui *Gui, t int64) {
 	}
 }
 
-func (w *TabFrame) Draw(region Region) {
+func (w *TabFrame) Draw(region Region, ctx DrawingContext) {
 	tab := w.Children[w.active]
-	tab.Draw(region)
+	tab.Draw(region, ctx)
 	w.Render_region = tab.Rendered()
 }

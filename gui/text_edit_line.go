@@ -184,7 +184,7 @@ func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus 
 	return
 }
 
-func (w *TextEditLine) Draw(region Region) {
+func (w *TextEditLine) Draw(region Region, ctx DrawingContext) {
 	region.PushClipPlanes()
 	defer region.PopClipPlanes()
 	gl.Disable(gl.TEXTURE_2D)
@@ -195,8 +195,8 @@ func (w *TextEditLine) Draw(region Region) {
 	gl.Vertex2i(region.X-1+region.Dx, region.Y-1+region.Dy)
 	gl.Vertex2i(region.X-1+region.Dx, region.Y+1)
 	gl.End()
-	w.TextLine.preDraw(region)
-	w.TextLine.coreDraw(region)
+	w.TextLine.preDraw(region, ctx)
+	w.TextLine.coreDraw(region, ctx)
 	gl.Disable(gl.TEXTURE_2D)
 	if w.cursor.on {
 		gl.Color3d(1, 0.3, 0)
@@ -207,5 +207,5 @@ func (w *TextEditLine) Draw(region Region) {
 	gl.Vertex2i(region.X+int(w.cursor.pos), region.Y)
 	gl.Vertex2i(region.X+int(w.cursor.pos), region.Y+region.Dy)
 	gl.End()
-	w.TextLine.postDraw(region)
+	w.TextLine.postDraw(region, ctx)
 }

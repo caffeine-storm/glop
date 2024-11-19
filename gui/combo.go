@@ -34,15 +34,16 @@ func (cb *ComboBox) Think(gui *Gui, t int64) {
 	}
 }
 
-func (cb *ComboBox) Draw(region Region) {
+func (cb *ComboBox) Draw(region Region, ctx DrawingContext) {
 	if cb.open {
 		return
 	}
 	child := cb.table.GetChildren()[cb.selected]
-	child.Draw(region)
+	child.Draw(region, ctx)
 	cb.Render_region = child.Rendered()
 }
-func (cb *ComboBox) DrawFocused(region Region) {
+
+func (cb *ComboBox) DrawFocused(region Region, ctx DrawingContext) {
 	if !cb.open {
 		return
 	}
@@ -52,7 +53,7 @@ func (cb *ComboBox) DrawFocused(region Region) {
 	r := cb.opened_region
 	r.Y -= (cb.table.Requested().Dy - cb.opened_region.Dy) / 2
 	r.Dy = cb.table.Requested().Dy
-	cb.scroll.Draw(r.Fit(region))
+	cb.scroll.Draw(r.Fit(region), ctx)
 	cb.Render_region = cb.scroll.Rendered()
 }
 func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
