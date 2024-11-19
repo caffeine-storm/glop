@@ -17,6 +17,10 @@ import (
 	"github.com/runningwild/glop/render"
 )
 
+type Threshold uint8
+
+var defaultThreshold = Threshold(2)
+
 func ExpectationFile(testDataKey, fileExt string, testnumber int) string {
 	return fmt.Sprintf("../testdata/%s/%d.%s", testDataKey, testnumber, fileExt)
 }
@@ -61,7 +65,7 @@ func drawAsRgba(img image.Image) *image.RGBA {
 	return ret
 }
 
-func identicalImages(expected, actual image.Image) bool {
+func imagesAreWithinThreshold(expected, actual image.Image, thresh Threshold) bool {
 	// Do a size check first so that we don't read out of bounds.
 	if expected.Bounds() != actual.Bounds() {
 		glog.ErrorLogger().Error("size mismatch", "expected", expected.Bounds(), "actual", actual.Bounds())
@@ -71,10 +75,41 @@ func identicalImages(expected, actual image.Image) bool {
 	lhsrgba := drawAsRgba(expected)
 	rhsrgba := drawAsRgba(actual)
 
-	return bytes.Compare(lhsrgba.Pix, rhsrgba.Pix) == 0
+	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
 }
 
-func expectReadersMatch(actual, expected io.Reader) (bool, []byte) {
+func CompareWithThreshold(lhs, rhs []byte, threshold Threshold) int {
+	llen := len(lhs)
+	rlen := len(rhs)
+
+	minLen := llen
+	if minLen > rlen {
+		minLen = rlen
+	}
+
+	for i := 0; i < minLen; i++ {
+		diff := int(lhs[i]) - int(rhs[i])
+		absdiff := diff
+		if absdiff < 0 {
+			absdiff = -absdiff
+		}
+		if absdiff > int(threshold) {
+			return diff / absdiff
+		}
+	}
+
+	if llen == rlen {
+		return 0
+	}
+
+	if llen < rlen {
+		return -1
+	}
+
+	return 1
+}
+
+func expectReadersMatch(actual, expected io.Reader, threshold Threshold) (bool, []byte) {
 	actualBytes, err := io.ReadAll(actual)
 	if err != nil {
 		panic(fmt.Errorf("couldn't io.ReadAll from 'actual': %w", err))
@@ -84,15 +119,37 @@ func expectReadersMatch(actual, expected io.Reader) (bool, []byte) {
 		panic(fmt.Errorf("couldn't io.ReadAll from 'expected': %w", err))
 	}
 
-	if bytes.Compare(actualBytes, expectedBytes) != 0 {
+	if CompareWithThreshold(actualBytes, expectedBytes, threshold) != 0 {
 		return false, actualBytes
 	}
 
 	return true, nil
 }
 
-// Verify that the framebuffer's contents match our expected image.
-func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string) (bool, string) {
+func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold) (bool, image.Image) {
+	expectedImage, _, _ := readPng(expected)
+	var actualScreenWidth, actualScreenHeight uint32
+
+	// Read all the pixels from the input source
+	actualImage := image.NewRGBA(image.Rect(0, 0, int(actualScreenWidth), int(actualScreenHeight)))
+	var err error
+	actualImage.Pix, err = io.ReadAll(actual)
+	if err != nil {
+		panic(fmt.Errorf("couldn't read from 'actual': %w", err))
+	}
+
+	if !imagesAreWithinThreshold(expectedImage, actualImage, thresh) {
+		return false, actualImage
+	}
+
+	return true, nil
+}
+
+// Verify that the framebuffer's contents match our expected image to within a
+// threshold. We need the fuzzy matching because OpenGL doesn't guarantee exact
+// pixel-to-pixel matches across different hardware/driver combinations. It
+// should be close, though!
+func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string, thresh Threshold) (bool, string) {
 	pngFile, err := os.Open(pngFileExpected)
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open %q: %w", pngFileExpected, err))
@@ -113,7 +170,7 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	actualImage := image.NewRGBA(image.Rect(0, 0, int(actualScreenWidth), int(actualScreenHeight)))
 	actualImage.Pix = frameBufferBytes.Bytes()
 
-	if !identicalImages(expectedImage, actualImage) {
+	if !imagesAreWithinThreshold(expectedImage, actualImage, thresh) {
 		rejectFileName := MakeRejectName(pngFileExpected, ".png")
 		rejectFile, err := os.Create(rejectFileName)
 		if err != nil {
@@ -132,6 +189,16 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	return true, ""
 }
 
+func getThresholdFromArgs(args []interface{}) Threshold {
+	for i := 1; i < len(args); i++ {
+		if val, found := args[i].(Threshold); found {
+			return val
+		}
+	}
+
+	return defaultThreshold
+}
+
 func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 	actualReader, ok := actual.(io.Reader)
 	if !ok {
@@ -142,11 +209,15 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
 	}
 
-	ok, _ = expectReadersMatch(actualReader, expectedReader)
+	// Did someone pass a Threshold?
+	threshold := getThresholdFromArgs(expected)
+
+	ok, _ = expectReadersMatch(actualReader, expectedReader, threshold)
 	if ok {
 		return ""
 	}
 
+	// TODO(tmckee): create and report a pair of temp files for debuggability.
 	return fmt.Sprintf("io.Readers mismatched")
 }
 
@@ -165,6 +236,8 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	// Use a default 'testnumber = 0' for non-table tests.
 	testnumber := 0
 	if len(expected) > 1 {
+		// TODO(tmckee): consider using a TestNumber wrapper to keep testnumber
+		// interpretation non-positional...?
 		testnumber, ok = expected[1].(int)
 		if !ok {
 			panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
@@ -173,7 +246,8 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 
 	filename := ExpectationFile(testDataKey, "png", testnumber)
 
-	ok, rejectFile := expectPixelsMatch(render, filename)
+	thresh := getThresholdFromArgs(expected)
+	ok, rejectFile := expectPixelsMatch(render, filename, thresh)
 	if ok {
 		return ""
 	}
