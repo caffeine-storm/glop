@@ -1,6 +1,7 @@
 package rendertest_test
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/runningwild/glop/render/rendertest"
@@ -16,5 +17,18 @@ func TestFileNameHelpers(t *testing.T) {
 	t.Run("TestMakeRejectName", func(t *testing.T) {
 		reject0 := rendertest.MakeRejectName("../testdata/text/lol/0.pgm", ".pgm")
 		assert.Equal(t, "../testdata/text/lol/0.rej.pgm", reject0)
+	})
+}
+
+func TestPixelComparisonIsFuzzy(t *testing.T) {
+	t.Run("TestShouldLookLike", func(t *testing.T) {
+		someBytes := bytes.NewBuffer([]byte("some bytes"))
+		someOtherBytes := bytes.NewBuffer([]byte("some bytes"))
+
+		conveyResult := rendertest.ShouldLookLike(someBytes, someOtherBytes)
+		if conveyResult != "" {
+			// empty string represents 'success' in Convey
+			t.Fatalf("two readers over the same data should look the same")
+		}
 	})
 }
