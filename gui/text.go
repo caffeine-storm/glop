@@ -6,35 +6,6 @@ import (
 	"sort"
 )
 
-// Shader stuff - The font stuff requires that we use some simple shaders
-const font_vertex_shader string = `
-  #version 120
-  varying vec3 pos;
-
-  void main() {
-    gl_Position = ftransform();
-    gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
-    gl_FrontColor = gl_Color;
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    gl_TexCoord[1] = gl_MultiTexCoord1;
-    pos = gl_Vertex.xyz;
-  }
-`
-
-const font_fragment_shader string = `
-  #version 120
-  uniform sampler2D tex;
-  uniform float dist_min;
-  uniform float dist_max;
-
-  void main() {
-    vec2 tpos = gl_TexCoord[0].xy;
-    float dist = texture2D(tex, tpos).a;
-    float alpha = smoothstep(dist_min, dist_max, dist);
-    gl_FragColor = gl_Color * vec4(1.0, 1.0, 1.0, alpha);
-  }
-`
-
 type subImage struct {
 	im     image.Image
 	bounds image.Rectangle
