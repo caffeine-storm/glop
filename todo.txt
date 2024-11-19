@@ -1,7 +1,3 @@
-tmckee: refactor to add a rendertest comparison that works on io.Reader for testability
-
-tmckee: need to change rendertests to use a threshold for difference; different hardware/drivers are allowed to make different result :(
-
 tmckee: clean up after big 'green' step
 	- TextEditLine needs rendertests
 	- 'screen shot'ing returns a slice of bytes but it's confusing about what
