@@ -150,7 +150,7 @@ func MakeCheckTextBox(text_options []string, width int, target map[string]bool) 
 	options := make([]Widget, len(text_options))
 	indexes := make([]reflect.Value, len(text_options))
 	for i := range options {
-		options[i] = MakeTextLine("standard", text_options[i], width, 1, 1, 1, 1)
+		options[i] = MakeTextLine("standard_18", text_options[i], width, 1, 1, 1, 1)
 		indexes[i] = reflect.ValueOf(text_options[i])
 	}
 	return MakeCheckBoxes(options, indexes, width, reflect.ValueOf(target))

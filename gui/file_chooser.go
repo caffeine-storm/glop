@@ -78,7 +78,7 @@ func pathToDir(path string) string {
 func MakeFileWidget(path string, filter func(string, bool) bool) *FileWidget {
 	var fw FileWidget
 	fw.path = path
-	fw.Button = MakeButton("standard", pathToDir(fw.path), 250, 1, 1, 1, 1, func(int64) {
+	fw.Button = MakeButton("standard_18", pathToDir(fw.path), 250, 1, 1, 1, 1, func(int64) {
 		anchor := MakeAnchorBox(fw.ui.root.Render_region.Dims)
 		callback := func(f string, err error) {
 			defer fw.ui.RemoveChild(anchor)
@@ -174,13 +174,13 @@ func MakeFileChooser(dir string, callback func(string, error), filter func(strin
 	var fc FileChooser
 	fc.callback = callback
 	fc.filter = filter
-	fc.filename = MakeTextLine("standard", dir, 300, 1, 1, 1, 1)
+	fc.filename = MakeTextLine("standard_18", dir, 300, 1, 1, 1, 1)
 	fmt.Printf("dir: %s\nother: %s\n", dir, fc.filename.GetText())
-	fc.up_button = MakeButton("standard", "Go up a directory", 200, 1, 1, 1, 1, func(int64) {
+	fc.up_button = MakeButton("standard_18", "Go up a directory", 200, 1, 1, 1, 1, func(int64) {
 		fc.up()
 	})
 	fc.list = nil
-	fc.choose = MakeButton("standard", "Choose", 200, 1, 1, 1, 1, func(int64) {
+	fc.choose = MakeButton("standard_18", "Choose", 200, 1, 1, 1, 1, func(int64) {
 		next := filepath.Join(fc.filename.GetText(), fc.list.GetSelectedOption().(string))
 		f, err := os.Stat(next)
 		if err != nil {

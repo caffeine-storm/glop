@@ -289,7 +289,7 @@ func (w *textOption) SetSelected(selected bool) {
 
 func makeTextOption(text string, width int) SelectableWidget {
 	var so textOption
-	so.TextLine = *MakeTextLine("standard", text, width, 1, 1, 1, 1)
+	so.TextLine = *MakeTextLine("standard_18", text, width, 1, 1, 1, 1)
 	so.data = text
 	so.EmbeddedWidget = &BasicWidget{CoreWidget: &so}
 	return &so

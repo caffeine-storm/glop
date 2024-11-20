@@ -23,9 +23,9 @@ func TextLineSpecs() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
 		dict := gui.LoadDictionaryForTest(renderQueue, glog.VoidLogger())
 		g := MakeStubbedGui()
-		gui.AddDictForTest(g, "glop.font", dict, &render.ShaderBank{})
+		gui.AddDictForTest(g, "dict_10", dict, &render.ShaderBank{})
 
-		textLine := gui.MakeTextLine("glop.font", "lol", 42, 1, 1, 1, 1)
+		textLine := gui.MakeTextLine("dict_10", "lol", 42, 1, 1, 1, 1)
 		So(textLine, ShouldNotBeNil)
 	})
 
@@ -40,9 +40,9 @@ func TextLineSpecs() {
 			})
 			queue.Purge()
 
-			gui.AddDictForTest(g, "glop.font", dict, shaderBank)
+			gui.AddDictForTest(g, "dict_10", dict, shaderBank)
 
-			textLine := gui.MakeTextLine("glop.font", "some text", 32, 1, 1, 1, 1)
+			textLine := gui.MakeTextLine("dict_10", "some text", 32, 1, 1, 1, 1)
 
 			queue.Queue(func(render.RenderQueueState) {
 				textLine.Draw(gui.Region{

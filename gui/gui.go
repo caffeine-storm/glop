@@ -416,10 +416,10 @@ type Gui struct {
 
 var _ DrawingContext = (*Gui)(nil)
 
-func (g *Gui) GetDictionary(fontname string) *Dictionary {
-	ret, ok := g.dictionaries[fontname]
+func (g *Gui) GetDictionary(fontId string) *Dictionary {
+	ret, ok := g.dictionaries[fontId]
 	if !ok {
-		panic(fmt.Errorf("no registered font named %q", fontname))
+		panic(fmt.Errorf("no registered font with id %q", fontId))
 	}
 	return ret
 }
@@ -427,7 +427,7 @@ func (g *Gui) GetDictionary(fontname string) *Dictionary {
 func (g *Gui) GetShaders(fontname string) *render.ShaderBank {
 	ret, ok := g.shaders[fontname]
 	if !ok {
-		panic(fmt.Errorf("no registered shaders for font %q", fontname))
+		panic(fmt.Errorf("no registered shaders for id %q", fontname))
 	}
 	return ret
 }
@@ -510,7 +510,7 @@ func (g *Gui) FocusWidget() Widget {
 	return g.focus[len(g.focus)-1]
 }
 
-func AddDictForTest(g *Gui, fontname string, d *Dictionary, shaders *render.ShaderBank) {
-	g.dictionaries[fontname] = d
-	g.shaders[fontname] = shaders
+func AddDictForTest(g *Gui, fontId string, d *Dictionary, shaders *render.ShaderBank) {
+	g.dictionaries[fontId] = d
+	g.shaders["glop.font"] = shaders
 }

@@ -41,9 +41,9 @@ func (w *TextEditLine) String() string {
 	return "text edit line"
 }
 
-func MakeTextEditLine(font_name, text string, width int, r, g, b, a float64) *TextEditLine {
+func MakeTextEditLine(fontId, text string, width int, r, g, b, a float64) *TextEditLine {
 	var w TextEditLine
-	w.TextLine = *MakeTextLine(font_name, text, width, r, g, b, a)
+	w.TextLine = *MakeTextLine(fontId, text, width, r, g, b, a)
 	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
 
 	w.scale = 1.0

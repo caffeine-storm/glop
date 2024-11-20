@@ -15,7 +15,7 @@ type TextLine struct {
 	BasicZone
 	text      string
 	next_text string
-	font_name string
+	font_id   string
 	initted   bool
 	rdims     Dims
 	color     color.Color
@@ -44,9 +44,9 @@ type Button struct {
 	Clickable
 }
 
-func MakeButton(font_name, text string, width int, r, g, b, a float64, f func(int64)) *Button {
+func MakeButton(fontId, text string, width int, r, g, b, a float64, f func(int64)) *Button {
 	var btn Button
-	btn.TextLine = MakeTextLine(font_name, text, width, r, g, b, a)
+	btn.TextLine = MakeTextLine(fontId, text, width, r, g, b, a)
 	btn.TextLine.EmbeddedWidget = &BasicWidget{CoreWidget: &btn}
 	btn.on_click = f
 	return &btn
@@ -55,10 +55,10 @@ func MakeButton(font_name, text string, width int, r, g, b, a float64, f func(in
 // TODO(tmckee): we should take a font by reference instead of by
 // stringified-name. That way, the compiler can check for us that the font is
 // loaded.
-func MakeTextLine(font_name, text string, width int, r, g, b, a float64) *TextLine {
+func MakeTextLine(fontId, text string, width int, r, g, b, a float64) *TextLine {
 	var w TextLine
 
-	w.font_name = font_name
+	w.font_id = fontId
 	w.text = text
 	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
 	// w.SetFontSize(12) // TODO(tmckee) ... waat?
@@ -142,7 +142,7 @@ func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	height := 12
 	target := w.Render_region.Point
 	target.Y = w.Render_region.Dims.Dy - target.Y
-	d := ctx.GetDictionary(w.font_name)
-	shaders := ctx.GetShaders(w.font_name)
+	d := ctx.GetDictionary(w.font_id)
+	shaders := ctx.GetShaders("glop.font")
 	d.RenderString(w.text, target, height, Left, shaders)
 }

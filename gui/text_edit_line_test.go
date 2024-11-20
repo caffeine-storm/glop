@@ -23,8 +23,8 @@ func TextEditLineSpecs() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
 		dict := gui.LoadDictionaryForTest(renderQueue, glog.VoidLogger())
 		g := MakeStubbedGui()
-		gui.AddDictForTest(g, "glop.font", dict, &render.ShaderBank{})
-		textLine := gui.MakeTextEditLine("glop.font", "lol", 42, 1, 1, 1, 1)
+		gui.AddDictForTest(g, "dict_10", dict, &render.ShaderBank{})
+		textLine := gui.MakeTextEditLine("dict_10", "lol", 42, 1, 1, 1, 1)
 		So(textLine, ShouldNotBeNil)
 	})
 
@@ -39,9 +39,9 @@ func TextEditLineSpecs() {
 			})
 			queue.Purge()
 
-			gui.AddDictForTest(g, "glop.font", dict, shaderBank)
+			gui.AddDictForTest(g, "dict_10", dict, shaderBank)
 
-			textLine := gui.MakeTextEditLine("glop.font", "some text to edit", 32, 1, 1, 1, 1)
+			textLine := gui.MakeTextEditLine("dict_10", "some text to edit", 32, 1, 1, 1, 1)
 
 			queue.Queue(func(render.RenderQueueState) {
 				textLine.Draw(gui.Region{
