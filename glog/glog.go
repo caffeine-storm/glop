@@ -101,6 +101,7 @@ type Slogger interface {
 	Error(msg string, args ...interface{})
 	Handler() slog.Handler
 	Log(ctx context.Context, lvl slog.Level, msg string, args ...interface{})
+	Enabled(ctx context.Context, lvl slog.Level) bool
 }
 
 type Logger interface {
