@@ -539,7 +539,7 @@ func (d *Dictionary) compileShaders(fontName string, renderQueue render.RenderQu
 
 		err := st.Shaders().RegisterShader(fontName, font_vertex_shader, font_fragment_shader)
 		if err != nil {
-			d.logger.Error("failed to register font", "fontname", fontName, "error", err)
+			panic(fmt.Errorf("failed to register font %q: %w", shaderName, err))
 		}
 	})
 }
