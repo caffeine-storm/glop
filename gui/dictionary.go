@@ -531,13 +531,13 @@ func (d *Dictionary) Store(outputStream io.Writer) error {
 	return gob.NewEncoder(outputStream).Encode(d.Data)
 }
 
-func (d *Dictionary) compileShaders(fontName string, renderQueue render.RenderQueueInterface) {
+func (d *Dictionary) compileShaders(shaderName string, renderQueue render.RenderQueueInterface) {
 	renderQueue.Queue(func(st render.RenderQueueState) {
-		if st.Shaders().HasShader(fontName) {
+		if st.Shaders().HasShader(shaderName) {
 			return
 		}
 
-		err := st.Shaders().RegisterShader(fontName, font_vertex_shader, font_fragment_shader)
+		err := st.Shaders().RegisterShader(shaderName, font_vertex_shader, font_fragment_shader)
 		if err != nil {
 			panic(fmt.Errorf("failed to register font %q: %w", shaderName, err))
 		}
