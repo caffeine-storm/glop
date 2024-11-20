@@ -42,7 +42,8 @@ func trimLeadingDir(in string) string {
 	// above 'glop'.
 	parts := strings.Split(in, string(filepath.Separator))
 	trimpoints := map[string]bool{
-		"glop": true,
+		"glop":   true,
+		"haunts": true,
 	}
 
 	for i := len(parts); i > 0; {
