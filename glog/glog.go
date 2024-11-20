@@ -114,8 +114,10 @@ type traceLogger struct {
 
 var _ Logger = (*traceLogger)(nil)
 
+const LevelTrace = slog.LevelDebug - 4
+
 func (log *traceLogger) Trace(msg string, args ...interface{}) {
-	log.Log(context.Background(), slog.LevelDebug-4, msg, args...)
+	log.Log(context.Background(), LevelTrace, msg, args...)
 }
 
 func TraceLogger() Logger {
