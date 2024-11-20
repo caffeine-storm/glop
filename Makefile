@@ -63,6 +63,9 @@ ${profile_dir}/%.view: ${profile_dir}/%.test ${profile_dir}/%.${cpu_profile_file
 test-fresh: |clean_rejects
 test-fresh: test-nocache
 
+list_rejects:
+	@find testdata/ -name '*.rej*'
+
 clean_rejects:
 	find testdata/ -name '*.rej*' -exec rm "{}" +
 
@@ -115,7 +118,7 @@ clean:
 	rm -f ${TEST_REPORT_TAR}
 
 .PHONY: build-check
-.PHONY: clean_rejects promote_rejects
+.PHONY: list_rejects clean_rejects promote_rejects
 .PHONY: compile_commands
 .PHONY: fmt
 .PHONY: profiling/*.view
