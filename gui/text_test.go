@@ -2,8 +2,6 @@ package gui
 
 import (
 	"fmt"
-	"io"
-	"log/slog"
 	"os"
 	"testing"
 
@@ -19,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
+func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
 	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
@@ -47,7 +45,7 @@ func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger *slog
 }
 
 // Renders the given string with pixel units and an origin at the bottom-left.
-func renderStringForTest(toDraw string, x, y, height int, sys system.System, queue render.RenderQueueInterface, just Justification, logger *slog.Logger) {
+func renderStringForTest(toDraw string, x, y, height int, sys system.System, queue render.RenderQueueInterface, just Justification, logger glog.Logger) {
 	d := LoadDictionaryForTest(queue, logger)
 
 	queue.Queue(func(st render.RenderQueueState) {
@@ -111,7 +109,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		assert := assert.New(t)
 
 		queue := rendertest.MakeDiscardingRenderQueue()
-		d := LoadDictionaryForTest(queue, slog.Default())
+		d := LoadDictionaryForTest(queue, glog.TraceLogger())
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and
@@ -181,7 +179,7 @@ func DictionaryRenderStringSpec() {
 			bottomPixel := testcase.screenDimensions.Dy / 2
 			height := 22
 			just := Left
-			logger := slog.Default()
+			var logger glog.Logger = glog.TraceLogger()
 
 			rendertest.WithGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
@@ -189,7 +187,6 @@ func DictionaryRenderStringSpec() {
 				}
 
 				Convey("Can render 'lol'", func() {
-					logger = glog.DebugLogger()
 					doRenderString("lol")
 
 					So(render, rendertest.ShouldLookLikeText, "lol", testnumber)
@@ -207,7 +204,6 @@ func DictionaryRenderStringSpec() {
 					Convey("can render at the bottom left", func() {
 						leftPixel = 10
 						bottomPixel = 10
-						logger = glog.DebugLogger()
 						doRenderString("offset")
 
 						So(render, rendertest.ShouldLookLikeText, "offset", testnumber)
@@ -216,16 +212,13 @@ func DictionaryRenderStringSpec() {
 
 				Convey("Can render to a given height", func() {
 					height = 5
-					logger = glog.DebugLogger()
 					doRenderString("tall-or-small")
 
 					So(render, rendertest.ShouldLookLikeText, "tall-or-small", testnumber)
 				})
 
 				Convey("stdout isn't spammed by RenderString", func() {
-					logger = slog.New(slog.NewTextHandler(io.Discard, &slog.HandlerOptions{
-						Level: slog.Level(-42),
-					}))
+					logger = glog.VoidLogger()
 
 					stdoutLines := gloptest.CollectOutput(func() {
 						doRenderString("spam check")

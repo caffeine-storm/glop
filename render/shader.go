@@ -2,7 +2,6 @@ package render
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
@@ -98,6 +97,6 @@ func (bank *ShaderBank) RegisterShader(name string, vertex, fragment string) err
 
 	bank.ShaderProgs[name] = program
 
-	debug.LogAndClearGlErrors(slog.Default())
+	debug.LogAndClearGlErrors(glog.InfoLogger())
 	return nil
 }

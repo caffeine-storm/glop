@@ -6,7 +6,6 @@ import (
 	"image"
 	"image/draw"
 	"io"
-	"log/slog"
 	"unsafe"
 
 	"code.google.com/p/freetype-go/freetype"
@@ -14,6 +13,7 @@ import (
 	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )
 
@@ -59,7 +59,7 @@ const (
 type Dictionary struct {
 	Data dictData
 
-	logger *slog.Logger
+	logger glog.Logger
 
 	// TODO(tmckee): we need to call gl.DeleteTexture on this to clean up
 	// properly.
@@ -279,7 +279,7 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 // TODO(tmckee): change it so that the given Y is the top. It'll simplify a
 // bunch of stuffs.
 func (d *Dictionary) RenderString(s string, target Point, height int, just Justification, shaders *render.ShaderBank) {
-	d.logger.Debug("RenderString called", "s", s, "target", target, "height", height, "just", just)
+	d.logger.Trace("RenderString called", "s", s, "target", target, "height", height, "just", just)
 
 	if len(s) == 0 {
 		return
@@ -288,7 +288,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	stride := unsafe.Sizeof(blitVertex{})
 	string_width_px := d.StringPixelWidth(s)
 
-	d.logger.Debug("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "glstate", debug.GetGlState().String())
+	d.logger.Trace("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "glstate", debug.GetGlState().String())
 
 	x_pos_px := float64(target.X)
 	y_pos_px := float64(target.Y)
@@ -350,11 +350,11 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
 				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 			})
-			d.logger.Debug("render-char", "x_pos", x_pos_px, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
+			d.logger.Trace("render-char", "x_pos", x_pos_px, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
 			x_pos_px += info.Advance
 		}
 
-		d.logger.Debug("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
+		d.logger.Trace("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
 		blittingData.vertexBuffer = gl.GenBuffer()
 		blittingData.vertexBuffer.Bind(gl.ARRAY_BUFFER)
 		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(blittingData.vertexData), blittingData.vertexData, gl.STATIC_DRAW)
@@ -365,7 +365,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 		d.stringBlittingCache[s] = blittingData
 	}
 
-	d.logger.Debug("renderstring blittingData", "todraw", s, "data", blittingData)
+	d.logger.Trace("renderstring blittingData", "todraw", s, "data", blittingData)
 
 	err := shaders.EnableShader("glop.font")
 	if err != nil {
@@ -381,7 +381,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	// diff = 0.45
 	// }
 	diff := 0.45
-	d.logger.Debug("RenderStringDiff", "diff", diff)
+	d.logger.Trace("RenderStringDiff", "diff", diff)
 	shaders.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
 	shaders.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
@@ -423,7 +423,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n/256) + float64(n%256)/256.0
 }
 
-func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger *slog.Logger) *Dictionary {
+func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -511,7 +511,7 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	return &dict
 }
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger *slog.Logger) (*Dictionary, error) {
+func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger glog.Logger) (*Dictionary, error) {
 	var d Dictionary
 	err := d.Load(r)
 	if err != nil {

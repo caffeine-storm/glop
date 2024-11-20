@@ -19,14 +19,16 @@ func (hdl *handlerAtLevel) Enabled(ctx context.Context, lvl slog.Level) bool {
 	return lvl >= hdl.lvl
 }
 
-func Relevel(in *slog.Logger, lvl slog.Level) *slog.Logger {
+func Relevel(in Logger, lvl slog.Level) Logger {
 	handler := in.Handler()
 
 	handler = &handlerAtLevel{
 		Handler: handler, lvl: lvl,
 	}
 
-	return slog.New(handler)
+	return &traceLogger{
+		Logger: slog.New(handler),
+	}
 }
 
 type Opts struct {
@@ -67,7 +69,7 @@ func trimLeadingDirNoise(groups []string, a slog.Attr) slog.Attr {
 	return slog.String("source", fileColonLine)
 }
 
-func New(options *Opts) *slog.Logger {
+func New(options *Opts) Logger {
 	if options == nil {
 		options = &Opts{}
 	}
@@ -83,26 +85,51 @@ func New(options *Opts) *slog.Logger {
 		Level:       options.Level,
 		ReplaceAttr: trimLeadingDirNoise,
 	}
-	return slog.New(slog.NewTextHandler(options.Output, slogopts))
+	wrapped := slog.New(slog.NewTextHandler(options.Output, slogopts))
+	return &traceLogger{
+		Logger: wrapped,
+	}
+}
+
+// Annoyingly, slog and log use structs instead of interfaces... we'll make our
+// own!
+type Slogger interface {
+	Debug(msg string, args ...interface{})
+	Info(msg string, args ...interface{})
+	Warn(msg string, args ...interface{})
+	Error(msg string, args ...interface{})
+	Handler() slog.Handler
+	Log(ctx context.Context, lvl slog.Level, msg string, args ...interface{})
+}
+
+type Logger interface {
+	Slogger
+	Trace(msg string, args ...interface{})
 }
 
 type traceLogger struct {
 	*slog.Logger
 }
 
+var _ Logger = (*traceLogger)(nil)
+
 func (log *traceLogger) Trace(msg string, args ...interface{}) {
 	log.Log(context.Background(), slog.LevelDebug-4, msg, args...)
 }
 
-func TraceLogger() *traceLogger {
-	return &traceLogger{
-		Logger: New(&Opts{
-			Level: slog.LevelInfo, // Trace calls will be ignored unless the caller re-levels
-		}),
-	}
+func TraceLogger() Logger {
+	return New(&Opts{
+		Level: slog.LevelInfo, // Trace calls will be ignored unless the caller re-levels
+	})
 }
 
-func DebugLogger() *slog.Logger {
+func InfoLogger() Logger {
+	return New(&Opts{
+		Level: slog.LevelInfo,
+	})
+}
+
+func DebugLogger() Logger {
 	return New(&Opts{
 		// TODO(tmckee): we should use LevelInfo and expect callers who _really_
 		// want the message to re-level.
@@ -112,19 +139,19 @@ func DebugLogger() *slog.Logger {
 	})
 }
 
-func WarningLogger() *slog.Logger {
+func WarningLogger() Logger {
 	return New(&Opts{
 		Level: slog.LevelWarn,
 	})
 }
 
-func ErrorLogger() *slog.Logger {
+func ErrorLogger() Logger {
 	return New(&Opts{
 		Level: slog.LevelError,
 	})
 }
 
-func VoidLogger() *slog.Logger {
+func VoidLogger() Logger {
 	return New(&Opts{
 		Output: io.Discard,
 	})

@@ -3,11 +3,11 @@ package main
 import (
 	"image"
 	"image/png"
-	"log/slog"
 	"os"
 	"runtime"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render"
@@ -41,7 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	d, err := gui.LoadDictionary(dictReader, render, slog.Default())
+	d, err := gui.LoadDictionary(dictReader, render, glog.TraceLogger())
 	if err != nil {
 		panic(err)
 	}

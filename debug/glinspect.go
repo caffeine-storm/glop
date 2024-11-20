@@ -2,12 +2,12 @@ package debug
 
 import (
 	"fmt"
-	"log/slog"
 	"runtime"
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glew"
+	"github.com/runningwild/glop/glog"
 )
 
 func mappedSymbols() map[gl.GLenum]string {
@@ -93,7 +93,7 @@ func GetGlState() *GlState {
 	}
 }
 
-func LogAndClearGlErrors(logger *slog.Logger) {
+func LogAndClearGlErrors(logger glog.Logger) {
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
 		panic("couldn't call runtime.Caller(1)")
