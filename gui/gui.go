@@ -187,6 +187,12 @@ type DrawingContext interface {
 	GetShaders(fontname string) *render.ShaderBank
 }
 
+type UpdateableDrawingContext interface {
+	DrawingContext
+	SetDictionary(fontname string, d *Dictionary)
+	SetShaders(fontname string, b *render.ShaderBank)
+}
+
 type Widget interface {
 	Zone
 
@@ -415,11 +421,16 @@ type Gui struct {
 }
 
 var _ DrawingContext = (*Gui)(nil)
+var _ UpdateableDrawingContext = (*Gui)(nil)
+
+type MissingFontError struct {
+	error
+}
 
 func (g *Gui) GetDictionary(fontId string) *Dictionary {
 	ret, ok := g.dictionaries[fontId]
 	if !ok {
-		panic(fmt.Errorf("no registered font with id %q", fontId))
+		panic(MissingFontError{fmt.Errorf("no registered font with id %q", fontId)})
 	}
 	return ret
 }
@@ -427,9 +438,17 @@ func (g *Gui) GetDictionary(fontId string) *Dictionary {
 func (g *Gui) GetShaders(fontname string) *render.ShaderBank {
 	ret, ok := g.shaders[fontname]
 	if !ok {
-		panic(fmt.Errorf("no registered shaders for id %q", fontname))
+		panic(MissingFontError{fmt.Errorf("no registered shaders for id %q", fontname)})
 	}
 	return ret
+}
+
+func (g *Gui) SetDictionary(fontname string, d *Dictionary) {
+	g.dictionaries[fontname] = d
+}
+
+func (g *Gui) SetShaders(fontname string, b *render.ShaderBank) {
+	g.shaders[fontname] = b
 }
 
 func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
@@ -508,9 +527,4 @@ func (g *Gui) FocusWidget() Widget {
 		return nil
 	}
 	return g.focus[len(g.focus)-1]
-}
-
-func AddDictForTest(g *Gui, fontId string, d *Dictionary, shaders *render.ShaderBank) {
-	g.dictionaries[fontId] = d
-	g.shaders["glop.font"] = shaders
 }

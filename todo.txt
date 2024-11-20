@@ -1,4 +1,10 @@
+- fontName -> fontId
+	- "standard" -> "standard_18"
+- Set{Dictionary,Shaders} and remove add-for-test
+- Raising 'MissingFontError' specifically
+
 tmckee: clean up after big 'green' step
+	-de-dupe gui/text[_edit]_line_test.go
 	- text height aribirarily chosen as 12 in TextLine.coreDraw
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw
 	- gui.AddDictForTest is not what we want
@@ -8,10 +14,6 @@ tmckee: make Dictionary.RenderString render w.r.t. the top of the bounding box
 ----
 
 tmckee: we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
-
-----
-
-tmckee: de-dupe gui/text[_edit]_line_test.go
 
 ----
 
