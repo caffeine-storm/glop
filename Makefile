@@ -35,8 +35,8 @@ test-nocache:
 	${testing_env} go test -count=1          ${testrunargs} ${testrunpackages}
 
 test-dlv:
-# delve wants exactly one package at a time so 'testrunpackages' better be a
-# literal directory
+# delve wants exactly one package at a time so "testrunpackages" isn't what we
+# want here. We use a var specifically for pointing at a single directory.
 	[ -d ${testsinglepackageargs} ] && \
 	${testing_env} dlv test ${testsinglepackageargs} -- ${newtestrunargs}
 
