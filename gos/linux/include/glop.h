@@ -1,6 +1,10 @@
 #ifndef __GLOP_H__
 #define __GLOP_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // GlopKey devices
 #define glopDeviceKeyboard  -1
 #define glopDeviceDerived  -2
@@ -90,16 +94,8 @@ typedef struct {
   int num_lock;
   int caps_lock;
 } GlopKeyEvent;
-void GlopClearKeyEvent(GlopKeyEvent* event) {
-  event->index = 0;
-  event->device = 0;
-  event->press_amt = 0;
-  event->timestamp = 0;
-  event->cursor_x = 0;
-  event->cursor_y = 0;
-  event->num_lock = 0;
-  event->caps_lock = 0;
-}
+
+void GlopClearKeyEvent(GlopKeyEvent* event);
 
 struct OsWindowData;
 typedef struct {
@@ -163,4 +159,9 @@ void GlopGetWindowDims(void* _window, int* x, int* y, int* dx, int* dy);
 void GlopEnableVSync(int);
 
 */
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif
