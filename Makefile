@@ -17,7 +17,7 @@ testsinglepackageargs="${debugtest}"
 newtestrunargs:=$(subst -,-test.,${testrunargs})
 endif
 
-all: build-check compile_commands
+all: build-check
 
 build-check:
 	go build ./...
@@ -94,11 +94,6 @@ ${TEST_REPORT_TAR}:
 			done \
 		)
 
-compile_commands: gos/linux/compile_commands.json
-
-gos/linux/compile_commands.json:
-	cd $(dir $@) && bear -- ${MAKE}
-
 fmt:
 	go fmt ./...
 
@@ -114,7 +109,6 @@ clean:
 
 .PHONY: build-check
 .PHONY: list_rejects clean_rejects promote_rejects
-.PHONY: compile_commands
 .PHONY: fmt lint
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
