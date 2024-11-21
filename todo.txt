@@ -8,6 +8,8 @@ tmckee: make Dictionary.RenderString render w.r.t. the top of the bounding box
 
 ----
 
+tmckee: port Haunts' "make update-appveyor-image" helper to glop
+
 tmckee: we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
 
 ----
