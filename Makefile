@@ -110,6 +110,9 @@ pre-test: ${LIBGLOP}
 fmt:
 	go fmt ./...
 
+lint:
+	go run github.com/mgechev/revive@v1.5.1 ./...
+
 # -l for 'list files'
 checkfmt:
 	@gofmt -l ./
@@ -120,7 +123,7 @@ clean:
 .PHONY: build-check
 .PHONY: list_rejects clean_rejects promote_rejects
 .PHONY: compile_commands
-.PHONY: fmt
+.PHONY: fmt lint
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
 .PHONY: pre-test test test-spec test-nocache test-fresh test-report
