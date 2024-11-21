@@ -9,7 +9,7 @@
 
 #include <X11/Xlib.h>
 #include <GL/glx.h>
-#include "linux/include/glop.h"
+#include "include/glop.h"
 
 using namespace std;
 
