@@ -2,8 +2,10 @@ package linux
 
 // #cgo LDFLAGS: -lX11 -lGL
 // #include "include/glop.h"
+// #include "stdlib.h"
 import "C"
 import (
+	"runtime"
 	"unsafe"
 
 	"github.com/runningwild/glop/gin"
@@ -40,40 +42,52 @@ func (linux *SystemObject) Think() int64 {
 }
 
 // TODO: Make sure that events are given in sorted order (by timestamp)
-// TODO: Adjust timestamp on events so that the oldest timestamp is newer than the
-//
-//	newest timestemp from the events from the previous call to GetInputEvents
-//	Actually that should be in system
+// TODO(tmckee): use a montonic clock for the timestamps
 func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
-	var first_event *C.GlopKeyEvent
-	cp := (*unsafe.Pointer)(unsafe.Pointer(&first_event))
-	var length C.int
-	var horizon C.longlong
-	C.GlopGetInputEvents(cp, unsafe.Pointer(&length), unsafe.Pointer(&horizon))
+	var first_event *C.struct_GlopKeyEvent
+	var length C.size_t
+	var horizon C.int64_t
+
+	pinner := runtime.Pinner{}
+	defer pinner.Unpin()
+	pinner.Pin(&first_event)
+	pinner.Pin(&length)
+	pinner.Pin(&horizon)
+
+	C.GlopGetInputEvents(&first_event, &length, &horizon)
+
+	defer C.free(unsafe.Pointer(first_event))
 	linux.horizon = int64(horizon)
-	c_events := (*[1000]C.GlopKeyEvent)(unsafe.Pointer(first_event))[:length]
+
 	events := make([]gin.OsEvent, length)
-	for i := range c_events {
-		// TODO(tmckee): we should make this work; otherwise, we never get the
-		// right mouse position.
-		// wx,wy := linux.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
-		keyId := gin.KeyId{
-			Device: gin.DeviceId{
-				// TODO(tmckee): we need to inspect the 'index' or 'device' to know
-				// device type; right now, mouse events get labled as keyboard events
-				// :(
-				Type:  gin.DeviceTypeKeyboard,
-				Index: gin.DeviceIndex(c_events[i].device),
-			},
-			Index: gin.KeyIndex(c_events[i].index),
+	i := 0
+	event_iterator := first_event
+	for chunk := 0; chunk < int(length)/64; chunk++ {
+		c_events := (*[64]C.struct_GlopKeyEvent)(unsafe.Pointer(event_iterator))[:]
+		for _, c_event := range c_events {
+			// TODO(tmckee): we should make this work; otherwise, we never get the
+			// right mouse position.
+			// wx,wy := linux.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
+			keyId := gin.KeyId{
+				Device: gin.DeviceId{
+					// TODO(tmckee): we need to inspect the 'index' or 'device' to know
+					// device type; right now, mouse events get labled as keyboard events
+					// :(
+					Type:  gin.DeviceTypeKeyboard,
+					Index: gin.DeviceIndex(c_event.device),
+				},
+				Index: gin.KeyIndex(c_event.index),
+			}
+			events[i] = gin.OsEvent{
+				KeyId:     keyId,
+				Press_amt: float64(c_event.press_amt),
+				Timestamp: int64(c_event.timestamp),
+				// X : wx,
+				// Y : wy,
+			}
+			i++
 		}
-		events[i] = gin.OsEvent{
-			KeyId:     keyId,
-			Press_amt: float64(c_events[i].press_amt),
-			Timestamp: int64(c_events[i].timestamp),
-			// X : wx,
-			// Y : wy,
-		}
+		event_iterator = (*C.struct_GlopKeyEvent)(unsafe.Pointer(uintptr(unsafe.Pointer(event_iterator)) + 64*C.sizeof_struct_GlopKeyEvent))
 	}
 	return events, linux.horizon
 }

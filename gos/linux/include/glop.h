@@ -86,7 +86,7 @@ extern "C" {
 #define kMouseRButton  305
 #define kMouseMButton  306
 
-typedef struct {
+struct GlopKeyEvent {
   short index;
   short device;
   float press_amt;
@@ -95,9 +95,9 @@ typedef struct {
   int cursor_y;
   int num_lock;
   int caps_lock;
-} GlopKeyEvent;
+};
 
-void GlopClearKeyEvent(GlopKeyEvent* event);
+void GlopClearKeyEvent(struct GlopKeyEvent* event);
 
 struct OsWindowData;
 typedef struct {
@@ -120,7 +120,8 @@ void GlopSwapBuffers();
 void GlopGetMousePosition(int* x, int* y);
 void GlopGetWindowDims(int* x, int* y, int* dx, int* dy);
 void GlopSetWindowSize(int dx, int dy);
-void GlopGetInputEvents(void** _events_ret, void* _num_events, void* _horizon);
+// The caller is responsible for calling free(*_events_ret)
+void GlopGetInputEvents(struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon);
 void GlopEnableVSync(int enable);
 
 // Takes a handle returned from GlopCreateWindow.

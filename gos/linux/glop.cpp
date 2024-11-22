@@ -15,7 +15,7 @@ using namespace std;
 
 extern "C" {
 
-void GlopClearKeyEvent(GlopKeyEvent* event) {
+void GlopClearKeyEvent(struct GlopKeyEvent* event) {
   event->index = 0;
   event->device = 0;
   event->press_amt = 0;
@@ -77,8 +77,8 @@ void glopShutDown() {
   XCloseDisplay(display);
 }
 
-vector<GlopKeyEvent> events;
-static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window window, GlopKeyEvent *ev) {
+vector<struct GlopKeyEvent> events;
+static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
   // mostly ignored
   Window root, child;
   int x, y, winx, winy;
@@ -203,7 +203,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
   ev->caps_lock = event.xkey.state & LockMask;
   return true;
 }
-static bool SynthButton(int button, bool pushed, const XEvent &event, Window window, GlopKeyEvent *ev) {
+static bool SynthButton(int button, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
   // mostly ignored
   Window root, child;
   int x, y, winx, winy;
@@ -235,7 +235,7 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
   return true;
 }
 
-static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, GlopKeyEvent *ev, GlopKeyEvent *ev2) {
+static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
   // mostly ignored
   Window root, child;
   int x, y, winx, winy;
@@ -303,7 +303,7 @@ int64_t GlopThink() {
     last_botched_release = -1;
     last_botched_time = -1;
 
-    GlopKeyEvent ev;
+    struct GlopKeyEvent ev;
     GlopClearKeyEvent(&ev);
     switch(event.type) {
       case KeyPress: {
@@ -341,7 +341,7 @@ int64_t GlopThink() {
         break;
 
       case MotionNotify:
-        GlopKeyEvent ev2;
+        struct GlopKeyEvent ev2;
         GlopClearKeyEvent(&ev2);
         if(SynthMotion(event.xmotion.x, event.xmotion.y, event, data->window, &ev, &ev2)) {
           events.push_back(ev);
@@ -563,24 +563,15 @@ void GlopSetWindowSize(int dx, int dy) {
 // Input functions
 // ===============
 
-// See Os.h
-
-static GlopKeyEvent* glop_event_buffer = 0;
-
-void GlopGetInputEvents(void** _events_ret, void* _num_events, void* _horizon) {
-  *((long long*)_horizon) = gt();
-  vector<GlopKeyEvent> ret; // weeeeeeeeeeee
+void GlopGetInputEvents(struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon) {
+  *_horizon = gt();
+  vector<struct GlopKeyEvent> ret; // weeeeeeeeeeee
   ret.swap(events);
 
-  if (glop_event_buffer != 0) {
-    free(glop_event_buffer);
-  }
-
-  glop_event_buffer = (GlopKeyEvent*)malloc(sizeof(GlopKeyEvent) * ret.size());
-  *((GlopKeyEvent**)_events_ret) = glop_event_buffer;
-  *((int*)_num_events) = ret.size();
+  *_events_ret = (struct GlopKeyEvent*)malloc(sizeof(struct GlopKeyEvent) * ret.size());
+  *_num_events = ret.size();
   for (size_t i = 0; i < ret.size(); i++) {
-    glop_event_buffer[i] = ret[i];
+    (*_events_ret)[i] = ret[i];
   }
 }
 
