@@ -44,12 +44,12 @@ func (linux *SystemObject) Think() int64 {
 // TODO: Make sure that events are given in sorted order (by timestamp)
 // TODO(tmckee): use a montonic clock for the timestamps
 func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
-	var first_event *C.struct_GlopKeyEvent
+	var firstEvent *C.struct_GlopKeyEvent
 	var length C.size_t
 	var horizon C.int64_t
 
-	C.GlopGetInputEvents(&first_event, &length, &horizon)
-	defer C.free(unsafe.Pointer(first_event))
+	C.GlopGetInputEvents(&firstEvent, &length, &horizon)
+	defer C.free(unsafe.Pointer(firstEvent))
 	linux.horizon = int64(horizon)
 
 	makeOsEvent := func(glopEvent *C.struct_GlopKeyEvent) gin.OsEvent {
@@ -75,23 +75,33 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 		}
 	}
 
+	// Given a pointer to a C array, returns the same pointer co-erced to a 64
+	// element array and a pointer to one-past that array. Useful for iterating
+	// elements of a C array 64 elements at a time.
+	next64 := func(itr *C.struct_GlopKeyEvent) (*[64]C.struct_GlopKeyEvent, *C.struct_GlopKeyEvent) {
+		result := (*[64]C.struct_GlopKeyEvent)(unsafe.Pointer(itr))
+		bounds := uintptr(64 * C.sizeof_struct_GlopKeyEvent)
+		itr = (*C.struct_GlopKeyEvent)(unsafe.Pointer((uintptr(unsafe.Pointer(itr)) + bounds)))
+		return result, itr
+	}
+
 	events := make([]gin.OsEvent, length)
+	var eventChunk *[64]C.struct_GlopKeyEvent
 	i := 0
-	event_iterator := first_event
+	eventIterator := firstEvent
 	for chunk := 0; chunk < int(length)/64; chunk++ {
-		c_events := (*[64]C.struct_GlopKeyEvent)(unsafe.Pointer(event_iterator))[:]
+		eventChunk, eventIterator = next64(eventIterator)
 		for j := 0; j < 64; j++ {
-			events[i] = makeOsEvent(&c_events[j])
+			events[i] = makeOsEvent(&eventChunk[j])
 			i++
 		}
-		event_iterator = (*C.struct_GlopKeyEvent)(unsafe.Pointer(uintptr(unsafe.Pointer(event_iterator)) + 64*C.sizeof_struct_GlopKeyEvent))
 	}
 
 	// Typically, there'll be some non-full chunk of input that we still need to
 	// process.
-	c_events := (*[64]C.struct_GlopKeyEvent)(unsafe.Pointer(event_iterator))[:]
+	eventChunk, _ = next64(eventIterator)
 	for j := 0; j < int(length)%64; j++ {
-		events[i] = makeOsEvent(&c_events[j])
+		events[i] = makeOsEvent(&eventChunk[j])
 		i++
 	}
 
