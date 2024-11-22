@@ -1,32 +1,32 @@
-tmckee: clean up after big 'green' step
+tmckee#1: clean up after big 'green' step
 	- text height aribirarily chosen as 12 in TextLine.coreDraw
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw
 
-tmckee: make Dictionary.RenderString render w.r.t. the top of the bounding box
+tmckee#2: make Dictionary.RenderString render w.r.t. the top of the bounding box
 
 ----
 
-tmckee: port Haunts' "make update-appveyor-image" helper to glop
+tmckee#3: port Haunts' "make update-appveyor-image" helper to glop
 
-tmckee: we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
+tmckee#4: we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
 
 ----
 
-tmckee: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
+tmckee#5: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
-tmckee: in gos/cgo_linux.go, mouse position needs to get un-stubbed
+tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
-tmckee: installed multilib support to get the build going; is it necessary?
+tmckee:#7 installed multilib support to get the build going; is it necessary?
 - sudo apt install gcc-multilib g++-multilib
 
-tmckee: use type system to make initialization ordering constraints explicit
+tmckee:#8 use type system to make initialization ordering constraints explicit
 	- need to identify which modules/packages need this
 
-tmckee: find a way to work around needing LD_LIBRARY_PATH when running tests in
+tmckee:#9 find a way to work around needing LD_LIBRARY_PATH when running tests in
 subdirectories
 
-tmckee: in gos/linux/glop.cpp:
+tmckee:#10 in gos/linux/glop.cpp:
 	case XK_slash: ki = '/'; break;
 	case XK_space: ki = '/'; break;
 	?? shouldn't that be a space, not a slash?
