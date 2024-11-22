@@ -8,20 +8,20 @@ type System interface {
 	// Call after runtime.LockOSThread(), *NOT* in an init function
 	Startup()
 
-	// Call System.Think() every frame
-	Think()
+	// Call System.Think() every frame. Returns the 'horizon'.
+	Think() int64
 
 	CreateWindow(x, y, width, height int)
 	// TODO: implement this:
 	// DestroyWindow(Window)
 
 	// TODO(tmckee): maybe 'with the origin at the bottom left'?
-	// Gets the cursor position in window coordinates with the cursor at the bottom left
-	// corner of the window
+	// Gets the cursor position in window coordinates with the cursor at the
+	// bottom left corner of the window
 	GetCursorPos() (x, y int)
 
-	// Hides/Unhides the cursor.  A hidden cursor is invisible and its position is
-	// locked.  It should still generate mouse move events.
+	// Hides/Unhides the cursor. A hidden cursor is invisible and its position is
+	// locked. It should still generate mouse move events.
 	HideCursor(bool)
 
 	GetWindowDims() (x, y, dx, dy int)
@@ -32,37 +32,41 @@ type System interface {
 
 	EnableVSync(bool)
 
-	// These probably shouldn't be here, probably always want to do the Think() approach
+	// These probably shouldn't be here, probably always want to do the Think()
+	// approach
 	//  Run()
 	//  Quit()
 }
 
 // This is the interface implemented by any operating system that supports
-// glop.  The glop/gos package for that OS should export a function called
+// glop. The glop/gos package for that OS should export a function called
 // GetSystemInterface() which takes no parameters and returns an object that
 // implements the system.Os interface.
 type Os interface {
-	// This is properly called after runtime.LockOSThread(), not in an init function
+	// This is properly called after runtime.LockOSThread(), not in an init
+	// function
 	Startup()
 
-	// Think() is called on a regular basis and always from main thread.
-	Think()
+	// Think() is called on a regular basis and always from main thread. Returns
+	// the an event horizon; a timestamp that can be compared with
+	// GetInputEvent's timestamps.
+	Think() int64
 
-	// Create a window with the appropriate dimensions and bind an OpenGl contxt to it.
-	// Currently glop only supports a single window, but this function could be called
-	// more than once since a window could be destroyed so it can be recreated at different
-	// dimensions or in full sreen mode.
+	// Create a window with the appropriate dimensions and bind an OpenGl contxt
+	// to it.  Currently glop only supports a single window, but this function
+	// could be called more than once since a window could be destroyed so it can
+	// be recreated at different dimensions or in full sreen mode.
 	CreateWindow(x, y, width, height int)
 
 	// TODO: implement this:
 	// DestroyWindow(Window)
 
-	// Gets the cursor position in window coordinates with the cursor at the bottom left
-	// corner of the window
+	// Gets the cursor position in window coordinates with the cursor at the
+	// bottom left corner of the window
 	GetCursorPos() (x, y int)
 
-	// Hides/Unhides the cursor.  A hidden cursor is invisible and its position is
-	// locked.  It should still generate mouse move events.
+	// Hides/Unhides the cursor. A hidden cursor is invisible and its position is
+	// locked. It should still generate mouse move events.
 	HideCursor(bool)
 
 	GetWindowDims() (x, y, dx, dy int)
@@ -71,15 +75,17 @@ type Os interface {
 	// Swap the OpenGl buffers on this window
 	SwapBuffers()
 
-	// Returns all of the events in the order that they happened since the last call to
-	// this function.  The events do not have to be in order according to KeyEvent.Timestamp,
-	// but they will be sorted according to this value.  The timestamp returned is the event
-	// horizon, no future events will have a timestamp less than or equal to it.
+	// Returns all of the events in the order that they happened since the last
+	// call to this function. The events do not have to be in order according to
+	// KeyEvent.Timestamp, but they will be sorted according to this value. The
+	// timestamp returned is the event horizon, no future events will have a
+	// timestamp less than or equal to it.
 	GetInputEvents() ([]gin.OsEvent, int64)
 
 	EnableVSync(bool)
 
-	// These probably shouldn't be here, probably always want to do the Think() approach
+	// These probably shouldn't be here, probably always want to do the Think()
+	// approach
 	//  Run()
 	//  Quit()
 }
@@ -99,13 +105,14 @@ func (sys *sysObj) Startup() {
 	sys.os.Startup()
 	_, sys.start_ms = sys.os.GetInputEvents()
 }
-func (sys *sysObj) Think() {
+func (sys *sysObj) Think() int64 {
 	sys.os.Think()
 	events, horizon := sys.os.GetInputEvents()
 	for i := range events {
 		events[i].Timestamp -= sys.start_ms
 	}
 	sys.events = gin.In().Think(horizon-sys.start_ms, false, events)
+	return horizon
 }
 func (sys *sysObj) CreateWindow(x, y, width, height int) {
 	sys.os.CreateWindow(x, y, width, height)

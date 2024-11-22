@@ -38,6 +38,7 @@ int get_x_screen() { return screen; }
 
 static long long gtm() {
   struct timeval tv;
+  // TODO(tmckee): use clock_gettime with CLOCK_MONOTONIC instead
   gettimeofday(&tv, NULL);
   return (long long)tv.tv_sec * 1000000 + tv.tv_usec;
 }
@@ -268,8 +269,9 @@ Window get_x_window() {
 //  ASSERT(windowdata);
   return windowdata->window;
 }
-void GlopThink() {
-  if(!windowdata) return;
+
+int64_t GlopThink() {
+  if(!windowdata) return -1;
 
   OsWindowData *data = windowdata;
   XEvent event;
@@ -359,16 +361,18 @@ void GlopThink() {
           // TODO: probably want to do something here
 //        WindowDashDestroy(); // ffffff
 //        LOGF("destroed\n");
-        return;
+        return gt();
 
       case ClientMessage :
         if(event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(close_atom)) {
 //            WindowDashDestroy();
 //            LOGF("destroj\n");
-            return;
+            return gt();
         }
     }
   }
+
+  return gt();
 }
 
 void GlopSetTitle(OsWindowData* data, const string& title) {
@@ -498,9 +502,9 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
   nw->context = glXCreateContext(display, nw->vinfo, NULL, True);
 //  ASSERT(nw->context);
 
-	// TODO(tmckee): Use GLFW for window management so that we can do something like
-	// glfwSetFramebufferSizeCallback(glfwWindow, setViewportOnResize)
-	// Shoutout to @Hermie02 for the suggestion!
+  // TODO(tmckee): Use GLFW for window management so that we can do something like
+  // glfwSetFramebufferSizeCallback(glfwWindow, setViewportOnResize)
+  // Shoutout to @Hermie02 for the suggestion!
 
   glopSetCurrentContext(nw);
 

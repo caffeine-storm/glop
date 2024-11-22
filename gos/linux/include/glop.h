@@ -1,6 +1,8 @@
 #ifndef __GLOP_H__
 #define __GLOP_H__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -110,7 +112,9 @@ GlopWindowHandle GlopCreateWindow(
     int y,
     int width,
     int height);
-void GlopThink();
+
+// Returns the current time like GetInputEvents' |_horizon|.
+int64_t GlopThink();
 void GlopSwapBuffers();
 
 void GlopGetMousePosition(int* x, int* y);
