@@ -38,7 +38,8 @@ func (linux *SystemObject) SwapBuffers() {
 }
 
 func (linux *SystemObject) Think() int64 {
-	return int64(C.GlopThink())
+	linux.horizon = int64(C.GlopThink())
+	return linux.horizon
 }
 
 // TODO: Make sure that events are given in sorted order (by timestamp)
