@@ -5,7 +5,6 @@ package linux
 // #include "stdlib.h"
 import "C"
 import (
-	"runtime"
 	"unsafe"
 
 	"github.com/runningwild/glop/gin"
@@ -49,14 +48,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	var length C.size_t
 	var horizon C.int64_t
 
-	pinner := runtime.Pinner{}
-	defer pinner.Unpin()
-	pinner.Pin(&first_event)
-	pinner.Pin(&length)
-	pinner.Pin(&horizon)
-
 	C.GlopGetInputEvents(&first_event, &length, &horizon)
-
 	defer C.free(unsafe.Pointer(first_event))
 	linux.horizon = int64(horizon)
 
