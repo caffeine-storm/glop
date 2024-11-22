@@ -13,12 +13,16 @@ import (
 )
 
 func TestRunTextLineSpecs(t *testing.T) {
-	Convey("TextLine should work", t, TextLineSpecs)
+	Convey("Drawing Lines of Text", t, TextLineSpecs)
 }
 
-func TextLineSpecs() {
-	screenWidth, screenHeight := 200, 50
+const screenWidth, screenHeight = 200, 50
 
+type GenericLine interface {
+	Draw(gui.Region, gui.DrawingContext)
+}
+
+func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLine) {
 	Convey("Can make a 'lol' line", func() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
 		dict := gui.LoadDictionaryForTest(renderQueue, glog.VoidLogger())
@@ -26,11 +30,11 @@ func TextLineSpecs() {
 		g.SetDictionary("dict_10", dict)
 		g.SetShaders("glop.font", &render.ShaderBank{})
 
-		textLine := gui.MakeTextLine("dict_10", "lol", 42, 1, 1, 1, 1)
+		textLine := widgetBuilder("lol")
 		So(textLine, ShouldNotBeNil)
 	})
 
-	Convey("TextLine draws its text", func() {
+	Convey("TextLine draws the given text", func() {
 		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
 			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
 			g := MakeStubbedGui()
@@ -44,7 +48,7 @@ func TextLineSpecs() {
 			g.SetDictionary("dict_10", dict)
 			g.SetShaders("glop.font", shaderBank)
 
-			textLine := gui.MakeTextLine("dict_10", "some text", 32, 1, 1, 1, 1)
+			textLine := widgetBuilder(text)
 
 			queue.Queue(func(render.RenderQueueState) {
 				textLine.Draw(gui.Region{
@@ -54,7 +58,21 @@ func TextLineSpecs() {
 			})
 			queue.Purge()
 
-			So(queue, rendertest.ShouldLookLikeText, "some-text")
+			So(queue, rendertest.ShouldLookLikeText, text)
+		})
+	})
+}
+
+func TextLineSpecs() {
+	Convey("TextLine can draw text", func() {
+		GenericTextLineTest("some-text", func(text string) GenericLine {
+			return gui.MakeTextLine("dict_10", text, 32, 1, 1, 1, 1)
+		})
+	})
+
+	Convey("TextEditLine can draw text", func() {
+		GenericTextLineTest("some-edit-text", func(text string) GenericLine {
+			return gui.MakeTextEditLine("dict_10", text, 42, 1, 1, 1, 1)
 		})
 	})
 }

@@ -1,5 +1,4 @@
 tmckee: clean up after big 'green' step
-	- de-dupe gui/text[_edit]_line_test.go
 	- text height aribirarily chosen as 12 in TextLine.coreDraw
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw
 	- gui.AddDictForTest is not what we want
