@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"runtime"
 	"sync/atomic"
+	"time"
 )
 
 // TODO(tmckee): clean: is there a better name for this? RenderContext?
@@ -39,6 +40,11 @@ type RenderQueueInterface interface {
 	IsPurging() bool
 }
 
+type TimedRenderQueueInterface interface {
+	RenderQueueInterface
+	AttachListener(*JobTimingListener)
+}
+
 type renderQueueState struct {
 	shaders *ShaderBank
 }
@@ -55,6 +61,20 @@ type renderQueue struct {
 	purge        chan chan bool
 	is_running   bool
 	is_purging   atomic.Bool
+	listener     *JobTimingListener
+}
+
+func runAndNotify(job RenderJob, queueState RenderQueueState, listener *JobTimingListener) time.Duration {
+	before := time.Now()
+	job(queueState)
+	after := time.Now()
+	delta := after.Sub(before)
+
+	if listener != nil && delta >= listener.Threshold {
+		listener.OnNotify()
+	}
+
+	return delta
 }
 
 func (q *renderQueue) loop() {
@@ -62,14 +82,14 @@ func (q *renderQueue) loop() {
 	for {
 		select {
 		case f := <-q.render_funcs:
-			f(q.queue_state)
+			runAndNotify(f, q.queue_state, q.listener)
 		case ack := <-q.purge:
 			defer close(ack)
 			q.is_purging.Store(true)
 			for {
 				select {
 				case f := <-q.render_funcs:
-					f(q.queue_state)
+					runAndNotify(f, q.queue_state, q.listener)
 				default:
 					goto purged
 				}
@@ -130,4 +150,8 @@ func (q *renderQueue) StartProcessing() {
 
 func (q *renderQueue) IsPurging() bool {
 	return q.is_purging.Load()
+}
+
+func (q *renderQueue) AttachListener(l *JobTimingListener) {
+	q.listener = l
 }

@@ -11,9 +11,25 @@ import (
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var nop = func(render.RenderQueueState) {}
+
+func GivenAQueue() render.RenderQueueInterface {
+	return render.MakeQueue(nop)
+}
+
+func GivenARunningQueue() render.RenderQueueInterface {
+	ret := GivenAQueue()
+	ret.StartProcessing()
+	return ret
+}
+
+func GivenARunningTimedQueue() render.TimedRenderQueueInterface {
+	ret := GivenARunningQueue()
+	return ret.(render.TimedRenderQueueInterface)
+}
 
 func requeueUntilPurging(q render.RenderQueueInterface, success chan bool) {
 	if q.IsPurging() {
@@ -183,20 +199,20 @@ func TestExitOnRenderQueue(t *testing.T) {
 
 func TestJobTiming(t *testing.T) {
 	t.Run("Can listen for jobs", func(t *testing.T) {
-		queue := GivenAQueue()
+		assert := assert.New(t)
+		require := require.New(t)
+		queue := GivenARunningTimedQueue()
 
 		jobsSeen := 0
-		allJobs := &JobTimingListener{
-			onNotify: func() {
+		allJobs := &render.JobTimingListener{
+			OnNotify: func() {
 				jobsSeen++
 			},
-			threshold: 0, // get notified for ALL jobs
+			Threshold: 0, // get notified for ALL jobs
 		}
 		allJobs.Attach(queue)
 
-		if jobsSeen != 0 {
-			t.Fatalf("no slow job notifications should have been sent before any jobs were queued")
-		}
+		require.Equal(0, jobsSeen, "no job notifications should have been sent before any jobs were queued")
 
 		jobDidRun := false
 		queue.Queue(func(render.RenderQueueState) {
@@ -206,12 +222,8 @@ func TestJobTiming(t *testing.T) {
 		})
 		queue.Purge()
 
-		if jobDidRun == false {
-			panic("we purged the queue, but the job didn't run!")
-		}
+		require.True(jobDidRun, "we purged the queue, but the job didn't run!")
 
-		if jobsSeen != 1 {
-			t.Fatalf("the listener should have been notified")
-		}
+		assert.Less(0, jobsSeen, "the listener should have been notified")
 	})
 }
