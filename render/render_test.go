@@ -180,3 +180,38 @@ func TestExitOnRenderQueue(t *testing.T) {
 		assert.Contains(t, allOutput, "we expect to see this string in the logs")
 	})
 }
+
+func TestJobTiming(t *testing.T) {
+	t.Run("Can listen for jobs", func(t *testing.T) {
+		queue := GivenAQueue()
+
+		jobsSeen := 0
+		allJobs := &JobTimingListener{
+			onNotify: func() {
+				jobsSeen++
+			},
+			threshold: 0, // get notified for ALL jobs
+		}
+		allJobs.Attach(queue)
+
+		if jobsSeen != 0 {
+			t.Fatalf("no slow job notifications should have been sent before any jobs were queued")
+		}
+
+		jobDidRun := false
+		queue.Queue(func(render.RenderQueueState) {
+			// It doesn't matter what we do here; the listener has a threshold of 0
+			// so should still get notified about this running.
+			jobDidRun = true
+		})
+		queue.Purge()
+
+		if jobDidRun == false {
+			panic("we purged the queue, but the job didn't run!")
+		}
+
+		if jobsSeen != 1 {
+			t.Fatalf("the listener should have been notified")
+		}
+	})
+}
