@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"log/slog"
 	"runtime"
 	"sync/atomic"
@@ -155,5 +156,8 @@ func (q *renderQueue) IsPurging() bool {
 }
 
 func (q *renderQueue) SetListener(l *JobTimingListener) {
+	if q.is_running {
+		panic(fmt.Errorf("SetListener must happen before StartProcessing"))
+	}
 	q.listener = l
 }

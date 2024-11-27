@@ -26,9 +26,15 @@ func GivenARunningQueue() render.RenderQueueInterface {
 	return ret
 }
 
-func GivenARunningTimedQueue() render.TimedRenderQueueInterface {
-	ret := GivenARunningQueue()
+func GivenATimedQueue() render.TimedRenderQueueInterface {
+	ret := GivenAQueue()
 	return ret.(render.TimedRenderQueueInterface)
+}
+
+func GivenARunningTimedQueue() render.TimedRenderQueueInterface {
+	ret := GivenATimedQueue()
+	ret.StartProcessing()
+	return ret
 }
 
 func requeueUntilPurging(q render.RenderQueueInterface, success chan bool) {
@@ -201,7 +207,7 @@ func TestJobTiming(t *testing.T) {
 	t.Run("Can listen for jobs", func(t *testing.T) {
 		assert := assert.New(t)
 		require := require.New(t)
-		queue := GivenARunningTimedQueue()
+		queue := GivenATimedQueue()
 
 		jobsSeen := 0
 		allJobs := &render.JobTimingListener{
@@ -211,6 +217,8 @@ func TestJobTiming(t *testing.T) {
 			Threshold: 0, // get notified for ALL jobs
 		}
 		allJobs.Attach(queue)
+
+		queue.StartProcessing()
 
 		require.Equal(0, jobsSeen, "no job notifications should have been sent before any jobs were queued")
 
