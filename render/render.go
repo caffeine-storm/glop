@@ -1,7 +1,6 @@
 package render
 
 import (
-	"fmt"
 	"log/slog"
 	"runtime"
 	"sync/atomic"
@@ -39,13 +38,6 @@ type RenderQueueInterface interface {
 
 	// For debugability, polls the queue's current Purging/NotPurging status.
 	IsPurging() bool
-}
-
-type TimedRenderQueueInterface interface {
-	RenderQueueInterface
-
-	// Only one listener at a time is allowed to be registered.
-	SetListener(*JobTimingListener)
 }
 
 type renderQueueState struct {
@@ -105,6 +97,10 @@ func (q *renderQueue) loop() {
 }
 
 func MakeQueue(initialization RenderJob) RenderQueueInterface {
+	return MakeQueueWithTiming(initialization, nil)
+}
+
+func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) RenderQueueInterface {
 	result := renderQueue{
 		queue_state: &renderQueueState{
 			shaders: MakeShaderBank(),
@@ -113,6 +109,7 @@ func MakeQueue(initialization RenderJob) RenderQueueInterface {
 		purge:        make(chan chan bool),
 		is_running:   false,
 		is_purging:   atomic.Bool{}, // zero-value is false
+		listener:     listener,
 	}
 
 	// We're guaranteed that this render job will run first. We can include our
@@ -153,11 +150,4 @@ func (q *renderQueue) StartProcessing() {
 
 func (q *renderQueue) IsPurging() bool {
 	return q.is_purging.Load()
-}
-
-func (q *renderQueue) SetListener(l *JobTimingListener) {
-	if q.is_running {
-		panic(fmt.Errorf("SetListener must happen before StartProcessing"))
-	}
-	q.listener = l
 }

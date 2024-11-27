@@ -26,13 +26,12 @@ func GivenARunningQueue() render.RenderQueueInterface {
 	return ret
 }
 
-func GivenATimedQueue() render.TimedRenderQueueInterface {
-	ret := GivenAQueue()
-	return ret.(render.TimedRenderQueueInterface)
+func GivenATimedQueue(l *render.JobTimingListener) render.RenderQueueInterface {
+	return render.MakeQueueWithTiming(nop, l)
 }
 
-func GivenARunningTimedQueue() render.TimedRenderQueueInterface {
-	ret := GivenATimedQueue()
+func GivenARunningTimedQueue(l *render.JobTimingListener) render.RenderQueueInterface {
+	ret := GivenATimedQueue(l)
 	ret.StartProcessing()
 	return ret
 }
@@ -207,7 +206,6 @@ func TestJobTiming(t *testing.T) {
 	t.Run("Can listen for jobs", func(t *testing.T) {
 		assert := assert.New(t)
 		require := require.New(t)
-		queue := GivenATimedQueue()
 
 		jobsSeen := 0
 		allJobs := &render.JobTimingListener{
@@ -216,7 +214,7 @@ func TestJobTiming(t *testing.T) {
 			},
 			Threshold: 0, // get notified for ALL jobs
 		}
-		allJobs.Attach(queue)
+		queue := GivenATimedQueue(allJobs)
 
 		queue.StartProcessing()
 
@@ -233,14 +231,5 @@ func TestJobTiming(t *testing.T) {
 		require.True(jobDidRun, "we purged the queue, but the job didn't run!")
 
 		assert.Less(0, jobsSeen, "the listener should have been notified")
-	})
-
-	t.Run("Registering a listener must happen before StartProcessing", func(t *testing.T) {
-		queue := GivenARunningTimedQueue()
-		someListener := &render.JobTimingListener{}
-
-		assert.Panics(t, func() {
-			queue.SetListener(someListener)
-		}, "setting a listener should not succeed if the queue is already running")
 	})
 }
