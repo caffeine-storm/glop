@@ -233,3 +233,14 @@ func TestJobTiming(t *testing.T) {
 		assert.Less(0, jobsSeen, "the listener should have been notified")
 	})
 }
+
+func TestRenderJob(t *testing.T) {
+	t.Run("Can get source attribution", func(t *testing.T) {
+		some_closure := func(render.RenderQueueState) {}
+		someJob := render.RenderJob(some_closure)
+
+		attribution := someJob.GetSourceAttribution()
+
+		assert.Contains(t, attribution, "render/render_test.go")
+	})
+}
