@@ -226,4 +226,13 @@ func TestJobTiming(t *testing.T) {
 
 		assert.Less(0, jobsSeen, "the listener should have been notified")
 	})
+
+	t.Run("Registering a listener must happen before StartProcessing", func(t *testing.T) {
+		queue := GivenARunningTimedQueue()
+		someListener := &render.JobTimingListener{}
+
+		assert.Panics(t, func() {
+			queue.SetListener(someListener)
+		}, "setting a listener should not succeed if the queue is already running")
+	})
 }
