@@ -232,6 +232,31 @@ func TestJobTiming(t *testing.T) {
 
 		assert.Less(0, jobsSeen, "the listener should have been notified")
 	})
+
+	t.Run("Source attribution is reported", func(t *testing.T) {
+		assert := assert.New(t)
+		require := require.New(t)
+
+		didRun := false
+		var job render.RenderJob = func(render.RenderQueueState) {
+			didRun = true
+		}
+
+		attribution := ""
+		listener := &render.JobTimingListener{
+			OnNotify: func(delta time.Duration, attrib string) {
+				attribution = attrib
+			},
+			Threshold: 0,
+		}
+		queue := GivenARunningTimedQueue(listener)
+		queue.Queue(job)
+		queue.Purge()
+
+		require.True(didRun, "queued a job and purged the queue; that job should have run")
+
+		assert.Contains(attribution, "render/render_test.go")
+	})
 }
 
 func TestRenderJob(t *testing.T) {
