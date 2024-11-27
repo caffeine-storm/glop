@@ -7,6 +7,7 @@ import (
 
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gui"
+	"github.com/runningwild/glop/gui/guitest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
@@ -26,7 +27,7 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 	Convey("Can make a 'lol' line", func() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
 		dict := gui.LoadDictionaryForTest(renderQueue, glog.VoidLogger())
-		g := MakeStubbedGui()
+		g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 		g.SetDictionary("dict_10", dict)
 		g.SetShaders("glop.font", &render.ShaderBank{})
 
@@ -37,7 +38,7 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 	Convey("TextLine draws the given text", func() {
 		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
 			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
-			g := MakeStubbedGui()
+			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 
 			var shaderBank *render.ShaderBank
 			queue.Queue(func(rqs render.RenderQueueState) {
