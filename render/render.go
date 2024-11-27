@@ -42,7 +42,9 @@ type RenderQueueInterface interface {
 
 type TimedRenderQueueInterface interface {
 	RenderQueueInterface
-	AttachListener(*JobTimingListener)
+
+	// Only one listener at a time is allowed to be registered.
+	SetListener(*JobTimingListener)
 }
 
 type renderQueueState struct {
@@ -152,6 +154,6 @@ func (q *renderQueue) IsPurging() bool {
 	return q.is_purging.Load()
 }
 
-func (q *renderQueue) AttachListener(l *JobTimingListener) {
+func (q *renderQueue) SetListener(l *JobTimingListener) {
 	q.listener = l
 }

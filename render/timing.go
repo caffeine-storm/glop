@@ -10,5 +10,5 @@ type JobTimingListener struct {
 }
 
 func (listener *JobTimingListener) Attach(queue TimedRenderQueueInterface) {
-	queue.AttachListener(listener)
+	queue.SetListener(listener)
 }
