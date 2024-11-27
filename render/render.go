@@ -1,7 +1,9 @@
 package render
 
 import (
+	"fmt"
 	"log/slog"
+	"reflect"
 	"runtime"
 	"sync/atomic"
 	"time"
@@ -13,6 +15,17 @@ type RenderQueueState interface {
 }
 
 type RenderJob func(RenderQueueState)
+
+func (j *RenderJob) GetSourceAttribution() string {
+	pc := uintptr(reflect.ValueOf(*j).UnsafePointer())
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
+		panic("couldn't runtime.FuncForPC T_T")
+	}
+	filename, lineno := fn.FileLine(pc)
+
+	return fmt.Sprintf("%s: %d", filename, lineno)
+}
 
 // Accepts jobs for running on a dedicated, internal thread of control. Helpful
 // for ensuring certain preconditions needed for calling into OpenGL.
