@@ -8,8 +8,8 @@ type JobTimingListener struct {
 	// Care should be taken not to make a bad situation worse!
 	//
 	// Called after a render job took longer than Threshold. The actual time
-	// taken is passed in.
-	OnNotify func(time.Duration)
+	// taken and the job's source attribution is also given.
+	OnNotify func(time.Duration, string)
 
 	// Only jobs that took Threshold will trigger a call to OnNotify.
 	Threshold time.Duration

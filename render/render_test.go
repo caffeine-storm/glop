@@ -209,7 +209,7 @@ func TestJobTiming(t *testing.T) {
 
 		jobsSeen := 0
 		allJobs := &render.JobTimingListener{
-			OnNotify: func(time.Duration) {
+			OnNotify: func(time.Duration, string) {
 				jobsSeen++
 			},
 			Threshold: 0, // get notified for ALL jobs
