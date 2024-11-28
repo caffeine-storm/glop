@@ -567,6 +567,7 @@ func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface)
 			d.Data.Dx,
 			d.Data.Dy,
 			0,
+			// TODO(tmckee): ??? shouldn't this be gl.RGBA and gl.UNSIGNED_BYTE?
 			gl.ALPHA,
 			gl.UNSIGNED_INT,
 			d.Data.Pix)
