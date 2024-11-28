@@ -63,26 +63,32 @@ func (state *renderQueueState) Shaders() *ShaderBank {
 	return state.shaders
 }
 
-type renderQueue struct {
-	queue_state  *renderQueueState
-	render_funcs chan RenderJob
-	purge        chan chan bool
-	is_running   bool
-	is_purging   atomic.Bool
-	listener     *JobTimingListener
+type jobWithTiming struct {
+	Job      RenderJob
+	QueuedAt time.Time
 }
 
-func runAndNotify(job RenderJob, queueState RenderQueueState, listener *JobTimingListener) time.Duration {
+type renderQueue struct {
+	queue_state *renderQueueState
+	work_queue  chan *jobWithTiming
+	purge       chan chan bool
+	is_running  bool
+	is_purging  atomic.Bool
+	listener    *JobTimingListener
+}
+
+func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener *JobTimingListener) time.Duration {
 	before := time.Now()
-	job(queueState)
+	request.Job(queueState)
 	after := time.Now()
 	delta := after.Sub(before)
 
 	info := &JobTimingInfo{
-		RunTime: delta,
+		RunTime:   delta,
+		QueueTime: before.Sub(request.QueuedAt),
 	}
 	if listener != nil && delta >= listener.Threshold {
-		listener.OnNotify(info, job.GetSourceAttribution())
+		listener.OnNotify(info, request.Job.GetSourceAttribution())
 	}
 
 	return delta
@@ -92,15 +98,15 @@ func (q *renderQueue) loop() {
 	defer close(q.purge)
 	for {
 		select {
-		case f := <-q.render_funcs:
-			runAndNotify(f, q.queue_state, q.listener)
+		case job := <-q.work_queue:
+			runAndNotify(job, q.queue_state, q.listener)
 		case ack := <-q.purge:
 			defer close(ack)
 			q.is_purging.Store(true)
 			for {
 				select {
-				case f := <-q.render_funcs:
-					runAndNotify(f, q.queue_state, q.listener)
+				case job := <-q.work_queue:
+					runAndNotify(job, q.queue_state, q.listener)
 				default:
 					goto purged
 				}
@@ -121,11 +127,11 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		queue_state: &renderQueueState{
 			shaders: MakeShaderBank(),
 		},
-		render_funcs: make(chan RenderJob, 1000),
-		purge:        make(chan chan bool),
-		is_running:   false,
-		is_purging:   atomic.Bool{}, // zero-value is false
-		listener:     listener,
+		work_queue: make(chan *jobWithTiming, 1000),
+		purge:      make(chan chan bool),
+		is_running: false,
+		is_purging: atomic.Bool{}, // zero-value is false
+		listener:   listener,
 	}
 
 	// We're guaranteed that this render job will run first. We can include our
@@ -140,7 +146,10 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 // TODO(tmckee): inject a GL dependency to given func for testability and to
 // keep arbitrary code from calling GL off of the render thread.
 func (q *renderQueue) Queue(f RenderJob) {
-	q.render_funcs <- f
+	q.work_queue <- &jobWithTiming{
+		Job:      f,
+		QueuedAt: time.Now(),
+	}
 }
 
 // Waits until all render thread functions have been run

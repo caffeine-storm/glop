@@ -3,7 +3,11 @@ package render
 import "time"
 
 type JobTimingInfo struct {
+	// Time elapsed while running the RenderJob func.
 	RunTime time.Duration
+	// Time elapsed between when a RenderJob was Queue'd on a
+	// RenderQueueInterface and when the RenderJob func started.
+	QueueTime time.Duration
 }
 
 // Instances of JobTimingListener can be registered only at Queue construction.
