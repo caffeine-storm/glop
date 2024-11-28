@@ -19,6 +19,7 @@ type JobTimingListener struct {
 	// taken and the job's source attribution is also given.
 	OnNotify func(*JobTimingInfo, string)
 
-	// Only jobs that took Threshold will trigger a call to OnNotify.
+	// Only jobs that took Threshold or longer will trigger a call to OnNotify.
+	// A job's total time is its RunTime plus its QueueTime.
 	Threshold time.Duration
 }
