@@ -173,7 +173,8 @@ func DictionaryRenderStringSpec() {
 			},
 		},
 	}
-	for testnumber, testcase := range screenSizeCases {
+	for testIndex, testcase := range screenSizeCases {
+		testnumber := rendertest.TestNumber(testIndex)
 		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
 			leftPixel := testcase.screenDimensions.Dx / 2
 			bottomPixel := testcase.screenDimensions.Dy / 2

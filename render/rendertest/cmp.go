@@ -16,11 +16,12 @@ import (
 	"github.com/runningwild/glop/render"
 )
 
+type TestNumber uint8
 type Threshold uint8
 
 var defaultThreshold = Threshold(3)
 
-func ExpectationFile(testDataKey, fileExt string, testnumber int) string {
+func ExpectationFile(testDataKey, fileExt string, testnumber TestNumber) string {
 	return fmt.Sprintf("../testdata/%s/%d.%s", testDataKey, testnumber, fileExt)
 }
 
@@ -185,6 +186,16 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	return true, ""
 }
 
+func getTestNumberFromArgs(args []interface{}) TestNumber {
+	for i := 1; i < len(args); i++ {
+		if val, found := args[i].(TestNumber); found {
+			return val
+		}
+	}
+
+	return TestNumber(0)
+}
+
 func getThresholdFromArgs(args []interface{}) Threshold {
 	for i := 1; i < len(args); i++ {
 		if val, found := args[i].(Threshold); found {
@@ -202,7 +213,7 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 	}
 	expectedReader, ok := expected[0].(io.Reader)
 	if !ok {
-		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
+		panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
 	}
 
 	// Did someone pass a Threshold?
@@ -228,17 +239,9 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	}
 
 	// For table-tests, usage is
-	//   'So(render, ShouldLookLike, "test-case-family", testNumberN)'
+	//   'So(render, ShouldLookLike, "test-case-family", TestNumber(N))'
 	// Use a default 'testnumber = 0' for non-table tests.
-	testnumber := 0
-	if len(expected) > 1 {
-		// TODO(tmckee): consider using a TestNumber wrapper to keep testnumber
-		// interpretation non-positional...?
-		testnumber, ok = expected[1].(int)
-		if !ok {
-			panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
-		}
-	}
+	testnumber := getTestNumberFromArgs(expected)
 
 	filename := ExpectationFile(testDataKey, "png", testnumber)
 
