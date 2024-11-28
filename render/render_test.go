@@ -209,7 +209,7 @@ func TestJobTiming(t *testing.T) {
 
 		jobsSeen := 0
 		allJobs := &render.JobTimingListener{
-			OnNotify: func(time.Duration, string) {
+			OnNotify: func(*render.JobTimingInfo, string) {
 				jobsSeen++
 			},
 			Threshold: 0, // get notified for ALL jobs
@@ -244,7 +244,7 @@ func TestJobTiming(t *testing.T) {
 
 		attribution := ""
 		listener := &render.JobTimingListener{
-			OnNotify: func(delta time.Duration, attrib string) {
+			OnNotify: func(info *render.JobTimingInfo, attrib string) {
 				attribution = attrib
 			},
 			Threshold: 0,

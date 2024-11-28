@@ -78,8 +78,11 @@ func runAndNotify(job RenderJob, queueState RenderQueueState, listener *JobTimin
 	after := time.Now()
 	delta := after.Sub(before)
 
+	info := &JobTimingInfo{
+		RunTime: delta,
+	}
 	if listener != nil && delta >= listener.Threshold {
-		listener.OnNotify(delta, job.GetSourceAttribution())
+		listener.OnNotify(info, job.GetSourceAttribution())
 	}
 
 	return delta
