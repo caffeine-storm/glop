@@ -208,7 +208,7 @@ type Widget interface {
 	String() string
 }
 type CoreWidget interface {
-	DoThink(int64, bool)
+	DoThink(dt int64, isFocused bool)
 
 	// If change_focus is true, then the EventGroup will be consumed,
 	// regardless of the value of consume
