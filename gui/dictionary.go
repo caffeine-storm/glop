@@ -352,7 +352,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 
 	string_width_px := d.StringPixelWidth(s)
 
-	d.logger.Trace("sizes", "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "glstate", debug.GetGlState().String())
+	d.logger.Trace("sizes", "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy)
 
 	x_pos_px := float64(target.X)
 	y_pos_px := float64(target.Y)
