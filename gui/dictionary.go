@@ -169,6 +169,8 @@ type blitVertex struct {
 	u, v float32
 }
 
+const stride = int(unsafe.Sizeof(blitVertex{}))
+
 func (d *Dictionary) Scale() float64 {
 	return d.Data.Scale
 }
@@ -266,6 +268,69 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 	return width
 }
 
+func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px float64) blitBuffer {
+	blittingData := blitBuffer{}
+	var prev rune
+	for _, r := range s {
+		if kernAdjustment, ok := d.Data.Kerning[prev]; ok {
+			x_pos_px += float64(kernAdjustment[r])
+		}
+		prev = r
+		info := d.getInfo(r)
+		xleft_px := x_pos_px
+		xright_px := x_pos_px + float64(info.Bounds.Dx())
+		ytop_px := float32(y_pos_px + height_px)
+		ybot_px := float32(y_pos_px)
+		start := uint16(len(blittingData.vertexData))
+		blittingData.indicesData = append(blittingData.indicesData, start+0)
+		blittingData.indicesData = append(blittingData.indicesData, start+1)
+		blittingData.indicesData = append(blittingData.indicesData, start+2)
+		blittingData.indicesData = append(blittingData.indicesData, start+0)
+		blittingData.indicesData = append(blittingData.indicesData, start+2)
+		blittingData.indicesData = append(blittingData.indicesData, start+3)
+
+		// Note: the texture is loaded 'upside down' so we flip our y-coordinates
+		// in texture-space.
+		blittingData.vertexData = append(blittingData.vertexData, blitVertex{
+			x: float32(xleft_px),
+			y: ytop_px,
+			u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
+			v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
+		})
+		blittingData.vertexData = append(blittingData.vertexData, blitVertex{
+			x: float32(xleft_px),
+			y: ybot_px,
+			u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
+			v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
+		})
+		blittingData.vertexData = append(blittingData.vertexData, blitVertex{
+			x: float32(xright_px),
+			y: ybot_px,
+			u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
+			v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
+		})
+		blittingData.vertexData = append(blittingData.vertexData, blitVertex{
+			x: float32(xright_px),
+			y: ytop_px,
+			u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
+			v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
+		})
+		d.logger.Trace("render-char", "x_pos", x_pos_px, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
+		x_pos_px += info.Advance
+	}
+
+	d.logger.Trace("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
+	blittingData.vertexBuffer = gl.GenBuffer()
+	blittingData.vertexBuffer.Bind(gl.ARRAY_BUFFER)
+	gl.BufferData(gl.ARRAY_BUFFER, stride*len(blittingData.vertexData), blittingData.vertexData, gl.STATIC_DRAW)
+
+	blittingData.indicesBuffer = gl.GenBuffer()
+	blittingData.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(blittingData.indicesData[0]))*len(blittingData.indicesData), blittingData.indicesData, gl.STATIC_DRAW)
+
+	return blittingData
+}
+
 // Renders the string 's' at the given position with the given height. Values
 // are in units of pixels w.r.t. an origin at the top-left of the screen. The
 // text is positioned based on the given justification:
@@ -285,10 +350,9 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 		return
 	}
 
-	stride := unsafe.Sizeof(blitVertex{})
 	string_width_px := d.StringPixelWidth(s)
 
-	d.logger.Trace("sizes", "stride", stride, "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "glstate", debug.GetGlState().String())
+	d.logger.Trace("sizes", "width", string_width_px, "d.Data.Dx", d.Data.Dx, "d.Data.Dy", d.Data.Dy, "glstate", debug.GetGlState().String())
 
 	x_pos_px := float64(target.X)
 	y_pos_px := float64(target.Y)
@@ -304,64 +368,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 
 	blittingData, ok := d.stringBlittingCache[s]
 	if !ok {
-		// We have to actually render a string!
-		var prev rune
-		for _, r := range s {
-			if kernAdjustment, ok := d.Data.Kerning[prev]; ok {
-				x_pos_px += float64(kernAdjustment[r])
-			}
-			prev = r
-			info := d.getInfo(r)
-			xleft_px := x_pos_px
-			xright_px := x_pos_px + float64(info.Bounds.Dx())
-			ytop_px := float32(y_pos_px + height_px)
-			ybot_px := float32(y_pos_px)
-			start := uint16(len(blittingData.vertexData))
-			blittingData.indicesData = append(blittingData.indicesData, start+0)
-			blittingData.indicesData = append(blittingData.indicesData, start+1)
-			blittingData.indicesData = append(blittingData.indicesData, start+2)
-			blittingData.indicesData = append(blittingData.indicesData, start+0)
-			blittingData.indicesData = append(blittingData.indicesData, start+2)
-			blittingData.indicesData = append(blittingData.indicesData, start+3)
-
-			// Note: the texture is loaded 'upside down' so we flip our y-coordinates
-			// in texture-space.
-			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xleft_px),
-				y: ytop_px,
-				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
-			})
-			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xleft_px),
-				y: ybot_px,
-				u: float32(info.Pos.Min.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
-			})
-			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xright_px),
-				y: ybot_px,
-				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Max.Y) / float32(d.Data.Dy),
-			})
-			blittingData.vertexData = append(blittingData.vertexData, blitVertex{
-				x: float32(xright_px),
-				y: ytop_px,
-				u: float32(info.Pos.Max.X) / float32(d.Data.Dx),
-				v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
-			})
-			d.logger.Trace("render-char", "x_pos", x_pos_px, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
-			x_pos_px += info.Advance
-		}
-
-		d.logger.Trace("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
-		blittingData.vertexBuffer = gl.GenBuffer()
-		blittingData.vertexBuffer.Bind(gl.ARRAY_BUFFER)
-		gl.BufferData(gl.ARRAY_BUFFER, int(stride)*len(blittingData.vertexData), blittingData.vertexData, gl.STATIC_DRAW)
-
-		blittingData.indicesBuffer = gl.GenBuffer()
-		blittingData.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(blittingData.indicesData[0]))*len(blittingData.indicesData), blittingData.indicesData, gl.STATIC_DRAW)
+		blittingData = buildBlittingData(s, d, x_pos_px, y_pos_px, height_px)
 		d.stringBlittingCache[s] = blittingData
 	}
 
@@ -404,12 +411,12 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	gl.EnableClientState(gl.VERTEX_ARRAY)
 	defer gl.DisableClientState(gl.VERTEX_ARRAY)
 	blittingData.vertexBuffer.Bind(gl.ARRAY_BUFFER)
-	gl.VertexPointer(2, gl.FLOAT, int(stride), nil)
+	gl.VertexPointer(2, gl.FLOAT, stride, nil)
 
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
 	defer gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
 	blittingData.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-	gl.TexCoordPointer(2, gl.FLOAT, int(stride), unsafe.Offsetof(blittingData.vertexData[0].u))
+	gl.TexCoordPointer(2, gl.FLOAT, stride, unsafe.Offsetof(blittingData.vertexData[0].u))
 
 	gl.DrawElements(gl.TRIANGLES, len(blittingData.indicesData), gl.UNSIGNED_SHORT, nil)
 
