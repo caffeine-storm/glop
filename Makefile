@@ -35,6 +35,15 @@ all: build-check compile-commands-portable
 build-check:
 	go build ./...
 
+win-build-check: export GOOS=windows
+win-build-check: export GOARCH=386
+win-build-check: export CGO_ENABLED=1
+win-build-check: export CGO_CPPFLAGS=-I/home/tmckee/workspace/glew/include
+win-build-check: export CXX=i686-w64-mingw32-g++-win32
+win-build-check: export CC=i686-w64-mingw32-gcc-win32
+win-build-check:
+	go build -x ./...
+
 # By default, the Xvfb instance will create a new Xauthority file in
 # /tmp/xvfb-run.PID/Xauthority for access control.
 # To interact with the Xvfb instance, you can set your XAUTHORITY and DISPLAY
