@@ -546,12 +546,13 @@ void GlopShutDown() {}
 
 // Handles Os messages that arrive through the message queue. Note that some, but not all, messages
 // are sent directly to HandleMessage and bypass the message queue.
-void GlopThink() {
+int64_t GlopThink() {
   MSG message;
   while (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
     TranslateMessage(&message);
     DispatchMessage(&message);
   }
+  return GlopGetTime();
 }
 
 // Handles window messages that arrive by any means, message queue or by direct notification.
