@@ -1,3 +1,7 @@
+//go:build linux
+
+// TODO(tmckee): rename this file to cgo_linux.go so we don't need a build tag
+// and folks can see the build constraint from an ls.
 package linux
 
 // #cgo LDFLAGS: -lX11 -lGL
