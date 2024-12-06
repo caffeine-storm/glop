@@ -1,3 +1,5 @@
+//go:build windows
+
 package gos
 
 // #cgo LDFLAGS: -Lwindows/lib -lglop
@@ -48,8 +50,8 @@ func (win32 *win32SystemObject) SwapBuffers() {
 	C.GlopSwapBuffers(unsafe.Pointer(win32.window))
 }
 
-func (win32 *win32SystemObject) Think() {
-	C.GlopThink()
+func (win32 *win32SystemObject) Think() int64 {
+	return int64(C.GlopThink())
 }
 
 // TODO: Make sure that events are given in sorted order (by timestamp)
@@ -67,13 +69,25 @@ func (win32 *win32SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	c_events := (*[10000]C.GlopKeyEvent)(unsafe.Pointer(first_event))[:length]
 	events := make([]gin.OsEvent, length)
 	for i := range c_events {
-		wx, wy := win32.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
+		// TODO(tmckee): we should make this work; otherwise, we never get the
+		// right mouse position.
+		// wx, wy := win32.rawCursorToWindowCoords(int(c_events[i].cursor_x), int(c_events[i].cursor_y))
+		keyId := gin.KeyId{
+			Device: gin.DeviceId{
+				// TODO(tmckee): we need to inspect the 'index' or 'device' to know
+				// device type; right now, mouse events get labled as keyboard events
+				// :(
+				Type:  gin.DeviceTypeKeyboard,
+				Index: gin.DeviceIndex(c_events[i].device),
+			},
+			Index: gin.KeyIndex(c_events[i].index),
+		}
 		events[i] = gin.OsEvent{
-			KeyId:     gin.KeyId(c_events[i].index),
+			KeyId:     keyId,
 			Press_amt: float64(c_events[i].press_amt),
 			Timestamp: int64(c_events[i].timestamp),
-			X:         wx,
-			Y:         wy,
+			// X:         wx,
+			// Y:         wy,
 		}
 	}
 	return events, win32.horizon
@@ -88,6 +102,10 @@ func (win32 *win32SystemObject) GetWindowDims() (int, int, int, int) {
 	var x, y, dx, dy C.int
 	C.GlopGetWindowDims(unsafe.Pointer(win32.window), &x, &y, &dx, &dy)
 	return int(x), int(y), int(dx), int(dy)
+}
+
+func (win32 *win32SystemObject) SetWindowSize(width, height int) {
+	C.GlopSetWindowSize(unsafe.Pointer(win32.window), C.int(width), C.int(height))
 }
 
 func (win32 *win32SystemObject) EnableVSync(enable bool) {

@@ -80,6 +80,7 @@
 #define kMouseRButton  305
 #define kMouseMButton  306
 
+#include <stdint.h>
 
 //void Init();
 void GlopInit();
@@ -97,7 +98,7 @@ void* GlopCreateWindow(
 
 void GlopSwapBuffers(void*);
 
-void GlopThink();
+int64_t GlopThink();
 
 typedef struct {
   short index;
