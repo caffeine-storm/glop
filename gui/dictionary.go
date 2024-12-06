@@ -279,8 +279,8 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 		info := d.getInfo(r)
 		xleft_px := x_pos_px
 		xright_px := x_pos_px + float64(info.Bounds.Dx())
-		ytop_px := float32(y_pos_px + height_px)
-		ybot_px := float32(y_pos_px)
+		ytop_px := float32(y_pos_px)
+		ybot_px := float32(y_pos_px - height_px)
 		start := uint16(len(blittingData.vertexData))
 		blittingData.indicesData = append(blittingData.indicesData, start+0)
 		blittingData.indicesData = append(blittingData.indicesData, start+1)
@@ -332,8 +332,8 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 }
 
 // Renders the string 's' at the given position with the given height. Values
-// are in units of pixels w.r.t. an origin at the top-left of the screen. The
-// text is positioned based on the given justification:
+// are in units of pixels w.r.t. an origin at the bottom-left of the screen.
+// The text is positioned based on the given justification:
 //
 //	Left: use 'target.X' for the left-hand extent of what's drawn
 //	Centre: use 'target.X' for the middle of what's drawn
