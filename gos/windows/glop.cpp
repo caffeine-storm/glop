@@ -1007,7 +1007,8 @@ void GlopSetIcon(OsWindowData *window, const Image *icon) {
 }
 */
 
-void GlopSetWindowSize(OsWindowData *window, int width, int height) {
+void GlopSetWindowSize(void *void_window, int width, int height) {
+  OsWindowData *window = static_cast<OsWindowData*>(void_window);
   RECT rect;
   GetWindowRect(window->window_handle, &rect);
   rect.right += width - window->width;

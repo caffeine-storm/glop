@@ -124,6 +124,7 @@ void GlopGetInputEvents(void* _window, void** _events_ret, void* _num_events, vo
 
 void GlopGetMousePosition(int* x,int* y);
 void GlopGetWindowDims(void* _window, int* x, int* y, int* dx, int* dy);
+void GlopSetWindowSize(void* _window, int width, int height);
 
 void GlopEnableVSync(int);
 
