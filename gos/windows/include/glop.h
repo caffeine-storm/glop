@@ -123,6 +123,7 @@ void GlopClearKeyEvent(GlopKeyEvent* event) {
 void GlopGetInputEvents(void* _window, void** _events_ret, void* _num_events, void* _horizon);
 
 void GlopGetWindowDims(void* _window, int* x, int* y, int* dx, int* dy);
+void GlopSetWindowSize(void* _window, int width, int height);
 
 void GlopEnableVSync(int);
 
