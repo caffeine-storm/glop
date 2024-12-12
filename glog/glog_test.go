@@ -32,6 +32,25 @@ func TestGlogRelevel(t *testing.T) {
 	}
 }
 
+func TestGlogGetOpts(t *testing.T) {
+	t.Run("options passed to constructor should be accessible", func(t *testing.T) {
+		defaultOpts := glog.Opts{
+			DoNotAddSource: false,
+		}
+		differentOpts := glog.Opts{
+			DoNotAddSource: true,
+		}
+		defaultLog := glog.New(&defaultOpts)
+		differentLog := glog.New(&differentOpts)
+
+		lhs := defaultLog.GetOpts()
+		rhs := differentLog.GetOpts()
+		if lhs.AddSource == rhs.AddSource {
+			t.Errorf("expecting differnt AddSource options")
+		}
+	})
+}
+
 func TestGlogRedirect(t *testing.T) {
 	buffer1 := &bytes.Buffer{}
 	buffer2 := &bytes.Buffer{}
