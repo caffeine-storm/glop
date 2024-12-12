@@ -31,6 +31,15 @@ func Relevel(in Logger, lvl slog.Level) Logger {
 	}
 }
 
+func WithRedirect(in Logger, out io.Writer) Logger {
+	opts := in.GetOpts()
+
+	wrapped := slog.New(slog.NewTextHandler(out, opts))
+	return &traceLogger{
+		Logger: wrapped,
+	}
+}
+
 type Opts struct {
 	Output         io.Writer
 	Level          slog.Leveler
@@ -107,10 +116,12 @@ type Slogger interface {
 type Logger interface {
 	Slogger
 	Trace(msg string, args ...interface{})
+	GetOpts() *slog.HandlerOptions
 }
 
 type traceLogger struct {
 	*slog.Logger
+	handlerOptions slog.HandlerOptions
 }
 
 var _ Logger = (*traceLogger)(nil)
@@ -119,6 +130,10 @@ const LevelTrace = slog.LevelDebug - 4
 
 func (log *traceLogger) Trace(msg string, args ...interface{}) {
 	log.Log(context.Background(), LevelTrace, msg, args...)
+}
+
+func (log *traceLogger) GetOpts() *slog.HandlerOptions {
+	return &log.handlerOptions
 }
 
 func TraceLogger() Logger {
