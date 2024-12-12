@@ -34,7 +34,7 @@ func Relevel(in Logger, lvl slog.Level) Logger {
 func WithRedirect(in Logger, out io.Writer) Logger {
 	opts := in.GetOpts()
 
-	wrapped := slog.New(slog.NewTextHandler(out, opts))
+	wrapped := slog.New(slog.NewTextHandler(out, &opts))
 	return &traceLogger{
 		Logger: wrapped,
 	}
@@ -116,7 +116,7 @@ type Slogger interface {
 type Logger interface {
 	Slogger
 	Trace(msg string, args ...interface{})
-	GetOpts() *slog.HandlerOptions
+	GetOpts() slog.HandlerOptions
 }
 
 type traceLogger struct {
@@ -132,8 +132,8 @@ func (log *traceLogger) Trace(msg string, args ...interface{}) {
 	log.Log(context.Background(), LevelTrace, msg, args...)
 }
 
-func (log *traceLogger) GetOpts() *slog.HandlerOptions {
-	return &log.handlerOptions
+func (log *traceLogger) GetOpts() slog.HandlerOptions {
+	return log.handlerOptions
 }
 
 func TraceLogger() Logger {
