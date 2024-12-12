@@ -97,7 +97,8 @@ func New(options *Opts) Logger {
 	}
 	wrapped := slog.New(slog.NewTextHandler(options.Output, slogopts))
 	return &traceLogger{
-		Logger: wrapped,
+		Logger:         wrapped,
+		handlerOptions: *slogopts,
 	}
 }
 
