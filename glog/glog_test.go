@@ -93,3 +93,31 @@ func TestVoidLogger(t *testing.T) {
 
 	assert.Empty(outputLines)
 }
+
+func TestSourceAttribution(t *testing.T) {
+	t.Run("trace messages should contain a source file and line number", func(t *testing.T) {
+		assert := assert.New(t)
+
+		outputLines := gloptest.CollectOutput(func() {
+			logger := glog.TraceLogger()
+			logger = glog.Relevel(logger, glog.LevelTrace)
+			logger.Trace("a message for you")
+		})
+
+		output := strings.Join(outputLines, "\n")
+		assert.Contains(output, "a message for you")
+		assert.Contains(output, "glog_test.go")
+	})
+	t.Run("info messages should contain a source file and line number", func(t *testing.T) {
+		assert := assert.New(t)
+
+		outputLines := gloptest.CollectOutput(func() {
+			logger := glog.InfoLogger()
+			logger.Info("a message for you")
+		})
+
+		output := strings.Join(outputLines, "\n")
+		assert.Contains(output, "a message for you")
+		assert.Contains(output, "glog_test.go")
+	})
+}
