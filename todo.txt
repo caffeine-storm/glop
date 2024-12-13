@@ -1,8 +1,14 @@
+tmceke:#11 getting incorrect source line/number attribution when logging in Haunts
+-	might have something to do with different callstack depth during "Trace" vs.
+	"Debug", etc.
+
+tmckee:#7 installed multilib support to get the build going; is it necessary?
+- sudo apt install gcc-multilib g++-multilib
+- can check what's needed to build from inside a fresh ubuntu docker container
+
 tmckee#1: clean up after big 'green' step
 	- text height aribirarily chosen as 12 in TextLine.coreDraw
 	- text Justification aribirarily chosen as Left in TextLine.coreDraw
-
-tmckee#2: make Dictionary.RenderString render w.r.t. the top of the bounding box
 
 ----
 
@@ -16,9 +22,6 @@ tmckee#5: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
 tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
-
-tmckee:#7 installed multilib support to get the build going; is it necessary?
-- sudo apt install gcc-multilib g++-multilib
 
 tmckee:#8 use type system to make initialization ordering constraints explicit
 	- need to identify which modules/packages need this
@@ -37,3 +40,5 @@ Doing this would increase the number of mouse events on osx and would give
 better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
+
+next bug: #12
