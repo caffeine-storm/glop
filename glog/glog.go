@@ -7,7 +7,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"time"
 )
 
 type handlerAtLevel struct {
@@ -130,7 +132,13 @@ var _ Logger = (*traceLogger)(nil)
 const LevelTrace = slog.LevelDebug - 4
 
 func (log *traceLogger) Trace(msg string, args ...interface{}) {
-	log.Log(context.Background(), LevelTrace, msg, args...)
+	buffer := [1]uintptr{}
+	// Skip == 2 means skip runtime.Callers and Trace
+	runtime.Callers(2, buffer[:])
+
+	rec := slog.NewRecord(time.Now(), LevelTrace, msg, buffer[0])
+	rec.Add(args...)
+	log.Handler().Handle(context.Background(), rec)
 }
 
 func (log *traceLogger) GetOpts() slog.HandlerOptions {
