@@ -110,7 +110,7 @@ func TestTextureDebugging(t *testing.T) {
 		rendertest.WithGl(func() {
 			tex := givenATexture("../testdata/debug/red/0.png")
 
-			err := debug.DumpTextureAsPngFile(tex, pngBuffer)
+			err := debug.DumpTextureAsPng(tex, pngBuffer)
 			if err != nil {
 				t.Fatalf("dumping failed: %v", err)
 			}

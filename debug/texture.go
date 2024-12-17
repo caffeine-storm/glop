@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/png"
 	"io"
+	"os"
 
 	"github.com/go-gl-legacy/gl"
 )
@@ -33,7 +34,17 @@ func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 	return img, nil
 }
 
-func DumpTextureAsPngFile(textureId gl.Texture, outfile io.Writer) error {
+func DumpTextureAsPngFile(textureId gl.Texture, path string) error {
+	outfile, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("couldn't os.Create %q: %w", path, err)
+	}
+	defer outfile.Close()
+
+	return DumpTextureAsPng(textureId, outfile)
+}
+
+func DumpTextureAsPng(textureId gl.Texture, outfile io.Writer) error {
 	img, err := DumpTexture(textureId)
 	if err != nil {
 		return fmt.Errorf("couldn't DumpTexture: %w", err)
