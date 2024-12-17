@@ -5,8 +5,10 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"image/png"
 	"os"
 	"testing"
+	"testing/fstest"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
@@ -92,6 +94,42 @@ func TestTextureDebugging(t *testing.T) {
 				t.Fatalf("dumping failed: %v", err)
 			}
 		})
+
+		// The dump should have produced a 50x50 pixel image of all red.
+		foreachPixel(dumpedImage, func(x, y int, col color.Color) {
+			if !isRed(col) {
+				t.Log("non-red pixel", "x", x, "y", y, "colour", col)
+				t.Fail()
+			}
+		})
+	})
+
+	t.Run("can dump to file", func(t *testing.T) {
+		var err error
+		mapfs := fstest.MapFS{
+			"somepath": &fstest.MapFile{
+				Data: []byte{},
+				Mode: 0777,
+			},
+		}
+		rendertest.WithGl(func() {
+			tex := givenATexture("../testdata/debug/red/0.png")
+
+			err = debug.DumpTexturePng(tex, mapfs, "somepath")
+			if err != nil {
+				t.Fatalf("dumping failed: %v", err)
+			}
+		})
+
+		pngFile, err := mapfs.Open("somepath")
+		if err != nil {
+			panic("couldn't re-open mapfs file!?")
+		}
+
+		dumpedImage, err := png.Decode(pngFile)
+		if err != nil {
+			panic("couldn't decode mapfs:somepath")
+		}
 
 		// The dump should have produced a 50x50 pixel image of all red.
 		foreachPixel(dumpedImage, func(x, y int, col color.Color) {
