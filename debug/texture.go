@@ -1,7 +1,10 @@
 package debug
 
 import (
+	"fmt"
 	"image"
+	"image/png"
+	"io"
 
 	"github.com/go-gl-legacy/gl"
 )
@@ -28,4 +31,17 @@ func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 	gl.GetTexImage(gl.TEXTURE_2D, 0, gl.RGBA, gl.UNSIGNED_BYTE, img.Pix)
 
 	return img, nil
+}
+
+func DumpTextureAsPngFile(textureId gl.Texture, outfile io.Writer) error {
+	img, err := DumpTexture(textureId)
+	if err != nil {
+		return fmt.Errorf("couldn't DumpTexture: %w", err)
+	}
+
+	err = png.Encode(outfile, img)
+	if err != nil {
+		return fmt.Errorf("couldn't png.Encode: %w", err)
+	}
+	return nil
 }
