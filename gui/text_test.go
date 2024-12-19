@@ -18,7 +18,7 @@ import (
 )
 
 func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
-	dictReader, err := os.Open("../testdata/fonts/dict_10.gob")
+	dictReader, err := os.Open("testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
 	}

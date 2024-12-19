@@ -8,6 +8,7 @@ import (
 	"image/draw"
 	"image/png"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
@@ -24,6 +25,7 @@ func foreachPixel(img image.Image, check func(x, y int, col color.Color)) {
 }
 
 func givenATexture(imageFilePath string) gl.Texture {
+	imageFilePath = path.Join("testdata", imageFilePath)
 	file, err := os.Open(imageFilePath)
 	if err != nil {
 		panic(fmt.Errorf("couldn't open file %q: %w", imageFilePath, err))
@@ -87,7 +89,7 @@ func TestTextureDebugging(t *testing.T) {
 		var err error
 
 		rendertest.WithGl(func() {
-			tex := givenATexture("../testdata/debug/red/0.png")
+			tex := givenATexture("red/0.png")
 
 			dumpedImage, err = debug.DumpTexture(tex)
 			if err != nil {
@@ -108,7 +110,7 @@ func TestTextureDebugging(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
 		rendertest.WithGl(func() {
-			tex := givenATexture("../testdata/debug/red/0.png")
+			tex := givenATexture("red/0.png")
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)
 			if err != nil {

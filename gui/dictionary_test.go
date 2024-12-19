@@ -32,7 +32,7 @@ func mustLoadFont(path string) *truetype.Font {
 }
 
 func givenAFont() *truetype.Font {
-	return mustLoadFont("../testdata/fonts/skia.ttf")
+	return mustLoadFont("testdata/fonts/skia.ttf")
 }
 
 func TestDictionarySerialization(t *testing.T) {
