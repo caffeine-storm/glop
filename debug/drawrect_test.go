@@ -32,7 +32,7 @@ func DrawRectSpec() {
 		}
 
 		Convey("Should see red pixels", func() {
-			So(queue, rendertest.ShouldLookLikeFile, "../testdata/debug/red")
+			So(queue, rendertest.ShouldLookLikeFile, "red")
 		})
 	})
 }

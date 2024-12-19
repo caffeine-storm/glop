@@ -8,8 +8,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
@@ -24,18 +22,7 @@ type Threshold uint8
 var defaultThreshold = Threshold(3)
 
 func ExpectationFile(testDataKey, fileExt string, testnumber TestNumber) string {
-	_, cmpGoFilePath, _, _ := runtime.Caller(0)
-	projectDir := path.Clean(path.Join(path.Dir(cmpGoFilePath), "..", ".."))
-	workDir, err := os.Getwd()
-	if err != nil {
-		panic(fmt.Errorf("couldn't os.Getwd(): %w", err))
-	}
-
-	relTestDataDir, err := filepath.Rel(workDir, path.Join(projectDir, "testdata"))
-	if projectDir == "/" {
-		panic("should not have found ./rendertest/ to be /")
-	}
-	return path.Join(relTestDataDir, testDataKey, fmt.Sprintf("%d.%s", testnumber, fileExt))
+	return path.Join("testdata", testDataKey, fmt.Sprintf("%d.%s", testnumber, fileExt))
 }
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.

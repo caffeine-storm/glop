@@ -14,12 +14,12 @@ import (
 func TestFileNameHelpers(t *testing.T) {
 	t.Run("TestExpectationFile", func(t *testing.T) {
 		result := rendertest.ExpectationFile("text/lol", "pgm", 42)
-		assert.Equal(t, "../../testdata/text/lol/42.pgm", result)
+		assert.Equal(t, "testdata/text/lol/42.pgm", result)
 	})
 
 	t.Run("TestMakeRejectName", func(t *testing.T) {
-		reject0 := rendertest.MakeRejectName("../../testdata/text/lol/0.pgm", ".pgm")
-		assert.Equal(t, "../../testdata/text/lol/0.rej.pgm", reject0)
+		reject0 := rendertest.MakeRejectName("testdata/text/lol/0.pgm", ".pgm")
+		assert.Equal(t, "testdata/text/lol/0.rej.pgm", reject0)
 	})
 }
 
@@ -92,7 +92,7 @@ func TestComparingPngsAgainstPngs(t *testing.T) {
 			red := color.RGBA{255, 0, 0, 255}
 			draw.Draw(someImage, someImage.Bounds(), image.NewUniform(red), image.Point{}, draw.Src)
 
-			expectedFile := "debug/red"
+			expectedFile := "red"
 			mustBeEmpty := rendertest.ShouldLookLikeFile(someImage, expectedFile)
 			if mustBeEmpty != "" {
 				t.Fatalf("expected a 'match' but got failure %q", mustBeEmpty)
