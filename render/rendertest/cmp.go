@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
@@ -22,7 +24,18 @@ type Threshold uint8
 var defaultThreshold = Threshold(3)
 
 func ExpectationFile(testDataKey, fileExt string, testnumber TestNumber) string {
-	return fmt.Sprintf("../testdata/%s/%d.%s", testDataKey, testnumber, fileExt)
+	_, cmpGoFilePath, _, _ := runtime.Caller(0)
+	projectDir := path.Clean(path.Join(path.Dir(cmpGoFilePath), "..", ".."))
+	workDir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.Getwd(): %w", err))
+	}
+
+	relTestDataDir, err := filepath.Rel(workDir, path.Join(projectDir, "testdata"))
+	if projectDir == "/" {
+		panic("should not have found ./rendertest/ to be /")
+	}
+	return path.Join(relTestDataDir, testDataKey, fmt.Sprintf("%d.%s", testnumber, fileExt))
 }
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.
@@ -145,11 +158,11 @@ func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold) (bool
 	return true, nil
 }
 
-// Verify that the framebuffer's contents match our expected image to within a
+// Verify that the 'actualImage' is a match to our expected image to within a
 // threshold. We need the fuzzy matching because OpenGL doesn't guarantee exact
 // pixel-to-pixel matches across different hardware/driver combinations. It
 // should be close, though!
-func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string, thresh Threshold) (bool, string) {
+func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh Threshold) (bool, string) {
 	pngFile, err := os.Open(pngFileExpected)
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open %q: %w", pngFileExpected, err))
@@ -157,16 +170,6 @@ func expectPixelsMatch(queue render.RenderQueueInterface, pngFileExpected string
 	defer pngFile.Close()
 
 	expectedImage, _, _ := readPng(pngFile)
-	var actualScreenWidth, actualScreenHeight uint32
-
-	// Read all the pixels from the framebuffer through OpenGL
-	var actualImage *image.RGBA
-	queue.Queue(func(render.RenderQueueState) {
-		_, _, actualScreenWidth, actualScreenHeight = debug.GetViewport()
-		actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
-	})
-	queue.Purge()
-
 	if !imagesAreWithinThreshold(expectedImage, actualImage, thresh) {
 		rejectFileName := MakeRejectName(pngFileExpected, ".png")
 		rejectFile, err := os.Create(rejectFileName)
@@ -229,10 +232,24 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
-	render, ok := actual.(render.RenderQueueInterface)
-	if !ok {
-		panic(fmt.Errorf("ShouldLookLikeFile needs a render queue but got %T", actual))
+	var actualImage *image.RGBA
+	switch v := actual.(type) {
+	case render.RenderQueueInterface:
+		// If we're given a RenderQueueInterface, take a debug-screenshot of the
+		// associated back-buffer.
+		queue := v
+		// Read all the pixels from the framebuffer through OpenGL
+		queue.Queue(func(render.RenderQueueState) {
+			_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()
+			actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
+		})
+		queue.Purge()
+	case *image.RGBA:
+		actualImage = v
+	default:
+		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
 	}
+
 	testDataKey, ok := expected[0].(string)
 	if !ok {
 		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
@@ -246,7 +263,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	filename := ExpectationFile(testDataKey, "png", testnumber)
 
 	thresh := getThresholdFromArgs(expected)
-	ok, rejectFile := expectPixelsMatch(render, filename, thresh)
+	ok, rejectFile := expectPixelsMatch(actualImage, filename, thresh)
 	if ok {
 		return ""
 	}
