@@ -2,6 +2,9 @@ package rendertest_test
 
 import (
 	"bytes"
+	"image"
+	"image/color"
+	"image/draw"
 	"testing"
 
 	"github.com/runningwild/glop/render/rendertest"
@@ -78,6 +81,19 @@ func TestPixelComparisonIsFuzzy(t *testing.T) {
 					t.Fatalf("hitting a tolerance of 5 should not cause a failure")
 				}
 			})
+		})
+	})
+}
+
+func TestComparingPngsAgainstPngs(t *testing.T) {
+	t.Run("api is ergonomic", func(t *testing.T) {
+		t.Run("can compare golang image to expected file", func(t *testing.T) {
+			someImage := image.NewRGBA(image.Rect(0, 0, 50, 50))
+			red := color.RGBA{255, 0, 0, 255}
+			draw.Draw(someImage, someImage.Bounds(), image.NewUniform(red), image.Point{}, draw.Src)
+
+			expectedFile := "../testdata/red"
+			rendertest.ShouldLookLikeFile(someImage, expectedFile)
 		})
 	})
 }
