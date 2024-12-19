@@ -1,3 +1,5 @@
+tmckee:#12 gui tests are flaky when not running under xvfb
+
 tmceke:#11 getting incorrect source line/number attribution when logging in Haunts
 -	might have something to do with different callstack depth during "Trace" vs.
 	"Debug", etc.
@@ -41,4 +43,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #12
+next bug: #13
