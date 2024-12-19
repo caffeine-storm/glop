@@ -231,32 +231,15 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 	return fmt.Sprintf("io.Readers mismatched")
 }
 
-func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
-	var actualImage *image.RGBA
-	switch v := actual.(type) {
-	case render.RenderQueueInterface:
-		// If we're given a RenderQueueInterface, take a debug-screenshot of the
-		// associated back-buffer.
-		queue := v
-		// Read all the pixels from the framebuffer through OpenGL
-		queue.Queue(func(render.RenderQueueState) {
-			_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()
-			actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
-		})
-		queue.Purge()
-	case *image.RGBA:
-		actualImage = v
-	default:
-		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
-	}
-
+func imageShouldLookLike(actualImage *image.RGBA, expected ...interface{}) string {
+	// Take a debug-screenshot of the associated back-buffer.
 	testDataKey, ok := expected[0].(string)
 	if !ok {
 		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
 	}
 
 	// For table-tests, usage is
-	//   'So(render, ShouldLookLike, "test-case-family", TestNumber(N))'
+	//   'So(something, ShouldLookLikeFile, "test-case-family", TestNumber(N))'
 	// Use a default 'testnumber = 0' for non-table tests.
 	testnumber := getTestNumberFromArgs(expected)
 
@@ -269,6 +252,30 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	}
 
 	return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
+}
+
+func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
+	var actualImage *image.RGBA
+
+	// Read all the pixels from the framebuffer through OpenGL
+	queue.Queue(func(render.RenderQueueState) {
+		_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()
+		actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
+	})
+	queue.Purge()
+
+	return imageShouldLookLike(actualImage, expected...)
+}
+
+func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
+	switch v := actual.(type) {
+	case render.RenderQueueInterface:
+		return backBufferShouldLookLike(v, expected...)
+	case *image.RGBA:
+		return imageShouldLookLike(v, expected...)
+	default:
+		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
+	}
 }
 
 func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
