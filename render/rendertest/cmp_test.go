@@ -2,9 +2,11 @@ package rendertest_test
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
+	"os"
 	"testing"
 
 	"github.com/runningwild/glop/render/rendertest"
@@ -95,6 +97,26 @@ func TestComparingPngsAgainstPngs(t *testing.T) {
 			expectedFile := "red"
 			mustBeEmpty := rendertest.ShouldLookLikeFile(someImage, expectedFile)
 			if mustBeEmpty != "" {
+				t.Fatalf("expected a 'match' but got failure %q", mustBeEmpty)
+			}
+		})
+		t.Run("comparisons are correct w.r.t. symmetries", func(t *testing.T) {
+			imageFilePath := "testdata/checker/0.png"
+			testdata, err := os.Open(imageFilePath)
+			if err != nil {
+				panic(fmt.Errorf("couldn't open %q: %w", imageFilePath, err))
+			}
+			someImage, _, err := image.Decode(testdata)
+			if err != nil {
+				panic(fmt.Errorf("couldn't decode %q: %w", imageFilePath, err))
+			}
+
+			rgbaImage := image.NewRGBA(someImage.Bounds())
+			draw.Draw(rgbaImage, someImage.Bounds(), someImage, image.Point{}, draw.Src)
+
+			expectedFile := "checker"
+			mustBeEmpty := rendertest.ShouldLookLikeFile(rgbaImage, expectedFile)
+			if mustBeEmpty == "" {
 				t.Fatalf("expected a 'match' but got failure %q", mustBeEmpty)
 			}
 		})
