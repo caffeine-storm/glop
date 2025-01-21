@@ -16,6 +16,8 @@ import (
 	"github.com/runningwild/glop/render/rendertest"
 )
 
+const maxuint16 = 0xffff
+
 func foreachPixel(img image.Image, check func(x, y int, col color.Color)) {
 	for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
 		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
@@ -84,7 +86,7 @@ func isBlack(c color.Color) bool {
 		return false
 	}
 
-	return a == 0xffff
+	return a == maxuint16
 }
 
 func isTransparent(c color.Color) bool {
@@ -93,7 +95,7 @@ func isTransparent(c color.Color) bool {
 }
 func isRed(c color.Color) bool {
 	r, g, b, a := c.RGBA()
-	if r != 0xffff {
+	if r != maxuint16 {
 		return false
 	}
 	if g != 0 {
@@ -103,7 +105,7 @@ func isRed(c color.Color) bool {
 		return false
 	}
 
-	return a == 0xffff
+	return a == maxuint16
 }
 
 func TestTextureDebugging(t *testing.T) {
