@@ -1,3 +1,7 @@
+tmckee:#13 sprite/sheet.go calls glu.Build2DMipmaps and passes 'gl.INT' as the
+'type' parameter. But it _should_ be a 'gl.UNSIGNED_BYTE' because the data is
+coming from an image.RGBA which uses one byte per component.
+
 tmckee:#12 gui tests are flaky when not running under xvfb
 
 tmceke:#11 getting incorrect source line/number attribution when logging in Haunts
@@ -43,4 +47,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #13
+next bug: #14
