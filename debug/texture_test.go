@@ -72,15 +72,38 @@ func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 	return texture
 }
 
-func isRed(c color.Color) bool {
-	r, g, b, _ := c.RGBA()
+func isBlack(c color.Color) bool {
+	r, g, b, a := c.RGBA()
+	if r != 0 {
+		return false
+	}
 	if g != 0 {
 		return false
 	}
 	if b != 0 {
 		return false
 	}
-	return r != 0
+
+	return a == 0xffff
+}
+
+func isTransparent(c color.Color) bool {
+	_, _, _, a := c.RGBA()
+	return a == 0
+}
+func isRed(c color.Color) bool {
+	r, g, b, a := c.RGBA()
+	if r != 0xffff {
+		return false
+	}
+	if g != 0 {
+		return false
+	}
+	if b != 0 {
+		return false
+	}
+
+	return a == 0xffff
 }
 
 func TestTextureDebugging(t *testing.T) {
@@ -128,6 +151,47 @@ func TestTextureDebugging(t *testing.T) {
 			if !isRed(col) {
 				t.Log("non-red pixel", "x", x, "y", y, "colour", col)
 				t.Fail()
+			}
+		})
+	})
+
+	t.Run("can dump non-uniform texture", func(t *testing.T) {
+		pngBuffer := &bytes.Buffer{}
+
+		rendertest.WithGl(func() {
+			tex := givenATexture("checker/0.png")
+
+			err := debug.DumpTextureAsPng(tex, pngBuffer)
+			if err != nil {
+				t.Fatalf("dumping failed: %v", err)
+			}
+		})
+
+		dumpedImage, err := png.Decode(pngBuffer)
+		if err != nil {
+			panic(fmt.Errorf("couldn't decode pngBuffer: %w", err))
+		}
+
+		// The dump should have produced a 64x64 pixel image of a cycle of squares
+		// (each 4x4 pixels) that are black, transparent then red.
+		foreachPixel(dumpedImage, func(x, y int, col color.Color) {
+			idx := (y/4)*16 + (x/4)*1
+			switch idx % 3 {
+			case 0:
+				if !isBlack(col) {
+					t.Log("non-black pixel", "x", x, "y", y, "colour", col)
+					t.Fail()
+				}
+			case 1:
+				if !isTransparent(col) {
+					t.Log("non-transparent pixel", "x", x, "y", y, "colour", col)
+					t.Fail()
+				}
+			case 2:
+				if !isRed(col) {
+					t.Log("non-red pixel", "x", x, "y", y, "colour", col)
+					t.Fail()
+				}
 			}
 		})
 	})
