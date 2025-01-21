@@ -116,7 +116,7 @@ func TestComparingPngsAgainstPngs(t *testing.T) {
 
 			expectedFile := "checker"
 			mustBeEmpty := rendertest.ShouldLookLikeFile(rgbaImage, expectedFile)
-			if mustBeEmpty == "" {
+			if mustBeEmpty != "" {
 				t.Fatalf("expected a 'match' but got failure %q", mustBeEmpty)
 			}
 		})
