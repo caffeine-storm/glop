@@ -25,22 +25,6 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 		gl.Enable(gl.BLEND)
 		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-		gl.MatrixMode(gl.MODELVIEW)
-		gl.PushMatrix()
-		gl.LoadIdentity()
-
-		gl.MatrixMode(gl.PROJECTION)
-		gl.PushMatrix()
-		gl.LoadIdentity()
-		// Use an orthonormal projection because all the gui code assumes it's
-		// rendering with such a projection.
-		gl.Ortho(0, float64(width), 0, float64(height), 10, -10)
-		gl.Viewport(0, 0, width, height)
-
-		gl.MatrixMode(gl.TEXTURE)
-		gl.PushMatrix()
-		gl.LoadIdentity()
-
 		sys.SwapBuffers()
 	})
 	render.StartProcessing()
@@ -122,6 +106,7 @@ func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueI
 		glTestContextSource <- cachedContext
 	default:
 		newContext := newGlContextForTest(width, height)
+		newContext.Prep(width, height)
 		newContext.Run(fn)
 		newContext.Clean()
 		glTestContextSource <- newContext
