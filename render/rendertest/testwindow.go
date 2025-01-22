@@ -26,9 +26,11 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 		gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 		gl.MatrixMode(gl.MODELVIEW)
+		gl.PushMatrix()
 		gl.LoadIdentity()
 
 		gl.MatrixMode(gl.PROJECTION)
+		gl.PushMatrix()
 		gl.LoadIdentity()
 		// Use an orthonormal projection because all the gui code assumes it's
 		// rendering with such a projection.
@@ -36,6 +38,7 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 		gl.Viewport(0, 0, width, height)
 
 		gl.MatrixMode(gl.TEXTURE)
+		gl.PushMatrix()
 		gl.LoadIdentity()
 
 		sys.SwapBuffers()
