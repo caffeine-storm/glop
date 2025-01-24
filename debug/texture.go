@@ -24,7 +24,6 @@ func getBoundTextureSize() (width int, height int) {
 }
 
 func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
-	gl.Enable(gl.TEXTURE_2D)
 	textureId.Bind(gl.TEXTURE_2D)
 
 	textureWidth, textureHeight := getBoundTextureSize()

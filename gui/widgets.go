@@ -171,7 +171,6 @@ func (w *ImageBox) SetImage(path string) {
 	}
 
 	w.texture = gl.GenTexture()
-	gl.Enable(gl.TEXTURE_2D)
 	w.texture.Bind(gl.TEXTURE_2D)
 	gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
@@ -192,7 +191,6 @@ func (w *ImageBox) Draw(region Region, ctx DrawingContext) {
 		return
 	}
 
-	gl.Enable(gl.TEXTURE_2D)
 	w.texture.Bind(gl.TEXTURE_2D)
 	gl.Enable(gl.BLEND)
 	gl.Color4d(w.r, w.g, w.b, w.a)
@@ -206,7 +204,6 @@ func (w *ImageBox) Draw(region Region, ctx DrawingContext) {
 	gl.TexCoord2f(1, 0)
 	gl.Vertex2i(region.X+region.Dx, region.Y)
 	gl.End()
-	gl.Disable(gl.TEXTURE_2D)
 }
 
 type CollapseWrapper struct {

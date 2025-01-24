@@ -1046,7 +1046,6 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 	// more than one manager per render queue.
 	m.gen_tex_once.Do(func() {
 		m.renderQueue.Queue((func(render.RenderQueueState) {
-			gl.Enable(gl.TEXTURE_2D)
 			m.error_texture = gl.GenTexture()
 			m.error_texture.Bind(gl.TEXTURE_2D)
 			gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)

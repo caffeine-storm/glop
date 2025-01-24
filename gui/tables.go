@@ -73,7 +73,6 @@ func (w *VerticalTable) DoThink(int64, bool) {
 }
 func (w *VerticalTable) Draw(region Region, ctx DrawingContext) {
 	gl.Enable(gl.BLEND)
-	gl.Disable(gl.TEXTURE_2D)
 	dx := region.Dx
 	if dx > w.Request_dims.Dx && !w.Ex {
 		dx = w.Request_dims.Dx
@@ -189,7 +188,6 @@ func (w *HorizontalTable) DoThink(int64, bool) {
 }
 func (w *HorizontalTable) Draw(region Region, ctx DrawingContext) {
 	gl.Enable(gl.BLEND)
-	gl.Disable(gl.TEXTURE_2D)
 	dx := region.Dx
 	if dx > w.Request_dims.Dx && !w.Ex {
 		dx = w.Request_dims.Dx

@@ -64,7 +64,6 @@ func givenATexture(imageFilePath string) gl.Texture {
 
 func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 	bounds := img.Bounds()
-	gl.Enable(gl.TEXTURE_2D)
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
 	gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
@@ -107,8 +106,6 @@ func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 		gl.UNSIGNED_BYTE,
 		img.Pix,
 	)
-
-	gl.Disable(gl.TEXTURE_2D)
 
 	return texture
 }
@@ -242,7 +239,6 @@ func drawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *rend
 		gl.BufferData(gl.ARRAY_BUFFER, stride*len(verts), verts, gl.STATIC_DRAW)
 
 		// - setup rendering parameters
-		gl.Enable(gl.TEXTURE_2D)
 		tex.Bind(gl.TEXTURE_2D)
 
 		gl.EnableClientState(gl.VERTEX_ARRAY)

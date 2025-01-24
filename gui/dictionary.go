@@ -386,10 +386,6 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	gl.Enable(gl.BLEND)
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
-	// TODO(tmckee): we should do error checking with glGetError:
-	// https://docs.gl/gl2/glGetError
-	// TODO(tmckee): This seems specific to OpenGL2/2.1: https://docs.gl/gl2/glEnable
-	gl.Enable(gl.TEXTURE_2D)
 	d.texture.Bind(gl.TEXTURE_2D)
 
 	gl.EnableClientState(gl.VERTEX_ARRAY)
@@ -540,7 +536,6 @@ func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface)
 	d.paragraphBlittingCache = make(map[string]blitBuffer)
 
 	renderQueue.Queue(func(render.RenderQueueState) {
-		gl.Enable(gl.TEXTURE_2D)
 		d.texture = gl.GenTexture()
 		d.texture.Bind(gl.TEXTURE_2D)
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
@@ -562,7 +557,5 @@ func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface)
 			gl.ALPHA,
 			gl.UNSIGNED_INT,
 			d.Data.Pix)
-
-		gl.Disable(gl.TEXTURE_2D)
 	})
 }

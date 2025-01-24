@@ -124,7 +124,6 @@ func nextPowerOf2(n uint32) uint32 {
 }
 
 func (s *sheet) makeTexture(pixer <-chan []byte) {
-	gl.Enable(gl.TEXTURE_2D)
 	s.texture = gl.GenTexture()
 	s.texture.Bind(gl.TEXTURE_2D)
 	gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
