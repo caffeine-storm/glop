@@ -2,12 +2,9 @@ package debug
 
 import (
 	"fmt"
-	"runtime"
-	"strings"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glew"
-	"github.com/runningwild/glop/glog"
 )
 
 func mappedSymbols() map[gl.GLenum]string {
@@ -90,25 +87,5 @@ func GetGlState() *GlState {
 		ProjectionMatrix: GetProjectionMatrix(),
 		ColorMatrix:      GetColorMatrix(),
 		TextureMatrix:    GetTextureMatrix(),
-	}
-}
-
-// TODO(tmckee): move this to a 'debug/glerrors.go' file.
-func LogAndClearGlErrors(logger glog.Logger) {
-	_, file, line, ok := runtime.Caller(1)
-	if !ok {
-		panic("couldn't call runtime.Caller(1)")
-	}
-
-	parts := strings.SplitAfter(file, "glop")
-	file = parts[len(parts)-1][1:]
-
-	for {
-		glErr := gl.GetError()
-		if glErr == gl.NO_ERROR {
-			return
-		}
-
-		logger.Warn("GlError", "file", file, "line", line, "code", glErr)
 	}
 }
