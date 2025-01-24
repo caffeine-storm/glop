@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
@@ -76,26 +77,14 @@ func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 	// Need to flip the input image vertically because image.RGBA stores the
 	// top-left pixel first but gl.TexImage2D expects the bottom-left pixel
 	// first.
-	width, height := bounds.Dx(), bounds.Dy()
-	tmp := make([]byte, width*4)
-	for rowIdx := 0; rowIdx < height/2; rowIdx++ {
-		a, b := rowIdx, height-rowIdx-1
-		if a == b {
-			break
-		}
-		arow := img.Pix[a*width*4 : (a+1)*width*4]
-		brow := img.Pix[b*width*4 : (b+1)*width*4]
-		copy(tmp, arow)
-		copy(arow, brow)
-		copy(brow, tmp)
-	}
+	imgmanip.FlipVertically(img)
 
 	// sanity check: what are the alpha values in the image? We're expecting
 	// 4 row chunks of 4-black, 4-transparent, 4-red pixels
 	// What's the first row?
 	var reds, greens, blues []byte
 	alphas := []byte{}
-	for pix := 0; pix < width; pix++ {
+	for pix := 0; pix < img.Bounds().Dx(); pix++ {
 		reds = append(reds, img.Pix[pix*4+0])
 		greens = append(greens, img.Pix[pix*4+1])
 		blues = append(blues, img.Pix[pix*4+2])

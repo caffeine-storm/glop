@@ -8,6 +8,7 @@ import (
 	"io"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/imgmanip"
 )
 
 type vflipped struct {
@@ -37,18 +38,7 @@ func ScreenShotRgba(width, height int) *image.RGBA {
 
 	// Flip the rows of pixels vertically so that the leading bytes correspond to
 	// the 'top' row of pixels.
-	tmp := make([]byte, width*4)
-	for rowIdx := 0; rowIdx < height/2; rowIdx++ {
-		a, b := rowIdx, height-rowIdx-1
-		if a == b {
-			break
-		}
-		arow := rgba.Pix[a*width*4 : (a+1)*width*4]
-		brow := rgba.Pix[b*width*4 : (b+1)*width*4]
-		copy(tmp, arow)
-		copy(arow, brow)
-		copy(brow, tmp)
-	}
+	imgmanip.FlipVertically(rgba)
 
 	return rgba
 }

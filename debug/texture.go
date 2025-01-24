@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/imgmanip"
 )
 
 func getBoundTextureSize() (width int, height int) {
@@ -33,18 +34,7 @@ func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 
 	// We need to flip the image about the horizontal midline because OpenGL
 	// dumps from the bottom-to-top.
-	tmp := make([]byte, textureWidth*4)
-	for rowIdx := 0; rowIdx < textureHeight/2; rowIdx++ {
-		a, b := rowIdx, textureHeight-rowIdx-1
-		if a == b {
-			break
-		}
-		arow := img.Pix[a*textureWidth*4 : (a+1)*textureWidth*4]
-		brow := img.Pix[b*textureWidth*4 : (b+1)*textureWidth*4]
-		copy(tmp, arow)
-		copy(arow, brow)
-		copy(brow, tmp)
-	}
+	imgmanip.FlipVertically(img)
 
 	return img, nil
 }
