@@ -553,8 +553,11 @@ func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface)
 			d.Data.Dx,
 			d.Data.Dy,
 			0,
-			// TODO(tmckee): ??? shouldn't this be gl.RGBA and gl.UNSIGNED_BYTE?
 			gl.ALPHA,
+			// We use unsigned int here to treat each group of 4 bytes like one big
+			// alpha value. Yes, that means we're interpreting red, green and blue
+			// components as part of the alpha but, since all of the texture should
+			// be grayscale, we can cut this corner.
 			gl.UNSIGNED_INT,
 			d.Data.Pix)
 	})
