@@ -35,13 +35,11 @@ const font_vertex_shader string = `
 const font_fragment_shader string = `
   #version 120
   uniform sampler2D tex;
-  uniform float dist_min;
-  uniform float dist_max;
 
   void main() {
     vec2 tpos = gl_TexCoord[0].xy;
     float dist = texture2D(tex, tpos).a;
-    float alpha = smoothstep(dist_min, dist_max, dist);
+    float alpha = smoothstep(0.05, 0.95, dist);
     gl_FragColor = gl_Color * vec4(1.0, 1.0, 1.0, alpha);
   }
 `
@@ -377,18 +375,6 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 		panic(err)
 	}
 	defer shaders.EnableShader("")
-
-	// TODO(tmckee): 'diff' was used for configuring a clamping function
-	// (smoothstep) in the shader. The math is broken, though, and alyways comes
-	// out to something that then gets clamped to 0.45
-	// diff := 20/math.Pow(height, 1.0) + 5*math.Pow(d.Data.Scale, 1.0)/math.Pow(height, 1.0)
-	// if diff > 0.45 {
-	// diff = 0.45
-	// }
-	diff := 0.45
-	d.logger.Trace("RenderStringDiff", "diff", diff)
-	shaders.SetUniformF("glop.font", "dist_min", float32(0.5-diff))
-	shaders.SetUniformF("glop.font", "dist_max", float32(0.5+diff))
 
 	// We want to use the 0'th texture unit.
 	shaders.SetUniformI("glop.font", "tex", 0)
