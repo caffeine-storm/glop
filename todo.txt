@@ -4,7 +4,7 @@ coming from an image.RGBA which uses one byte per component.
 
 tmckee:#12 gui tests are flaky when not running under xvfb
 
-tmceke:#11 getting incorrect source line/number attribution when logging in Haunts
+tmckee:#11 getting incorrect source line/number attribution when logging in Haunts
 -	might have something to do with different callstack depth during "Trace" vs.
 	"Debug", etc.
 
@@ -31,9 +31,6 @@ tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
 tmckee:#8 use type system to make initialization ordering constraints explicit
 	- need to identify which modules/packages need this
-
-tmckee:#9 find a way to work around needing LD_LIBRARY_PATH when running tests in
-subdirectories
 
 tmckee:#10 in gos/linux/glop.cpp:
 	case XK_slash: ki = '/'; break;
