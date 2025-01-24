@@ -73,6 +73,39 @@ func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
+	// Need to flip the input image vertically because image.RGBA stores the
+	// top-left pixel first but gl.TexImage2D expects the bottom-left pixel
+	// first.
+	width, height := bounds.Dx(), bounds.Dy()
+	tmp := make([]byte, width*4)
+	for rowIdx := 0; rowIdx < height/2; rowIdx++ {
+		a, b := rowIdx, height-rowIdx-1
+		if a == b {
+			break
+		}
+		arow := img.Pix[a*width*4 : (a+1)*width*4]
+		brow := img.Pix[b*width*4 : (b+1)*width*4]
+		copy(tmp, arow)
+		copy(arow, brow)
+		copy(brow, tmp)
+	}
+
+	// sanity check: what are the alpha values in the image? We're expecting
+	// 4 row chunks of 4-black, 4-transparent, 4-red pixels
+	// What's the first row?
+	var reds, greens, blues []byte
+	alphas := []byte{}
+	for pix := 0; pix < width; pix++ {
+		reds = append(reds, img.Pix[pix*4+0])
+		greens = append(greens, img.Pix[pix*4+1])
+		blues = append(blues, img.Pix[pix*4+2])
+		alphas = append(alphas, img.Pix[pix*4+3])
+	}
+	fmt.Printf("reds for row 0: %v\n", reds)
+	fmt.Printf("greens for row 0: %v\n", greens)
+	fmt.Printf("blues for row 0: %v\n", blues)
+	fmt.Printf("alphas for row 0: %v\n", alphas)
+
 	gl.ActiveTexture(gl.TEXTURE0 + 0)
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
@@ -126,6 +159,21 @@ func isRed(c color.Color) bool {
 	return a == maxuint16
 }
 
+func isBlue(c color.Color) bool {
+	r, g, b, a := c.RGBA()
+	if r != 0 {
+		return false
+	}
+	if g != 0 {
+		return false
+	}
+	if b != maxuint16 {
+		return false
+	}
+
+	return a == maxuint16
+}
+
 func withShaderProgs(shaders *render.ShaderBank, vertShader string, fragShader string, fn func()) {
 	err := shaders.RegisterShader("debugshaders", vertShader, fragShader)
 	if err != nil {
@@ -141,6 +189,38 @@ func withShaderProgs(shaders *render.ShaderBank, vertShader string, fragShader s
 		shaders.EnableShader("")
 	}()
 	fn()
+}
+
+func withClearColour(r, g, b, a gl.GLclampf, fn func()) {
+	oldClear := [4]float32{0, 0, 0, 0}
+
+	gl.GetFloatv(gl.COLOR_CLEAR_VALUE, oldClear[:])
+
+	gl.ClearColor(r, g, b, a)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+	defer func() {
+		gl.ClearColor(
+			gl.GLclampf(oldClear[0]),
+			gl.GLclampf(oldClear[1]),
+			gl.GLclampf(oldClear[2]),
+			gl.GLclampf(oldClear[3]))
+	}()
+	fn()
+}
+
+func blitOntoBlue(img image.Image) *image.RGBA {
+	blue := image.NewUniform(color.RGBA{
+		R: 0,
+		G: 0,
+		B: 255,
+		A: 255,
+	})
+	result := image.NewRGBA(img.Bounds())
+
+	draw.Draw(result, img.Bounds(), blue, image.Point{}, draw.Src)
+	draw.Draw(result, img.Bounds(), img, image.Point{}, draw.Over)
+
+	return result
 }
 
 func drawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *render.ShaderBank) {
@@ -271,6 +351,20 @@ func TestTextureDebugging(t *testing.T) {
 			panic(fmt.Errorf("couldn't decode pngBuffer: %w", err))
 		}
 
+		// When things are quite broken, we'll just ellide noisy log messages.
+		logCount := 0
+		logProblem := func(args ...interface{}) {
+			logCount++
+			if logCount > 10 {
+				return
+			}
+			if logCount == 10 {
+				t.Log("(supressing duplicate messages")
+			}
+
+			t.Log(args...)
+		}
+
 		// The dump should have produced a 64x64 pixel image of a cycle of squares
 		// (each 4x4 pixels) that are black, transparent then red.
 		foreachPixel(dumpedImage, func(x, y int, col color.Color) {
@@ -278,17 +372,17 @@ func TestTextureDebugging(t *testing.T) {
 			switch idx % 3 {
 			case 0:
 				if !isBlack(col) {
-					t.Log("non-black pixel", "x", x, "y", y, "colour", col)
+					logProblem("non-black pixel", "x", x, "y", y, "colour", col)
 					t.Fail()
 				}
 			case 1:
 				if !isTransparent(col) {
-					t.Log("non-transparent pixel", "x", x, "y", y, "colour", col)
+					logProblem("non-transparent pixel", "x", x, "y", y, "colour", col)
 					t.Fail()
 				}
 			case 2:
 				if !isRed(col) {
-					t.Log("non-red pixel", "x", x, "y", y, "colour", col)
+					logProblem("non-red pixel", "x", x, "y", y, "colour", col)
 					t.Fail()
 				}
 			}
@@ -299,6 +393,14 @@ func TestTextureDebugging(t *testing.T) {
 		// - Load an image
 		expectedImage := mustLoadImage("checker/0.png")
 
+		expectedImage = blitOntoBlue(expectedImage)
+
+		// - Screen-shotting reads every pixel without prior knowledge; any
+		// 'transparent' pieces will be set to the clear-colour. Set a blue
+		// clear-colour (blue does not exist in the checker image), then draw the
+		// checker image over top a blue background. Comparing the screenshot to
+		// the drawn image is what we need to do.
+
 		bounds := expectedImage.Bounds()
 		width, height := bounds.Dx(), bounds.Dy()
 		rendertest.WithGlForTest(width, height, func(_ system.System, queue render.RenderQueueInterface) {
@@ -308,13 +410,15 @@ func TestTextureDebugging(t *testing.T) {
 				// - Convert it to a texture
 				tex := givenATexture("checker/0.png")
 
-				// - Blit the texture accross the entire viewport
-				drawTexturedQuad(bounds, tex, st.Shaders())
+				withClearColour(0, 0, 1, 1, func() {
+					// - Blit the texture accross the entire viewport
+					drawTexturedQuad(bounds, tex, st.Shaders())
 
-				// - Verify a screenshot matches the image.
-				resultImage = debug.ScreenShotRgba(width, height)
+					// - Verify a screenshot matches the image.
+					resultImage = debug.ScreenShotRgba(width, height)
 
-				result = rendertest.ImagesAreWithinThreshold(expectedImage, resultImage, rendertest.Threshold(3))
+					result = rendertest.ImagesAreWithinThreshold(expectedImage, resultImage, rendertest.Threshold(3))
+				})
 			})
 			queue.Purge()
 
