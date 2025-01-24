@@ -93,6 +93,7 @@ func GetGlState() *GlState {
 	}
 }
 
+// TODO(tmckee): move this to a 'debug/glerrors.go' file.
 func LogAndClearGlErrors(logger glog.Logger) {
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
