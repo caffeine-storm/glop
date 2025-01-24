@@ -65,7 +65,7 @@ func drawAsRgba(img image.Image) *image.RGBA {
 	return ret
 }
 
-func imagesAreWithinThreshold(expected, actual image.Image, thresh Threshold) bool {
+func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold) bool {
 	// Do a size check first so that we don't read out of bounds.
 	if expected.Bounds() != actual.Bounds() {
 		glog.ErrorLogger().Error("size mismatch", "expected", expected.Bounds(), "actual", actual.Bounds())
@@ -138,7 +138,7 @@ func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold) (bool
 		panic(fmt.Errorf("couldn't read from 'actual': %w", err))
 	}
 
-	if !imagesAreWithinThreshold(expectedImage, actualImage, thresh) {
+	if !ImagesAreWithinThreshold(expectedImage, actualImage, thresh) {
 		return false, actualImage
 	}
 
@@ -157,7 +157,7 @@ func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh T
 	defer pngFile.Close()
 
 	expectedImage, _, _ := readPng(pngFile)
-	if !imagesAreWithinThreshold(expectedImage, actualImage, thresh) {
+	if !ImagesAreWithinThreshold(expectedImage, actualImage, thresh) {
 		rejectFileName := MakeRejectName(pngFileExpected, ".png")
 		rejectFile, err := os.Create(rejectFileName)
 		if err != nil {
