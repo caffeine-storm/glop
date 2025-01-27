@@ -64,6 +64,8 @@ test-fresh: test-nocache
 list_rejects:
 	@find testdata/ -name '*.rej*'
 
+# TODO(tmckee): this is broken right now; there's multiple testdata directories
+# now
 clean_rejects:
 	find testdata/ -name '*.rej*' -exec rm "{}" +
 
