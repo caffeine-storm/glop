@@ -29,21 +29,6 @@ func foreachPixel(img image.Image, check func(x, y int, col color.Color)) {
 	}
 }
 
-func mustLoadImage(imageFilePath string) image.Image {
-	imageFilePath = path.Join("testdata", imageFilePath)
-	file, err := os.Open(imageFilePath)
-	if err != nil {
-		panic(fmt.Errorf("couldn't open file %q: %w", imageFilePath, err))
-	}
-
-	img, _, err := image.Decode(file)
-	if err != nil {
-		panic(fmt.Errorf("couldn't image.Decode: %w", err))
-	}
-
-	return img
-}
-
 func givenATexture(imageFilePath string) gl.Texture {
 	imageFilePath = path.Join("testdata", imageFilePath)
 	file, err := os.Open(imageFilePath)
@@ -376,7 +361,7 @@ func TestTextureDebugging(t *testing.T) {
 
 	t.Run("textures should match the underlying image", func(t *testing.T) {
 		// - Load an image
-		expectedImage := mustLoadImage("checker/0.png")
+		expectedImage := rendertest.MustLoadImage("checker/0.png")
 
 		expectedImage = blitOntoBlue(expectedImage)
 
