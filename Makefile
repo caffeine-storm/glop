@@ -1,6 +1,6 @@
 SHELL:=/bin/bash
 
-TEST_REPORT_TAR:=testdata/report.tar.gz
+TEST_REPORT_TAR:=test-report.tar.gz
 
 testrunpackages=./...
 ifneq "${testrun}" ""
@@ -62,18 +62,21 @@ test-fresh: |clean_rejects
 test-fresh: test-nocache
 
 list_rejects:
-	@find testdata/ -name '*.rej*'
+	@find . -name testdata -type d | while read testdatadir ; do \
+		find "$$testdatadir" -name '*.rej.*' ; \
+	done
 
-# TODO(tmckee): this is broken right now; there's multiple testdata directories
-# now
 clean_rejects:
-	find testdata/ -name '*.rej*' -exec rm "{}" +
+	find . -name testdata -type d | while read testdatadir ; do \
+		find "$$testdatadir" -name '*.rej.*' -exec rm "{}" + ; \
+	done
 
 promote_rejects:
-	@shopt -s nullglob ; \
-	find testdata/ -name '*.rej*' | while read i ; do \
-		echo mv $$i $${i/.rej} ; \
-		mv $$i $${i/.rej} ; \
+	@find . -name testdata -type d | while read testdatadir ; do \
+		find "$$testdatadir" -name '*.rej.*' | while read rejfile ; do \
+			echo mv "$$rejfile" "$${rejfile/.rej}" ; \
+			mv "$$rejfile" "$${rejfile/.rej}" ; \
+		done \
 	done
 
 # Deliberately signal failure from this recipe so that CI notices failing tests
@@ -89,10 +92,9 @@ ${TEST_REPORT_TAR}:
 		--auto-compress \
 		--create \
 		--file $@ \
-		--directory testdata/ \
-		--files-from <(cd testdata; find  . -name '*.rej.*' | while read fname ; do \
-				echo $$fname ; \
-				echo $${fname/.rej} ; \
+		--files-from <(find  . -name '*.rej.*' | while read fname ; do \
+				echo "$$fname" ; \
+				echo "$${fname/.rej}" ; \
 			done \
 		)
 
