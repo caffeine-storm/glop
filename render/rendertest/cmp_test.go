@@ -169,8 +169,14 @@ func TestCompareTransparentExpectations(t *testing.T) {
 	t.Run("transparent result vs. transparent expecation", func(t *testing.T) {
 		lhs := rendertest.MustLoadImage("checker/0.png")
 		rhs := rendertest.MustLoadImage("checker/0.png")
-		result := rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(0))
+		// Use a transparent background for the sake of this comparison.
+		transparent := color.RGBA{}
+		result := rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(0), transparent)
 		assert.Equal(t, result, true)
+
+		black := color.RGBA{R: 0, G: 0, B: 0, A: 255}
+		result = rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(5), black)
+		assert.Equal(t, result, false)
 	})
 
 	t.Run("opaque result vs. transparent expectation", func(t *testing.T) {
@@ -188,7 +194,7 @@ func TestCompareTransparentExpectations(t *testing.T) {
 			})
 			queue.Purge()
 
-			conveyResult := rendertest.ShouldLookLikeFile(queue, "checker")
+			conveyResult := rendertest.ShouldLookLikeFile(queue, "checker", rendertest.BackgroundColour(color.RGBA{R: 0, G: 0, B: 255, A: 255}))
 			conveySuccess := ""
 			if conveyResult != conveySuccess {
 				t.Fatalf("ShouldLookLike returned a mismatch: %q", conveyResult)
