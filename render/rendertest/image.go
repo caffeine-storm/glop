@@ -5,6 +5,8 @@ import (
 	"image"
 	"os"
 	"path"
+
+	"github.com/runningwild/glop/imgmanip"
 )
 
 func MustLoadImage(imageFilePath string) image.Image {
@@ -20,4 +22,8 @@ func MustLoadImage(imageFilePath string) image.Image {
 	}
 
 	return img
+}
+
+func MustLoadRGBAImage(imageFilePath string) *image.RGBA {
+	return imgmanip.ToRGBA(MustLoadImage(imageFilePath))
 }
