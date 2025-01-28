@@ -13,6 +13,7 @@ import (
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
+	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -199,6 +200,38 @@ func TestCompareTransparentExpectations(t *testing.T) {
 			if conveyResult != conveySuccess {
 				t.Fatalf("ShouldLookLike returned a mismatch: %q", conveyResult)
 			}
+		})
+	})
+}
+
+func TestCmpSpecs(t *testing.T) {
+	Convey("comparison helpers should be ergonomic", t, func() {
+		Convey("for raw images", func() {
+			checkers := rendertest.MustLoadRGBAImage("checker/0.png")
+			So(checkers, rendertest.ShouldLookLikeFile, "checker")
+
+			// When comparing raw images, the transparency _needs_ to match.
+		})
+
+		Convey("for rendered textures", func() {
+			rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
+				queue.Queue(func(st render.RenderQueueState) {
+					tex := debugtest.GivenATexture("checker/0.png")
+
+					rendertest.WithClearColour(0, 0, 1, 1, func() {
+						debugtest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
+					})
+				})
+				queue.Purge()
+
+				blue := color.RGBA{
+					R: 0,
+					G: 0,
+					B: 255,
+					A: 255,
+				}
+				So(queue, rendertest.ShouldLookLikeFile, "checker", rendertest.BackgroundColour(blue))
+			})
 		})
 	})
 }

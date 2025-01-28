@@ -298,7 +298,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	case *image.RGBA:
 		_, foundBg := getBackgroundFromArgs(expected)
 		if !foundBg {
-			expected = append(expected, BackgroundColour(color.RGBA{}))
+			expected = append(expected, defaultBackground)
 		}
 		return imageShouldLookLike(v, expected...)
 	default:
