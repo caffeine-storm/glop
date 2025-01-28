@@ -70,10 +70,10 @@ list_rejects:
 view_rejects: 
 	@find . -name testdata -type d | while read testdatadir ; do \
 		find "$$testdatadir" -name '*.rej.*' | while read rejfile ; do \
-			echo "$${rejfile/.rej}" "$$rejfile" ; \
 			echo -e >&2 "$${rejfile/.rej}\n$$rejfile" ; \
-		done \
-	done | xargs feh
+			echo "$${rejfile/.rej}" "$$rejfile" ; \
+		done ; \
+	done | xargs -r feh
 
 clean_rejects:
 	find . -name testdata -type d | while read testdatadir ; do \
