@@ -29,6 +29,8 @@ func (err shaderError) Error() string {
 	return string(err)
 }
 
+var ErrShaderAlreadyRegistered shaderError = "shader name already in use"
+
 // TODO(tmckee): refactor: There should be a 'DisableShader' to 'UseProgram(0)'
 func (bank *ShaderBank) EnableShader(name string) error {
 	if name == "" {
@@ -66,7 +68,7 @@ func (bank *ShaderBank) SetUniformF(shader, variable string, f float32) error {
 
 func (bank *ShaderBank) RegisterShader(name string, vertex, fragment string) error {
 	if _, notOk := bank.ShaderProgs[name]; notOk {
-		return shaderError(fmt.Sprintf("Tried to register a shader called '%s' twice", name))
+		return ErrShaderAlreadyRegistered
 	}
 
 	vertex_shader := gl.CreateShader(gl.VERTEX_SHADER)
