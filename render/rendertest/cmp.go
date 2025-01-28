@@ -148,8 +148,9 @@ func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold, bg co
 // Verify that the 'actualImage' is a match to our expected image to within a
 // threshold. We need the fuzzy matching because OpenGL doesn't guarantee exact
 // pixel-to-pixel matches across different hardware/driver combinations. It
-// should be close, though!
-func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh Threshold, bg color.Color) (bool, string) {
+// should be close, though! To support transparency in our testdata files, we
+// also take a background to use as needed.
+func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh Threshold, bg color.Color) bool {
 	pngFile, err := os.Open(pngFileExpected)
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open %q: %w", pngFileExpected, err))
@@ -157,23 +158,7 @@ func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh T
 	defer pngFile.Close()
 
 	expectedImage, _, _ := readPng(pngFile)
-	if !ImagesAreWithinThreshold(expectedImage, actualImage, thresh, bg) {
-		rejectFileName := MakeRejectName(pngFileExpected, ".png")
-		rejectFile, err := os.Create(rejectFileName)
-		if err != nil {
-			panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
-		}
-		defer rejectFile.Close()
-
-		err = png.Encode(rejectFile, actualImage)
-		if err != nil {
-			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
-		}
-
-		return false, rejectFileName
-	}
-
-	return true, ""
+	return ImagesAreWithinThreshold(expectedImage, actualImage, thresh, bg)
 }
 
 func getTestNumberFromArgs(args []interface{}) TestNumber {
@@ -239,17 +224,28 @@ func imageShouldLookLike(actualImage *image.RGBA, expected ...interface{}) strin
 	// Use a default 'testnumber = 0' for non-table tests.
 	testnumber := getTestNumberFromArgs(expected)
 
-	filename := ExpectationFile(testDataKey, "png", testnumber)
+	expectedFileName := ExpectationFile(testDataKey, "png", testnumber)
 
 	bg, _ := getBackgroundFromArgs(expected)
 
 	thresh := getThresholdFromArgs(expected)
-	ok, rejectFile := expectPixelsMatch(actualImage, filename, thresh, bg)
-	if ok {
+	if expectPixelsMatch(actualImage, expectedFileName, thresh, bg) {
 		return ""
 	}
 
-	return fmt.Sprintf("frame buffer mismatch; see %s", rejectFile)
+	rejectFileName := MakeRejectName(expectedFileName, ".png")
+	rejectFile, err := os.Create(rejectFileName)
+	if err != nil {
+		panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
+	}
+	defer rejectFile.Close()
+
+	err = png.Encode(rejectFile, actualImage)
+	if err != nil {
+		panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
+	}
+
+	return fmt.Sprintf("image mismatch; see %s", rejectFileName)
 }
 
 func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
