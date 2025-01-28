@@ -66,6 +66,15 @@ list_rejects:
 		find "$$testdatadir" -name '*.rej.*' ; \
 	done
 
+# opens expected and rejected files in 'feh'
+view_rejects: 
+	@find . -name testdata -type d | while read testdatadir ; do \
+		find "$$testdatadir" -name '*.rej.*' | while read rejfile ; do \
+			echo "$${rejfile/.rej}" "$$rejfile" ; \
+			echo -e >&2 "$${rejfile/.rej}\n$$rejfile" ; \
+		done \
+	done | xargs feh
+
 clean_rejects:
 	find . -name testdata -type d | while read testdatadir ; do \
 		find "$$testdatadir" -name '*.rej.*' -exec rm "{}" + ; \
@@ -112,7 +121,7 @@ clean:
 	rm -f ${TEST_REPORT_TAR}
 
 .PHONY: build-check
-.PHONY: list_rejects clean_rejects promote_rejects
+.PHONY: list_rejects view_rejects clean_rejects promote_rejects
 .PHONY: fmt lint
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
