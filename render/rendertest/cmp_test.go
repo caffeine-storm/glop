@@ -205,12 +205,21 @@ func TestCompareTransparentExpectations(t *testing.T) {
 }
 
 func TestCmpSpecs(t *testing.T) {
+	blue := color.RGBA{
+		R: 0,
+		G: 0,
+		B: 255,
+		A: 255,
+	}
+
 	Convey("comparison helpers should be ergonomic", t, func() {
 		Convey("for raw images", func() {
 			checkers := rendertest.MustLoadRGBAImage("checker/0.png")
 			So(checkers, rendertest.ShouldLookLikeFile, "checker")
 
-			// When comparing raw images, the transparency _needs_ to match.
+			// When comparing raw images, the transparency must _match_.
+			checkersOnBlue := rendertest.DrawAsRgbaWithBackground(checkers, blue)
+			So(checkersOnBlue, rendertest.ShouldNotLookLikeFile, "checker")
 		})
 
 		Convey("for rendered textures", func() {
@@ -224,12 +233,6 @@ func TestCmpSpecs(t *testing.T) {
 				})
 				queue.Purge()
 
-				blue := color.RGBA{
-					R: 0,
-					G: 0,
-					B: 255,
-					A: 255,
-				}
 				So(queue, rendertest.ShouldLookLikeFile, "checker", rendertest.BackgroundColour(blue))
 			})
 		})

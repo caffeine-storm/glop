@@ -30,6 +30,7 @@ var defaultBackground = color.RGBA{
 	B: 0,
 	A: 255,
 }
+var transparent = color.RGBA{}
 
 func ExpectationFile(testDataKey, fileExt string, testnumber TestNumber) string {
 	return path.Join("testdata", testDataKey, fmt.Sprintf("%d.%s", testnumber, fileExt))
@@ -64,7 +65,7 @@ func readPng(reader io.Reader) (image.Image, int, int) {
 	return img, width, height
 }
 
-func drawAsRgbaWithBackground(img image.Image, bg color.Color) *image.RGBA {
+func DrawAsRgbaWithBackground(img image.Image, bg color.Color) *image.RGBA {
 	ret := image.NewRGBA(img.Bounds())
 	draw.Draw(ret, img.Bounds(), image.NewUniform(bg), image.Point{}, draw.Src)
 	draw.Draw(ret, img.Bounds(), img, image.Point{}, draw.Over)
@@ -89,7 +90,7 @@ func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold, ba
 		return false
 	}
 
-	lhsrgba := drawAsRgbaWithBackground(expected, backgroundColour)
+	lhsrgba := DrawAsRgbaWithBackground(expected, backgroundColour)
 	rhsrgba := drawAsRgba(actual)
 
 	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
@@ -298,12 +299,26 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	case *image.RGBA:
 		_, foundBg := getBackgroundFromArgs(expected)
 		if !foundBg {
-			expected = append(expected, defaultBackground)
+			// When comparing a given image, we should make sure its transparency
+			// matches the expected transparency so we need to use a transparent
+			// background when comparing.
+			expected = append(expected, BackgroundColour(transparent))
 		}
 		return imageShouldLookLike(v, expected...)
 	default:
 		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
 	}
+}
+
+func ShouldNotLookLikeFile(actual interface{}, expected ...interface{}) string {
+	// TODO(tmckee): when this test passes, the 'ShouldLookLikeFile' call will
+	// create a rejection file; need to disable/intervene.
+	doesLook := ShouldLookLikeFile(actual, expected...)
+	if doesLook == "" {
+		return "arguments matched but should have been different"
+	}
+
+	return ""
 }
 
 func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
