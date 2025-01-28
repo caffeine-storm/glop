@@ -14,6 +14,7 @@ import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
+	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 )
 
@@ -72,17 +73,6 @@ func DrawAsRgbaWithBackground(img image.Image, bg color.Color) *image.RGBA {
 	return ret
 }
 
-func drawAsRgba(img image.Image) *image.RGBA {
-	if ret, ok := img.(*image.RGBA); ok {
-		return ret
-	}
-
-	ret := image.NewRGBA(img.Bounds())
-	draw.Draw(ret, img.Bounds(), img, image.Point{}, draw.Src)
-
-	return ret
-}
-
 func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold, backgroundColour color.Color) bool {
 	// Do a size check first so that we don't read out of bounds.
 	if expected.Bounds() != actual.Bounds() {
@@ -91,7 +81,7 @@ func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold, ba
 	}
 
 	lhsrgba := DrawAsRgbaWithBackground(expected, backgroundColour)
-	rhsrgba := drawAsRgba(actual)
+	rhsrgba := imgmanip.ToRGBA(actual)
 
 	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
 }
