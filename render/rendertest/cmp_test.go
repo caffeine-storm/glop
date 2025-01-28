@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/debug/debugtest"
+	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
@@ -218,7 +219,7 @@ func TestCmpSpecs(t *testing.T) {
 			So(checkers, rendertest.ShouldLookLikeFile, "checker")
 
 			// When comparing raw images, the transparency must _match_.
-			checkersOnBlue := rendertest.DrawAsRgbaWithBackground(checkers, blue)
+			checkersOnBlue := imgmanip.DrawAsRgbaWithBackground(checkers, blue)
 			So(checkersOnBlue, rendertest.ShouldNotLookLikeFile, "checker")
 		})
 

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
 	"io"
 	"os"
@@ -66,13 +65,6 @@ func readPng(reader io.Reader) (image.Image, int, int) {
 	return img, width, height
 }
 
-func DrawAsRgbaWithBackground(img image.Image, bg color.Color) *image.RGBA {
-	ret := image.NewRGBA(img.Bounds())
-	draw.Draw(ret, img.Bounds(), image.NewUniform(bg), image.Point{}, draw.Src)
-	draw.Draw(ret, img.Bounds(), img, image.Point{}, draw.Over)
-	return ret
-}
-
 func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold, backgroundColour color.Color) bool {
 	// Do a size check first so that we don't read out of bounds.
 	if expected.Bounds() != actual.Bounds() {
@@ -80,7 +72,7 @@ func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold, ba
 		return false
 	}
 
-	lhsrgba := DrawAsRgbaWithBackground(expected, backgroundColour)
+	lhsrgba := imgmanip.DrawAsRgbaWithBackground(expected, backgroundColour)
 	rhsrgba := imgmanip.ToRGBA(actual)
 
 	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
