@@ -23,19 +23,50 @@ func getBoundTextureSize() (width int, height int) {
 	return
 }
 
+func getBoundTextureFormat() gl.GLenum {
+	buffer := []int32{0}
+	gl.GetTexLevelParameteriv(gl.TEXTURE_2D, 0, gl.TEXTURE_INTERNAL_FORMAT, buffer)
+	return gl.GLenum(buffer[0])
+}
+
+func getBytesPerPixel(textureFormat gl.GLenum) int {
+	ret, ok := map[gl.GLenum]int{
+		gl.RGBA:            4,
+		gl.LUMINANCE_ALPHA: 2,
+	}[textureFormat]
+
+	if !ok {
+		panic(fmt.Errorf("unknown texture format: %d", textureFormat))
+	}
+
+	return ret
+}
+
 func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 	textureId.Bind(gl.TEXTURE_2D)
 
 	textureWidth, textureHeight := getBoundTextureSize()
-	img := image.NewRGBA(image.Rect(0, 0, textureWidth, textureHeight))
+	texformat := getBoundTextureFormat()
+	bytesPerPixel := getBytesPerPixel(texformat)
+	data := make([]byte, textureWidth*textureHeight*bytesPerPixel)
 
-	gl.GetTexImage(gl.TEXTURE_2D, 0, gl.RGBA, gl.UNSIGNED_BYTE, img.Pix)
+	gl.GetTexImage(gl.TEXTURE_2D, 0, getBoundTextureFormat(), gl.UNSIGNED_BYTE, data)
+
+	var img image.Image
+	switch texformat {
+	case gl.RGBA:
+		rgba := image.NewRGBA(image.Rect(0, 0, textureWidth, textureHeight))
+		rgba.Pix = data
+		img = rgba
+	case gl.LUMINANCE_ALPHA:
+		ga := imgmanip.NewGrayAlpha(image.Rect(0, 0, textureWidth, textureHeight))
+		ga.Pix = data
+		img = ga
+	}
 
 	// We need to flip the image about the horizontal midline because OpenGL
 	// dumps from the bottom-to-top.
-	imgmanip.FlipVertically(img)
-
-	return img, nil
+	return imgmanip.ToRGBA(imgmanip.VertFlipped{Image: img}), nil
 }
 
 func DumpTextureAsPngFile(textureId gl.Texture, path string) error {
