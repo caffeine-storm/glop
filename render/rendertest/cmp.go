@@ -242,6 +242,8 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 			panic(fmt.Errorf("ShouldLookLike needs matching actual/expected types; actual had type %T, but expected had type %T", actual, expected[0]))
 		}
 
+		// Use a transparent background for image-to-image comparison by default.
+		expected = append(expected, BackgroundColour(transparent))
 		return imageShouldLookLike(expectedImage, v, expected...)
 	default:
 		panic(fmt.Errorf("ShouldLookLike needs either io.Readers or image.Images but got %T", actual))
@@ -249,8 +251,6 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 }
 
 func imageShouldLookLike(actualImage, expectedImage image.Image, expected ...interface{}) string {
-	// Need to pre-pend a bogus value to 'expected' so that arg-parsing helpers
-	// check all of the 'real' args.
 	bg, _ := getBackgroundFromArgs(expected)
 
 	thresh := getThresholdFromArgs(expected)
