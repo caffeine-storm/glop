@@ -21,6 +21,7 @@ import (
 type TestNumber uint8
 type Threshold uint8
 type BackgroundColour color.Color
+type MakeRejectFiles bool
 
 var defaultTestNumber = TestNumber(0)
 
@@ -34,6 +35,8 @@ var defaultBackground = color.RGBA{
 	A: 255,
 }
 var transparent = color.RGBA{}
+
+var defaultMakeRejectFiles = MakeRejectFiles(true)
 
 func ExpectationFile(testDataKey, fileExt string, testnumber TestNumber) string {
 	return path.Join("testdata", testDataKey, fmt.Sprintf("%d.%s", testnumber, fileExt))
@@ -206,6 +209,12 @@ func getBackgroundFromArgs(args []interface{}) (BackgroundColour, bool) {
 	return result, found
 }
 
+func getMakeRejectFilesFromArgs(args []interface{}) MakeRejectFiles {
+	var result MakeRejectFiles
+	getFromArgs(args, defaultMakeRejectFiles, &result)
+	return result
+}
+
 func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 	actualReader, ok := actual.(io.Reader)
 	if !ok {
@@ -248,19 +257,23 @@ func imageShouldLookLike(actualImage *image.RGBA, expected ...interface{}) strin
 		return ""
 	}
 
-	rejectFileName := MakeRejectName(expectedFileName, ".png")
-	rejectFile, err := os.Create(rejectFileName)
-	if err != nil {
-		panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
-	}
-	defer rejectFile.Close()
+	doMakeRejectFiles := getMakeRejectFilesFromArgs(expected)
+	if doMakeRejectFiles == true {
+		rejectFileName := MakeRejectName(expectedFileName, ".png")
+		rejectFile, err := os.Create(rejectFileName)
+		if err != nil {
+			panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
+		}
+		defer rejectFile.Close()
 
-	err = png.Encode(rejectFile, actualImage)
-	if err != nil {
-		panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
+		err = png.Encode(rejectFile, actualImage)
+		if err != nil {
+			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
+		}
+		return fmt.Sprintf("image mismatch; see %s", rejectFileName)
+	} else {
+		return "image mismatch; rejection file creation elided"
 	}
-
-	return fmt.Sprintf("image mismatch; see %s", rejectFileName)
 }
 
 func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
@@ -306,6 +319,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 func ShouldNotLookLikeFile(actual interface{}, expected ...interface{}) string {
 	// TODO(tmckee): when this test passes, the 'ShouldLookLikeFile' call will
 	// create a rejection file; need to disable/intervene.
+	expected = append(expected, MakeRejectFiles(false))
 	doesLook := ShouldLookLikeFile(actual, expected...)
 	if doesLook == "" {
 		return "arguments matched but should have been different"
