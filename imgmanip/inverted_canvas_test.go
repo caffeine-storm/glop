@@ -20,7 +20,7 @@ func TestInvertedCanvasSpecs(t *testing.T) {
 		So(invCanvas.Bounds(), ShouldEqual, wrappedCanvas.Bounds())
 
 		Convey("draws things", func() {
-			checkers := rendertest.MustLoadImage("checkers/0.png")
+			checkers := rendertest.MustLoadImage("checker/0.png")
 			draw.Draw(invCanvas, invCanvas.Bounds(), checkers, image.Point{}, draw.Src)
 		})
 	})
