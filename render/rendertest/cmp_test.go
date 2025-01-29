@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var transparent = color.RGBA{}
+
 func TestFileNameHelpers(t *testing.T) {
 	t.Run("TestExpectationFile", func(t *testing.T) {
 		result := rendertest.ExpectationFile("text/lol", "pgm", 42)
@@ -94,9 +96,13 @@ func TestPixelComparisonIsFuzzy(t *testing.T) {
 			lhs := rendertest.MustLoadImage("checker/0.png")
 			rhs := rendertest.MustLoadImage("checker/0.png")
 
-			conveyResult := rendertest.ShouldLookLike(lhs, rhs)
+			conveyResult := rendertest.ShouldLookLike(lhs, lhs, rendertest.BackgroundColour(transparent))
 			if conveyResult != "" {
-				t.Fatalf("two loads of the same image should look alike")
+				t.Fatalf("two references to the same image object should look alike but got mismatch: %q", conveyResult)
+			}
+			conveyResult = rendertest.ShouldLookLike(lhs, rhs, rendertest.BackgroundColour(transparent))
+			if conveyResult != "" {
+				t.Fatalf("two loads of the same image should look alike but got mismatch: %q", conveyResult)
 			}
 		})
 	})
@@ -182,7 +188,6 @@ func TestCompareTransparentExpectations(t *testing.T) {
 		lhs := rendertest.MustLoadImage("checker/0.png")
 		rhs := rendertest.MustLoadImage("checker/0.png")
 		// Use a transparent background for the sake of this comparison.
-		transparent := color.RGBA{}
 		result := rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(0), transparent)
 		assert.Equal(t, result, true)
 

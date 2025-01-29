@@ -71,10 +71,10 @@ func readPng(reader io.Reader) (image.Image, int, int) {
 	return img, width, height
 }
 
-func ImagesAreWithinThreshold(expected, actual image.Image, thresh Threshold, backgroundColour color.Color) bool {
+func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, backgroundColour color.Color) bool {
 	// Do a size check first so that we don't read out of bounds.
-	if expected.Bounds() != actual.Bounds() {
-		glog.ErrorLogger().Error("size mismatch", "expected", expected.Bounds(), "actual", actual.Bounds())
+	if actual.Bounds() != expected.Bounds() {
+		glog.ErrorLogger().Error("size mismatch", "actual", actual.Bounds(), "expected", expected.Bounds())
 		return false
 	}
 
@@ -144,7 +144,7 @@ func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold, bg co
 		panic(fmt.Errorf("couldn't read from 'actual': %w", err))
 	}
 
-	if !ImagesAreWithinThreshold(expectedImage, actualImage, thresh, bg) {
+	if !ImagesAreWithinThreshold(actualImage, expectedImage, thresh, bg) {
 		return false, actualImage
 	}
 
@@ -156,7 +156,7 @@ func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold, bg co
 // pixel-to-pixel matches across different hardware/driver combinations. It
 // should be close, though! To support transparency in our testdata files, we
 // also take a background to use as needed.
-func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh Threshold, bg color.Color) bool {
+func expectPixelsMatchFile(actualImage image.Image, pngFileExpected string, thresh Threshold, bg color.Color) bool {
 	pngFile, err := os.Open(pngFileExpected)
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open %q: %w", pngFileExpected, err))
@@ -164,7 +164,7 @@ func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh T
 	defer pngFile.Close()
 
 	expectedImage, _, _ := readPng(pngFile)
-	return ImagesAreWithinThreshold(expectedImage, actualImage, thresh, bg)
+	return ImagesAreWithinThreshold(actualImage, expectedImage, thresh, bg)
 }
 
 // For the given slice of trailing arguments to a 'convey.So' call, look for a
@@ -215,20 +215,11 @@ func getMakeRejectFilesFromArgs(args []interface{}) MakeRejectFiles {
 	return result
 }
 
-func ShouldLookLike(actual interface{}, expected ...interface{}) string {
-	actualReader, ok := actual.(io.Reader)
-	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a io.Reader but got %T", actual))
-	}
-	expectedReader, ok := expected[0].(io.Reader)
-	if !ok {
-		panic(fmt.Errorf("ShouldLookLike needs a string but got %T", expected[0]))
-	}
-
+func readerShouldLookLike(actual, expected io.Reader, args ...interface{}) string {
 	// Did someone pass a Threshold?
-	threshold := getThresholdFromArgs(expected)
+	threshold := getThresholdFromArgs(args)
 
-	ok, _ = expectReadersMatch(actualReader, expectedReader, threshold)
+	ok, _ := expectReadersMatch(actual, expected, threshold)
 	if ok {
 		return ""
 	}
@@ -237,10 +228,43 @@ func ShouldLookLike(actual interface{}, expected ...interface{}) string {
 	return fmt.Sprintf("io.Readers mismatched")
 }
 
-func imageShouldLookLike(actualImage *image.RGBA, expected ...interface{}) string {
+func ShouldLookLike(actual interface{}, expected ...interface{}) string {
+	switch v := actual.(type) {
+	case io.Reader:
+		expectedReader, ok := expected[0].(io.Reader)
+		if !ok {
+			panic(fmt.Errorf("ShouldLookLike needs matching actual/expected types; actual had type %T, but expected had type %T", actual, expected[0]))
+		}
+		return readerShouldLookLike(v, expectedReader, expected...)
+	case image.Image:
+		expectedImage, ok := expected[0].(image.Image)
+		if !ok {
+			panic(fmt.Errorf("ShouldLookLike needs matching actual/expected types; actual had type %T, but expected had type %T", actual, expected[0]))
+		}
+
+		return imageShouldLookLike(expectedImage, v, expected...)
+	default:
+		panic(fmt.Errorf("ShouldLookLike needs either io.Readers or image.Images but got %T", actual))
+	}
+}
+
+func imageShouldLookLike(actualImage, expectedImage image.Image, expected ...interface{}) string {
+	// Need to pre-pend a bogus value to 'expected' so that arg-parsing helpers
+	// check all of the 'real' args.
+	bg, _ := getBackgroundFromArgs(expected)
+
+	thresh := getThresholdFromArgs(expected)
+	if ImagesAreWithinThreshold(actualImage, expectedImage, thresh, bg) {
+		return ""
+	}
+
+	return "image mismatch; rejection file creation elided"
+}
+
+func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) string {
 	testDataKey, ok := expected[0].(string)
 	if !ok {
-		panic(fmt.Errorf("ShouldLookLikeFile needs a string but got %T", expected[0]))
+		panic(fmt.Errorf("imageShouldLookLikeFile needs a string but got %T", expected[0]))
 	}
 
 	// For table-tests, usage is
@@ -253,7 +277,7 @@ func imageShouldLookLike(actualImage *image.RGBA, expected ...interface{}) strin
 	bg, _ := getBackgroundFromArgs(expected)
 
 	thresh := getThresholdFromArgs(expected)
-	if expectPixelsMatch(actualImage, expectedFileName, thresh, bg) {
+	if expectPixelsMatchFile(actualImage, expectedFileName, thresh, bg) {
 		return ""
 	}
 
@@ -295,7 +319,7 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 
 	// When screen shotting, we only read opaque pixels; if the expectation file
 	// has transparent portions, we need to not compare those pixels.
-	return imageShouldLookLike(actualImage, expected...)
+	return imageShouldLookLikeFile(actualImage, expected...)
 }
 
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
@@ -310,7 +334,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 			// background when comparing.
 			expected = append(expected, BackgroundColour(transparent))
 		}
-		return imageShouldLookLike(v, expected...)
+		return imageShouldLookLikeFile(v, expected...)
 	default:
 		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
 	}
