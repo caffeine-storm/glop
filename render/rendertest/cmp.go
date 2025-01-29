@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"reflect"
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
@@ -20,6 +21,8 @@ import (
 type TestNumber uint8
 type Threshold uint8
 type BackgroundColour color.Color
+
+var defaultTestNumber = TestNumber(0)
 
 var defaultThreshold = Threshold(3)
 
@@ -161,34 +164,46 @@ func expectPixelsMatch(actualImage image.Image, pngFileExpected string, thresh T
 	return ImagesAreWithinThreshold(expectedImage, actualImage, thresh, bg)
 }
 
-func getTestNumberFromArgs(args []interface{}) TestNumber {
-	// TODO(tmckee): why start at second element? we should test this!
+// For the given slice of trailing arguments to a 'convey.So' call, look for a
+// value with the same type as 'defaultValue'. If found, assign it to the
+// pointer wrapped in 'output', otherwise, assign 'defaultValue' to the pointer
+// wrapped in 'output'. Return true iff the value written to 'output' was found
+// in 'args'.
+func getFromArgs(args []interface{}, defaultValue interface{}, output interface{}) bool {
+	defaultReflectValue := reflect.ValueOf(defaultValue)
+	targetType := defaultReflectValue.Type()
+	outPtr := reflect.ValueOf(output).Elem()
+
+	// We start at the second element because the first element always has to be
+	// the testdata 'key'.
 	for i := 1; i < len(args); i++ {
-		if val, found := args[i].(TestNumber); found {
-			return val
+		val := reflect.ValueOf(args[i])
+		if val.Type() == targetType {
+			outPtr.Set(val)
+			return true
 		}
 	}
 
-	return TestNumber(0)
+	outPtr.Set(defaultReflectValue)
+	return false
+}
+
+func getTestNumberFromArgs(args []interface{}) TestNumber {
+	var result TestNumber
+	getFromArgs(args, defaultTestNumber, &result)
+	return result
 }
 
 func getThresholdFromArgs(args []interface{}) Threshold {
-	for i := 1; i < len(args); i++ {
-		if val, found := args[i].(Threshold); found {
-			return val
-		}
-	}
-
-	return defaultThreshold
+	var result Threshold
+	getFromArgs(args, defaultThreshold, &result)
+	return result
 }
 
 func getBackgroundFromArgs(args []interface{}) (BackgroundColour, bool) {
-	for i := 1; i < len(args); i++ {
-		if val, found := args[i].(BackgroundColour); found {
-			return val, true
-		}
-	}
-	return defaultBackground, false
+	var result BackgroundColour
+	found := getFromArgs(args, defaultBackground, &result)
+	return result, found
 }
 
 func ShouldLookLike(actual interface{}, expected ...interface{}) string {
