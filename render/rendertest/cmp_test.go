@@ -89,6 +89,16 @@ func TestPixelComparisonIsFuzzy(t *testing.T) {
 				}
 			})
 		})
+
+		t.Run("supports image.Image interface", func(t *testing.T) {
+			lhs := rendertest.MustLoadImage("checker/0.png")
+			rhs := rendertest.MustLoadImage("checker/0.png")
+
+			conveyResult := rendertest.ShouldLookLike(lhs, rhs)
+			if conveyResult != "" {
+				t.Fatalf("two loads of the same image should look alike")
+			}
+		})
 	})
 }
 
