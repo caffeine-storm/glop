@@ -12,7 +12,7 @@ import (
 
 func TestInvertedCanvasSpecs(t *testing.T) {
 	Convey("inverted canvas wrapper", t, func() {
-		dx, dy := 42, 42
+		dx, dy := 64, 64
 		canvasSize := image.Rect(0, 0, dx, dy)
 		wrappedCanvas := image.NewRGBA(canvasSize)
 		invCanvas := imgmanip.NewInvertedCanvas(wrappedCanvas)
@@ -22,6 +22,12 @@ func TestInvertedCanvasSpecs(t *testing.T) {
 		Convey("draws things", func() {
 			checkers := rendertest.MustLoadImage("checker/0.png")
 			draw.Draw(invCanvas, invCanvas.Bounds(), checkers, image.Point{}, draw.Src)
+
+			Convey("upside down in the wrapped image", func() {
+				flipped := imgmanip.VertFlipped{Image: wrappedCanvas}
+
+				So(wrappedCanvas, rendertest.ShouldLookLike, flipped)
+			})
 		})
 	})
 }
