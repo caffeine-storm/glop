@@ -1,7 +1,6 @@
 package imgmanip
 
 import (
-	"fmt"
 	"image/color"
 	"image/draw"
 )
@@ -20,13 +19,10 @@ func NewInvertedCanvas(img draw.Image) *InvertedCanvas {
 
 func (canv *InvertedCanvas) At(x, y int) color.Color {
 	y = canv.Bounds().Dy() - y - 1
-	ret := canv.Image.At(x, y)
-	fmt.Printf("getting %d %d %v\n", x, y, ret)
-	return ret
+	return canv.Image.At(x, y)
 }
 
 func (canv *InvertedCanvas) Set(x, y int, c color.Color) {
 	y = canv.Bounds().Dy() - y - 1
-	fmt.Printf("setting %d %d %v\n", x, y, c)
 	canv.Image.Set(x, y, c)
 }
