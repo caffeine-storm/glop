@@ -50,7 +50,7 @@ func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 	bytesPerPixel := getBytesPerPixel(texformat)
 	data := make([]byte, textureWidth*textureHeight*bytesPerPixel)
 
-	gl.GetTexImage(gl.TEXTURE_2D, 0, getBoundTextureFormat(), gl.UNSIGNED_BYTE, data)
+	gl.GetTexImage(gl.TEXTURE_2D, 0, texformat, gl.UNSIGNED_BYTE, data)
 
 	var img image.Image
 	switch texformat {
