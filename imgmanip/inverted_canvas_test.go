@@ -2,18 +2,26 @@ package imgmanip_test
 
 import (
 	"image"
+	"image/draw"
 	"testing"
 
 	"github.com/runningwild/glop/imgmanip"
+	"github.com/runningwild/glop/render/rendertest"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestInvertedCanvasSpecs(t *testing.T) {
 	Convey("inverted canvas wrapper", t, func() {
-		canvasSize := image.Rect(0, 0, 42, 42)
+		dx, dy := 42, 42
+		canvasSize := image.Rect(0, 0, dx, dy)
 		wrappedCanvas := image.NewRGBA(canvasSize)
 		invCanvas := imgmanip.NewInvertedCanvas(wrappedCanvas)
 		So(invCanvas, ShouldNotBeNil)
 		So(invCanvas.Bounds(), ShouldEqual, wrappedCanvas.Bounds())
+
+		Convey("draws things", func() {
+			checkers := rendertest.MustLoadImage("checkers/0.png")
+			draw.Draw(invCanvas, invCanvas.Bounds(), checkers, image.Point{}, draw.Src)
+		})
 	})
 }
