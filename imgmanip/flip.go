@@ -1,6 +1,9 @@
 package imgmanip
 
-import "image"
+import (
+	"image"
+	"image/color"
+)
 
 // Rewrites the given input image flipping it vertically.
 func FlipVertically(img *image.RGBA) {
@@ -18,4 +21,15 @@ func FlipVertically(img *image.RGBA) {
 		copy(arow, brow)
 		copy(brow, tmp)
 	}
+}
+
+// An image.Image that looks vertically flipped w.r.t. the embedded
+// image.Image.
+type VertFlipped struct {
+	image.Image
+}
+
+func (v VertFlipped) At(x, y int) color.Color {
+	flippedy := v.Bounds().Dy() - y - 1
+	return v.Image.At(x, flippedy)
 }
