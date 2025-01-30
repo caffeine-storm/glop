@@ -1,6 +1,7 @@
 package debug
 
 import (
+	"encoding/hex"
 	"fmt"
 	"image"
 	"image/png"
@@ -8,6 +9,7 @@ import (
 	"os"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/imgmanip"
 )
 
@@ -42,6 +44,35 @@ func getBytesPerPixel(textureFormat gl.GLenum) int {
 	return ret
 }
 
+type TexFormat int
+
+const (
+	TexFormatRGBA           = gl.RGBA
+	TexFormatLuminanceAlpha = gl.LUMINANCE_ALPHA
+)
+
+func (tf TexFormat) String() string {
+	switch tf {
+	case TexFormatRGBA:
+		return "gl.RGBA"
+	case TexFormatLuminanceAlpha:
+		return "gl.LUMINANCE_ALPHA"
+	default:
+		panic(fmt.Errorf("unknown textureformat %d", int(tf)))
+	}
+}
+
+func summarize(data []byte) string {
+	datalen := len(data)
+	if datalen > 64 {
+		data = data[:64]
+	}
+
+	hex := hex.Dump(data)
+
+	return fmt.Sprintf("data[0:64 of %d]: %q", datalen, hex)
+}
+
 func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 	textureId.Bind(gl.TEXTURE_2D)
 
@@ -52,16 +83,20 @@ func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 
 	gl.GetTexImage(gl.TEXTURE_2D, 0, texformat, gl.UNSIGNED_BYTE, data)
 
+	glog.TraceLogger().Trace("DumpTexture", "data-from-gl", summarize(data), "texformat", TexFormat(texformat))
+
 	var img image.Image
 	switch texformat {
-	case gl.RGBA:
+	case TexFormatRGBA:
 		rgba := image.NewRGBA(image.Rect(0, 0, textureWidth, textureHeight))
 		rgba.Pix = data
 		img = rgba
-	case gl.LUMINANCE_ALPHA:
+	case TexFormatLuminanceAlpha:
 		ga := imgmanip.NewGrayAlpha(image.Rect(0, 0, textureWidth, textureHeight))
 		ga.Pix = data
 		img = ga
+	default:
+		panic(fmt.Errorf("unknown texformat: %d", int(texformat)))
 	}
 
 	// We need to flip the image about the horizontal midline because OpenGL
