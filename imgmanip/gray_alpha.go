@@ -48,7 +48,7 @@ func (p *GrayAlpha) At(x, y int) color.Color {
 		return grayAlpha(0)
 	}
 	i := p.PixOffset(x, y)
-	return GrayAlphaModel.baseConvert(uint32(p.Pix[i]), uint32(p.Pix[i+1]))
+	return GrayAlphaModel.baseConvert(uint32(p.Pix[i])<<8, uint32(p.Pix[i+1])<<8)
 }
 
 // PixOffset returns the index of the first element of Pix that corresponds to
