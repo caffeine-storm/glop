@@ -341,8 +341,6 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldNotLookLikeFile(actual interface{}, expected ...interface{}) string {
-	// TODO(tmckee): when this test passes, the 'ShouldLookLikeFile' call will
-	// create a rejection file; need to disable/intervene.
 	expected = append(expected, MakeRejectFiles(false))
 	doesLook := ShouldLookLikeFile(actual, expected...)
 	if doesLook == "" {
