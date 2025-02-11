@@ -113,6 +113,12 @@ fmt:
 lint:
 	go run github.com/mgechev/revive@v1.5.1 ./...
 
+depth:
+	@go list ./... | while read PKG ; do \
+		echo "$$PKG" ; \
+		go run github.com/KyleBanks/depth/cmd/depth@v1.2.1 "$$PKG" ; \
+	done
+
 # -l for 'list files'
 checkfmt:
 	@gofmt -l ./
@@ -122,7 +128,7 @@ clean:
 
 .PHONY: build-check
 .PHONY: list_rejects view_rejects clean_rejects promote_rejects
-.PHONY: fmt lint
+.PHONY: fmt lint depth
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
 .PHONY: test test-spec test-nocache test-fresh test-report
