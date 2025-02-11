@@ -24,6 +24,17 @@ func pickADifferentMode(someMatrixMode render.MatrixMode) render.MatrixMode {
 	}
 }
 
+func pickADifferentMatrix(someMatrix render.Matrix) render.Matrix {
+	notIdentity := render.Matrix{
+		0, 1, 0, 0,
+		1, 0, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1,
+	}
+	someMatrix.Multiply(&notIdentity)
+	return someMatrix
+}
+
 func TestWithMatrixMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
 	rendertest.WithGl(func() {
@@ -43,4 +54,37 @@ func TestWithMatrixMode(t *testing.T) {
 
 	assert.Equal(t, duringMode, targetMode)
 	assert.Equal(t, afterMode, beforeMode)
+}
+
+func TestWithMatrixInMode(t *testing.T) {
+	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
+	var beforeMat, duringMat, targetMat, afterMat render.Matrix
+
+	rendertest.WithGl(func() {
+		beforeMode = render.GetCurrentMatrixMode()
+		targetMode = pickADifferentMode(beforeMode)
+		if beforeMode == targetMode {
+			panic(fmt.Errorf("bad test; need to find a _different_ mode"))
+		}
+
+		beforeMat = render.GetCurrentMatrix(beforeMode)
+		targetMat = pickADifferentMatrix(beforeMat)
+		if render.MatrixIsEqual(beforeMat, targetMat) {
+			panic(fmt.Errorf("bad test; need to find a _different_ matrix"))
+		}
+
+		render.WithMatrixInMode(targetMat, targetMode, func() {
+			duringMode = render.GetCurrentMatrixMode()
+			duringMat = render.GetCurrentMatrix(duringMode)
+		})
+
+		afterMode = render.GetCurrentMatrixMode()
+		afterMat = render.GetCurrentMatrix(afterMode)
+	})
+
+	assert.Equal(t, duringMode, targetMode)
+	assert.Equal(t, afterMode, beforeMode)
+
+	assert.True(t, render.MatrixIsEqual(duringMat, targetMat))
+	assert.True(t, render.MatrixIsEqual(afterMat, beforeMat))
 }

@@ -10,6 +10,7 @@ replace github.com/go-gl-legacy/glu => github.com/caffeine-storm/glu v0.0.0-2024
 
 require (
 	code.google.com/p/freetype-go v0.0.0-00010101000000-000000000000
+	github.com/MobRulesGames/mathgl v0.0.0-20120424214601-79bd4ce3042d
 	github.com/go-gl-legacy/gl v0.0.0-20150223033340-df25b1fe668d
 	github.com/go-gl-legacy/glu v0.0.0-20150315173544-b54aa06bc77a
 	github.com/orfjackal/gospec v0.0.0-20140731185859-a21081619255 // indirect
