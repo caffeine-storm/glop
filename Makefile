@@ -115,7 +115,6 @@ lint:
 
 depth:
 	@go list ./... | while read PKG ; do \
-		echo "$$PKG" ; \
 		go run github.com/KyleBanks/depth/cmd/depth@v1.2.1 "$$PKG" ; \
 	done
 
