@@ -10,12 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func getCurrentMatrixMode() gl.GLenum {
-	var matmode [1]int32
-	gl.GetIntegerv(gl.MATRIX_MODE, matmode[:])
-	return gl.GLenum(matmode[0])
-}
-
 func pickADifferentMode(someMatrixMode gl.GLenum) gl.GLenum {
 	switch someMatrixMode {
 	case gl.MODELVIEW:
@@ -34,10 +28,10 @@ func pickADifferentMode(someMatrixMode gl.GLenum) gl.GLenum {
 func TestWithMatrixMode(t *testing.T) {
 	var firstMode, actual gl.GLenum
 	rendertest.WithGl(func() {
-		firstMode = getCurrentMatrixMode()
+		firstMode = render.GetCurrentMatrixMode()
 		secondMode := pickADifferentMode(firstMode)
 		render.WithMatrixMode(secondMode, func() {
-			actual = getCurrentMatrixMode()
+			actual = render.GetCurrentMatrixMode()
 		})
 	})
 
