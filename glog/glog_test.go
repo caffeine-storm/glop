@@ -81,6 +81,26 @@ func TestGlogRedirect(t *testing.T) {
 	}
 }
 
+func TestGlogRedirectPreservesLevel(t *testing.T) {
+	buffer1 := &bytes.Buffer{}
+	buffer2 := &bytes.Buffer{}
+	lvl := &slog.LevelVar{}
+	lvl.Set(42)
+	logger1 := glog.New(&glog.Opts{
+		Output: buffer1,
+		Level:  lvl,
+	})
+	logger2 := glog.WithRedirect(logger1, buffer2)
+
+	if logger2.GetOpts().Level == nil {
+		t.Fatalf("the wrapped logger had a level; so should the wrapper")
+	}
+
+	if logger2.GetOpts().Level.Level() != 42 {
+		t.Fatalf("the wrapped logger had a specific level; so should the wrapper")
+	}
+}
+
 func TestVoidLogger(t *testing.T) {
 	assert := assert.New(t)
 
