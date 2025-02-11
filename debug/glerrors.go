@@ -1,6 +1,7 @@
 package debug
 
 import (
+	"fmt"
 	"runtime"
 	"strings"
 
@@ -23,6 +24,7 @@ func LogAndClearGlErrors(logger glog.Logger) {
 			return
 		}
 
-		logger.Warn("GlError", "file", file, "line", line, "code", glErr)
+		glErrHex := fmt.Sprintf("0x%04x", glErr)
+		logger.Warn("GlError", "file", file, "line", line, "code", glErrHex)
 	}
 }
