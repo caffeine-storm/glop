@@ -1,4 +1,4 @@
-package debug_test
+package rendertest_test
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 )
 
 func TestDrawRect(t *testing.T) {
-	Convey("debug.DrawRect should work", t, DrawRectSpec)
+	Convey("rendertest.DrawRect should work", t, DrawRectSpec)
 }
 
 func DrawRectSpec() {
@@ -22,7 +22,7 @@ func DrawRectSpec() {
 
 	rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
 		queue.Queue(func(render.RenderQueueState) {
-			debug.BlankAndDrawRectNdc(-1, -1, 1, 1)
+			rendertest.BlankAndDrawRectNdc(-1, -1, 1, 1)
 			result = debug.ScreenShotRgba(width, height)
 		})
 		queue.Purge()

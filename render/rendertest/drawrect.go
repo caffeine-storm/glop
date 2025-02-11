@@ -1,4 +1,4 @@
-package debug
+package rendertest
 
 import "github.com/go-gl-legacy/gl"
 
