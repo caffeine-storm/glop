@@ -4,29 +4,28 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
 )
 
-func pickADifferentMode(someMatrixMode gl.GLenum) gl.GLenum {
+func pickADifferentMode(someMatrixMode render.MatrixMode) render.MatrixMode {
 	switch someMatrixMode {
-	case gl.MODELVIEW:
-		return gl.PROJECTION
-	case gl.PROJECTION:
+	case render.MatrixModeModelView:
+		return render.MatrixModeProjection
+	case render.MatrixModeProjection:
 		fallthrough
-	case gl.TEXTURE:
+	case render.MatrixModeTexture:
 		fallthrough
-	case gl.COLOR:
-		return gl.MODELVIEW
+	case render.MatrixModeColour:
+		return render.MatrixModeModelView
 	default:
 		panic(fmt.Errorf("bad matrixmode: %d", someMatrixMode))
 	}
 }
 
 func TestWithMatrixMode(t *testing.T) {
-	var beforeMode, duringMode, targetMode, afterMode gl.GLenum
+	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
 	rendertest.WithGl(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)

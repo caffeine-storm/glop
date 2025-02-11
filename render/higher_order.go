@@ -2,17 +2,25 @@ package render
 
 import "github.com/go-gl-legacy/gl"
 
-func GetCurrentMatrixMode() gl.GLenum {
+func GetCurrentMatrixMode() MatrixMode {
 	var matmode [1]int32
 	gl.GetIntegerv(gl.MATRIX_MODE, matmode[:])
-	return gl.GLenum(matmode[0])
+	return MatrixMode(matmode[0])
 }
 
-// TODO(tmckee): can we use the type system to prevent bad enums?
-func WithMatrixMode(mode gl.GLenum, fn func()) {
+type MatrixMode int32
+
+const (
+	MatrixModeModelView  MatrixMode = gl.MODELVIEW
+	MatrixModeProjection MatrixMode = gl.PROJECTION
+	MatrixModeTexture    MatrixMode = gl.TEXTURE
+	MatrixModeColour     MatrixMode = gl.COLOR
+)
+
+func WithMatrixMode(mode MatrixMode, fn func()) {
 	oldMode := GetCurrentMatrixMode()
-	gl.MatrixMode(mode)
-	defer gl.MatrixMode(oldMode)
+	gl.MatrixMode(gl.GLenum(mode))
+	defer gl.MatrixMode(gl.GLenum(oldMode))
 
 	fn()
 }
