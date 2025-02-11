@@ -61,3 +61,13 @@ func WithMatrixMode(mode MatrixMode, fn func()) {
 
 	fn()
 }
+
+func WithMatrixInMode(mat *Matrix, mode MatrixMode, fn func()) {
+	WithMatrixMode(mode, func() {
+		gl.PushMatrix()
+		defer gl.PopMatrix()
+		gl.LoadMatrixf((*[16]float32)(mat))
+
+		fn()
+	})
+}

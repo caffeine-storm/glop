@@ -73,7 +73,7 @@ func TestWithMatrixInMode(t *testing.T) {
 			panic(fmt.Errorf("bad test; need to find a _different_ matrix"))
 		}
 
-		render.WithMatrixInMode(targetMat, targetMode, func() {
+		render.WithMatrixInMode(&targetMat, targetMode, func() {
 			duringMode = render.GetCurrentMatrixMode()
 			duringMat = render.GetCurrentMatrix(duringMode)
 		})
