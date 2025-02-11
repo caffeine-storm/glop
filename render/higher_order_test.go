@@ -26,14 +26,22 @@ func pickADifferentMode(someMatrixMode gl.GLenum) gl.GLenum {
 }
 
 func TestWithMatrixMode(t *testing.T) {
-	var firstMode, actual gl.GLenum
+	var beforeMode, duringMode, targetMode, afterMode gl.GLenum
 	rendertest.WithGl(func() {
-		firstMode = render.GetCurrentMatrixMode()
-		secondMode := pickADifferentMode(firstMode)
-		render.WithMatrixMode(secondMode, func() {
-			actual = render.GetCurrentMatrixMode()
+		beforeMode = render.GetCurrentMatrixMode()
+		targetMode = pickADifferentMode(beforeMode)
+
+		if beforeMode == targetMode {
+			panic(fmt.Errorf("bad test; need to find a _different_ mode"))
+		}
+
+		render.WithMatrixMode(targetMode, func() {
+			duringMode = render.GetCurrentMatrixMode()
 		})
+
+		afterMode = render.GetCurrentMatrixMode()
 	})
 
-	assert.NotEqual(t, actual, firstMode)
+	assert.Equal(t, duringMode, targetMode)
+	assert.Equal(t, afterMode, beforeMode)
 }
