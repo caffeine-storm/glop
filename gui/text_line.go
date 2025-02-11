@@ -143,7 +143,7 @@ func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	target := w.Render_region.Point
 	target.Y = w.Render_region.Dims.Dy - target.Y
 	target.Y += height
-	glog.ErrorLogger().Error("target", "target", target)
+	glog.TraceLogger().Trace("target", "target", target)
 	d := ctx.GetDictionary(w.font_id)
 	shaders := ctx.GetShaders("glop.font")
 	d.RenderString(w.text, target, height, Left, shaders)

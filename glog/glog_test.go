@@ -141,3 +141,11 @@ func TestSourceAttribution(t *testing.T) {
 		assert.Contains(output, "glog_test.go")
 	})
 }
+
+func TestTraceLoggerDisabledByDefault(t *testing.T) {
+	outputLines := gloptest.CollectOutput(func() {
+		glog.TraceLogger().Trace("should not show up; tracing needs explicit opt-in")
+	})
+
+	assert.Empty(t, outputLines, "there should not be any output")
+}
