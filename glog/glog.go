@@ -137,6 +137,9 @@ var _ Logger = (*traceLogger)(nil)
 const LevelTrace = slog.LevelDebug - 4
 
 func (log *traceLogger) Trace(msg string, args ...interface{}) {
+	if !log.Enabled(context.Background(), LevelTrace) {
+		return
+	}
 	buffer := [1]uintptr{}
 	// Skip == 2 means skip runtime.Callers and Trace
 	runtime.Callers(2, buffer[:])
