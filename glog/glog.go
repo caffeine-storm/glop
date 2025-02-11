@@ -22,6 +22,9 @@ func (hdl *handlerAtLevel) Enabled(ctx context.Context, lvl slog.Level) bool {
 }
 
 func Relevel(in Logger, lvl slog.Level) Logger {
+	opts := in.GetOpts()
+	opts.Level = lvl
+
 	handler := in.Handler()
 
 	handler = &handlerAtLevel{
@@ -29,7 +32,8 @@ func Relevel(in Logger, lvl slog.Level) Logger {
 	}
 
 	return &traceLogger{
-		Logger: slog.New(handler),
+		Logger:         slog.New(handler),
+		handlerOptions: opts,
 	}
 }
 
@@ -38,7 +42,8 @@ func WithRedirect(in Logger, out io.Writer) Logger {
 
 	wrapped := slog.New(slog.NewTextHandler(out, &opts))
 	return &traceLogger{
-		Logger: wrapped,
+		Logger:         wrapped,
+		handlerOptions: opts,
 	}
 }
 
