@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
@@ -76,6 +77,9 @@ func TestWithMatrixInMode(t *testing.T) {
 		render.WithMatrixInMode(&targetMat, targetMode, func() {
 			duringMode = render.GetCurrentMatrixMode()
 			duringMat = render.GetCurrentMatrix(duringMode)
+
+			// clobbering the matrix mode shouldn't break anything
+			gl.MatrixMode(gl.GLenum(pickADifferentMode(duringMode)))
 		})
 
 		afterMode = render.GetCurrentMatrixMode()
