@@ -58,6 +58,13 @@ texture:
 %v`, showmat(buffer[0]), showmat(buffer[1]), showmat(buffer[2])))
 }
 
+func checkMatrixInvariants() {
+	// If the matrix stacks are size 1 with the identity on top, something is
+	// wrong.
+	matrixStacksMustBeSize1()
+	matrixStacksMustBeIdentity()
+}
+
 func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
@@ -87,10 +94,7 @@ type glContext struct {
 
 func (ctx *glContext) Prep(width, height int) {
 	ctx.render.Queue(func(render.RenderQueueState) {
-		// Each test should be allowed to run as if the GL context was freshly
-		// initialized.
-		matrixStacksMustBeSize1()
-		matrixStacksMustBeIdentity()
+		checkMatrixInvariants()
 
 		ctx.sys.SetWindowSize(width, height)
 
@@ -133,9 +137,7 @@ func (ctx *glContext) Clean() {
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.PopMatrix()
 
-		// If the matrix stacks are not length 1, something is wrong.
-		matrixStacksMustBeSize1()
-		matrixStacksMustBeIdentity()
+		checkMatrixInvariants()
 	})
 	ctx.render.Purge()
 }
