@@ -10,6 +10,17 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
+func matrixStacksMustBeSize1() {
+	var buffer [3]int32
+	gl.GetIntegerv(gl.MODELVIEW_STACK_DEPTH, buffer[0:1])
+	gl.GetIntegerv(gl.PROJECTION_STACK_DEPTH, buffer[1:2])
+	gl.GetIntegerv(gl.TEXTURE_STACK_DEPTH, buffer[2:3])
+
+	if buffer[0] != 1 || buffer[1] != 1 || buffer[2] != 1 {
+		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", buffer))
+	}
+}
+
 func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
@@ -39,6 +50,10 @@ type glContext struct {
 
 func (ctx *glContext) Prep(width, height int) {
 	ctx.render.Queue(func(render.RenderQueueState) {
+		// Each test should be allowed to run as if the GL context was freshly
+		// initialized.
+		matrixStacksMustBeSize1()
+
 		ctx.sys.SetWindowSize(width, height)
 
 		gl.MatrixMode(gl.MODELVIEW)
@@ -79,6 +94,9 @@ func (ctx *glContext) Clean() {
 
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.PopMatrix()
+
+		// If the matrix stacks are not length 1, something is wrong.
+		matrixStacksMustBeSize1()
 	})
 	ctx.render.Purge()
 }
