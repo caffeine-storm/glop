@@ -57,18 +57,19 @@ func MatrixIsEqual(lhs, rhs Matrix) bool {
 func WithMatrixMode(mode MatrixMode, fn func()) {
 	oldMode := GetCurrentMatrixMode()
 	gl.MatrixMode(gl.GLenum(mode))
-	defer gl.MatrixMode(gl.GLenum(oldMode))
+	gl.PushMatrix()
+	defer func() {
+		gl.MatrixMode(gl.GLenum(mode))
+		gl.PopMatrix()
+
+		gl.MatrixMode(gl.GLenum(oldMode))
+	}()
 
 	fn()
 }
 
 func WithMatrixInMode(mat *Matrix, mode MatrixMode, fn func()) {
 	WithMatrixMode(mode, func() {
-		gl.PushMatrix()
-		defer func() {
-			gl.MatrixMode(gl.GLenum(mode))
-			gl.PopMatrix()
-		}()
 		gl.LoadMatrixf((*[16]float32)(mat))
 
 		fn()
