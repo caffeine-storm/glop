@@ -3,6 +3,7 @@ package rendertest
 import (
 	"fmt"
 
+	"github.com/MobRulesGames/mathgl"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
@@ -19,6 +20,42 @@ func matrixStacksMustBeSize1() {
 	if buffer[0] != 1 || buffer[1] != 1 || buffer[2] != 1 {
 		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", buffer))
 	}
+}
+
+type showmat mathgl.Mat4
+
+func (m showmat) String() string {
+	return fmt.Sprintf(
+		`%f, %f, %f, %f
+%f, %f, %f, %f
+%f, %f, %f, %f
+%f, %f, %f, %f`,
+		m[0], m[1], m[2], m[3],
+		m[4], m[5], m[6], m[7],
+		m[8], m[9], m[10], m[11],
+		m[12], m[13], m[14], m[15],
+	)
+}
+
+func matrixStacksMustBeIdentity() {
+	var buffer [3]mathgl.Mat4
+
+	gl.GetFloatv(gl.MODELVIEW_MATRIX, buffer[0][:])
+	gl.GetFloatv(gl.PROJECTION_MATRIX, buffer[1][:])
+	gl.GetFloatv(gl.TEXTURE_MATRIX, buffer[2][:])
+
+	if buffer[0].IsIdentity() && buffer[1].IsIdentity() && buffer[2].IsIdentity() {
+		return
+	}
+
+	panic(fmt.Errorf(
+		`matrix stacks needed to be topped with identity matrices:
+modelview:
+%v
+projection:
+%v
+texture:
+%v`, showmat(buffer[0]), showmat(buffer[1]), showmat(buffer[2])))
 }
 
 func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInterface) {
@@ -53,6 +90,7 @@ func (ctx *glContext) Prep(width, height int) {
 		// Each test should be allowed to run as if the GL context was freshly
 		// initialized.
 		matrixStacksMustBeSize1()
+		matrixStacksMustBeIdentity()
 
 		ctx.sys.SetWindowSize(width, height)
 
@@ -97,6 +135,7 @@ func (ctx *glContext) Clean() {
 
 		// If the matrix stacks are not length 1, something is wrong.
 		matrixStacksMustBeSize1()
+		matrixStacksMustBeIdentity()
 	})
 	ctx.render.Purge()
 }
