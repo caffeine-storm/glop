@@ -75,3 +75,11 @@ func WithMatrixInMode(mat *Matrix, mode MatrixMode, fn func()) {
 		fn()
 	})
 }
+
+func WithMultMatrixInMode(mat *Matrix, mode MatrixMode, fn func()) {
+	WithMatrixMode(mode, func() {
+		gl.MultMatrixf((*[16]float32)(mat))
+
+		fn()
+	})
+}
