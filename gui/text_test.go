@@ -218,6 +218,15 @@ func DictionaryRenderStringSpec() {
 					So(render, rendertest.ShouldLookLikeText, "tall-or-small", testnumber)
 				})
 
+				Convey("Can render multiple strings", func() {
+					topPixel = height
+					doRenderString("first string")
+					topPixel = height * 3
+					doRenderString("second string")
+
+					So(render, rendertest.ShouldLookLikeText, "multiple-lines", testnumber)
+				})
+
 				Convey("stdout isn't spammed by RenderString", func() {
 					logger = glog.VoidLogger()
 
