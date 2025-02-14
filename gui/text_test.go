@@ -7,7 +7,6 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
@@ -49,9 +48,6 @@ func renderStringForTest(toDraw string, x, y, height int, sys system.System, que
 	d := LoadDictionaryForTest(queue, logger)
 
 	queue.Queue(func(st render.RenderQueueState) {
-		gl.ClearColor(0, 0, 0, 1)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
 		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
 	})
 
