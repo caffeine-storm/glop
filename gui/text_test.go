@@ -223,6 +223,13 @@ func DictionaryRenderStringSpec() {
 					So(render, rendertest.ShouldLookLikeText, "multiple-lines", testnumber)
 				})
 
+				Convey("Can strings on top of each other", func() {
+					doRenderString("first string")
+					doRenderString("second string")
+
+					So(render, rendertest.ShouldLookLikeText, "overlayed-lines", testnumber)
+				})
+
 				Convey("stdout isn't spammed by RenderString", func() {
 					logger = glog.VoidLogger()
 
