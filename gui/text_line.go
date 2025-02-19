@@ -55,15 +55,19 @@ func MakeButton(fontId, text string, width int, r, g, b, a float64, f func(int64
 // TODO(tmckee): we should take a font by reference instead of by
 // stringified-name. That way, the compiler can check for us that the font is
 // loaded.
+// TODO(tmckee): we shouldn't have to pass a width at construction, just need
+// one during draw.
 func MakeTextLine(fontId, text string, width int, r, g, b, a float64) *TextLine {
 	var w TextLine
 
 	w.font_id = fontId
 	w.text = text
 	w.EmbeddedWidget = &BasicWidget{CoreWidget: &w}
-	// w.SetFontSize(12) // TODO(tmckee) ... waat?
 	w.SetColor(r, g, b, a)
-	w.Request_dims = Dims{width, 35}
+	// TODO(tmckee): Request_dims isn't used; should it be? It's supposed to let
+	// us pick a size at construction time but do we need/use that?
+	// It's used as 'natural dimensions' in other widgets.
+	w.Request_dims = Dims{1, 1}
 	return &w
 }
 
@@ -117,33 +121,20 @@ func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	}
 	gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
 	gl.Color4d(1.0, 1.0, 1.0, 1.0)
-	req := w.Request_dims
-	if req.Dx > region.Dx {
-		req.Dx = region.Dx
-	}
-	if req.Dy > region.Dy {
-		req.Dy = region.Dy
-	}
-	if req.Dx*region.Dy < req.Dy*region.Dx {
-		req.Dy = (region.Dy * req.Dx) / region.Dx
-	} else {
-		req.Dx = (region.Dx * req.Dy) / region.Dy
-	}
-	w.Render_region.Dims = req
 	w.Render_region.Point = region.Point
+	w.Render_region.Dims = region.Dims
 
-	glog.TraceLogger().Trace("coreDraw", "w.Request_dims", w.Request_dims, "w.Render_region", w.Render_region)
+	glog.InfoLogger().Info("coreDraw", "w.Render_region", w.Render_region, "text", w.GetText())
 	{
 		r, g, b, a := w.color.RGBA()
 		gl.Color4d(float64(r)/65535, float64(g)/65535, float64(b)/65535, float64(a)/65535)
 	}
 
-	// TODO(tmckee): arbitrary!
-	height := 12
+	height := w.Render_region.Dy
 	target := w.Render_region.Point
-	target.Y = w.Render_region.Dims.Dy - target.Y
-	target.Y += height
-	glog.TraceLogger().Trace("target", "target", target)
+	// dictionary's RenderString expects the target to be the top-left pixel
+	target.Y += w.Render_region.Dy
+	glog.InfoLogger().Info("target", "target", target)
 	d := ctx.GetDictionary(w.font_id)
 	shaders := ctx.GetShaders("glop.font")
 	d.RenderString(w.text, target, height, Left, shaders)

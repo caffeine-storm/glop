@@ -64,9 +64,54 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 	})
 }
 
+func MultipleTextLineTest(widgetBuilder func(text string) GenericLine) {
+	Convey("drawing more than one line", func() {
+		line1 := widgetBuilder("first line")
+		line2 := widgetBuilder("second line")
+		line3 := widgetBuilder("third line")
+
+		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
+			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
+			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
+
+			var shaderBank *render.ShaderBank
+			queue.Queue(func(rqs render.RenderQueueState) {
+				shaderBank = rqs.Shaders()
+			})
+			queue.Purge()
+
+			g.SetDictionary("dict_10", dict)
+			g.SetShaders("glop.font", shaderBank)
+
+			lineheight := screenHeight / 5
+			queue.Queue(func(render.RenderQueueState) {
+				line1.Draw(gui.Region{
+					Point: gui.Point{0, 0},
+					Dims:  gui.Dims{screenWidth, lineheight},
+				}, g)
+				line2.Draw(gui.Region{
+					Point: gui.Point{0, lineheight * 2},
+					Dims:  gui.Dims{screenWidth, lineheight},
+				}, g)
+				line3.Draw(gui.Region{
+					Point: gui.Point{0, lineheight * 4},
+					Dims:  gui.Dims{screenWidth, lineheight},
+				}, g)
+			})
+			queue.Purge()
+
+			So(queue, rendertest.ShouldLookLikeText, "multi-line")
+		})
+	})
+}
+
 func TextLineSpecs() {
 	Convey("TextLine can draw text", func() {
 		GenericTextLineTest("some-text", func(text string) GenericLine {
+			return gui.MakeTextLine("dict_10", text, 32, 1, 1, 1, 1)
+		})
+
+		MultipleTextLineTest(func(text string) GenericLine {
 			return gui.MakeTextLine("dict_10", text, 32, 1, 1, 1, 1)
 		})
 	})
