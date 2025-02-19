@@ -67,7 +67,7 @@ func MakeTextLine(fontId, text string, width int, r, g, b, a float64) *TextLine 
 	// TODO(tmckee): Request_dims isn't used; should it be? It's supposed to let
 	// us pick a size at construction time but do we need/use that?
 	// It's used as 'natural dimensions' in other widgets.
-	w.Request_dims = Dims{1, 1}
+	w.Request_dims = Dims{width, 25}
 	return &w
 }
 
@@ -124,7 +124,7 @@ func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	w.Render_region.Point = region.Point
 	w.Render_region.Dims = region.Dims
 
-	glog.InfoLogger().Info("coreDraw", "w.Render_region", w.Render_region, "text", w.GetText())
+	glog.TraceLogger().Trace("coreDraw", "w.Render_region", w.Render_region, "text", w.GetText())
 	{
 		r, g, b, a := w.color.RGBA()
 		gl.Color4d(float64(r)/65535, float64(g)/65535, float64(b)/65535, float64(a)/65535)
@@ -134,7 +134,7 @@ func (w *TextLine) coreDraw(region Region, ctx DrawingContext) {
 	target := w.Render_region.Point
 	// dictionary's RenderString expects the target to be the top-left pixel
 	target.Y += w.Render_region.Dy
-	glog.InfoLogger().Info("target", "target", target)
+	glog.TraceLogger().Trace("target", "target", target)
 	d := ctx.GetDictionary(w.font_id)
 	shaders := ctx.GetShaders("glop.font")
 	d.RenderString(w.text, target, height, Left, shaders)
