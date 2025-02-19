@@ -130,5 +130,5 @@ clean:
 .PHONY: fmt lint depth
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
-.PHONY: test test-spec test-nocache test-fresh test-report
+.PHONY: test test-dlv test-fresh test-nocache test-report test-spec
 .PHONY: ${TEST_REPORT_TAR}
