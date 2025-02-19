@@ -269,6 +269,8 @@ func (d *Dictionary) StringPixelWidth(s string) float64 {
 func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px float64) blitBuffer {
 	blittingData := blitBuffer{}
 	var prev rune
+	verticalScale := height_px / float64(d.MaxHeight())
+	horizontalScale := verticalScale
 	for _, r := range s {
 		if kernAdjustment, ok := d.Data.Kerning[prev]; ok {
 			x_pos_px += float64(kernAdjustment[r])
@@ -276,7 +278,7 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 		prev = r
 		info := d.getInfo(r)
 		xleft_px := x_pos_px
-		xright_px := x_pos_px + float64(info.Bounds.Dx())
+		xright_px := x_pos_px + float64(info.Bounds.Dx())*horizontalScale
 		ytop_px := float32(y_pos_px)
 		ybot_px := float32(y_pos_px - height_px)
 		start := uint16(len(blittingData.vertexData))
@@ -314,7 +316,7 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 			v: float32(info.Pos.Min.Y) / float32(d.Data.Dy),
 		})
 		d.logger.Trace("render-char", "x_pos", x_pos_px, "rune", string(r), "runeInfo", info, "geometry", blittingData.vertexData[start:])
-		x_pos_px += info.Advance
+		x_pos_px += info.Advance * horizontalScale
 	}
 
 	d.logger.Trace("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
