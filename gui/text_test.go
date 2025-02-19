@@ -207,11 +207,18 @@ func DictionaryRenderStringSpec() {
 					})
 				})
 
-				Convey("Can render to a given height", func() {
+				Convey("Can render to a smaller height", func() {
 					height = 5
 					doRenderString("tall-or-small")
 
 					So(render, rendertest.ShouldLookLikeText, "tall-or-small", testnumber)
+				})
+
+				Convey("Respects aspect ratio for taller text", func() {
+					height = testcase.screenDimensions.Dy / 2
+					doRenderString("some-taller-text")
+
+					So(render, rendertest.ShouldLookLikeText, "some-taller-text", testnumber)
 				})
 
 				Convey("Can render multiple strings", func() {
