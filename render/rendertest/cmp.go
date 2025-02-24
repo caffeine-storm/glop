@@ -19,12 +19,13 @@ import (
 )
 
 type TestNumber uint8
+type FileExtension string
 type Threshold uint8
 type BackgroundColour color.Color
 type MakeRejectFiles bool
 
 var defaultTestNumber = TestNumber(0)
-
+var defaultFileExtension = FileExtension("png")
 var defaultThreshold = Threshold(3)
 
 // Default background is an opaque black
@@ -207,6 +208,12 @@ func getBackgroundFromArgs(args []interface{}) (BackgroundColour, bool) {
 	var result BackgroundColour
 	found := getFromArgs(args, defaultBackground, &result)
 	return result, found
+}
+
+func getFileExtensionFromArgs(args []interface{}) FileExtension {
+	var result FileExtension
+	getFromArgs(args, defaultFileExtension, &result)
+	return result
 }
 
 func getMakeRejectFilesFromArgs(args []interface{}) MakeRejectFiles {

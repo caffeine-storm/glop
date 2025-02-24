@@ -33,7 +33,8 @@ func TestTestdataReference(t *testing.T) {
 		t.Fatalf("path extension 'txt' should look for 0.txt")
 	}
 
-	if checker.Path(rendertest.TestNumber(42), rendertest.FileExtension("tar.gz")) != "testdata/checker/42.tar.gz" {
-		t.Fatalf("path should be fully customizable")
+	result := checker.Path(rendertest.TestNumber(42), rendertest.FileExtension("tar.gz"))
+	if result != "testdata/checker/42.tar.gz" {
+		t.Fatalf("path should be fully customizable, got %q", result)
 	}
 }
