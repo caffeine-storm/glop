@@ -21,6 +21,10 @@ func TestScale(t *testing.T) {
 		if notScaled.Bounds() != img.Bounds() {
 			t.Fatalf("if we're not scaling, the bounds shouldn't change")
 		}
+
+		if img == notScaled {
+			t.Fatalf("we shouldn't return a reference to an input; prefer immutable values being passed around")
+		}
 	})
 
 	t.Run("scale up", func(t *testing.T) {
