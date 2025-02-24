@@ -20,4 +20,8 @@ func TestTestdataReference(t *testing.T) {
 	if checker != "checker" {
 		t.Fatalf("a testdata reference should look like its key")
 	}
+
+	if checker.Path() != "testdata/checker/0.png" {
+		t.Fatalf("default path should look for 0.png")
+	}
 }
