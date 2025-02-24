@@ -13,3 +13,11 @@ func TestExpectationFilePaths(t *testing.T) {
 		assert.Equal(t, "testdata/text/lol/42.pgm", result)
 	})
 }
+
+func TestTestdataReference(t *testing.T) {
+	checker := rendertest.NewTestdataReference("checker")
+
+	if checker == nil {
+		t.Fatalf("must be able to reference an existing testdata file")
+	}
+}
