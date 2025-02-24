@@ -29,10 +29,6 @@ func (img *interpolatingImage) At(x, y int) color.Color {
 }
 
 func Scale(img image.Image, xratio, yratio float32) image.Image {
-	if xratio == 1.0 && yratio == 1.0 {
-		return img
-	}
-
 	interpolated := &interpolatingImage{
 		Image:  img,
 		xratio: xratio,
