@@ -27,4 +27,12 @@ func TestScale(t *testing.T) {
 			t.Fatalf("if we're not scaling, the bounds shouldn't change")
 		}
 	})
+
+	t.Run("scale up", func(t *testing.T) {
+		bigger := imgmanip.Scale(img, 2, 1)
+
+		if bigger.Bounds().Dx() != 2*img.Bounds().Dx() {
+			t.Fatalf("did not scale by 2 in the X dimension")
+		}
+	})
 }
