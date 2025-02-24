@@ -1,3 +1,6 @@
+tmckee:#14 imgmanip/scale.go should sample neighbouring points when scaling by
+non-integral amounts
+
 tmckee:#13 sprite/sheet.go calls glu.Build2DMipmaps and passes 'gl.INT' as the
 'type' parameter. But it _should_ be a 'gl.UNSIGNED_BYTE' because the data is
 coming from an image.RGBA which uses one byte per component.
@@ -44,4 +47,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #14
+next bug: #15

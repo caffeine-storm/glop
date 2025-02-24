@@ -2,19 +2,14 @@ package imgmanip_test
 
 import (
 	"image"
-	"image/color"
 	"testing"
 
 	"github.com/runningwild/glop/imgmanip"
+	"github.com/runningwild/glop/render/rendertest"
 )
 
 func givenAnImage() image.Image {
-	return image.NewUniform(color.RGBA{
-		R: 127,
-		G: 127,
-		B: 127,
-		A: 127,
-	})
+	return rendertest.MustLoadImage("checker/0.png")
 }
 
 func TestScale(t *testing.T) {
