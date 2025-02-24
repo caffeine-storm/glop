@@ -31,7 +31,15 @@ func TestScale(t *testing.T) {
 		bigger := imgmanip.Scale(img, 2, 1)
 
 		if bigger.Bounds().Dx() != 2*img.Bounds().Dx() {
-			t.Fatalf("did not scale by 2 in the X dimension")
+			t.Fatalf("did not scale by 2 in the X dimension (old: %d, new: %d)", img.Bounds().Dx(), bigger.Bounds().Dx())
+		}
+	})
+
+	t.Run("scale down", func(t *testing.T) {
+		smaller := imgmanip.Scale(img, 0.5, 1)
+
+		if 2*smaller.Bounds().Dx() != img.Bounds().Dx() {
+			t.Fatalf("did not scale by 1/2 in the X dimension (old: %d, new: %d)", img.Bounds().Dx(), smaller.Bounds().Dx())
 		}
 	})
 }
