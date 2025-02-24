@@ -28,4 +28,8 @@ func TestTestdataReference(t *testing.T) {
 	if checker.PathNumber(0) != "testdata/checker/0.png" {
 		t.Fatalf("path number 0 should look for 0.png")
 	}
+
+	if checker.PathExtension("txt") != "testdata/checker/0.txt" {
+		t.Fatalf("path extension 'txt' should look for 0.txt")
+	}
 }
