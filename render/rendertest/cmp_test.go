@@ -220,6 +220,24 @@ func TestCompareTransparentExpectations(t *testing.T) {
 	})
 }
 
+func givenAnImagePathAndFileType() (string, string) {
+	return "checker/0.png", ".png"
+}
+
+func shouldExistOnDisk(filepathAny interface{}, _ ...interface{}) string {
+	filepath := filepathAny.(string)
+
+	if val, e := os.Stat(filepath); e != nil {
+		if val != nil {
+			return ""
+		}
+	}
+
+	return fmt.Sprintf("file %q should have existed on disk", filepath)
+}
+
+var _ Assertion = shouldExistOnDisk
+
 func TestCmpSpecs(t *testing.T) {
 	blue := color.RGBA{
 		R: 0,
@@ -228,28 +246,42 @@ func TestCmpSpecs(t *testing.T) {
 		A: 255,
 	}
 
-	Convey("comparison helpers should be ergonomic", t, func() {
-		Convey("for raw images", func() {
-			checkers := rendertest.MustLoadRGBAImage("checker/0.png")
-			So(checkers, rendertest.ShouldLookLikeFile, "checker")
+	Convey("comparison helpers", t, func() {
+		Convey("should be ergonomic", func() {
+			Convey("for raw images", func() {
+				checkers := rendertest.MustLoadRGBAImage("checker/0.png")
+				So(checkers, rendertest.ShouldLookLikeFile, "checker")
 
-			// When comparing raw images, the transparency must _match_.
-			checkersOnBlue := imgmanip.DrawAsRgbaWithBackground(checkers, blue)
-			So(checkersOnBlue, rendertest.ShouldNotLookLikeFile, "checker")
-		})
+				// When comparing raw images, the transparency must _match_.
+				checkersOnBlue := imgmanip.DrawAsRgbaWithBackground(checkers, blue)
+				So(checkersOnBlue, rendertest.ShouldNotLookLikeFile, "checker")
+			})
 
-		Convey("for rendered textures", func() {
-			rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
-				queue.Queue(func(st render.RenderQueueState) {
-					tex := debugtest.GivenATexture("checker/0.png")
+			Convey("for rendered textures", func() {
+				rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
+					queue.Queue(func(st render.RenderQueueState) {
+						tex := debugtest.GivenATexture("checker/0.png")
 
-					rendertest.WithClearColour(0, 0, 1, 1, func() {
-						debugtest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
+						rendertest.WithClearColour(0, 0, 1, 1, func() {
+							debugtest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
+						})
 					})
-				})
-				queue.Purge()
+					queue.Purge()
 
-				So(queue, rendertest.ShouldLookLikeFile, "checker", rendertest.BackgroundColour(blue))
+					So(queue, rendertest.ShouldLookLikeFile, "checker", rendertest.BackgroundColour(blue))
+				})
+			})
+		})
+		Convey("should dump rejection files", func() {
+			Convey("when sizes mismatch", func() {
+				imgPath, imgSuffix := givenAnImagePathAndFileType()
+				img := rendertest.MustLoadImage(imgPath)
+				biggerImg := imgmanip.Scale(img, 2, 2)
+
+				compResult := rendertest.ShouldLookLike(img, biggerImg, rendertest.MakeRejectFiles(true))
+				So(compResult, ShouldNotEqual, "") // b/c the images are different
+
+				So(rendertest.MakeRejectName(imgPath, imgSuffix), shouldExistOnDisk)
 			})
 		})
 	})
