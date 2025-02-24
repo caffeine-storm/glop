@@ -17,7 +17,7 @@ func TestExpectationFilePaths(t *testing.T) {
 func TestTestdataReference(t *testing.T) {
 	checker := rendertest.NewTestdataReference("checker")
 
-	if checker == nil {
+	if checker == "" {
 		t.Fatalf("must be able to reference an existing testdata file")
 	}
 }
