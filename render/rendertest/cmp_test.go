@@ -7,6 +7,7 @@ import (
 	"image/color"
 	"image/draw"
 	"os"
+	"path"
 	"testing"
 
 	"github.com/runningwild/glop/debug/debugtest"
@@ -220,14 +221,15 @@ func TestCompareTransparentExpectations(t *testing.T) {
 	})
 }
 
-func givenAnImagePathAndFileType() (string, string) {
-	return "checker/0.png", ".png"
+func givenAnImagePathAndFileType() (string, string, string) {
+	return "checker", "0.png", ".png"
 }
 
 func shouldExistOnDisk(filepathAny interface{}, _ ...interface{}) string {
 	filepath := filepathAny.(string)
+	filepath = path.Join("testdata", filepath)
 
-	if val, e := os.Stat(filepath); e != nil {
+	if val, e := os.Stat(filepath); e == nil {
 		if val != nil {
 			return ""
 		}
@@ -274,14 +276,30 @@ func TestCmpSpecs(t *testing.T) {
 		})
 		Convey("should dump rejection files", func() {
 			Convey("when sizes mismatch", func() {
-				imgPath, imgSuffix := givenAnImagePathAndFileType()
-				img := rendertest.MustLoadImage(imgPath)
+				imgPath, fileName, imgSuffix := givenAnImagePathAndFileType()
+				img := rendertest.MustLoadImage(path.Join(imgPath, fileName))
 				biggerImg := imgmanip.Scale(img, 2, 2)
+				rejFile := rendertest.MakeRejectName(path.Join(imgPath, fileName), imgSuffix)
 
-				compResult := rendertest.ShouldLookLike(img, biggerImg, rendertest.MakeRejectFiles(true))
+				// Check that we're not accidentally running when there's already a
+				// rejection file present.
+				if shouldExistOnDisk(rejFile) == "" {
+					panic(fmt.Errorf("precondition violated: there's already a rejection file at %q", rejFile))
+				}
+
+				compResult := rendertest.ShouldLookLikeFile(biggerImg, imgPath, rendertest.MakeRejectFiles(true))
 				So(compResult, ShouldNotEqual, "") // b/c the images are different
 
-				So(rendertest.MakeRejectName(imgPath, imgSuffix), shouldExistOnDisk)
+				So(rejFile, shouldExistOnDisk)
+
+				// Clean up the rejection file because we didn't actually fail the
+				// test.
+				e := os.Remove(path.Join("testdata", rejFile))
+				if e != nil {
+					panic(fmt.Errorf("couldn't remove rejection file %q", rejFile))
+				}
+
+				// TODO(tmckee): add tests for the other 'ShouldLookLike*' helpers!
 			})
 		})
 	})

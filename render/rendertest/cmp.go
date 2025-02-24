@@ -326,7 +326,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	switch v := actual.(type) {
 	case render.RenderQueueInterface:
 		return backBufferShouldLookLike(v, expected...)
-	case *image.RGBA:
+	case image.Image:
 		_, foundBg := getBackgroundFromArgs(expected)
 		if !foundBg {
 			// When comparing a given image, we should make sure its transparency
