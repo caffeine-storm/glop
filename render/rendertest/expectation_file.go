@@ -11,3 +11,7 @@ func NewTestdataReference(datakey string) TestDataReference {
 func (ref *TestDataReference) Path() string {
 	return fmt.Sprintf("testdata/%s/0.png", *ref)
 }
+
+func (ref *TestDataReference) PathNumber(n int) string {
+	return fmt.Sprintf("testdata/%s/%d.png", *ref, n)
+}
