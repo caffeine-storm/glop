@@ -17,24 +17,29 @@ func TestExpectationFilePaths(t *testing.T) {
 func TestTestdataReference(t *testing.T) {
 	checker := rendertest.NewTestdataReference("checker")
 
-	if checker != "checker" {
-		t.Fatalf("a testdata reference should look like its key")
-	}
+	t.Run("looks like its key", func(t *testing.T) {
+		assert.Equal(t, string(checker), "checker", "a testdata reference should look like its key")
+	})
 
-	if checker.Path() != "testdata/checker/0.png" {
-		t.Fatalf("default path should look for 0.png")
-	}
+	t.Run(".Path() refers to a file in testdata/", func(t *testing.T) {
+		assert.Equal(t, checker.Path(), "testdata/checker/0.png", "default path should look for 0.png")
+	})
 
-	if checker.PathNumber(0) != "testdata/checker/0.png" {
-		t.Fatalf("path number 0 should look for 0.png")
-	}
+	t.Run(".PathNumber(n) fills in the right number", func(t *testing.T) {
+		assert.Equal(t, checker.PathNumber(0), "testdata/checker/0.png", "path number 0 should look for 0.png")
 
-	if checker.PathExtension("txt") != "testdata/checker/0.txt" {
-		t.Fatalf("path extension 'txt' should look for 0.txt")
-	}
+		assert.Equal(t, checker.PathNumber(7), "testdata/checker/7.png", "path number 7 should look for 7.png")
+	})
 
-	result := checker.Path(rendertest.TestNumber(42), rendertest.FileExtension("tar.gz"))
-	if result != "testdata/checker/42.tar.gz" {
-		t.Fatalf("path should be fully customizable, got %q", result)
-	}
+	t.Run(".PathExtension(foo) should look for something.foo", func(t *testing.T) {
+		assert.Equal(t, checker.PathExtension("txt"), "testdata/checker/0.txt", "path extension 'txt' should look for 0.txt")
+	})
+
+	t.Run(".Path supports multiple option parameters", func(t *testing.T) {
+		args := []interface{}{
+			rendertest.TestNumber(42),
+			rendertest.FileExtension("tar.gz"),
+		}
+		assert.Equal(t, checker.Path(args...), "testdata/checker/42.tar.gz", "path should be fully customizable")
+	})
 }
