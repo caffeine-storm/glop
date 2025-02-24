@@ -24,4 +24,8 @@ func TestTestdataReference(t *testing.T) {
 	if checker.Path() != "testdata/checker/0.png" {
 		t.Fatalf("default path should look for 0.png")
 	}
+
+	if checker.PathNumber(0) != "testdata/checker/0.png" {
+		t.Fatalf("path number 0 should look for 0.png")
+	}
 }
