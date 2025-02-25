@@ -116,8 +116,8 @@ func TestComparingPngsAgainstPngs(t *testing.T) {
 			red := color.RGBA{255, 0, 0, 255}
 			draw.Draw(someImage, someImage.Bounds(), image.NewUniform(red), image.Point{}, draw.Src)
 
-			expectedFile := "red"
-			mustBeEmpty := rendertest.ShouldLookLikeFile(someImage, expectedFile)
+			expectedFileAsString := "red"
+			mustBeEmpty := rendertest.ShouldLookLikeFile(someImage, expectedFileAsString)
 			if mustBeEmpty != "" {
 				t.Fatalf("expected a 'match' but got failure %q", mustBeEmpty)
 			}
