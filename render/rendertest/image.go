@@ -5,9 +5,16 @@ import (
 	"image"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/runningwild/glop/imgmanip"
 )
+
+func MustLoadImageFromTestdataReference(testdataref TestDataReference) image.Image {
+	p := testdataref.Path()
+	sliced := strings.SplitN(p, "/", 2)
+	return MustLoadImage(path.Join(sliced[1:]...))
+}
 
 func MustLoadImage(imageFilePath string) image.Image {
 	imageFilePath = path.Join("testdata", imageFilePath)

@@ -7,7 +7,6 @@ import (
 	"image/color"
 	"image/draw"
 	"os"
-	"path"
 	"strings"
 	"testing"
 
@@ -223,13 +222,8 @@ func TestCompareTransparentExpectations(t *testing.T) {
 	})
 }
 
-func givenAnImagePathAndFileType() (string, string, string) {
-	return "checker", "0.png", ".png"
-}
-
 func shouldExistOnDisk(filepathAny interface{}, _ ...interface{}) string {
 	filepath := filepathAny.(string)
-	filepath = path.Join("testdata", filepath)
 
 	if val, e := os.Stat(filepath); e == nil {
 		if val != nil {
@@ -275,6 +269,7 @@ func ShouldContainLog(actual interface{}, args ...interface{}) string {
 		}
 	}
 
+	// TODO(tmckee): printing a list of strings here is gahbage... make a helper
 	return fmt.Sprintf("no log line matched all the filters\nlogs: %+v, filters: %+v", loglines, filters)
 }
 
@@ -314,29 +309,30 @@ func TestCmpSpecs(t *testing.T) {
 		})
 		Convey("should dump rejection files", func() {
 			Convey("when sizes mismatch", func() {
-				imgPath, fileName, imgSuffix := givenAnImagePathAndFileType()
-				img := rendertest.MustLoadImage(path.Join(imgPath, fileName))
+				expectedFile := rendertest.NewTestdataReference("checker")
+				rejFileName := rendertest.MakeRejectName(expectedFile.Path(), ".png")
+
+				img := rendertest.MustLoadImageFromTestdataReference(expectedFile)
 				biggerImg := imgmanip.Scale(img, 2, 2)
-				rejFile := rendertest.MakeRejectName(path.Join(imgPath, fileName), imgSuffix)
 
 				// Check that we're not accidentally running when there's already a
 				// rejection file present.
-				if shouldExistOnDisk(rejFile) == "" {
-					panic(fmt.Errorf("precondition violated: there's already a rejection file at %q", rejFile))
+				if shouldExistOnDisk(rejFileName) == "" {
+					panic(fmt.Errorf("precondition violated: there's already a rejection file at %q", rejFileName))
 				}
 
 				defer func() {
 					// Clean up the rejection file if it exists; whether we pass this
 					// test or not, it must not be there afterwards.
-					os.Remove(path.Join("testdata", rejFile))
+					os.Remove(rejFileName)
 				}()
 
 				var compResult string
 				logoutput := gloptest.CollectOutput(func() {
-					compResult = rendertest.ShouldLookLikeFile(biggerImg, imgPath, rendertest.MakeRejectFiles(true))
+					compResult = rendertest.ShouldLookLikeFile(biggerImg, expectedFile, rendertest.MakeRejectFiles(true))
 				})
 				So(compResult, ShouldNotEqual, "") // b/c the images are different
-				So(rejFile, shouldExistOnDisk)
+				So(rejFileName, shouldExistOnDisk)
 
 				// The log should mention that a comparison failed.
 				So(logoutput, ShouldContainLog, "level=ERROR", `msg="size mismatch"`)
