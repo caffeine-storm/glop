@@ -326,6 +326,12 @@ func TestCmpSpecs(t *testing.T) {
 					panic(fmt.Errorf("precondition violated: there's already a rejection file at %q", rejFile))
 				}
 
+				defer func() {
+					// Clean up the rejection file if it exists; whether we pass this
+					// test or not, it must not be there afterwards.
+					os.Remove(path.Join("testdata", rejFile))
+				}()
+
 				var compResult string
 				logoutput := gloptest.CollectOutput(func() {
 					compResult = rendertest.ShouldLookLikeFile(biggerImg, imgPath, rendertest.MakeRejectFiles(true))
@@ -335,13 +341,6 @@ func TestCmpSpecs(t *testing.T) {
 
 				// The log should mention that a comparison failed.
 				So(logoutput, ShouldContainLog, "level=ERROR", `msg="size mismatch"`)
-
-				// Clean up the rejection file because we didn't actually fail the
-				// test.
-				e := os.Remove(path.Join("testdata", rejFile))
-				if e != nil {
-					panic(fmt.Errorf("couldn't remove rejection file %q", rejFile))
-				}
 			})
 		})
 	})
