@@ -23,20 +23,6 @@ func readPixels(width, height int) ([]byte, error) {
 	return ret, nil
 }
 
-// Load a .png
-// TODO(tmckee): this is duplicated with MustLoadImage
-func readPng(reader io.Reader) (image.Image, int, int) {
-	img, err := png.Decode(reader)
-	if err != nil {
-		panic(fmt.Errorf("image.Decode failed: %w", err))
-	}
-
-	width := img.Bounds().Dx()
-	height := img.Bounds().Dy()
-
-	return img, width, height
-}
-
 func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, backgroundColour color.Color) bool {
 	// Do a size check first so that we don't read out of bounds.
 	if actual.Bounds() != expected.Bounds() {
@@ -99,7 +85,7 @@ func expectReadersMatch(actual, expected io.Reader, threshold Threshold) (bool, 
 }
 
 func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold, bg color.Color) (bool, image.Image) {
-	expectedImage, _, _ := readPng(expected)
+	expectedImage := MustLoadImageFromReader(expected)
 	var actualScreenWidth, actualScreenHeight uint32
 
 	// Read all the pixels from the input source
@@ -129,7 +115,7 @@ func expectPixelsMatchFile(actualImage image.Image, pngFileExpected string, thre
 	}
 	defer pngFile.Close()
 
-	expectedImage, _, _ := readPng(pngFile)
+	expectedImage := MustLoadImageFromReader(pngFile)
 	return ImagesAreWithinThreshold(actualImage, expectedImage, thresh, bg)
 }
 
