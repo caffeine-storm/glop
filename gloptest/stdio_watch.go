@@ -17,41 +17,45 @@ func CollectOutput(operation func()) []string {
 		panic(fmt.Errorf("couldn't os.Pipe: %w", err))
 	}
 
+	stdlogger := log.Default()
+	oldLogOut := stdlogger.Writer()
+	stdlogger.SetOutput(write)
+	defer stdlogger.SetOutput(oldLogOut)
+
+	stdSlogger := slog.Default()
+	pipeSlogger := slog.New(slog.NewTextHandler(write, nil))
+	slog.SetDefault(pipeSlogger)
+	defer slog.SetDefault(stdSlogger)
+
+	oldStdout := os.Stdout
+	os.Stdout = write
+	defer func() { os.Stdout = oldStdout }()
+
+	oldStderr := os.Stderr
+	os.Stderr = write
+	defer func() { os.Stderr = oldStderr }()
+
+	result := make(chan []string, 1)
 	go func() {
-		stdlogger := log.Default()
-		oldLogOut := stdlogger.Writer()
-		stdlogger.SetOutput(write)
-		defer stdlogger.SetOutput(oldLogOut)
+		byteList, err := io.ReadAll(read)
+		if err != nil {
+			panic(fmt.Errorf("couldn't io.ReadAll on the read end of the pipe: %w", err))
+		}
 
-		stdSlogger := slog.Default()
-		pipeSlogger := slog.New(slog.NewTextHandler(write, nil))
-		slog.SetDefault(pipeSlogger)
-		defer slog.SetDefault(stdSlogger)
-
-		oldStdout := os.Stdout
-		os.Stdout = write
-		defer func() { os.Stdout = oldStdout }()
-
-		oldStderr := os.Stderr
-		os.Stderr = write
-		defer func() { os.Stderr = oldStderr }()
-
-		// Prefer to defer closing the write end of the pipe. If operation panics,
-		// the pipe still needs to be closed or else the reading goroutine would
-		// block forever.
-		defer write.Close()
-
-		operation()
+		if len(byteList) == 0 {
+			result <- []string{}
+		} else {
+			result <- strings.Split(string(byteList), "\n")
+		}
 	}()
 
-	byteList, err := io.ReadAll(read)
-	if err != nil {
-		panic(fmt.Errorf("couldn't io.ReadAll on the read end of the pipe: %w", err))
-	}
+	// If operation panics, the pipe still needs to be closed or else the reading
+	// goroutine would block forever. Double-closing doesn't hurt anything so
+	// defer another Close().
+	defer write.Close()
 
-	if len(byteList) == 0 {
-		return []string{}
-	}
+	operation()
+	write.Close()
 
-	return strings.Split(string(byteList), "\n")
+	return <-result
 }
