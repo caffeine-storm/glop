@@ -308,9 +308,18 @@ func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) s
 }
 
 func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
-	var actualImage *image.RGBA
+	var currentBackground color.Color = defaultBackground
+	r, g, b, a := currentBackground.RGBA()
+	fallbackPixel := []uint8{
+		uint8(r), uint8(g), uint8(b), uint8(a),
+	}
 
-	var currentBackground color.Color
+	var actualImage *image.RGBA = &image.RGBA{
+		Pix:    fallbackPixel,
+		Stride: 4,
+		Rect:   image.Rect(0, 0, 1, 1),
+	}
+
 	// Read all the pixels from the framebuffer through OpenGL
 	queue.Queue(func(render.RenderQueueState) {
 		_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()

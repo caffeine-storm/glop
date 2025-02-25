@@ -17,3 +17,18 @@ func StubShaderBank(shaderNames ...string) *render.ShaderBank {
 
 	return ret
 }
+
+type stubbedQueue struct{}
+
+var _ render.RenderQueueInterface = ((*stubbedQueue)(nil))
+
+func (*stubbedQueue) Queue(_ render.RenderJob) {}
+func (*stubbedQueue) Purge()                   {}
+func (*stubbedQueue) StartProcessing()         {}
+func (*stubbedQueue) IsPurging() bool {
+	return false
+}
+
+func MakeStubbedRenderQueue() render.RenderQueueInterface {
+	return &stubbedQueue{}
+}
