@@ -271,7 +271,6 @@ func ShouldContainLog(actual interface{}, args ...interface{}) string {
 		}
 
 		if !mismatch {
-			fmt.Printf("found log line (%q), matched all the filters\nlogs: %+v, filters: %+v", line, loglines, filters)
 			return ""
 		}
 	}
