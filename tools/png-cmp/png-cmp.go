@@ -59,7 +59,7 @@ func MyMax(a, b, c int) int {
 	return ret
 }
 
-func imageCompare(lhs, rhs image.Image) ([]Delta, int, Delta) {
+func imageCompare(lhs, rhs *image.RGBA) ([]Delta, int, Delta) {
 	bounds := lhs.Bounds()
 	if bounds != rhs.Bounds() {
 		return nil, 0, Delta{}
@@ -68,8 +68,8 @@ func imageCompare(lhs, rhs image.Image) ([]Delta, int, Delta) {
 	baddies := []Delta{}
 	maxDelta := Delta{}
 	maxDist := 0
-	for x := bounds.Min.X; x < bounds.Max.X; x++ {
-		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			lhsColour := lhs.At(x, y)
 			rhsColour := rhs.At(x, y)
 			if lhs.At(x, y) != rhs.At(x, y) {
