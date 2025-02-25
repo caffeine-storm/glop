@@ -304,3 +304,19 @@ func TestCmpSpecs(t *testing.T) {
 		})
 	})
 }
+
+func TestShouldLookLikeTextArgTypes(t *testing.T) {
+	stubRenderQueue := rendertest.MakeStubbedRenderQueue()
+	t.Run("support string literal for testdata ref", func(t *testing.T) {
+		res := rendertest.ShouldLookLikeText(stubRenderQueue, "emptyimg")
+		if res != "" {
+			t.Fatalf("unexpected failure: %q", res)
+		}
+	})
+	t.Run("support TestDataReference instance for testdata ref", func(t *testing.T) {
+		res := rendertest.ShouldLookLikeText(stubRenderQueue, rendertest.NewTestdataReference("emptyimg"))
+		if res != "" {
+			t.Fatalf("unexpected failure: %q", res)
+		}
+	})
+}
