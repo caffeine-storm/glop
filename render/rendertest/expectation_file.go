@@ -2,6 +2,7 @@ package rendertest
 
 import (
 	"fmt"
+	"path"
 	"strings"
 )
 
@@ -30,4 +31,18 @@ func (ref *TestDataReference) PathNumber(n int) string {
 
 func (ref *TestDataReference) PathExtension(ext string) string {
 	return fmt.Sprintf("testdata/%s/0.%s", *ref, ext)
+}
+
+func ExpectationFile(testDataKey TestDataReference, fileExt FileExtension, testnumber TestNumber) string {
+	return testDataKey.Path(fileExt, testnumber)
+}
+
+// Return the given file but with a '.rej' component to signify a 'rejection'.
+func MakeRejectName(exp, suffix string) string {
+	dir, expectedFileName := path.Split(exp)
+	rejectFileNameBase, ok := strings.CutSuffix(expectedFileName, suffix)
+	if !ok {
+		panic(fmt.Errorf("need a %s file, got %s", suffix, exp))
+	}
+	return path.Join(dir, rejectFileNameBase+".rej"+suffix)
 }

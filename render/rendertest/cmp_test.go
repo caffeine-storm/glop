@@ -23,18 +23,6 @@ import (
 
 var transparent = color.RGBA{}
 
-func TestFileNameHelpers(t *testing.T) {
-	t.Run("TestExpectationFile", func(t *testing.T) {
-		result := rendertest.ExpectationFile(rendertest.NewTestdataReference("text/lol"), "pgm", 42)
-		assert.Equal(t, "testdata/text/lol/42.pgm", result)
-	})
-
-	t.Run("TestMakeRejectName", func(t *testing.T) {
-		reject0 := rendertest.MakeRejectName("testdata/text/lol/0.pgm", ".pgm")
-		assert.Equal(t, "testdata/text/lol/0.rej.pgm", reject0)
-	})
-}
-
 func TestPixelComparisonIsFuzzy(t *testing.T) {
 	t.Run("TestShouldLookLike", func(t *testing.T) {
 		t.Run("matching", func(t *testing.T) {
