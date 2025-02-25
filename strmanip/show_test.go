@@ -9,13 +9,37 @@ import (
 )
 
 func TestShow(t *testing.T) {
-	testdata := []string{
-		"foo",
-		"bar",
-		"baz",
+	testtable := []struct {
+		Name     string
+		Input    []string
+		Expected string
+	}{
+		{
+			"empty",
+			[]string{},
+			"[]",
+		},
+		{
+			"singleton",
+			[]string{"foo"},
+			`["foo"]`,
+		},
+		{
+			"triple",
+			[]string{"foo", "bar", "baz"},
+			`["foo", "bar", "baz"]`,
+		},
+		{
+			"escaping",
+			[]string{"has\"quotes\"", "new\nline", ""},
+			`["has\"quotes\"", "new\nline", ""]`,
+		},
 	}
 
-	joined := fmt.Sprintf("%s", strmanip.Show(testdata))
-
-	assert.Equal(t, `["foo", "bar", "baz"]`, joined)
+	for _, testcase := range testtable {
+		t.Run(testcase.Name, func(t *testing.T) {
+			joined := fmt.Sprintf("%s", strmanip.Show(testcase.Input))
+			assert.Equal(t, testcase.Expected, joined)
+		})
+	}
 }
