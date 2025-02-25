@@ -305,18 +305,34 @@ func TestCmpSpecs(t *testing.T) {
 	})
 }
 
-func TestShouldLookLikeTextArgTypes(t *testing.T) {
+func TestImageComparisonHelperArgTypes(t *testing.T) {
 	stubRenderQueue := rendertest.MakeStubbedRenderQueue()
-	t.Run("support string literal for testdata ref", func(t *testing.T) {
-		res := rendertest.ShouldLookLikeText(stubRenderQueue, "emptyimg")
-		if res != "" {
-			t.Fatalf("unexpected failure: %q", res)
-		}
+	t.Run("ShouldLookLikeText", func(t *testing.T) {
+		t.Run("support string literal for testdata ref", func(t *testing.T) {
+			res := rendertest.ShouldLookLikeText(stubRenderQueue, "emptyimg")
+			if res != "" {
+				t.Fatalf("unexpected failure: %q", res)
+			}
+		})
+		t.Run("support TestDataReference instance for testdata ref", func(t *testing.T) {
+			res := rendertest.ShouldLookLikeText(stubRenderQueue, rendertest.NewTestdataReference("emptyimg"))
+			if res != "" {
+				t.Fatalf("unexpected failure: %q", res)
+			}
+		})
 	})
-	t.Run("support TestDataReference instance for testdata ref", func(t *testing.T) {
-		res := rendertest.ShouldLookLikeText(stubRenderQueue, rendertest.NewTestdataReference("emptyimg"))
-		if res != "" {
-			t.Fatalf("unexpected failure: %q", res)
-		}
+	t.Run("ShouldLookLikeFile", func(t *testing.T) {
+		t.Run("support string literal for testdata ref", func(t *testing.T) {
+			res := rendertest.ShouldLookLikeFile(stubRenderQueue, "emptyimg")
+			if res != "" {
+				t.Fatalf("unexpected failure: %q", res)
+			}
+		})
+		t.Run("support TestDataReference instance for testdata ref", func(t *testing.T) {
+			res := rendertest.ShouldLookLikeFile(stubRenderQueue, rendertest.NewTestdataReference("emptyimg"))
+			if res != "" {
+				t.Fatalf("unexpected failure: %q", res)
+			}
+		})
 	})
 }
