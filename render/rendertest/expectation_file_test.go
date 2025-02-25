@@ -42,4 +42,10 @@ func TestTestdataReference(t *testing.T) {
 		}
 		assert.Equal(t, checker.Path(args...), "testdata/checker/42.tar.gz", "path should be fully customizable")
 	})
+
+	t.Run("rejects paths already starting with 'testdata'", func(t *testing.T) {
+		assert.Panics(t, func() {
+			rendertest.NewTestdataReference("testdata/but/fail")
+		})
+	})
 }
