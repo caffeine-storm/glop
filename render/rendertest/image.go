@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func MustLoadImageFromTestdataReference(testdataref TestDataReference) image.Image {
+func MustLoadTestImage(testdataref TestDataReference) image.Image {
 	return MustLoadImage(testdataref.Path())
 }
 

@@ -84,8 +84,8 @@ func TestPixelComparisonIsFuzzy(t *testing.T) {
 		})
 
 		t.Run("supports image.Image interface", func(t *testing.T) {
-			lhs := rendertest.MustLoadImageFromTestdataReference("checker")
-			rhs := rendertest.MustLoadImageFromTestdataReference("checker")
+			lhs := rendertest.MustLoadTestImage("checker")
+			rhs := rendertest.MustLoadTestImage("checker")
 
 			conveyResult := rendertest.ShouldLookLike(lhs, lhs, rendertest.BackgroundColour(transparent))
 			if conveyResult != "" {
@@ -176,8 +176,8 @@ func TestCompareWithThreshold(t *testing.T) {
 
 func TestCompareTransparentExpectations(t *testing.T) {
 	t.Run("transparent result vs. transparent expecation", func(t *testing.T) {
-		lhs := rendertest.MustLoadImageFromTestdataReference("checker")
-		rhs := rendertest.MustLoadImageFromTestdataReference("checker")
+		lhs := rendertest.MustLoadTestImage("checker")
+		rhs := rendertest.MustLoadTestImage("checker")
 		// Use a transparent background for the sake of this comparison.
 		result := rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(0), transparent)
 		assert.Equal(t, result, true)
@@ -272,7 +272,7 @@ func TestCmpSpecs(t *testing.T) {
 	Convey("comparison helpers", t, func() {
 		Convey("should be ergonomic", func() {
 			Convey("for raw images", func() {
-				checkers := rendertest.MustLoadImageFromTestdataReference("checker")
+				checkers := rendertest.MustLoadTestImage("checker")
 				So(checkers, rendertest.ShouldLookLikeFile, "checker")
 
 				// When comparing raw images, the transparency must _match_.
@@ -300,7 +300,7 @@ func TestCmpSpecs(t *testing.T) {
 				expectedFile := rendertest.NewTestdataReference("checker")
 				rejFileName := rendertest.MakeRejectName(expectedFile.Path(), ".png")
 
-				img := rendertest.MustLoadImageFromTestdataReference(expectedFile)
+				img := rendertest.MustLoadTestImage(expectedFile)
 				biggerImg := imgmanip.Scale(img, 2, 2)
 
 				// Check that we're not accidentally running when there's already a
