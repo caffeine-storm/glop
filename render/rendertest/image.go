@@ -5,18 +5,10 @@ import (
 	"image"
 	"io"
 	"os"
-	"path"
-
-	"github.com/runningwild/glop/imgmanip"
 )
 
 func MustLoadImageFromTestdataReference(testdataref TestDataReference) image.Image {
 	return MustLoadImage(testdataref.Path())
-}
-
-func MustLoadTestImage(testimageReference string) image.Image {
-	imageFilePath := path.Join("testdata", testimageReference)
-	return MustLoadImage(imageFilePath)
 }
 
 func MustLoadImage(imageFilePath string) image.Image {
@@ -36,8 +28,4 @@ func MustLoadImageFromReader(file io.Reader) image.Image {
 	}
 
 	return img
-}
-
-func MustLoadRGBATestImage(imageFilePath string) *image.RGBA {
-	return imgmanip.ToRGBA(MustLoadTestImage(imageFilePath))
 }

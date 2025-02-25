@@ -272,7 +272,7 @@ func TestCmpSpecs(t *testing.T) {
 	Convey("comparison helpers", t, func() {
 		Convey("should be ergonomic", func() {
 			Convey("for raw images", func() {
-				checkers := rendertest.MustLoadRGBATestImage("checker/0.png")
+				checkers := rendertest.MustLoadImageFromTestdataReference("checker")
 				So(checkers, rendertest.ShouldLookLikeFile, "checker")
 
 				// When comparing raw images, the transparency must _match_.
