@@ -8,9 +8,11 @@ import (
 	"image/draw"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/runningwild/glop/debug/debugtest"
+	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
@@ -240,6 +242,43 @@ func shouldExistOnDisk(filepathAny interface{}, _ ...interface{}) string {
 
 var _ Assertion = shouldExistOnDisk
 
+func ShouldContainLog(actual interface{}, args ...interface{}) string {
+	loglines, ok := actual.([]string)
+	if !ok {
+		panic(fmt.Errorf("ShouldContainLog needs a slice of strings for its 'actual' argument; got %T", actual))
+	}
+
+	filters := []string{}
+	for _, arg := range args {
+		filter, ok := arg.(string)
+		if !ok {
+			panic(fmt.Errorf("ShouldContainLog needs strings for its 'args' argument; got %T", actual))
+		}
+
+		filters = append(filters, filter)
+	}
+
+	// Make sure that 'loglines' contains at least one line that matches all the
+	// 'filters'.
+	for _, line := range loglines {
+		mismatch := false
+		for _, filter := range filters {
+			if strings.Contains(line, filter) {
+				continue
+			}
+
+			mismatch = true
+		}
+
+		if !mismatch {
+			fmt.Printf("found log line (%q), matched all the filters\nlogs: %+v, filters: %+v", line, loglines, filters)
+			return ""
+		}
+	}
+
+	return fmt.Sprintf("no log line matched all the filters\nlogs: %+v, filters: %+v", loglines, filters)
+}
+
 func TestCmpSpecs(t *testing.T) {
 	blue := color.RGBA{
 		R: 0,
@@ -287,10 +326,15 @@ func TestCmpSpecs(t *testing.T) {
 					panic(fmt.Errorf("precondition violated: there's already a rejection file at %q", rejFile))
 				}
 
-				compResult := rendertest.ShouldLookLikeFile(biggerImg, imgPath, rendertest.MakeRejectFiles(true))
+				var compResult string
+				logoutput := gloptest.CollectOutput(func() {
+					compResult = rendertest.ShouldLookLikeFile(biggerImg, imgPath, rendertest.MakeRejectFiles(true))
+				})
 				So(compResult, ShouldNotEqual, "") // b/c the images are different
-
 				So(rejFile, shouldExistOnDisk)
+
+				// The log should mention that a comparison failed.
+				So(logoutput, ShouldContainLog, "level=ERROR", `msg="size mismatch"`)
 
 				// Clean up the rejection file because we didn't actually fail the
 				// test.
@@ -298,8 +342,6 @@ func TestCmpSpecs(t *testing.T) {
 				if e != nil {
 					panic(fmt.Errorf("couldn't remove rejection file %q", rejFile))
 				}
-
-				// TODO(tmckee): add tests for the other 'ShouldLookLike*' helpers!
 			})
 		})
 	})
