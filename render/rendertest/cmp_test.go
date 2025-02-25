@@ -15,6 +15,7 @@ import (
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/strmanip"
 	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
@@ -269,8 +270,7 @@ func ShouldContainLog(actual interface{}, args ...interface{}) string {
 		}
 	}
 
-	// TODO(tmckee): printing a list of strings here is gahbage... make a helper
-	return fmt.Sprintf("no log line matched all the filters\nlogs: %+v, filters: %+v", loglines, filters)
+	return fmt.Sprintf("no log line matched all the filters\nlogs: %+v, filters: %+v", loglines, strmanip.Show(filters))
 }
 
 func TestCmpSpecs(t *testing.T) {
