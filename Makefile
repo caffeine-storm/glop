@@ -28,6 +28,9 @@ testing_env=${testing_with_xvfb}
 test:
 	${testing_env} go test                   ${testrunargs} ${testrunpackages}
 
+test-verbose:
+	${testing_env} go test -v                ${testrunargs} ${testrunpackages}
+
 test-spec:
 	${testing_env} go test -run ".*Specs"    ${testrunargs} ${testrunpackages}
 
@@ -130,5 +133,5 @@ clean:
 .PHONY: fmt lint depth
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
-.PHONY: test test-dlv test-fresh test-nocache test-report test-spec
+.PHONY: test test-dlv test-fresh test-nocache test-report test-spec test-verbose
 .PHONY: ${TEST_REPORT_TAR}
