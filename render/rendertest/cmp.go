@@ -192,6 +192,24 @@ func getFromArgs(args []interface{}, defaultValue interface{}, output interface{
 	return false
 }
 
+func getTestDataKeyFromArgs(args []interface{}) TestDataReference {
+	// The only valid spot to look for a test data reference is at the head of
+	// the slice.
+	if len(args) < 1 {
+		panic(fmt.Errorf("need a non-empty slice of options for getting the test data key"))
+	}
+
+	// It might be a TestDataKey already, otherwise it has to be a string.
+	switch v := args[0].(type) {
+	case string:
+		return NewTestdataReference(v)
+	case TestDataReference:
+		return v
+	}
+
+	panic(fmt.Errorf("expected type string or TestDataReference, got %T", args[0]))
+}
+
 func getTestNumberFromArgs(args []interface{}) TestNumber {
 	var result TestNumber
 	getFromArgs(args, defaultTestNumber, &result)
@@ -339,11 +357,7 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 }
 
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
-	// If the list of options starts with a string, it supposed to reference the
-	// testdata. Promote to a better-typed value.
-	if str, ok := expected[0].(string); ok {
-		expected[0] = NewTestdataReference(str)
-	}
+	expected[0] = getTestDataKeyFromArgs(expected)
 
 	switch v := actual.(type) {
 	case render.RenderQueueInterface:
@@ -373,17 +387,8 @@ func ShouldNotLookLikeFile(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
-	// TODO(tmckee): factor out a helper to get the testDataKey consistently
-	testDataKey, ok := expected[0].(string)
-	if !ok {
-		testDataRef, ok := expected[0].(TestDataReference)
-		if !ok {
-			panic(fmt.Errorf("ShouldLookLikeText needs a string or TestDataReference but got %T", expected[0]))
-		}
+	testDataKey := getTestDataKeyFromArgs(expected)
 
-		testDataKey = string(testDataRef)
-	}
-
-	expected[0] = NewTestdataReference("text/" + testDataKey)
+	expected[0] = NewTestdataReference("text/" + string(testDataKey))
 	return ShouldLookLikeFile(actual, expected...)
 }
