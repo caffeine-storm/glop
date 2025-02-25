@@ -210,7 +210,7 @@ func TestTextureDebugging(t *testing.T) {
 
 	t.Run("textures should match the underlying image", func(t *testing.T) {
 		// - Load an image
-		expectedImage := rendertest.MustLoadImage("checker/0.png")
+		expectedImage := rendertest.MustLoadTestImage("checker/0.png")
 
 		expectedImage = blitOntoBlue(expectedImage)
 

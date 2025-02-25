@@ -14,12 +14,15 @@ import (
 func MustLoadImageFromTestdataReference(testdataref TestDataReference) image.Image {
 	p := testdataref.Path()
 	sliced := strings.SplitN(p, "/", 2)
-	return MustLoadImage(path.Join(sliced[1:]...))
+	return MustLoadTestImage(path.Join(sliced[1:]...))
 }
 
-// TODO(tmckee): clean this up; MustLoadImage ought to not mess with the path.
+func MustLoadTestImage(testimageReference string) image.Image {
+	imageFilePath := path.Join("testdata", testimageReference)
+	return MustLoadImage(imageFilePath)
+}
+
 func MustLoadImage(imageFilePath string) image.Image {
-	imageFilePath = path.Join("testdata", imageFilePath)
 	file, err := os.Open(imageFilePath)
 	if err != nil {
 		panic(fmt.Errorf("couldn't open file %q: %w", imageFilePath, err))
@@ -39,5 +42,5 @@ func MustLoadImageFromReader(file io.Reader) image.Image {
 }
 
 func MustLoadRGBAImage(imageFilePath string) *image.RGBA {
-	return imgmanip.ToRGBA(MustLoadImage(imageFilePath))
+	return imgmanip.ToRGBA(MustLoadTestImage(imageFilePath))
 }
