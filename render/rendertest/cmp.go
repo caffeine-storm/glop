@@ -292,9 +292,6 @@ func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) s
 		panic(fmt.Errorf("imageShouldLookLikeFile needs a TestDataReference but got %T", expected[0]))
 	}
 
-	// For table-tests, usage is
-	//   'So(something, ShouldLookLikeFile, "test-case-family", TestNumber(N))'
-	// Use a default 'testnumber = 0' for non-table tests.
 	testnumber := getTestNumberFromArgs(expected)
 
 	expectedFileName := ExpectationFile(testDataKey, "png", testnumber)
@@ -356,6 +353,11 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 	return imageShouldLookLikeFile(actualImage, expected...)
 }
 
+// Usage is
+//
+//	'So(something, ShouldLookLikeFile, "test-case-family", options...)'
+//
+// 'options' is an optional bag of control parameters
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 	expected[0] = getTestDataKeyFromArgs(expected)
 
