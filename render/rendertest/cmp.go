@@ -39,8 +39,8 @@ var transparent = color.RGBA{}
 
 var defaultMakeRejectFiles = MakeRejectFiles(true)
 
-func ExpectationFile(testDataKey, fileExt string, testnumber TestNumber) string {
-	return path.Join("testdata", testDataKey, fmt.Sprintf("%d.%s", testnumber, fileExt))
+func ExpectationFile(testDataKey TestDataReference, fileExt string, testnumber TestNumber) string {
+	return testDataKey.Path(FileExtension(fileExt), testnumber)
 }
 
 // Return the given file but with a '.rej' component to signify a 'rejection'.
@@ -269,9 +269,9 @@ func imageShouldLookLike(actualImage, expectedImage image.Image, expected ...int
 }
 
 func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) string {
-	testDataKey, ok := expected[0].(string)
+	testDataKey, ok := expected[0].(TestDataReference)
 	if !ok {
-		panic(fmt.Errorf("imageShouldLookLikeFile needs a string but got %T", expected[0]))
+		panic(fmt.Errorf("imageShouldLookLikeFile needs a TestDataReference but got %T", expected[0]))
 	}
 
 	// For table-tests, usage is
@@ -339,6 +339,12 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 }
 
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
+	// If the list of options starts with a string, it supposed to reference the
+	// testdata. Promote to a better-typed value.
+	if str, ok := expected[0].(string); ok {
+		expected[0] = NewTestdataReference(str)
+	}
+
 	switch v := actual.(type) {
 	case render.RenderQueueInterface:
 		return backBufferShouldLookLike(v, expected...)
@@ -367,11 +373,17 @@ func ShouldNotLookLikeFile(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
+	// TODO(tmckee): factor out a helper to get the testDataKey consistently
 	testDataKey, ok := expected[0].(string)
 	if !ok {
-		panic(fmt.Errorf("ShouldLookLikeText needs a string but got %T", expected[0]))
+		testDataRef, ok := expected[0].(TestDataReference)
+		if !ok {
+			panic(fmt.Errorf("ShouldLookLikeText needs a string or TestDataReference but got %T", expected[0]))
+		}
+
+		testDataKey = string(testDataRef)
 	}
 
-	expected[0] = "text/" + testDataKey
+	expected[0] = NewTestdataReference("text/" + testDataKey)
 	return ShouldLookLikeFile(actual, expected...)
 }

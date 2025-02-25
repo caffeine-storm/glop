@@ -23,7 +23,7 @@ var transparent = color.RGBA{}
 
 func TestFileNameHelpers(t *testing.T) {
 	t.Run("TestExpectationFile", func(t *testing.T) {
-		result := rendertest.ExpectationFile("text/lol", "pgm", 42)
+		result := rendertest.ExpectationFile(rendertest.NewTestdataReference("text/lol"), "pgm", 42)
 		assert.Equal(t, "testdata/text/lol/42.pgm", result)
 	})
 
