@@ -9,7 +9,7 @@ import (
 )
 
 func givenAnImage() image.Image {
-	return rendertest.MustLoadTestImage("checker/0.png")
+	return rendertest.MustLoadImageFromTestdataReference("checker")
 }
 
 func TestScale(t *testing.T) {

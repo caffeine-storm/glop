@@ -11,7 +11,7 @@ import (
 )
 
 func TestInvertedCanvasSpecs(t *testing.T) {
-	checkers := rendertest.MustLoadTestImage("checker/0.png")
+	checkers := rendertest.MustLoadImageFromTestdataReference("checker")
 	Convey("inverted canvas wrapper", t, func() {
 		canvasSize := checkers.Bounds()
 		wrappedCanvas := image.NewRGBA(canvasSize)

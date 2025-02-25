@@ -38,6 +38,6 @@ func MustLoadImageFromReader(file io.Reader) image.Image {
 	return img
 }
 
-func MustLoadRGBAImage(imageFilePath string) *image.RGBA {
+func MustLoadRGBATestImage(imageFilePath string) *image.RGBA {
 	return imgmanip.ToRGBA(MustLoadTestImage(imageFilePath))
 }
