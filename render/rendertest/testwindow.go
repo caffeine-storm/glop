@@ -116,7 +116,7 @@ func (ctx *glContext) Prep(width, height int) {
 		gl.LoadIdentity()
 
 		gl.ClearColor(0, 0, 0, 1.0)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		// SwapBuffers should flush the GL command queue and synchronize with the
 		// X-server. Without doing so, things break!
