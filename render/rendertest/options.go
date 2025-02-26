@@ -62,6 +62,7 @@ func getTestDataKeyFromArgs(args []interface{}) TestDataReference {
 	case string:
 		return NewTestdataReference(v)
 	case TestDataReference:
+		v.MustValidate()
 		return v
 	}
 
