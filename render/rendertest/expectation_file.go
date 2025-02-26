@@ -9,10 +9,9 @@ import (
 type TestDataReference string
 
 func NewTestdataReference(datakey string) TestDataReference {
-	if strings.HasPrefix(datakey, "testdata/") {
-		panic(fmt.Errorf("can't make a TestDataReference to a path that already starts with 'testdata/'"))
-	}
-	return TestDataReference(datakey)
+	result := TestDataReference(datakey)
+	result.MustValidate()
+	return result
 }
 
 func (ref *TestDataReference) Validate() bool {
@@ -26,6 +25,8 @@ func (ref *TestDataReference) MustValidate() {
 }
 
 func (ref *TestDataReference) Path(args ...interface{}) string {
+	ref.MustValidate()
+
 	// Work around get*FromArgs having to skip arg0
 	args = append([]interface{}{nil}, args...)
 
@@ -36,10 +37,12 @@ func (ref *TestDataReference) Path(args ...interface{}) string {
 }
 
 func (ref *TestDataReference) PathNumber(n int) string {
+	ref.MustValidate()
 	return fmt.Sprintf("testdata/%s/%d.png", *ref, n)
 }
 
 func (ref *TestDataReference) PathExtension(ext string) string {
+	ref.MustValidate()
 	return fmt.Sprintf("testdata/%s/0.%s", *ref, ext)
 }
 
