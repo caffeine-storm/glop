@@ -15,6 +15,16 @@ func NewTestdataReference(datakey string) TestDataReference {
 	return TestDataReference(datakey)
 }
 
+func (ref *TestDataReference) Validate() bool {
+	return !strings.HasPrefix(string(*ref), "testdata")
+}
+
+func (ref *TestDataReference) MustValidate() {
+	if !ref.Validate() {
+		panic(fmt.Errorf("invalid TestDataReference: %q; there must be no leading 'testdata' prefix", string(*ref)))
+	}
+}
+
 func (ref *TestDataReference) Path(args ...interface{}) string {
 	// Work around get*FromArgs having to skip arg0
 	args = append([]interface{}{nil}, args...)
