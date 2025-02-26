@@ -1,3 +1,5 @@
+tmckee:#15 refactor: move ShouldContainLog from render/rendertest/cmp_test.go to gloptest/
+
 tmckee:#14 imgmanip/scale.go should sample neighbouring points when scaling by
 non-integral amounts
 
@@ -47,4 +49,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #15
+next bug: #16

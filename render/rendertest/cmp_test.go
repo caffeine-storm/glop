@@ -225,6 +225,7 @@ func shouldExistOnDisk(filepathAny interface{}, _ ...interface{}) string {
 
 var _ Assertion = shouldExistOnDisk
 
+// TODO(tmckee:#15): move this to gloptest; it's generally useful
 func ShouldContainLog(actual interface{}, args ...interface{}) string {
 	loglines, ok := actual.([]string)
 	if !ok {
