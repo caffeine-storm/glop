@@ -56,8 +56,17 @@ func TestTestdataReference(t *testing.T) {
 	})
 
 	t.Run("rejects paths already starting with 'testdata'", func(t *testing.T) {
-		assert.Panics(t, func() {
-			rendertest.NewTestdataReference("testdata/but/fail")
+		t.Run("when building", func(t *testing.T) {
+			assert.Panics(t, func() {
+				rendertest.NewTestdataReference("testdata/but/fail")
+			})
+		})
+
+		t.Run("when validating", func(t *testing.T) {
+			assert.Panics(t, func() {
+				tdr := rendertest.TestDataReference("testdata/but/fail")
+				tdr.MustValidate()
+			})
 		})
 	})
 }
