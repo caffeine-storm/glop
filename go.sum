@@ -39,8 +39,6 @@ cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/MobRulesGames/mathgl v0.0.0-20120424214601-79bd4ce3042d h1:Rh3yrqrbhJpaxmPYreA73YB5yBl7f9ULUMeZcaHmEag=
-github.com/MobRulesGames/mathgl v0.0.0-20120424214601-79bd4ce3042d/go.mod h1:wXL75i6wDmeUURnQnNtW2xpiuPmDzPk2JnpQbm7Esu0=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
 github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmVTwzkszR9V5SSuryQ31EELlFMUz1kKyl939pY=
@@ -51,6 +49,8 @@ github.com/caffeine-storm/gl v0.0.0-20240909160157-d1b38f2deb16 h1:lHq5YECDcjZKi
 github.com/caffeine-storm/gl v0.0.0-20240909160157-d1b38f2deb16/go.mod h1:5WNXbhdBMLerIscVkSVTRwGcsRywYKYHRKFEBZOUBEA=
 github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6 h1:P5AfHxhrOVg47HAn8FTGsUyqnd+TEJghuMiuAb48IWc=
 github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6/go.mod h1:u7X6dfpvRdRDhT7TNW2tHPXi+GY3/8rgCZuHYHJKCyc=
+github.com/caffeine-storm/mathgl v0.0.0-20120424214601-79bd4ce3042d h1:29zWcwheYI0zL/QWUwUOftwJaEyMhEwvSwg6Vz/5sho=
+github.com/caffeine-storm/mathgl v0.0.0-20120424214601-79bd4ce3042d/go.mod h1:Y6dKz5nmcOaY98Y2MsA7ox/2sD68oQZPtfZnYwrc3fA=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
