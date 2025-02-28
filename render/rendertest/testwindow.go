@@ -22,21 +22,6 @@ func matrixStacksMustBeSize1() {
 	}
 }
 
-type showmat mathgl.Mat4
-
-func (m showmat) String() string {
-	return fmt.Sprintf(
-		`%f, %f, %f, %f
-%f, %f, %f, %f
-%f, %f, %f, %f
-%f, %f, %f, %f`,
-		m[0], m[1], m[2], m[3],
-		m[4], m[5], m[6], m[7],
-		m[8], m[9], m[10], m[11],
-		m[12], m[13], m[14], m[15],
-	)
-}
-
 func matrixStacksMustBeIdentity() {
 	var buffer [3]mathgl.Mat4
 
@@ -55,7 +40,7 @@ modelview:
 projection:
 %v
 texture:
-%v`, showmat(buffer[0]), showmat(buffer[1]), showmat(buffer[2])))
+%v`, render.Showmat(buffer[0]), render.Showmat(buffer[1]), render.Showmat(buffer[2])))
 }
 
 func checkMatrixInvariants() {
