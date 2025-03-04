@@ -67,7 +67,6 @@ func GetDepthRange() (float64, float64) {
 	return buffer[0], buffer[1]
 }
 
-// Returns a high-level description of what the current GL state is.
 type GlState struct {
 	MatrixMode       string
 	ModelViewMatrix  []float64
@@ -80,6 +79,7 @@ func (st *GlState) String() string {
 	return fmt.Sprintf("%+v", *st)
 }
 
+// Returns a high-level description of what the current GL state is.
 func GetGlState() *GlState {
 	return &GlState{
 		MatrixMode:       mappedSymbols()[GetMatrixMode()],
