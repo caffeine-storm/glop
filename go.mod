@@ -8,7 +8,7 @@ replace github.com/go-gl-legacy/gl => github.com/caffeine-storm/gl v0.0.0-202409
 
 replace github.com/go-gl-legacy/glu => github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6
 
-replace github.com/MobRulesGames/mathgl => github.com/caffeine-storm/mathgl v0.0.0-20250228191957-8924634b922a
+replace github.com/MobRulesGames/mathgl => github.com/caffeine-storm/mathgl v0.0.0-20250304142043-9a68bb7bb47a
 
 require (
 	code.google.com/p/freetype-go v0.0.0-00010101000000-000000000000

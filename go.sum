@@ -2,8 +2,8 @@ github.com/caffeine-storm/gl v0.0.0-20240909160157-d1b38f2deb16 h1:lHq5YECDcjZKi
 github.com/caffeine-storm/gl v0.0.0-20240909160157-d1b38f2deb16/go.mod h1:5WNXbhdBMLerIscVkSVTRwGcsRywYKYHRKFEBZOUBEA=
 github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6 h1:P5AfHxhrOVg47HAn8FTGsUyqnd+TEJghuMiuAb48IWc=
 github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6/go.mod h1:u7X6dfpvRdRDhT7TNW2tHPXi+GY3/8rgCZuHYHJKCyc=
-github.com/caffeine-storm/mathgl v0.0.0-20250228191957-8924634b922a h1:ig/nPlkxHuAZ2ZYzWdcYN0rzdbMtMCPS/BXREFTXG78=
-github.com/caffeine-storm/mathgl v0.0.0-20250228191957-8924634b922a/go.mod h1:m88lFHa7eM3wDnOkUBVFgpV+tIiebxrdI7nFhGrwcwI=
+github.com/caffeine-storm/mathgl v0.0.0-20250304142043-9a68bb7bb47a h1:lue1B3UPQUKws55YJJPwQvMN3HYGeqawlQ7EAtRymVc=
+github.com/caffeine-storm/mathgl v0.0.0-20250304142043-9a68bb7bb47a/go.mod h1:JlFSX0xZ9cH22/kshJBkZR2+vbnASPDP0tvRnvKh64c=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/freetype v0.0.0-20120725121025-28cc5fbc5d0b h1:Wz3T/RQZq290dBxQ5Iu2Ot5KIyMWkSJWWp2NMvV7OYE=
