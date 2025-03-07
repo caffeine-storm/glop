@@ -10,9 +10,9 @@ type number interface {
 	float32 | int32 | byte
 }
 
+// Returns a slice of the data as it exists in the given OpenGL buffer. This
+// needs to be run on the 'render thread'.
 func DumpBuffer[N number](buf gl.Buffer) []N {
-	// TODO(tmckee): assert on render thread? somehow?
-
 	// save old ARRAY_BUFFER mapping; revert on return
 	var oldBinding [1]int32
 	gl.GetIntegerv(gl.ARRAY_BUFFER_BINDING, oldBinding[:])
