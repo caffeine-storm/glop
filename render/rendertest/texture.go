@@ -1,4 +1,4 @@
-package debugtest
+package rendertest
 
 import (
 	"fmt"
@@ -10,7 +10,6 @@ import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
 )
 
 func uploadTextureFromImage(img *image.RGBA) gl.Texture {
@@ -80,7 +79,7 @@ func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *rend
 	var texleft, texright, textop, texbottom int32 = 0, 1, 1, 0
 
 	// - enable texturing shaders
-	rendertest.WithShaderProgs(shaders, debug_vertex_shader, debug_fragment_shader, func() {
+	WithShaderProgs(shaders, debug_vertex_shader, debug_fragment_shader, func() {
 		// - set shader variables/inputs; we want to use the 0'th texture unit.
 		shaders.SetUniformI("debugshaders", "tex", 0)
 

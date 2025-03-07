@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/runningwild/glop/debug/debugtest"
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
@@ -193,11 +192,11 @@ func TestCompareTransparentExpectations(t *testing.T) {
 		rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				// - Convert it to a texture
-				tex := debugtest.GivenATexture("checker/0.png")
+				tex := rendertest.GivenATexture("checker/0.png")
 
 				rendertest.WithClearColour(0, 0, 1, 1, func() {
 					// - Blit the texture accross the entire viewport
-					debugtest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
+					rendertest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
 				})
 			})
 			queue.Purge()
@@ -284,10 +283,10 @@ func TestCmpSpecs(t *testing.T) {
 			Convey("for rendered textures", func() {
 				rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
 					queue.Queue(func(st render.RenderQueueState) {
-						tex := debugtest.GivenATexture("checker/0.png")
+						tex := rendertest.GivenATexture("checker/0.png")
 
 						rendertest.WithClearColour(0, 0, 1, 1, func() {
-							debugtest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
+							rendertest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
 						})
 					})
 					queue.Purge()

@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/debug/debugtest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
@@ -110,7 +109,7 @@ func TestTextureDebugging(t *testing.T) {
 		var err error
 
 		rendertest.WithGl(func() {
-			tex := debugtest.GivenATexture("red/0.png")
+			tex := rendertest.GivenATexture("red/0.png")
 
 			dumpedImage, err = debug.DumpTexture(tex)
 			if err != nil {
@@ -131,7 +130,7 @@ func TestTextureDebugging(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
 		rendertest.WithGl(func() {
-			tex := debugtest.GivenATexture("red/0.png")
+			tex := rendertest.GivenATexture("red/0.png")
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)
 			if err != nil {
@@ -157,7 +156,7 @@ func TestTextureDebugging(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
 		rendertest.WithGl(func() {
-			tex := debugtest.GivenATexture("checker/0.png")
+			tex := rendertest.GivenATexture("checker/0.png")
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)
 			if err != nil {
@@ -227,11 +226,11 @@ func TestTextureDebugging(t *testing.T) {
 			var resultImage image.Image
 			queue.Queue(func(st render.RenderQueueState) {
 				// - Convert it to a texture
-				tex := debugtest.GivenATexture("checker/0.png")
+				tex := rendertest.GivenATexture("checker/0.png")
 
 				rendertest.WithClearColour(0, 0, 1, 1, func() {
 					// - Blit the texture accross the entire viewport
-					debugtest.DrawTexturedQuad(bounds, tex, st.Shaders())
+					rendertest.DrawTexturedQuad(bounds, tex, st.Shaders())
 
 					// - Verify a screenshot matches the image.
 					resultImage = debug.ScreenShotRgba(width, height)
