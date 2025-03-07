@@ -6,7 +6,11 @@ import (
 	"github.com/go-gl-legacy/gl"
 )
 
-func DumpBuffer(buf gl.Buffer) []float32 {
+type number interface {
+	float32 | int32 | byte
+}
+
+func DumpBuffer[N number](buf gl.Buffer) []N {
 	// TODO(tmckee): assert on render thread? somehow?
 
 	// save old ARRAY_BUFFER mapping; revert on return
@@ -25,11 +29,11 @@ func DumpBuffer(buf gl.Buffer) []float32 {
 
 	// find how much data is in the buffer
 	dataByteSize := gl.GetBufferParameteriv(gl.ARRAY_BUFFER, gl.BUFFER_SIZE)
-	numFloats := dataByteSize / int32(unsafe.Sizeof(float32(0)))
+	numValues := dataByteSize / int32(unsafe.Sizeof(N(0)))
 
 	// memcpy and return the data
-	var asSlice []float32 = unsafe.Slice((*float32)(data), numFloats)
-	result := make([]float32, len(asSlice))
+	var asSlice []N = unsafe.Slice((*N)(data), numValues)
+	result := make([]N, len(asSlice))
 	copy(result, asSlice)
 
 	return result
