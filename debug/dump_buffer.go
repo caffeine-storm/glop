@@ -7,7 +7,10 @@ import (
 )
 
 type number interface {
-	float32 | int32 | byte
+	float64 | float32 |
+		int32 | uint32 |
+		int16 | uint16 |
+		int8 | byte
 }
 
 // Returns a slice of the data as it exists in the given OpenGL buffer. This
