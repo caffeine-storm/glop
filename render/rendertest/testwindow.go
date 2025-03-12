@@ -93,7 +93,7 @@ func (ctx *glContext) Prep(width, height int) {
 
 		// Use an orthographic projection because all the gui code assumes it's
 		// rendering with such a projection.
-		gl.Ortho(0, float64(width), 0, float64(height), 10, -10)
+		gl.Ortho(0, float64(width), 0, float64(height), 1000, -1000)
 		gl.Viewport(0, 0, width, height)
 
 		gl.MatrixMode(gl.TEXTURE)
