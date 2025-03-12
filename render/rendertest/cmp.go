@@ -201,34 +201,45 @@ func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) s
 	}
 }
 
-func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
-	var currentBackground color.Color = defaultBackground
-	r, g, b, a := currentBackground.RGBA()
+func makeFallbackImage() *image.RGBA {
+	r, g, b, a := defaultBackground.RGBA()
 	fallbackPixel := []uint8{
 		uint8(r), uint8(g), uint8(b), uint8(a),
 	}
 
-	var actualImage *image.RGBA = &image.RGBA{
+	return &image.RGBA{
 		Pix:    fallbackPixel,
 		Stride: 4,
 		Rect:   image.Rect(0, 0, 1, 1),
 	}
+}
+
+func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
+	// Sometimes, the given queue is a no-op queue so we will have a default
+	// 'actualImage' to avoid passing around a nil image.Image value.
+	var actualImage *image.RGBA = makeFallbackImage()
 
 	// Read all the pixels from the framebuffer through OpenGL
+	var backgroundForImageCmp color.Color = defaultBackground
 	queue.Queue(func(render.RenderQueueState) {
 		_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()
 		actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
-		currentBackground = GetCurrentBackgroundColor()
+		backgroundForImageCmp = GetCurrentBackgroundColor()
 	})
 	queue.Purge()
 
+	// When screen shotting, we only read opaque pixels; there's always going to
+	// be _some_ value for each element of the frame buffer.
+	// If the expectation file has transparent portions, we need to compose it
+	// over a suitable background before comparing pixel values.
 	_, ok := getBackgroundFromArgs(expected)
 	if !ok {
-		expected = append(expected, BackgroundColour(currentBackground))
+		// If nobody specified the background to compose over, we'll use either
+		// OpenGL's 'ClearColor' or, if 'queue' is a no-op, whatever the default
+		// background is (typically black).
+		expected = append(expected, BackgroundColour(backgroundForImageCmp))
 	}
 
-	// When screen shotting, we only read opaque pixels; if the expectation file
-	// has transparent portions, we need to not compare those pixels.
 	return imageShouldLookLikeFile(actualImage, expected...)
 }
 
