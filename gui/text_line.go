@@ -39,19 +39,6 @@ func nextPowerOf2(n uint32) uint32 {
 	return 0
 }
 
-type Button struct {
-	*TextLine
-	Clickable
-}
-
-func MakeButton(fontId, text string, width int, r, g, b, a float64, f func(int64)) *Button {
-	var btn Button
-	btn.TextLine = MakeTextLine(fontId, text, width, r, g, b, a)
-	btn.TextLine.EmbeddedWidget = &BasicWidget{CoreWidget: &btn}
-	btn.on_click = f
-	return &btn
-}
-
 // TODO(tmckee): we should take a font by reference instead of by
 // stringified-name. That way, the compiler can check for us that the font is
 // loaded.
