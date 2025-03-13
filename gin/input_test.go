@@ -9,14 +9,16 @@ import (
 )
 
 func TestGinSpecs(t *testing.T) {
-	Convey("NaturalKeySpec", t, NaturalKeySpec)
-	Convey("DerivedKeySpec", t, DerivedKeySpec)
-	Convey("DeviceSpec", t, DeviceSpec)
-	Convey("DeviceFamilySpec", t, DeviceFamilySpec)
-	Convey("NestedDerivedKeySpec", t, NestedDerivedKeySpec)
-	Convey("EventSpec", t, EventSpec)
-	Convey("AxisSpec", t, AxisSpec)
-	Convey("EventListenerSpec", t, EventListenerSpec)
+	Convey("Input", t, func() {
+		Convey("NaturalKeySpec", NaturalKeySpec)
+		Convey("DerivedKeySpec", DerivedKeySpec)
+		Convey("DeviceSpec", DeviceSpec)
+		Convey("DeviceFamilySpec", DeviceFamilySpec)
+		Convey("NestedDerivedKeySpec", NestedDerivedKeySpec)
+		Convey("EventSpec", EventSpec)
+		Convey("AxisSpec", AxisSpec)
+		Convey("EventListenerSpec", EventListenerSpec)
+	})
 }
 
 func injectEvent(events *[]gin.OsEvent, key_index gin.KeyIndex, device_index gin.DeviceIndex, device_type gin.DeviceType, amt float64, timestamp int64) {
