@@ -41,6 +41,29 @@ func (linux *SystemObject) Think() int64 {
 	return linux.horizon
 }
 
+func GlopToGin(glopEvent *C.struct_GlopKeyEvent) gin.OsEvent {
+	// TODO(tmckee): we should make this work; otherwise, we never get the
+	// right mouse position.
+	// wx,wy := linux.rawCursorToWindowCoords(int(glopEvent.cursor_x), int(glopEvent.cursor_y))
+	keyId := gin.KeyId{
+		Device: gin.DeviceId{
+			// TODO(tmckee): we need to inspect the 'index' or 'device' to know
+			// device type; right now, mouse events get labled as keyboard events
+			// :(
+			Type:  gin.DeviceTypeKeyboard,
+			Index: gin.DeviceIndex(glopEvent.device),
+		},
+		Index: gin.KeyIndex(glopEvent.index),
+	}
+	return gin.OsEvent{
+		KeyId:     keyId,
+		Press_amt: float64(glopEvent.press_amt),
+		Timestamp: int64(glopEvent.timestamp),
+		// X : wx,
+		// Y : wy,
+	}
+}
+
 // TODO: Make sure that events are given in sorted order (by timestamp)
 // TODO(tmckee): use a montonic clock for the timestamps
 func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
@@ -51,29 +74,6 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	C.GlopGetInputEvents(&firstEvent, &length, &horizon)
 	defer C.free(unsafe.Pointer(firstEvent))
 	linux.horizon = int64(horizon)
-
-	makeOsEvent := func(glopEvent *C.struct_GlopKeyEvent) gin.OsEvent {
-		// TODO(tmckee): we should make this work; otherwise, we never get the
-		// right mouse position.
-		// wx,wy := linux.rawCursorToWindowCoords(int(glopEvent.cursor_x), int(glopEvent.cursor_y))
-		keyId := gin.KeyId{
-			Device: gin.DeviceId{
-				// TODO(tmckee): we need to inspect the 'index' or 'device' to know
-				// device type; right now, mouse events get labled as keyboard events
-				// :(
-				Type:  gin.DeviceTypeKeyboard,
-				Index: gin.DeviceIndex(glopEvent.device),
-			},
-			Index: gin.KeyIndex(glopEvent.index),
-		}
-		return gin.OsEvent{
-			KeyId:     keyId,
-			Press_amt: float64(glopEvent.press_amt),
-			Timestamp: int64(glopEvent.timestamp),
-			// X : wx,
-			// Y : wy,
-		}
-	}
 
 	// Given a pointer to a C array, returns the same pointer co-erced to a 64
 	// element array and a pointer to one-past that array. Useful for iterating
@@ -92,7 +92,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	for chunk := 0; chunk < int(length)/64; chunk++ {
 		eventChunk, eventIterator = next64(eventIterator)
 		for j := 0; j < 64; j++ {
-			events[i] = makeOsEvent(&eventChunk[j])
+			events[i] = GlopToGin(&eventChunk[j])
 			i++
 		}
 	}
@@ -101,7 +101,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	// process.
 	eventChunk, _ = next64(eventIterator)
 	for j := 0; j < int(length)%64; j++ {
-		events[i] = makeOsEvent(&eventChunk[j])
+		events[i] = GlopToGin(&eventChunk[j])
 		i++
 	}
 
