@@ -1,3 +1,5 @@
+tmckee:#16 consider adding a Makefile recipe to generate a compile_commands.json file for the C++ code. Something like `go build -a -toolexec 'bear --' ./...`
+
 tmckee:#15 refactor: move ShouldContainLog from render/rendertest/cmp_test.go to gloptest/
 
 tmckee:#14 imgmanip/scale.go should sample neighbouring points when scaling by
@@ -49,4 +51,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #16
+next bug: #17
