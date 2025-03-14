@@ -1,12 +1,9 @@
 package gin
 
 import (
-	"context"
 	"fmt"
-	"log/slog"
-	"runtime"
-	"strings"
-	"time"
+
+	"github.com/runningwild/glop/glog"
 )
 
 var (
@@ -265,7 +262,7 @@ type Input struct {
 	listeners []Listener
 
 	// Optional logger instance to trace calls to Input.
-	logger *slog.Logger
+	logger glog.Logger
 }
 
 func (input *Input) trace() {
@@ -273,35 +270,10 @@ func (input *Input) trace() {
 		return
 	}
 
-	// Get function name from the call stack.
-	buf := make([]uintptr, 8)
-	runtime.Callers(1, buf)
-
-	frames := runtime.CallersFrames(buf[:2])
-	frame, ok := frames.Next()
-	if !ok {
-		panic("can't find caller frames!")
-	}
-	frame, _ = frames.Next()
-
-	funcName := frame.Function
-	funcName = funcName[strings.LastIndex(funcName, ".")+1:]
-
-	idx := strings.LastIndex(frame.File, "glop")
-	if idx == -1 {
-		// Couldn't find 'glop' in the absolute path. Odd, but let's fall back to
-		// including the whole path.
-		idx = 0
-	}
-	shortFileName := frame.File[idx:]
-
-	logRecord := slog.NewRecord(time.Now(), slog.LevelDebug, "trace", frame.PC)
-	logRecord.Add("func", funcName)
-	logRecord.Add("source", shortFileName)
-	input.logger.Handler().Handle(context.Background(), logRecord)
+	input.logger.Trace("input.trace")
 }
 
-func (input *Input) SetLogger(logger *slog.Logger) {
+func (input *Input) SetLogger(logger glog.Logger) {
 	input.logger = logger
 }
 
@@ -324,7 +296,7 @@ func Make() *Input {
 
 // Creates a new input object, mostly for testing. Most users will just query
 // gin.Input, which is created during initialization
-func MakeLogged(logger *slog.Logger) *Input {
+func MakeLogged(logger glog.Logger) *Input {
 	input := new(Input)
 	input.all_keys = make([]Key, 0, 512)
 	input.key_map = make(map[KeyId]Key, 512)

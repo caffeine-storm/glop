@@ -1,10 +1,10 @@
 package gin
 
 import (
-	"log/slog"
 	"os"
 	"testing"
 
+	"github.com/runningwild/glop/glog"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,7 +29,10 @@ func TestPressKeyWorksForControlKey(t *testing.T) {
 func TestBindingGetPrimaryPressAmt(t *testing.T) {
 	require := require.New(t)
 
-	inputObj := MakeLogged(slog.New(slog.NewTextHandler(os.Stdout, nil)))
+	glogopts := &glog.Opts{
+		Output: os.Stdout,
+	}
+	inputObj := MakeLogged(glog.New(glogopts))
 	require.NotNil(inputObj)
 
 	xKey := AnyKeyX
