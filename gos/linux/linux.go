@@ -42,7 +42,7 @@ func (linux *SystemObject) Think() int64 {
 	return linux.horizon
 }
 
-func glopDeviceToGinDevice(n C.short) gin.DeviceType {
+func nativeDeviceToGinDevice(n C.short) gin.DeviceType {
 	switch n {
 	case C.glopDeviceKeyboard:
 		return gin.DeviceTypeKeyboard
@@ -53,7 +53,7 @@ func glopDeviceToGinDevice(n C.short) gin.DeviceType {
 		// gin.DeviceTypeController is not supported right now
 	}
 
-	panic(fmt.Errorf("glopDeviceToGinDevice: got invalid value %d", n))
+	panic(fmt.Errorf("nativeDeviceToGinDevice: got invalid value %d", n))
 }
 
 type NativeKeyEvent C.struct_GlopKeyEvent
@@ -71,19 +71,19 @@ type RawCursorToWindowCoordser interface {
 	RawCursorToWindowCoords(x, y int) (int, int)
 }
 
-func GlopToGin(linux RawCursorToWindowCoordser, glopEvent *NativeKeyEvent) gin.OsEvent {
-	wx, wy := linux.RawCursorToWindowCoords(int(glopEvent.cursor_x), int(glopEvent.cursor_y))
+func NativeToGin(linux RawCursorToWindowCoordser, nativeEvent *NativeKeyEvent) gin.OsEvent {
+	wx, wy := linux.RawCursorToWindowCoords(int(nativeEvent.cursor_x), int(nativeEvent.cursor_y))
 	keyId := gin.KeyId{
 		Device: gin.DeviceId{
-			Type:  glopDeviceToGinDevice(glopEvent.device_type),
-			Index: 0, // gin.DeviceIndex(glopEvent.device_index),
+			Type:  nativeDeviceToGinDevice(nativeEvent.device_type),
+			Index: 0, // gin.DeviceIndex(nativeEvent.device_index),
 		},
-		Index: gin.KeyIndex(glopEvent.index),
+		Index: gin.KeyIndex(nativeEvent.index),
 	}
 	return gin.OsEvent{
 		KeyId:     keyId,
-		Press_amt: float64(glopEvent.press_amt),
-		Timestamp: int64(glopEvent.timestamp),
+		Press_amt: float64(nativeEvent.press_amt),
+		Timestamp: int64(nativeEvent.timestamp),
 		X:         wx,
 		Y:         wy,
 	}
@@ -117,7 +117,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	for chunk := 0; chunk < int(length)/64; chunk++ {
 		eventChunk, eventIterator = next64(eventIterator)
 		for j := 0; j < 64; j++ {
-			events[i] = GlopToGin(linux, (*NativeKeyEvent)(&eventChunk[j]))
+			events[i] = NativeToGin(linux, (*NativeKeyEvent)(&eventChunk[j]))
 			i++
 		}
 	}
@@ -126,7 +126,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	// process.
 	eventChunk, _ = next64(eventIterator)
 	for j := 0; j < int(length)%64; j++ {
-		events[i] = GlopToGin(linux, (*NativeKeyEvent)(&eventChunk[j]))
+		events[i] = NativeToGin(linux, (*NativeKeyEvent)(&eventChunk[j]))
 		i++
 	}
 

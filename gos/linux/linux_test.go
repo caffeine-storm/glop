@@ -26,11 +26,11 @@ func GivenAClickAt(x, y int) *linux.NativeKeyEvent {
 	return linux.NewNativeMouseEvent(x, y)
 }
 
-func TestGlopToGin(t *testing.T) {
+func TestNativeToGin(t *testing.T) {
 	evt := GivenAClickAt(42, 1812)
 
 	coordser := StubCoordser(1, 2)
-	ginEvent := linux.GlopToGin(coordser, evt)
+	ginEvent := linux.NativeToGin(coordser, evt)
 
 	if ginEvent.X != 1 || ginEvent.Y != 2 {
 		t.Fatalf("Expected the 'raw' coords to be (1, 2), got (%d, %d)", ginEvent.X, ginEvent.Y)
