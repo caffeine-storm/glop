@@ -8,9 +8,10 @@ extern "C" {
 #endif
 
 // GlopKey devices
-#define glopDeviceKeyboard  -1
-#define glopDeviceDerived  -2
-#define glopMinDevice  -2
+#define glopDeviceKeyboard -1
+#define glopDeviceMouse    -2
+#define glopDeviceDerived  -3
+#define glopMinDevice      -3
 
 #define kAnyKey -1
 #define kNoKey -2
@@ -88,7 +89,7 @@ extern "C" {
 
 struct GlopKeyEvent {
   short index;
-  short device;
+  short device_type;
   float press_amt;
   long long timestamp;
   int cursor_x;
@@ -137,7 +138,7 @@ void GlopThink();
 
 typedef struct {
   short index;
-  short device;
+  short device_type;
   float press_amt;
   long long timestamp;
   int cursor_x;
@@ -147,7 +148,7 @@ typedef struct {
 } GlopKeyEvent;
 void GlopClearKeyEvent(GlopKeyEvent* event) {
   event->index = 0;
-  event->device = 0;
+  event->device_type = 0;
   event->press_amt = 0;
   event->timestamp = 0;
   event->cursor_x = 0;

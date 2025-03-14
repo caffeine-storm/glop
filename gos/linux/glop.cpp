@@ -17,7 +17,7 @@ extern "C" {
 
 void GlopClearKeyEvent(struct GlopKeyEvent* event) {
   event->index = 0;
-  event->device = 0;
+  event->device_type = 0;
   event->press_amt = 0;
   event->timestamp = 0;
   event->cursor_x = 0;
@@ -195,6 +195,7 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
     return false;
 
   ev->index = ki;
+  ev->device_type = glopDeviceKeyboard;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
   ev->cursor_x = x;
@@ -226,6 +227,7 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
     return false;
 
   ev->index = ki;
+  ev->device_type = glopDeviceMouse;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
   ev->cursor_x = x;
@@ -243,6 +245,7 @@ static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, stru
   XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
 
   ev->index = kMouseXAxis;
+  ev->device_type = glopDeviceMouse;
   ev->press_amt = dx;
   ev->timestamp = gt();
   ev->cursor_x = x;
@@ -251,6 +254,7 @@ static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, stru
   ev->caps_lock = event.xkey.state & LockMask;
 
   ev2->index = kMouseYAxis;
+  ev2->device_type = glopDeviceMouse;
   ev2->press_amt = dy;
   ev2->timestamp = ev->timestamp;
   ev2->cursor_x = x;

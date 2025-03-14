@@ -5,6 +5,7 @@ package linux
 // #include "stdlib.h"
 import "C"
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/runningwild/glop/gin"
@@ -41,17 +42,41 @@ func (linux *SystemObject) Think() int64 {
 	return linux.horizon
 }
 
-func GlopToGin(glopEvent *C.struct_GlopKeyEvent) gin.OsEvent {
-	// TODO(tmckee): we should make this work; otherwise, we never get the
-	// right mouse position.
-	// wx,wy := linux.rawCursorToWindowCoords(int(glopEvent.cursor_x), int(glopEvent.cursor_y))
+func glopDeviceToGinDevice(n C.short) gin.DeviceType {
+	switch n {
+	case C.glopDeviceKeyboard:
+		return gin.DeviceTypeKeyboard
+	case C.glopDeviceMouse:
+		return gin.DeviceTypeMouse
+	case C.glopDeviceDerived:
+		return gin.DeviceTypeDerived
+		// gin.DeviceTypeController is not supported right now
+	}
+
+	panic(fmt.Errorf("glopDeviceToGinDevice: got invalid value %d", n))
+}
+
+type NativeKeyEvent C.struct_GlopKeyEvent
+
+func NewNativeMouseEvent(x, y int) *NativeKeyEvent {
+	return &NativeKeyEvent{
+		index:       0,
+		device_type: C.glopDeviceMouse,
+		cursor_x:    C.int(x),
+		cursor_y:    C.int(y),
+	}
+}
+
+type RawCursorToWindowCoordser interface {
+	RawCursorToWindowCoords(x, y int) (int, int)
+}
+
+func GlopToGin(linux RawCursorToWindowCoordser, glopEvent *NativeKeyEvent) gin.OsEvent {
+	wx, wy := linux.RawCursorToWindowCoords(int(glopEvent.cursor_x), int(glopEvent.cursor_y))
 	keyId := gin.KeyId{
 		Device: gin.DeviceId{
-			// TODO(tmckee): we need to inspect the 'index' or 'device' to know
-			// device type; right now, mouse events get labled as keyboard events
-			// :(
-			Type:  gin.DeviceTypeKeyboard,
-			Index: gin.DeviceIndex(glopEvent.device),
+			Type:  glopDeviceToGinDevice(glopEvent.device_type),
+			Index: 0, // gin.DeviceIndex(glopEvent.device_index),
 		},
 		Index: gin.KeyIndex(glopEvent.index),
 	}
@@ -59,8 +84,8 @@ func GlopToGin(glopEvent *C.struct_GlopKeyEvent) gin.OsEvent {
 		KeyId:     keyId,
 		Press_amt: float64(glopEvent.press_amt),
 		Timestamp: int64(glopEvent.timestamp),
-		// X : wx,
-		// Y : wy,
+		X:         wx,
+		Y:         wy,
 	}
 }
 
@@ -92,7 +117,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	for chunk := 0; chunk < int(length)/64; chunk++ {
 		eventChunk, eventIterator = next64(eventIterator)
 		for j := 0; j < 64; j++ {
-			events[i] = GlopToGin(&eventChunk[j])
+			events[i] = GlopToGin(linux, (*NativeKeyEvent)(&eventChunk[j]))
 			i++
 		}
 	}
@@ -101,7 +126,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	// process.
 	eventChunk, _ = next64(eventIterator)
 	for j := 0; j < int(length)%64; j++ {
-		events[i] = GlopToGin(&eventChunk[j])
+		events[i] = GlopToGin(linux, (*NativeKeyEvent)(&eventChunk[j]))
 		i++
 	}
 
@@ -111,7 +136,7 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 func (linux *SystemObject) HideCursor(hide bool) {
 }
 
-func (linux *SystemObject) rawCursorToWindowCoords(x, y int) (int, int) {
+func (linux *SystemObject) RawCursorToWindowCoords(x, y int) (int, int) {
 	wx, wy, _, wdy := linux.GetWindowDims()
 	return x - wx, wy + wdy - y
 }
@@ -119,7 +144,7 @@ func (linux *SystemObject) rawCursorToWindowCoords(x, y int) (int, int) {
 func (linux *SystemObject) GetCursorPos() (int, int) {
 	var x, y C.int
 	C.GlopGetMousePosition(&x, &y)
-	return linux.rawCursorToWindowCoords(int(x), int(y))
+	return linux.RawCursorToWindowCoords(int(x), int(y))
 }
 
 func (linux *SystemObject) GetWindowDims() (int, int, int, int) {

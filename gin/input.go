@@ -229,6 +229,7 @@ type OsEvent struct {
 	KeyId     KeyId
 	Press_amt float64
 	Timestamp int64
+	X, Y      int
 }
 
 // Everything 'global' is put inside a struct so that tests can be run without
