@@ -19,7 +19,7 @@ func genDerivedKeyIndex() KeyIndex {
 
 // TODO: Handle removal of dependencies
 func (input *Input) registerDependence(derived Key, dep KeyId) {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	list, ok := input.id_to_deps[dep]
 	if !ok {
 		list = make([]Key, 0)
@@ -32,7 +32,7 @@ func (input *Input) registerDependence(derived Key, dep KeyId) {
 }
 
 func (input *Input) BindDerivedKey(name string, bindings ...Binding) Key {
-	input.trace()
+	input.logger.Trace("gin.input")
 	return input.bindDerivedKeyWithIndex(
 		name,
 		genDerivedKeyIndex(),
@@ -41,7 +41,7 @@ func (input *Input) BindDerivedKey(name string, bindings ...Binding) Key {
 }
 
 func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, device DeviceId, bindings ...Binding) Key {
-	input.trace()
+	input.logger.Trace("gin.input")
 	dk := &derivedKey{
 		keyState: keyState{
 			id: KeyId{
@@ -148,7 +148,7 @@ type Binding struct {
 }
 
 func (input *Input) MakeBinding(primary KeyId, modifiers []KeyId, down []bool) Binding {
-	input.trace()
+	input.logger.Trace("gin.input")
 	if len(modifiers) != len(down) {
 		panic("MakeBindings(primary, modifiers, down) - modifiers and down must have the same length.")
 	}
@@ -189,7 +189,7 @@ type derivedKeyFamily struct {
 }
 
 func (input *Input) BindDerivedKeyFamily(name string, bindings ...BindingFamily) KeyIndex {
-	input.trace()
+	input.logger.Trace("gin.input")
 	dkf := derivedKeyFamily{
 		name:             name,
 		index:            genDerivedKeyIndex(),
@@ -254,7 +254,7 @@ type BindingFamily struct {
 }
 
 func (input *Input) MakeBindingFamily(primary KeyIndex, modifiers []KeyIndex, down []bool) BindingFamily {
-	input.trace()
+	input.logger.Trace("gin.input")
 	if len(modifiers) != len(down) {
 		panic("MakeBindingFamilys(primary, modifiers, down) - modifiers and down must have the same length.")
 	}

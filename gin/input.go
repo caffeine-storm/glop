@@ -265,15 +265,11 @@ type Input struct {
 	logger glog.Logger
 }
 
-func (input *Input) trace() {
-	if input.logger == nil {
+func (input *Input) SetLogger(logger glog.Logger) {
+	if logger == nil {
+		input.logger = glog.VoidLogger()
 		return
 	}
-
-	input.logger.Trace("input.trace")
-}
-
-func (input *Input) SetLogger(logger glog.Logger) {
 	input.logger = logger
 }
 
@@ -305,7 +301,7 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.index_to_name = make(map[KeyIndex]string)
 	input.index_to_family_deps = make(map[KeyIndex][]derivedKeyFamily)
 	input.index_to_family = make(map[KeyIndex]derivedKeyFamily)
-	input.logger = logger
+	input.SetLogger(logger)
 
 	input.registerKeyIndex(AnyKey, aggregatorTypeStandard, "AnyKey")
 	for c := 'a'; c <= 'z'; c++ {
@@ -450,7 +446,7 @@ func (eg *EventGroup) FindEvent(id KeyId) (bool, Event) {
 }
 
 func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, name string) {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	if index < 0 {
 		panic(fmt.Sprintf("Cannot register a key with index %d, indexes must be greater than 0.", index))
 	}
@@ -462,7 +458,7 @@ func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, na
 }
 
 func (input *Input) GetKeyFlat(key_index KeyIndex, device_type DeviceType, device_index DeviceIndex) Key {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	return input.GetKey(KeyId{
 		Index: key_index,
 		Device: DeviceId{
@@ -473,7 +469,7 @@ func (input *Input) GetKeyFlat(key_index KeyIndex, device_type DeviceType, devic
 }
 
 func (input *Input) GetKey(id KeyId) Key {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	if id.Device.Type >= DeviceTypeMax || id.Device.Type < 0 {
 		panic(fmt.Sprintf("Specied invalid DeviceType, %d.", id.Device))
 	}
@@ -535,7 +531,7 @@ func (input *Input) GetKey(id KeyId) Key {
 	return key
 }
 func (input *Input) GetKeyByName(name string) Key {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	for _, key := range input.key_map {
 		if key.Name() == name {
 			return key
@@ -545,7 +541,7 @@ func (input *Input) GetKeyByName(name string) Key {
 }
 
 func (input *Input) informDeps(event Event, group *EventGroup) {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	id := event.Key.Id()
 	any_device := id.Device
 	any_device.Index = DeviceIndexAny
@@ -568,7 +564,7 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 }
 
 func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup) {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	event := k.SetPressAmt(amt, group.Timestamp, cause)
 	input.informDeps(event, group)
 	if k.Id().Index != AnyKey && k.Id().Device.Type != DeviceTypeAny && k.Id().Device.Type != DeviceTypeDerived && k.Id().Device.Index != DeviceIndexAny {
@@ -607,12 +603,12 @@ type EventDispatcher interface {
 }
 
 func (input *Input) RegisterEventListener(listener Listener) {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	input.listeners = append(input.listeners, listener)
 }
 
 func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []EventGroup {
-	input.trace()
+	input.logger.Trace("gin.Input")
 	// Generate all key events here. Derived keys are handled through pressKey
 	// and all events are aggregated into one array. Events in this array will
 	// necessarily be in sorted order.
