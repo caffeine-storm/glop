@@ -18,6 +18,9 @@ type System interface {
 	// TODO(tmckee): maybe 'with the origin at the bottom left'?
 	// Gets the cursor position in window coordinates with the cursor at the
 	// bottom left corner of the window
+	// TODO(tmckee): this is stubbed out in the native code r.n. but, since
+	// nobody is using it, that's okay. this is probably only going to get used
+	// once we try to make a hover effect
 	GetCursorPos() (x, y int)
 
 	// Hides/Unhides the cursor. A hidden cursor is invisible and its position is
