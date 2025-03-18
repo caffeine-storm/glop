@@ -481,9 +481,9 @@ func (input *Input) GetKey(id KeyId) Key {
 			input.key_map[id] = family.GetKey(id.Device)
 			key = input.key_map[id]
 
-			// TODO: there are three blocks here and they all add a key to
+			// TODO(tmckee): there are three blocks here and they all add a key to
 			// input.all_keys, but this one does it implicitly through
-			// family.GetKey().  We should find a way to avoid this and have all
+			// family.GetKey(). We should find a way to avoid this and have all
 			// additions to all_keys be in the same place.
 			// input.all_keys = append(input.all_keys, key)
 		} else if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
@@ -564,7 +564,7 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 }
 
 func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup) {
-	input.logger.Trace("gin.Input")
+	input.logger.Trace("gin.Input", "group.Events", group.Events)
 	event := k.SetPressAmt(amt, group.Timestamp, cause)
 	input.informDeps(event, group)
 	if k.Id().Index != AnyKey && k.Id().Device.Type != DeviceTypeAny && k.Id().Device.Type != DeviceTypeDerived && k.Id().Device.Index != DeviceIndexAny {
@@ -608,7 +608,6 @@ func (input *Input) RegisterEventListener(listener Listener) {
 }
 
 func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []EventGroup {
-	input.logger.Trace("gin.Input")
 	// Generate all key events here. Derived keys are handled through pressKey
 	// and all events are aggregated into one array. Events in this array will
 	// necessarily be in sorted order.
