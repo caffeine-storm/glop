@@ -1,6 +1,3 @@
-tmckee:#17 gui.DrawingContext should includa a GetLogger function so that we
-can log inside things that 'Draw()'
-
 tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
 ----
