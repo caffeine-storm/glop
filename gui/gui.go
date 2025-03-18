@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )
 
@@ -418,6 +419,8 @@ type Gui struct {
 
 	// Stack of widgets that have focus
 	focus []Widget
+
+	logger glog.Logger
 }
 
 var _ DrawingContext = (*Gui)(nil)
@@ -452,11 +455,16 @@ func (g *Gui) SetShaders(fontname string, b *render.ShaderBank) {
 }
 
 func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
+	return MakeLogged(dims, dispatcher, glog.VoidLogger())
+}
+
+func MakeLogged(dims Dims, dispatcher gin.EventDispatcher, logger glog.Logger) (*Gui, error) {
 	// Note that, since each Gui should only be used in once RenderQueue, we
 	// don't have to worry about font name collisions here.
 	g := Gui{
 		dictionaries: map[string]*Dictionary{},
 		shaders:      map[string]*render.ShaderBank{},
+		logger:       logger,
 	}
 	g.root.EmbeddedWidget = &BasicWidget{CoreWidget: &g.root}
 	g.root.Request_dims = dims
