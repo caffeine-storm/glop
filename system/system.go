@@ -114,7 +114,7 @@ func (sys *sysObj) Think() int64 {
 	for i := range events {
 		events[i].Timestamp -= sys.start_ms
 	}
-	sys.events = gin.In().Think(horizon-sys.start_ms, false, events)
+	sys.events = gin.In().Think(horizon-sys.start_ms, events)
 	return horizon
 }
 func (sys *sysObj) CreateWindow(x, y, width, height int) {

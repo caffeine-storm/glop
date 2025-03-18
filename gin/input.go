@@ -627,7 +627,7 @@ func (input *Input) RegisterEventListener(listener Listener) {
 	input.listeners = append(input.listeners, listener)
 }
 
-func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []EventGroup {
+func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 	// Generate all key events here. Derived keys are handled through pressKey
 	// and all events are aggregated into one array. Events in this array will
 	// necessarily be in sorted order.
