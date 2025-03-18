@@ -186,6 +186,7 @@ type WidgetParent interface {
 type DrawingContext interface {
 	GetDictionary(fontname string) *Dictionary
 	GetShaders(fontname string) *render.ShaderBank
+	GetLogger() glog.Logger
 }
 
 type UpdateableDrawingContext interface {
@@ -444,6 +445,10 @@ func (g *Gui) GetShaders(fontname string) *render.ShaderBank {
 		panic(MissingFontError{fmt.Errorf("no registered shaders for id %q", fontname)})
 	}
 	return ret
+}
+
+func (g *Gui) GetLogger() glog.Logger {
+	return g.logger
 }
 
 func (g *Gui) SetDictionary(fontname string, d *Dictionary) {
