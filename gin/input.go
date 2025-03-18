@@ -540,22 +540,40 @@ func (input *Input) GetKeyByName(name string) Key {
 	return nil
 }
 
+// Look for Keys related to the event's Key and notify them as needed.
 func (input *Input) informDeps(event Event, group *EventGroup) {
 	input.logger.Trace("gin.Input")
 	id := event.Key.Id()
-	any_device := id.Device
-	any_device.Index = DeviceIndexAny
-	deps := input.id_to_deps[id]
-	for _, dep := range input.id_to_deps[KeyId{Index: id.Index, Device: any_device}] {
-		deps = append(deps, dep)
+
+	id_ignoring_device_index := id
+	id_ignoring_device_index.Device.Index = DeviceIndexAny
+
+	// Direct dependencies are recorded in input.id_to_deps
+	keysToPress := input.id_to_deps[id]
+
+	// TODO(tmckee): consider using a set instead of a list for the keys to
+	// press... if presses are idempotent, we don't need to press them again (so
+	// don't bother walking them) _OR_ if they're not idempotent, how in the heck
+	// would we manage to get a reasonable "press amount" after all this!?
+
+	// Dependencies for keys organized by the same 'KeyIndex' but not pinned to a
+	// particular device instance, though the 'DeviceType' does need to match
+	// 🤔...
+	for _, dep := range input.id_to_deps[id_ignoring_device_index] {
+		keysToPress = append(keysToPress, dep)
 	}
+
+	// Skip over notifying relevant 'key families' for derived keys (why???) or
+	// keys that aren't specific to a device instance (why???).
 	if id.Device.Type != DeviceTypeDerived && id.Device.Index != DeviceIndexAny {
+		// Select each {key-that-has-multiple-triggers} that should be triggered by
+		// the current key for pressing.
 		for _, family_dep := range input.index_to_family_deps[id.Index] {
 			key := family_dep.GetKey(id.Device)
-			deps = append(deps, key)
+			keysToPress = append(keysToPress, key)
 		}
 	}
-	for _, dep := range deps {
+	for _, dep := range keysToPress {
 		input.pressKey(dep, dep.CurPressAmt(), event, group)
 	}
 	if event.Type != NoEvent {
@@ -567,6 +585,8 @@ func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup)
 	input.logger.Trace("gin.Input", "group.Events", group.Events)
 	event := k.SetPressAmt(amt, group.Timestamp, cause)
 	input.informDeps(event, group)
+
+	// Press synthetic keys (like, the 'Any' key)
 	if k.Id().Index != AnyKey && k.Id().Device.Type != DeviceTypeAny && k.Id().Device.Type != DeviceTypeDerived && k.Id().Device.Index != DeviceIndexAny {
 		general_keys := []Key{
 			input.GetKeyFlat(AnyKey, k.Id().Device.Type, k.Id().Device.Index),

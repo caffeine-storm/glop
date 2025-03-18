@@ -19,7 +19,7 @@ func genDerivedKeyIndex() KeyIndex {
 
 // TODO: Handle removal of dependencies
 func (input *Input) registerDependence(derived Key, dep KeyId) {
-	input.logger.Trace("gin.Input")
+	input.logger.Trace("gin.Input>registerDependence", "derived", derived, "dep", dep)
 	list, ok := input.id_to_deps[dep]
 	if !ok {
 		list = make([]Key, 0)
@@ -196,6 +196,11 @@ func (input *Input) BindDerivedKeyFamily(name string, bindings ...BindingFamily)
 		binding_families: bindings,
 		input:            input,
 	}
+	// TODO(🤔🤔🤔): we _replace_ values in 'index_to_family_deps'; did we mean
+	// to append to what was there?
+	// TODO(🤔🤔🤔🤔🤔🤔): we look for entries in 'input.index_to_family_deps'
+	// for a key index that we _just_ generated as unique... that can't find
+	// anything... RIGHT???
 	for _, binding := range bindings {
 		input.index_to_family_deps[binding.PrimaryIndex] = append(input.index_to_family_deps[dkf.index], dkf)
 		for _, mod := range binding.Modifiers {
