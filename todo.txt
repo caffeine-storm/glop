@@ -1,3 +1,10 @@
+tmckee:#17 gui.Gui objects should have a logger so that we can DI logging
+dependencies for things that 'Draw()'
+
+tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
+
+----
+
 tmckee:#16 consider adding a Makefile recipe to generate a compile_commands.json file for the C++ code. Something like `go build -a -toolexec 'bear --' ./...`
 
 tmckee:#15 refactor: move ShouldContainLog from render/rendertest/cmp_test.go to gloptest/
@@ -11,17 +18,9 @@ coming from an image.RGBA which uses one byte per component.
 
 tmckee:#12 gui tests are flaky when not running under xvfb
 
-tmckee:#11 getting incorrect source line/number attribution when logging in Haunts
--	might have something to do with different callstack depth during "Trace" vs.
-	"Debug", etc.
-
 tmckee:#7 installed multilib support to get the build going; is it necessary?
 - sudo apt install gcc-multilib g++-multilib
 - can check what's needed to build from inside a fresh ubuntu docker container
-
-tmckee#1: clean up after big 'green' step
-	- text height aribirarily chosen as 12 in TextLine.coreDraw
-	- text Justification aribirarily chosen as Left in TextLine.coreDraw
 
 ----
 
@@ -33,8 +32,6 @@ tmckee#4: we need to change Dictionary to use 'constant' geometry and support po
 
 tmckee#5: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
-
-tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
 tmckee:#8 use type system to make initialization ordering constraints explicit
 	- need to identify which modules/packages need this
@@ -51,4 +48,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #17
+next bug: #18
