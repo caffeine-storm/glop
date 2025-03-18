@@ -39,8 +39,8 @@ func injectEvent(events *[]gin.OsEvent, key_index gin.KeyIndex, device_index gin
 
 func NaturalKeySpec() {
 	input := gin.Make()
-	keya := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 1)
-	keyb := input.GetKeyFlat(gin.KeyB, gin.DeviceTypeKeyboard, 1)
+	keya := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
+	keyb := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, 1)
 	Convey("Single key press or release per frame sets basic keyState values properly.", func() {
 
 		events := make([]gin.OsEvent, 0)
@@ -140,11 +140,11 @@ func NaturalKeySpec() {
 
 func DerivedKeySpec() {
 	input := gin.Make()
-	keya := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 1)
-	keyb := input.GetKeyFlat(gin.KeyB, gin.DeviceTypeKeyboard, 1)
-	keyc := input.GetKeyFlat(gin.KeyC, gin.DeviceTypeKeyboard, 1)
-	keye := input.GetKeyFlat(gin.KeyE, gin.DeviceTypeKeyboard, 1)
-	keyf := input.GetKeyFlat(gin.KeyF, gin.DeviceTypeKeyboard, 1)
+	keya := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
+	keyb := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, 1)
+	keyc := input.GetKeyByParts(gin.KeyC, gin.DeviceTypeKeyboard, 1)
+	keye := input.GetKeyByParts(gin.KeyE, gin.DeviceTypeKeyboard, 1)
+	keyf := input.GetKeyByParts(gin.KeyF, gin.DeviceTypeKeyboard, 1)
 	ABc_binding := input.MakeBinding(keya.Id(), []gin.KeyId{keyb.Id(), keyc.Id()}, []bool{true, false})
 	Ef_binding := input.MakeBinding(keye.Id(), []gin.KeyId{keyf.Id()}, []bool{false})
 	ABc_Ef := input.BindDerivedKey("ABc_Ef", ABc_binding, Ef_binding)
@@ -266,9 +266,9 @@ func DeviceFamilySpec() {
 	binding := input.MakeBindingFamily(gin.KeyA, []gin.KeyIndex{gin.KeyB}, []bool{true})
 	monkey_index := input.BindDerivedKeyFamily("monkey", binding)
 
-	monkey1 := input.GetKeyFlat(monkey_index, gin.DeviceTypeKeyboard, 1)
-	monkey2 := input.GetKeyFlat(monkey_index, gin.DeviceTypeKeyboard, 2)
-	monkeyAny := input.GetKeyFlat(monkey_index, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
+	monkey1 := input.GetKeyByParts(monkey_index, gin.DeviceTypeKeyboard, 1)
+	monkey2 := input.GetKeyByParts(monkey_index, gin.DeviceTypeKeyboard, 2)
+	monkeyAny := input.GetKeyByParts(monkey_index, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
 
 	Convey("Derived key families work properly.", func() {
 		// Test that first binding can trigger a press
@@ -331,9 +331,9 @@ func DeviceFamilySpec() {
 // pressed on different devices.
 func DeviceSpec() {
 	input := gin.Make()
-	keya1 := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 1)
-	keya2 := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 2)
-	keya3 := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 3)
+	keya1 := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
+	keya2 := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 2)
+	keya3 := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 3)
 	A1_binding := input.MakeBinding(keya1.Id(), nil, nil)
 	A2_binding := input.MakeBinding(keya2.Id(), nil, nil)
 	A3_binding := input.MakeBinding(keya3.Id(), nil, nil)
@@ -341,24 +341,24 @@ func DeviceSpec() {
 	A2 := input.BindDerivedKey("A2", A2_binding)
 	A3 := input.BindDerivedKey("A3", A3_binding)
 
-	keya_any := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
+	keya_any := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
 	AAny_binding := input.MakeBinding(keya_any.Id(), nil, nil)
 	AAny := input.BindDerivedKey("AAny", AAny_binding)
-	keyb_any := input.GetKeyFlat(gin.KeyB, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
+	keyb_any := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
 	BAny_binding := input.MakeBinding(keyb_any.Id(), nil, nil)
 	BAny := input.BindDerivedKey("BAny", BAny_binding)
 
-	any_key_on_1 := input.GetKeyFlat(gin.AnyKey, gin.DeviceTypeKeyboard, 1)
+	any_key_on_1 := input.GetKeyByParts(gin.AnyKey, gin.DeviceTypeKeyboard, 1)
 	any_key_on_1_binding := input.MakeBinding(any_key_on_1.Id(), nil, nil)
 	Any1 := input.BindDerivedKey("Any1", any_key_on_1_binding)
-	any_key_on_2 := input.GetKeyFlat(gin.AnyKey, gin.DeviceTypeKeyboard, 2)
+	any_key_on_2 := input.GetKeyByParts(gin.AnyKey, gin.DeviceTypeKeyboard, 2)
 	any_key_on_2_binding := input.MakeBinding(any_key_on_2.Id(), nil, nil)
 	Any2 := input.BindDerivedKey("Any2", any_key_on_2_binding)
-	any_key_on_3 := input.GetKeyFlat(gin.AnyKey, gin.DeviceTypeKeyboard, 3)
+	any_key_on_3 := input.GetKeyByParts(gin.AnyKey, gin.DeviceTypeKeyboard, 3)
 	any_key_on_3_binding := input.MakeBinding(any_key_on_3.Id(), nil, nil)
 	Any3 := input.BindDerivedKey("Any3", any_key_on_3_binding)
 
-	the_any_key := input.GetKeyFlat(gin.AnyKey, gin.DeviceTypeAny, gin.DeviceIndexAny)
+	the_any_key := input.GetKeyByParts(gin.AnyKey, gin.DeviceTypeAny, gin.DeviceIndexAny)
 	the_any_key_binding := input.MakeBinding(the_any_key.Id(), nil, nil)
 	Any_key := input.BindDerivedKey("Any Key", the_any_key_binding)
 
@@ -473,9 +473,9 @@ func DeviceSpec() {
 
 func NestedDerivedKeySpec() {
 	input := gin.Make()
-	keya := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 1)
-	keyb := input.GetKeyFlat(gin.KeyB, gin.DeviceTypeKeyboard, 1)
-	keyc := input.GetKeyFlat(gin.KeyC, gin.DeviceTypeKeyboard, 1)
+	keya := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
+	keyb := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, 1)
+	keyc := input.GetKeyByParts(gin.KeyC, gin.DeviceTypeKeyboard, 1)
 	AB_binding := input.MakeBinding(keya.Id(), []gin.KeyId{keyb.Id()}, []bool{true})
 	AB := input.BindDerivedKey("AB", AB_binding)
 	AB_C_binding := input.MakeBinding(keyc.Id(), []gin.KeyId{AB.Id()}, []bool{true})
@@ -542,10 +542,10 @@ func NestedDerivedKeySpec() {
 
 func EventSpec() {
 	input := gin.Make()
-	keya := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 1)
-	keyb := input.GetKeyFlat(gin.KeyB, gin.DeviceTypeKeyboard, 1)
-	keyc := input.GetKeyFlat(gin.KeyC, gin.DeviceTypeKeyboard, 1)
-	keyd := input.GetKeyFlat(gin.KeyD, gin.DeviceTypeKeyboard, 1)
+	keya := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
+	keyb := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, 1)
+	keyc := input.GetKeyByParts(gin.KeyC, gin.DeviceTypeKeyboard, 1)
+	keyd := input.GetKeyByParts(gin.KeyD, gin.DeviceTypeKeyboard, 1)
 	AB_binding := input.MakeBinding(keya.Id(), []gin.KeyId{keyb.Id()}, []bool{true})
 	AB := input.BindDerivedKey("AB", AB_binding)
 	CD_binding := input.MakeBinding(keyc.Id(), []gin.KeyId{keyd.Id()}, []bool{true})
@@ -623,7 +623,7 @@ func AxisSpec() {
 	input := gin.Make()
 
 	// TODO: This is the mouse x axis key, we need a constant for this or something
-	x := input.GetKeyFlat(gin.MouseXAxis, gin.DeviceTypeMouse, 1)
+	x := input.GetKeyByParts(gin.MouseXAxis, gin.DeviceTypeMouse, 1)
 	events := make([]gin.OsEvent, 0)
 
 	Convey("Axes aggregate press amts and report IsDown() properly.", func() {
@@ -673,7 +673,7 @@ func (l *listener) ExpectPressAmts(v ...float64) {
 	l.press_amt = v
 }
 func (l *listener) HandleEventGroup(eg gin.EventGroup) {
-	k := l.input.GetKey(l.key_id)
+	k := l.input.GetKeyById(l.key_id)
 	So(k.CurPressCount(), ShouldEqual, l.press_count[0])
 	So(k.CurReleaseCount(), ShouldEqual, l.release_count[0])
 	So(k.CurPressAmt(), ShouldEqual, l.press_amt[0])
@@ -689,8 +689,8 @@ func (l *listener) Think(ms int64) {
 
 func EventListenerSpec() {
 	input := gin.Make()
-	keya := input.GetKeyFlat(gin.KeyA, gin.DeviceTypeKeyboard, 1)
-	keyb := input.GetKeyFlat(gin.KeyB, gin.DeviceTypeKeyboard, 1)
+	keya := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
+	keyb := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, 1)
 	AB_binding := input.MakeBinding(keya.Id(), []gin.KeyId{keyb.Id()}, []bool{true})
 	AB := input.BindDerivedKey("AB", AB_binding)
 	events := make([]gin.OsEvent, 0)

@@ -23,7 +23,7 @@ func ClickAButton(btn *gui.Button) {
 
 	// if event.Type == gin.Press && event.Key.Id() == gin.AnyMouseLButton {
 	leftButtonEvent := gin.Event{
-		Key:  input.GetKey(leftMouseButtonKeyId),
+		Key:  input.GetKeyById(leftMouseButtonKeyId),
 		Type: gin.Press,
 	}
 	eventGroup := gui.EventGroup{

@@ -67,8 +67,8 @@ func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, device 
 		}
 	}
 
-	// TODO: Figure out a way to move this into Input.GetKey() or something.  It's
-	// really dirty to have these maps/slices populated in multiple places.
+	// TODO: Figure out a way to move this into Input.GetKeyById() or something.
+	// It's really dirty to have these maps/slices populated in multiple places.
 	input.key_map[dk.id] = dk
 	input.all_keys = append(input.all_keys, dk)
 	return dk
@@ -170,7 +170,7 @@ func (b *Binding) primaryPressAmt() float64 {
 
 func (b *Binding) CurPressAmt() float64 {
 	for i := range b.Modifiers {
-		if b.Input.GetKey(b.Modifiers[i]).IsDown() != b.Down[i] {
+		if b.Input.GetKeyById(b.Modifiers[i]).IsDown() != b.Down[i] {
 			return 0
 		}
 	}
@@ -236,7 +236,7 @@ func (dkf *derivedKeyFamily) GetKey(device DeviceId) Key {
 		// dkf.input.key_map[id] = key
 		// dkf.input.all_keys = append(dkf.input.all_keys, key)
 	}
-	ret := dkf.input.GetKeyFlat(dkf.index, device.Type, device.Index)
+	ret := dkf.input.GetKeyByParts(dkf.index, device.Type, device.Index)
 	return ret
 }
 

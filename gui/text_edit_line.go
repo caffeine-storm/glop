@@ -118,9 +118,9 @@ func (w *TextEditLine) SetText(text string) {
 func characterFromEventGroup(event_group EventGroup) byte {
 	for _, event := range event_group.Events {
 		if v, ok := shift_mapping[event.Key.Id()]; ok {
-			// if gin.In().GetKey(gin.EitherShift).IsDown() {
-			if gin.In().GetKey(gin.AnyLeftShift).IsDown() ||
-				gin.In().GetKey(gin.AnyRightShift).IsDown() {
+			// if gin.In().GetKeyById(gin.EitherShift).IsDown() {
+			if gin.In().GetKeyById(gin.AnyLeftShift).IsDown() ||
+				gin.In().GetKeyById(gin.AnyRightShift).IsDown() {
 				return v
 			} else {
 				return byte(event.Key.Id().Index)

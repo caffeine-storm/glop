@@ -457,9 +457,9 @@ func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, na
 	input.index_to_name[index] = name
 }
 
-func (input *Input) GetKeyFlat(key_index KeyIndex, device_type DeviceType, device_index DeviceIndex) Key {
+func (input *Input) GetKeyByParts(key_index KeyIndex, device_type DeviceType, device_index DeviceIndex) Key {
 	input.logger.Trace("gin.Input")
-	return input.GetKey(KeyId{
+	return input.GetKeyById(KeyId{
 		Index: key_index,
 		Device: DeviceId{
 			Index: device_index,
@@ -468,7 +468,7 @@ func (input *Input) GetKeyFlat(key_index KeyIndex, device_type DeviceType, devic
 	})
 }
 
-func (input *Input) GetKey(id KeyId) Key {
+func (input *Input) GetKeyById(id KeyId) Key {
 	input.logger.Trace("gin.Input")
 	if id.Device.Type >= DeviceTypeMax || id.Device.Type < 0 {
 		panic(fmt.Sprintf("Specied invalid DeviceType, %d.", id.Device))
@@ -564,7 +564,7 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 	}
 
 	// Skip over notifying relevant 'key families' for derived keys (why???) or
-	// keys that aren't specific to a device instance (why???).
+	// keys that do not distinguish between device instances (why???).
 	if id.Device.Type != DeviceTypeDerived && id.Device.Index != DeviceIndexAny {
 		// Select each {key-that-has-multiple-triggers} that should be triggered by
 		// the current key for pressing.
@@ -589,11 +589,11 @@ func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup)
 	// Press synthetic keys (like, the 'Any' key)
 	if k.Id().Index != AnyKey && k.Id().Device.Type != DeviceTypeAny && k.Id().Device.Type != DeviceTypeDerived && k.Id().Device.Index != DeviceIndexAny {
 		general_keys := []Key{
-			input.GetKeyFlat(AnyKey, k.Id().Device.Type, k.Id().Device.Index),
-			input.GetKeyFlat(AnyKey, k.Id().Device.Type, DeviceIndexAny),
-			input.GetKeyFlat(AnyKey, DeviceTypeAny, DeviceIndexAny),
-			input.GetKeyFlat(k.Id().Index, k.Id().Device.Type, DeviceIndexAny),
-			input.GetKeyFlat(k.Id().Index, DeviceTypeAny, DeviceIndexAny),
+			input.GetKeyByParts(AnyKey, k.Id().Device.Type, k.Id().Device.Index),
+			input.GetKeyByParts(AnyKey, k.Id().Device.Type, DeviceIndexAny),
+			input.GetKeyByParts(AnyKey, DeviceTypeAny, DeviceIndexAny),
+			input.GetKeyByParts(k.Id().Index, k.Id().Device.Type, DeviceIndexAny),
+			input.GetKeyByParts(k.Id().Index, DeviceTypeAny, DeviceIndexAny),
 		}
 		for _, general_key := range general_keys {
 			input.pressKey(general_key, amt, cause, group)
@@ -637,7 +637,7 @@ func (input *Input) Think(t int64, lost_focus bool, os_events []OsEvent) []Event
 			Timestamp: os_event.Timestamp,
 		}
 		input.pressKey(
-			input.GetKey(os_event.KeyId),
+			input.GetKeyById(os_event.KeyId),
 			os_event.Press_amt,
 			Event{},
 			&group)

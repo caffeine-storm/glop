@@ -38,10 +38,10 @@ func TestBindingGetPrimaryPressAmt(t *testing.T) {
 	xKey := AnyKeyX
 	leftControl := AnyLeftControl
 
-	// TODO(tmckee): GetKeyFlat is being called here for the side effect that it
-	// primes caches/collections in Input. We should make it work without this
+	// TODO(tmckee): GetKeyByParts is being called here for the side effect that
+	// it primes caches/collections in Input. We should make it work without this
 	// priming.
-	flatKey := inputObj.GetKeyFlat(xKey.Index, DeviceTypeKeyboard, DeviceIndexAny)
+	flatKey := inputObj.GetKeyByParts(xKey.Index, DeviceTypeKeyboard, DeviceIndexAny)
 	require.False(flatKey.IsDown(), "sanity check ; a new key must not be down already!!!")
 
 	// LeftCtrl+x
