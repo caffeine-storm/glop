@@ -497,12 +497,10 @@ func (g *Gui) Draw() {
 	}
 }
 
-// TODO: Shouldn't be exposing this
 func (g *Gui) Think(t int64) {
 	g.root.Think(g, t)
 }
 
-// TODO: Shouldn't be exposing this
 func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
 	event_group := EventGroup{gin_group, false}
 	if len(g.focus) > 0 {
