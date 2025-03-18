@@ -454,7 +454,7 @@ func (g *Gui) SetShaders(fontname string, b *render.ShaderBank) {
 	g.shaders[fontname] = b
 }
 
-func Make(dispatcher gin.EventDispatcher, dims Dims) (*Gui, error) {
+func Make(dims Dims, dispatcher gin.EventDispatcher) (*Gui, error) {
 	return MakeLogged(dims, dispatcher, glog.VoidLogger())
 }
 

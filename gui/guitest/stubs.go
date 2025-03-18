@@ -16,7 +16,7 @@ func MakeStubbedEventDispatcher() gin.EventDispatcher {
 }
 
 func MakeStubbedGui(dims gui.Dims) *gui.Gui {
-	ret, err := gui.Make(MakeStubbedEventDispatcher(), dims)
+	ret, err := gui.Make(dims, MakeStubbedEventDispatcher())
 	if err != nil {
 		panic(fmt.Errorf("couldn't gui.Make: %w", err))
 	}
