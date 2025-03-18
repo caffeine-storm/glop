@@ -28,3 +28,7 @@ func (logger *BufferedLogger) Empty() bool {
 func (logger *BufferedLogger) Contains(substr string) bool {
 	return bytes.Contains(logger.buffer.Bytes(), []byte(substr))
 }
+
+func (logger *BufferedLogger) String() string {
+	return string(logger.buffer.Bytes())
+}
