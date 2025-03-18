@@ -21,6 +21,11 @@ func TestBufferedLogger(t *testing.T) {
 		t.Run("the logged message is in the buffer", func(t *testing.T) {
 			assert.True(t, buffered.Contains("test message"))
 		})
-	})
 
+		t.Run("the buffer can be examined", func(t *testing.T) {
+			asString := buffered.String()
+
+			assert.Contains(t, asString, "test message")
+		})
+	})
 }
