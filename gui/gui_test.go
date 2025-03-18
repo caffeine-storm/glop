@@ -13,7 +13,7 @@ var dims = gui.Dims{13, 42}
 
 func TestGui(t *testing.T) {
 	t.Run("Make", func(t *testing.T) {
-		_ = guitest.MakeStubbedGui(gui.Dims{13, 42})
+		_ = guitest.MakeStubbedGui(dims)
 	})
 
 	t.Run("make with logger", func(t *testing.T) {
