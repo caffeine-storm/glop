@@ -503,14 +503,21 @@ func (g *Gui) Think(t int64) {
 
 func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
 	event_group := EventGroup{gin_group, false}
+
+	// If there is one or more focused widgets, tell the top-of the focus-stack
+	// to 'Respond' first.
 	if len(g.focus) > 0 {
 		event_group.Focus = true
 		consume := g.focus[len(g.focus)-1].Respond(g, event_group)
 		if consume {
+			// If the focused widget consumed the event, we're done.
 			return
 		}
 		event_group.Focus = false
 	}
+
+	// Without having consumed the event above, give the tree of widgets under
+	// 'root' a shot at handling the event.
 	g.root.Respond(g, event_group)
 }
 
