@@ -10,11 +10,11 @@ import (
 	"github.com/runningwild/glop/system/systemtest"
 )
 
-func WithTestWindow(dx, dy int, fn func(wdw systemtest.Window)) {
+func WithTestWindow(dx, dy int, fn func(window systemtest.Window)) {
 	rendertest.WithGlForTest(dx, dy, func(sys system.System, queue render.RenderQueueInterface) {
-		wdw := systemtest.NewTestWindow(sys, queue)
+		window := systemtest.NewTestWindow(sys, queue)
 		queue.Queue(func(st render.RenderQueueState) {
-			fn(wdw)
+			fn(window)
 		})
 		queue.Purge()
 	})

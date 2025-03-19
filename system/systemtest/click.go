@@ -14,7 +14,7 @@ type Driver interface {
 }
 
 type testDriver struct {
-	wdw *testWindow
+	window *testWindow
 }
 
 type Window interface {
@@ -27,7 +27,7 @@ type testWindow struct {
 
 func (self *testWindow) NewDriver() Driver {
 	return &testDriver{
-		wdw: self,
+		window: self,
 	}
 }
 
@@ -49,7 +49,7 @@ func (d *testDriver) Click(wx, wy int) {
 }
 
 func (d *testDriver) ProcessFrame() {
-	d.wdw.sys.Think()
+	d.window.sys.Think()
 }
 
 var _ Driver = (*testDriver)(nil)
