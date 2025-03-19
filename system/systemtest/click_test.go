@@ -20,9 +20,14 @@ func WithTestWindow(dx, dy int, fn func(wdw systemtest.Window)) {
 	})
 }
 
+func WithTestWindowDriver(dx, dy int, fn func(driver systemtest.Driver)) {
+	WithTestWindow(dx, dy, func(window systemtest.Window) {
+		fn(window.NewDriver())
+	})
+}
+
 func TestE2EClickHelper(t *testing.T) {
-	WithTestWindow(64, 64, func(wdw systemtest.Window) {
-		driver := wdw.NewDriver()
+	WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
 		driver.Click(10, 42)
 
 		driver.ProcessFrame()
