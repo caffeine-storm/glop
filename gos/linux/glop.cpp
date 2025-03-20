@@ -230,8 +230,8 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
   ev->device_type = glopDeviceMouse;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = x;
-  ev->cursor_y = y;
+  ev->cursor_x = winx;
+  ev->cursor_y = winy;
   ev->num_lock = event.xkey.state & (1 << 4);
   ev->caps_lock = event.xkey.state & LockMask;
   return true;

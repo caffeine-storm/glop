@@ -137,8 +137,7 @@ func (linux *SystemObject) HideCursor(hide bool) {
 }
 
 func (linux *SystemObject) RawCursorToWindowCoords(x, y int) (int, int) {
-	wx, wy, _, wdy := linux.GetWindowDims()
-	return x - wx, wy + wdy - y
+	return x, y
 }
 
 func (linux *SystemObject) GetCursorPos() (int, int) {
