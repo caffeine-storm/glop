@@ -622,7 +622,8 @@ func EventSpec() {
 func AxisSpec() {
 	input := gin.Make()
 
-	// TODO: This is the mouse x axis key, we need a constant for this or something
+	// TODO: This is the mouse x axis key, we need a constant for this or
+	// something.
 	x := input.GetKeyByParts(gin.MouseXAxis, gin.DeviceTypeMouse, 1)
 	events := make([]gin.OsEvent, 0)
 

@@ -261,16 +261,21 @@ type Input struct {
 	// notified of a particular event group can change from group to group.
 	listeners []Listener
 
+	// Delegate for Mouse events/handling. Assumes only one 'pointer' device at a
+	// time. To handle multiple pointers, we'll need a collection distinguished
+	// by device ID.
+	mouse MouseInput
+
 	// Optional logger instance to trace calls to Input.
 	logger glog.Logger
 }
 
 func (input *Input) SetLogger(logger glog.Logger) {
 	if logger == nil {
-		input.logger = glog.VoidLogger()
-		return
+		logger = glog.VoidLogger()
 	}
 	input.logger = logger
+	input.mouse.logger = logger
 }
 
 // The standard input object
@@ -302,6 +307,7 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.index_to_family_deps = make(map[KeyIndex][]derivedKeyFamily)
 	input.index_to_family = make(map[KeyIndex]derivedKeyFamily)
 	input.SetLogger(logger)
+	input.mouse.logger = logger
 
 	input.registerKeyIndex(AnyKey, aggregatorTypeStandard, "AnyKey")
 	for c := 'a'; c <= 'z'; c++ {
@@ -419,9 +425,6 @@ type Event struct {
 func (e Event) String() string {
 	if e.Key == nil || e.Type == NoEvent {
 		return fmt.Sprintf("NoEvent")
-	}
-	if e.Key == nil {
-		return fmt.Sprintf("'%v %v'", e.Type, nil)
 	}
 	return fmt.Sprintf("'%v %v'", e.Type, e.Key)
 }
@@ -636,24 +639,16 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 		group := EventGroup{
 			Timestamp: os_event.Timestamp,
 		}
+
+		if os_event.KeyId.Device.Type == DeviceTypeMouse {
+			input.mouse.Handle(os_event, &group)
+		}
+
 		input.pressKey(
 			input.GetKeyById(os_event.KeyId),
 			os_event.Press_amt,
 			Event{},
 			&group)
-		// Sets the cursor position if this is a cursor based event.
-		// TODO: Currently only the mouse is supported as a cursor, but if we want
-		// to support joysticks as cursor_keys, since they don't naturally have a
-		// position associated with them, we will need to somehow associate
-		// cursor_keys with axes and treat the mouse and joysticks separately.
-		// if cursor := input.cursor_keys[os_event.KeyId]; cursor != nil {
-		// 	cursor.X = os_event.X
-		// 	cursor.Y = os_event.Y
-		// }
-
-		//    for i := range group.Events {
-		//      group.Events[i].Mouse = os_event.Mouse
-		//    }
 
 		if len(group.Events) > 0 {
 			groups = append(groups, group)
