@@ -153,9 +153,10 @@ func (log *traceLogger) GetOpts() slog.HandlerOptions {
 	return log.handlerOptions
 }
 
+// Note: Trace calls will be ignored unless the caller re-levels
 func TraceLogger() Logger {
 	return New(&Opts{
-		Level: slog.LevelInfo, // Trace calls will be ignored unless the caller re-levels
+		Level: slog.LevelInfo,
 	})
 }
 
