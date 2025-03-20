@@ -5,6 +5,7 @@ import (
 	"os/exec"
 
 	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
 )
 
@@ -58,4 +59,20 @@ func NewTestWindow(sys system.System, queue render.RenderQueueInterface) Window 
 	return &testWindow{
 		sys: sys,
 	}
+}
+
+func WithTestWindow(dx, dy int, fn func(window Window)) {
+	rendertest.WithGlForTest(dx, dy, func(sys system.System, queue render.RenderQueueInterface) {
+		window := NewTestWindow(sys, queue)
+		queue.Queue(func(st render.RenderQueueState) {
+			fn(window)
+		})
+		queue.Purge()
+	})
+}
+
+func WithTestWindowDriver(dx, dy int, fn func(driver Driver)) {
+	WithTestWindow(dx, dy, func(window Window) {
+		fn(window.NewDriver())
+	})
 }
