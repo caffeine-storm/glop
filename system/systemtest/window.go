@@ -8,10 +8,12 @@ import (
 
 type Window interface {
 	NewDriver() Driver
+	GetQueue() render.RenderQueueInterface
 }
 
 type testWindow struct {
-	sys system.System
+	sys   system.System
+	queue render.RenderQueueInterface
 }
 
 func (self *testWindow) NewDriver() Driver {
@@ -20,11 +22,16 @@ func (self *testWindow) NewDriver() Driver {
 	}
 }
 
+func (self *testWindow) GetQueue() render.RenderQueueInterface {
+	return self.queue
+}
+
 var _ Window = (*testWindow)(nil)
 
 func NewTestWindow(sys system.System, queue render.RenderQueueInterface) Window {
 	return &testWindow{
-		sys: sys,
+		sys:   sys,
+		queue: queue,
 	}
 }
 
