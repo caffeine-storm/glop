@@ -1,3 +1,8 @@
+tmckee:#18 the gin.MouseInput code doesn't support listener functions providing
+'feedback'. The old input code would optionally synthsize 'consequence'
+gin.Event instances. We might want to support the optional synthesis in the new
+code for symmetry.
+
 tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
 
 ----
@@ -45,4 +50,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #18
+next bug: #19
