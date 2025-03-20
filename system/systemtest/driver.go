@@ -13,8 +13,8 @@ type testDriver struct {
 
 func (d *testDriver) Click(wx, wy int) {
 	// Run 'xdotool click $wx $wy'
-	RunXDoTool("mousemove", fmt.Sprintf("%d", wx), fmt.Sprintf("%d", wy))
-	RunXDoTool("click", "1")
+	runXDoTool("mousemove", fmt.Sprintf("%d", wx), fmt.Sprintf("%d", wy))
+	runXDoTool("click", "1")
 }
 
 func (d *testDriver) ProcessFrame() {

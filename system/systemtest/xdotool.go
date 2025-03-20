@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func RunXDoTool(xdotoolArgs ...string) {
+func runXDoTool(xdotoolArgs ...string) {
 	cmd := exec.Command("xdotool", xdotoolArgs...)
 
 	err := cmd.Run()
