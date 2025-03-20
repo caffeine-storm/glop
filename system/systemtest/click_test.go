@@ -28,7 +28,7 @@ func WithTestWindowDriver(dx, dy int, fn func(driver systemtest.Driver)) {
 }
 
 func TestE2EClickHelper(t *testing.T) {
-	WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
+	systemtest.WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
 		expectedX, expectedY := 10, 42
 		mouseEvents := []gin.MouseEvent{}
 
