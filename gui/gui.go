@@ -168,7 +168,7 @@ type Zone interface {
 
 	// Returns the region that this Widget used to render itself the last
 	// time it was rendered.  Should be completely contained within the
-	// region that was passed to it on its last call to Render.
+	// region that was passed to it on its last call to Draw.
 	Rendered() Region
 }
 
@@ -498,6 +498,7 @@ func (g *Gui) Draw() {
 }
 
 func (g *Gui) Think(t int64) {
+	fmt.Printf("gui.Think called on horizon %d\n", t)
 	g.root.Think(g, t)
 }
 
