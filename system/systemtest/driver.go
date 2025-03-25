@@ -1,8 +1,11 @@
 package systemtest
 
+import "github.com/runningwild/glop/gin"
+
 type Driver interface {
 	Click(wx, wy int)
 	ProcessFrame()
+	AddMouseListener(func(gin.MouseEvent))
 }
 
 type testDriver struct {
@@ -17,6 +20,10 @@ func (d *testDriver) Click(wx, wy int) {
 
 func (d *testDriver) ProcessFrame() {
 	d.window.sys.Think()
+}
+
+func (d *testDriver) AddMouseListener(listener func(gin.MouseEvent)) {
+	d.window.sys.AddMouseListener(listener)
 }
 
 var _ Driver = (*testDriver)(nil)

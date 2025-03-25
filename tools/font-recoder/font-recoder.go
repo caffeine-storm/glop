@@ -7,6 +7,7 @@ import (
 	"runtime"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/gui"
@@ -19,7 +20,7 @@ func main() {
 	toFile := os.Args[2]
 
 	runtime.LockOSThread()
-	sys := system.Make(gos.GetSystemInterface())
+	sys := system.Make(gos.GetSystemInterface(), gin.MakeLogged(glog.InfoLogger()))
 	wdx := 1024
 	wdy := 750
 

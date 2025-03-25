@@ -5,6 +5,7 @@ import (
 
 	"github.com/MobRulesGames/mathgl"
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
@@ -52,7 +53,7 @@ func checkMatrixInvariants() {
 
 func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
-	sys := system.Make(linuxSystemObject)
+	sys := system.Make(linuxSystemObject, gin.MakeLogged(glog.DebugLogger()))
 
 	// Use a channel to wait for a NativeWindowHandle to show up; we want to let
 	// initialization happen off-thread but the glContext needs to know the

@@ -33,6 +33,11 @@ type System interface {
 	// approach
 	//  Run()
 	//  Quit()
+
+	// --- helpful features in system objects that aren't really native features.
+
+	// Attach a Mouse listener to the underlying input delegate.
+	AddMouseListener(func(gin.MouseEvent))
 }
 
 // This is the interface implemented by any operating system that supports
@@ -85,13 +90,15 @@ type Os interface {
 
 type sysObj struct {
 	os       Os
+	input    *gin.Input
 	events   []gin.EventGroup
 	start_ms int64
 }
 
-func Make(os Os) System {
+func Make(os Os, input *gin.Input) System {
 	return &sysObj{
-		os: os,
+		os:    os,
+		input: input,
 	}
 }
 
@@ -106,7 +113,7 @@ func (sys *sysObj) Think() int64 {
 	for i := range events {
 		events[i].Timestamp -= sys.start_ms
 	}
-	sys.events = gin.In().Think(horizon-sys.start_ms, events)
+	sys.events = sys.input.Think(horizon-sys.start_ms, events)
 	return horizon
 }
 
@@ -132,6 +139,10 @@ func (sys *sysObj) SwapBuffers() {
 
 func (sys *sysObj) GetInputEvents() []gin.EventGroup {
 	return sys.events
+}
+
+func (sys *sysObj) AddMouseListener(fn func(gin.MouseEvent)) {
+	sys.input.AddMouseListener(fn)
 }
 
 func (sys *sysObj) EnableVSync(enable bool) {

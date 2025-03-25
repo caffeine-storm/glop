@@ -13,7 +13,7 @@ func TestE2EClickHelper(t *testing.T) {
 		expectedX, expectedY := 10, 42
 		mouseEvents := []gin.MouseEvent{}
 
-		gin.In().AddMouseListener(func(mouseEvent gin.MouseEvent) {
+		driver.AddMouseListener(func(mouseEvent gin.MouseEvent) {
 			mouseEvents = append(mouseEvents, mouseEvent)
 		})
 
