@@ -61,6 +61,10 @@ struct OsWindowData {
   XIC inputcontext;
 };
 
+unsigned long GetNativeHandle(GlopWindowHandle hdl) {
+  return hdl.data->window;
+}
+
 void GlopInit() {
   display = XOpenDisplay(NULL);
 //  ASSERT(display);

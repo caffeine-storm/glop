@@ -104,6 +104,7 @@ struct OsWindowData;
 typedef struct {
 	struct OsWindowData *data;
 } GlopWindowHandle;
+unsigned long GetNativeHandle(GlopWindowHandle);
 
 void GlopInit();
 // Returns an opaque handle for further window operations.
