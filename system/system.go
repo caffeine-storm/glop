@@ -94,10 +94,12 @@ func Make(os Os) System {
 		os: os,
 	}
 }
+
 func (sys *sysObj) Startup() {
 	sys.os.Startup()
 	_, sys.start_ms = sys.os.GetInputEvents()
 }
+
 func (sys *sysObj) Think() int64 {
 	sys.os.Think()
 	events, horizon := sys.os.GetInputEvents()
@@ -107,24 +109,31 @@ func (sys *sysObj) Think() int64 {
 	sys.events = gin.In().Think(horizon-sys.start_ms, events)
 	return horizon
 }
+
 func (sys *sysObj) CreateWindow(x, y, width, height int) NativeWindowHandle {
 	return sys.os.CreateWindow(x, y, width, height)
 }
+
 func (sys *sysObj) HideCursor(hide bool) {
 	sys.os.HideCursor(hide)
 }
+
 func (sys *sysObj) GetWindowDims() (int, int, int, int) {
 	return sys.os.GetWindowDims()
 }
+
 func (sys *sysObj) SetWindowSize(width, height int) {
 	sys.os.SetWindowSize(width, height)
 }
+
 func (sys *sysObj) SwapBuffers() {
 	sys.os.SwapBuffers()
 }
+
 func (sys *sysObj) GetInputEvents() []gin.EventGroup {
 	return sys.events
 }
+
 func (sys *sysObj) EnableVSync(enable bool) {
 	sys.os.EnableVSync(enable)
 }
