@@ -268,15 +268,12 @@ static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, stru
 
   return true;
 }
-
 Bool EventTester(Display *display, XEvent *event, XPointer arg) {
-  return true; // hurrr
+  // arg == windowdata->window
+  // select for events targeted at this window
+  return event->xany.window == Window(arg);
 }
 OsWindowData *windowdata = NULL;
-Window get_x_window() {
-//  ASSERT(windowdata);
-  return windowdata->window;
-}
 
 int64_t GlopThink() {
   if(!windowdata) return -1;
@@ -285,7 +282,7 @@ int64_t GlopThink() {
   XEvent event;
   int last_botched_release = -1;
   int last_botched_time = -1;
-  while(XCheckIfEvent(display, &event, &EventTester, NULL)) {
+  while(XCheckIfEvent(display, &event, &EventTester, XPointer(data->window))) {
     if((event.type == KeyPress || event.type == KeyRelease) && event.xkey.keycode < 256) {
       // X is kind of a cock and likes to send us hardware repeat messages for people holding buttons down. Why do you do this, X? Why do you have to make me hate you?
 
