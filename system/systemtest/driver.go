@@ -1,7 +1,5 @@
 package systemtest
 
-import "fmt"
-
 type Driver interface {
 	Click(wx, wy int)
 	ProcessFrame()
@@ -13,7 +11,7 @@ type testDriver struct {
 
 func (d *testDriver) Click(wx, wy int) {
 	// Run 'xdotool click $wx $wy'
-	runXDoTool("mousemove", fmt.Sprintf("%d", wx), fmt.Sprintf("%d", wy))
+	runXDoTool("mousemove", wx, wy)
 	runXDoTool("click", "1")
 }
 

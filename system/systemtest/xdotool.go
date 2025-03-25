@@ -5,7 +5,19 @@ import (
 	"os/exec"
 )
 
-func runXDoTool(xdotoolArgs ...string) {
+func runXDoTool(xdotoolAnyArgs ...any) {
+	xdotoolArgs := make([]string, len(xdotoolAnyArgs))
+	for i, arg := range xdotoolAnyArgs {
+		switch v := arg.(type) {
+		case string:
+			xdotoolArgs[i] = v
+		case fmt.Stringer:
+			xdotoolArgs[i] = v.String()
+		default:
+			xdotoolArgs[i] = fmt.Sprintf("%v", arg)
+		}
+	}
+
 	cmd := exec.Command("xdotool", xdotoolArgs...)
 
 	err := cmd.Run()
