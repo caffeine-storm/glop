@@ -84,12 +84,6 @@ func (win32 *win32SystemObject) rawCursorToWindowCoords(x, y int) (int, int) {
 	return x - wx, wy + wdy - y
 }
 
-func (win32 *win32SystemObject) GetCursorPos() (int, int) {
-	var x, y C.int
-	C.GlopGetMousePosition(&x, &y)
-	return win32.rawCursorToWindowCoords(int(x), int(y))
-}
-
 func (win32 *win32SystemObject) GetWindowDims() (int, int, int, int) {
 	var x, y, dx, dy C.int
 	C.GlopGetWindowDims(unsafe.Pointer(win32.window), &x, &y, &dx, &dy)

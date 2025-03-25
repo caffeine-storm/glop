@@ -20,10 +20,6 @@ func (*stubSystem) CreateWindow(x, y, width, height int) system.NativeWindowHand
 	return "stub handle"
 }
 
-func (*stubSystem) GetCursorPos() (x, y int) {
-	return
-}
-
 func (*stubSystem) HideCursor(bool) {
 }
 

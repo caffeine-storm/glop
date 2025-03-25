@@ -83,12 +83,6 @@ func (osx *osxSystemObject) rawCursorToWindowCoords(x, y int) (int, int) {
 	return x - wx, y - wy
 }
 
-func (osx *osxSystemObject) GetCursorPos() (int, int) {
-	var x, y C.int
-	C.GetMousePos(&x, &y)
-	return osx.rawCursorToWindowCoords(int(x), int(y))
-}
-
 func (osx *osxSystemObject) HideCursor(hide bool) {
 	if hide {
 		C.LockCursor(1)

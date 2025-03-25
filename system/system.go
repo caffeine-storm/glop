@@ -15,15 +15,7 @@ type System interface {
 
 	CreateWindow(x, y, width, height int) NativeWindowHandle
 	// TODO: implement this:
-	// DestroyWindow(Window)
-
-	// TODO(tmckee): maybe 'with the origin at the bottom left'?
-	// Gets the cursor position in window coordinates with the cursor at the
-	// bottom left corner of the window
-	// TODO(tmckee): this is stubbed out in the native code r.n. but, since
-	// nobody is using it, that's okay. this is probably only going to get used
-	// once we try to make a hover effect
-	GetCursorPos() (x, y int)
+	// DestroyWindow(NativeWindowHandle)
 
 	// Hides/Unhides the cursor. A hidden cursor is invisible and its position is
 	// locked. It should still generate mouse move events.
@@ -64,11 +56,7 @@ type Os interface {
 	CreateWindow(x, y, width, height int) NativeWindowHandle
 
 	// TODO: implement this:
-	// DestroyWindow(Window)
-
-	// Gets the cursor position in window coordinates with the cursor at the
-	// bottom left corner of the window
-	GetCursorPos() (x, y int)
+	// DestroyWindow(NativeWindowHandle)
 
 	// Hides/Unhides the cursor. A hidden cursor is invisible and its position is
 	// locked. It should still generate mouse move events.
@@ -121,9 +109,6 @@ func (sys *sysObj) Think() int64 {
 }
 func (sys *sysObj) CreateWindow(x, y, width, height int) NativeWindowHandle {
 	return sys.os.CreateWindow(x, y, width, height)
-}
-func (sys *sysObj) GetCursorPos() (int, int) {
-	return sys.os.GetCursorPos()
 }
 func (sys *sysObj) HideCursor(hide bool) {
 	sys.os.HideCursor(hide)

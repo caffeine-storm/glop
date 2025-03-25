@@ -580,12 +580,6 @@ void GlopGetInputEvents(struct GlopKeyEvent** _events_ret, size_t* _num_events, 
   }
 }
 
-void GlopGetMousePosition(int* x, int* y) { // TBI
-  *x = 0;
-  *y = 0;
-}
-
-
 // Miscellaneous functions
 // =======================
 

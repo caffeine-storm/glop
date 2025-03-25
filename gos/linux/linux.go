@@ -142,12 +142,6 @@ func (linux *SystemObject) RawCursorToWindowCoords(x, y int) (int, int) {
 	return x, y
 }
 
-func (linux *SystemObject) GetCursorPos() (int, int) {
-	var x, y C.int
-	C.GlopGetMousePosition(&x, &y)
-	return linux.RawCursorToWindowCoords(int(x), int(y))
-}
-
 func (linux *SystemObject) GetWindowDims() (int, int, int, int) {
 	var x, y, dx, dy C.int
 	C.GlopGetWindowDims(&x, &y, &dx, &dy)

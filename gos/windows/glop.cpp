@@ -1046,13 +1046,6 @@ void GlopGetInputEvents(void* _window, void** _events_ret, void* _num_events, vo
   }
 }
 
-void GlopGetMousePosition(int* x, int* y) {
-  POINT cursor_pos;
-  GetCursorPos(&cursor_pos);
-  *x = cursor_pos.x;
-  *y = cursor_pos.y;
-}
-
 void GlopSetMousePosition(int x, int y) {
   SetCursorPos(x, y);
 }
