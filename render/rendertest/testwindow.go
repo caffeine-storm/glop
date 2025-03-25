@@ -50,13 +50,19 @@ func checkMatrixInvariants() {
 	matrixStacksMustBeIdentity()
 }
 
-func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInterface) {
+func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
 	linuxSystemObject := gos.GetSystemInterface()
 	sys := system.Make(linuxSystemObject)
 
+	// Use a channel to wait for a NativeWindowHandle to show up; we want to let
+	// initialization happen off-thread but the glContext needs to know the
+	// native window id immediately.
+	hdl := make(chan system.NativeWindowHandle)
+
 	sys.Startup()
 	render := render.MakeQueue(func(render.RenderQueueState) {
-		sys.CreateWindow(0, 0, width, height)
+		hdl <- sys.CreateWindow(0, 0, width, height)
+
 		sys.EnableVSync(true)
 		err := gl.Init()
 		if err != 0 {
@@ -69,15 +75,20 @@ func newGlWindowForTest(width, height int) (system.System, render.RenderQueueInt
 	})
 	render.StartProcessing()
 
-	return sys, render
+	return sys, <-hdl, render
 }
 
 type glContext struct {
-	sys    system.System
-	render render.RenderQueueInterface
+	sys          system.System
+	windowHandle system.NativeWindowHandle
+	render       render.RenderQueueInterface
 }
 
 func (ctx *glContext) Prep(width, height int) {
+	if ctx.windowHandle == nil {
+		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
+	}
+
 	ctx.render.Queue(func(render.RenderQueueState) {
 		checkMatrixInvariants()
 
@@ -127,21 +138,22 @@ func (ctx *glContext) Clean() {
 	ctx.render.Purge()
 }
 
-func (ctx *glContext) Run(fn func(system.System, render.RenderQueueInterface)) {
-	fn(ctx.sys, ctx.render)
+func (ctx *glContext) Run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	fn(ctx.sys, ctx.windowHandle, ctx.render)
 }
 
 func newGlContextForTest(width, height int) *glContext {
-	sys, render := newGlWindowForTest(width, height)
+	sys, windowHandle, render := newGlWindowForTest(width, height)
 	return &glContext{
-		sys:    sys,
-		render: render,
+		sys:          sys,
+		windowHandle: windowHandle,
+		render:       render,
 	}
 }
 
 var glTestContextSource = make(chan *glContext, 24)
 
-func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+func WithGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	select {
 	case cachedContext := <-glTestContextSource:
 		cachedContext.Prep(width, height)
@@ -155,6 +167,12 @@ func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueI
 		newContext.Clean()
 		glTestContextSource <- newContext
 	}
+}
+
+func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+	WithGlAndHandleForTest(width, height, func(sys system.System, _ system.NativeWindowHandle, queue render.RenderQueueInterface) {
+		fn(sys, queue)
+	})
 }
 
 func WithGl(fn func()) {
