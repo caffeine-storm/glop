@@ -5,6 +5,7 @@ import "github.com/runningwild/glop/gin"
 type Driver interface {
 	Click(wx, wy int)
 	ProcessFrame()
+	PositionWindow(x, y int)
 	AddMouseListener(func(gin.MouseEvent))
 }
 
@@ -20,6 +21,10 @@ func (d *testDriver) Click(wx, wy int) {
 
 func (d *testDriver) ProcessFrame() {
 	d.window.sys.Think()
+}
+
+func (d *testDriver) PositionWindow(x, y int) {
+	runXDoTool("windowmove", d.window.hdl, x, y)
 }
 
 func (d *testDriver) AddMouseListener(listener func(gin.MouseEvent)) {
