@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/system"
 )
 
 type SystemObject struct {
@@ -29,8 +30,9 @@ func (linux *SystemObject) Quit() {
 	panic("Not implemented on linux")
 }
 
-func (linux *SystemObject) CreateWindow(x, y, width, height int) {
+func (linux *SystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
 	linux.windowHandle = C.GlopCreateWindow(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
+	return linux.windowHandle
 }
 
 func (linux *SystemObject) SwapBuffers() {

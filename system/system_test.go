@@ -16,7 +16,8 @@ func (*stubSystem) Think() int64 {
 	return 7
 }
 
-func (*stubSystem) CreateWindow(x, y, width, height int) {
+func (*stubSystem) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
+	return "stub handle"
 }
 
 func (*stubSystem) GetCursorPos() (x, y int) {

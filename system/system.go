@@ -4,6 +4,8 @@ import (
 	"github.com/runningwild/glop/gin"
 )
 
+type NativeWindowHandle interface{}
+
 type System interface {
 	// Call after runtime.LockOSThread(), *NOT* in an init function
 	Startup()
@@ -11,7 +13,7 @@ type System interface {
 	// Call System.Think() every frame. Returns the 'horizon'.
 	Think() int64
 
-	CreateWindow(x, y, width, height int)
+	CreateWindow(x, y, width, height int) NativeWindowHandle
 	// TODO: implement this:
 	// DestroyWindow(Window)
 
@@ -59,7 +61,7 @@ type Os interface {
 	// to it.  Currently glop only supports a single window, but this function
 	// could be called more than once since a window could be destroyed so it can
 	// be recreated at different dimensions or in full sreen mode.
-	CreateWindow(x, y, width, height int)
+	CreateWindow(x, y, width, height int) NativeWindowHandle
 
 	// TODO: implement this:
 	// DestroyWindow(Window)
@@ -117,8 +119,8 @@ func (sys *sysObj) Think() int64 {
 	sys.events = gin.In().Think(horizon-sys.start_ms, events)
 	return horizon
 }
-func (sys *sysObj) CreateWindow(x, y, width, height int) {
-	sys.os.CreateWindow(x, y, width, height)
+func (sys *sysObj) CreateWindow(x, y, width, height int) NativeWindowHandle {
+	return sys.os.CreateWindow(x, y, width, height)
 }
 func (sys *sysObj) GetCursorPos() (int, int) {
 	return sys.os.GetCursorPos()
