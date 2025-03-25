@@ -19,6 +19,9 @@ func TestE2EClickHelper(t *testing.T) {
 
 		driver.Click(expectedX, expectedY)
 
+		// TODO(tmckee:#19): this might be clicking some other window or not
+		// waiting long enough for the native code to pull the move/click events
+		// from X. Perhaps we need to send the click to a specific window by id?
 		driver.ProcessFrame()
 
 		// Check that gin saw it.
