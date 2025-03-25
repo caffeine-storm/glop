@@ -30,7 +30,7 @@ func (linux *SystemObject) Quit() {
 }
 
 func (linux *SystemObject) CreateWindow(x, y, width, height int) {
-	linux.windowHandle = C.GlopCreateWindow(unsafe.Pointer(&(([]byte("linux window"))[0])), C.int(x), C.int(y), C.int(width), C.int(height))
+	linux.windowHandle = C.GlopCreateWindow(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
 }
 
 func (linux *SystemObject) SwapBuffers() {

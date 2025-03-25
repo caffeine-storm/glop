@@ -390,7 +390,7 @@ void glopSetCurrentContext(OsWindowData* data) {
   }
 }
 
-GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int height) {
+GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
 //  ASSERT(!windowdata);
   windowdata = nw;
@@ -493,7 +493,8 @@ GlopWindowHandle GlopCreateWindow(void* title, int x, int y, int width, int heig
     }
   }
 
-  GlopSetTitle(nw, string((char*)(title)));
+  GlopSetTitle(nw, title);
+  free((void *)title);
 
   XSetWMProtocols(display, nw->window, &close_atom, 1);
   // I think in here is where we're meant to set window styles and stuff

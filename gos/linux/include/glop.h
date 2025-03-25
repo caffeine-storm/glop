@@ -108,7 +108,7 @@ typedef struct {
 void GlopInit();
 // Returns an opaque handle for further window operations.
 GlopWindowHandle GlopCreateWindow(
-    void* title,
+    char const* title,
     int x,
     int y,
     int width,
