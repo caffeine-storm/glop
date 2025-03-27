@@ -11,7 +11,7 @@ type click struct {
 	x, y int
 }
 
-func GivenANewDriver() chan systemtest.Driver {
+func GivenANewDriver() (systemtest.Driver, func()) {
 	driverChannel := make(chan systemtest.Driver)
 
 	go systemtest.WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
@@ -19,7 +19,11 @@ func GivenANewDriver() chan systemtest.Driver {
 		<-driverChannel
 	})
 
-	return driverChannel
+	drv := <-driverChannel
+	cleanup := func() {
+		driverChannel <- drv
+	}
+	return drv, cleanup
 }
 
 func WatchForClicks(drv systemtest.Driver) *[]gin.MouseEvent {
@@ -48,16 +52,11 @@ func LastClick(events *[]gin.MouseEvent) (click, bool) {
 func TestSystemtestDriver(t *testing.T) {
 	t.Run("xdotool commands are sent to the correct native window", func(t *testing.T) {
 		// Make two windows of the same size.
-		driverAChan := GivenANewDriver()
-		driverA := <-driverAChan
-		defer func() {
-			driverAChan <- driverA
-		}()
-		driverBChan := GivenANewDriver()
-		driverB := <-driverBChan
-		defer func() {
-			driverBChan <- driverB
-		}()
+		driverA, cleanA := GivenANewDriver()
+		defer cleanA()
+
+		driverB, cleanB := GivenANewDriver()
+		defer cleanB()
 
 		// Move each window to the same screen position.
 		driverA.PositionWindow(12, 17)
