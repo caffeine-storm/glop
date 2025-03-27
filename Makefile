@@ -35,6 +35,10 @@ all: build-check compile-commands-portable
 build-check:
 	go build ./...
 
+# By default, the Xvfb instance will create a new Xauthority file in
+# /tmp/xvfb-run.PID/Xauthority for access control.
+# To interact with the Xvfb instance, you can set your XAUTHORITY and DISPLAY
+# environment vars accordingly.
 testing_with_xvfb=xvfb-run --server-args="-screen 0 512x64x24" --auto-servernum
 testing_env=${testing_with_xvfb}
 
