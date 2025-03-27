@@ -96,15 +96,26 @@ void glopShutDown() {
   XCloseDisplay(display);
 }
 
-static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
-  // mostly ignored
-  Window root, child;
-  int x, y, winx, winy;
-  unsigned int mask;
-  XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
+XKeyEvent const * toKeyEvent(XEvent const & evt) {
+  switch(evt.type) {
+    case KeyPress:
+    case KeyRelease:
+      return &evt.xkey;
+    default:
+      return NULL;
+  }
+}
 
+static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
+  // TODO(tmckee): this case conversion stuff is poopy.
   KeySym throwaway_lower, key;
   XConvertCase(sym, &throwaway_lower, &key);
+
+  XKeyEvent const *keyEvent = toKeyEvent(event);
+  if(keyEvent == NULL) {
+    fprintf(stderr, "SynthKey: bad event type: %d\n", event.type);
+    return false;
+  }
 
   GlopKey ki = 0;
   switch(key) {
@@ -216,58 +227,89 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
   ev->device_type = glopDeviceKeyboard;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = x;
-  ev->cursor_y = y;
+  ev->cursor_x = keyEvent->x;
+  ev->cursor_y = keyEvent->y;
   ev->num_lock = event.xkey.state & (1 << 4);
   ev->caps_lock = event.xkey.state & LockMask;
   return true;
 }
+
+XButtonEvent const * toButtonEvent(XEvent const & evt) {
+  switch(evt.type) {
+    case ButtonPress:
+    case ButtonRelease:
+      return &evt.xbutton;
+    default:
+      return NULL;
+  }
+}
+
 static bool SynthButton(int button, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
-  // mostly ignored
-  Window root, child;
-  int x, y, winx, winy;
-  unsigned int mask;
-  XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
+
+  XButtonEvent const *btnEvent = toButtonEvent(event);
+  if(btnEvent == NULL) {
+    fprintf(stderr, "SynthButton: unknown event.type: %d\n", event.type);
+    return false;
+  }
 
   GlopKey ki;
-  if(button == Button1)
-    ki = kMouseLButton;
-  else if(button == Button2)
-    ki = kMouseMButton;
-  else if(button == Button3)
-    ki = kMouseRButton;
-  /*
-  else if(button == Button4)
-    ki = kMouseWheelUp;   // these might be inverted so they're disabled for now
-  else if(button == Button5)
-    ki = kMouseWheelDown;*/
-  else
-    return false;
+  switch(button) {
+    case Button1:
+      ki = kMouseLButton;
+      break;
+    case Button2:
+      ki = kMouseMButton;
+      break;
+    case Button3:
+      ki = kMouseRButton;
+      break;
+#if 0
+    // these might be inverted so they're disabled for now
+    case Button4:
+      ki = kMouseWheelUp;
+      break;
+    case Button5:
+      ki = kMouseWheelDown;
+      break;
+#endif
+    default:
+      fprintf(stderr, "SynthButton: unknown button: %d\n", button);
+      return false;
+  }
 
   ev->index = ki;
   ev->device_type = glopDeviceMouse;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = winx;
-  ev->cursor_y = winy;
+  ev->cursor_x = btnEvent->x;
+  ev->cursor_y = btnEvent->y;
   ev->num_lock = event.xkey.state & (1 << 4);
   ev->caps_lock = event.xkey.state & LockMask;
   return true;
 }
 
+XMotionEvent const * toMotionEvent(XEvent const & evt) {
+  switch(evt.type) {
+    case MotionNotify:
+      return &evt.xmotion;
+    default:
+      return NULL;
+  }
+}
+
 static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
-  // mostly ignored
-  Window root, child;
-  int x, y, winx, winy;
-  unsigned int mask;
-  XQueryPointer(display, window, &root, &child, &x, &y, &winx, &winy, &mask);
+  XMotionEvent const * motionEvt = toMotionEvent(event);
+  if(motionEvt == NULL) {
+    fprintf(stderr, "SynthMotion: bad event type: %d\n", event.type);
+    return false;
+  }
 
   ev->index = kMouseXAxis;
   ev->device_type = glopDeviceMouse;
   ev->press_amt = dx;
   ev->timestamp = gt();
-  ev->cursor_x = x;
-  ev->cursor_y = y;
+  ev->cursor_x = motionEvt->x;
+  ev->cursor_y = motionEvt->y;
   ev->num_lock = event.xkey.state & (1 << 4);
   ev->caps_lock = event.xkey.state & LockMask;
 
@@ -275,8 +317,8 @@ static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, stru
   ev2->device_type = glopDeviceMouse;
   ev2->press_amt = dy;
   ev2->timestamp = ev->timestamp;
-  ev2->cursor_x = x;
-  ev2->cursor_y = y;
+  ev2->cursor_x = motionEvt->x;
+  ev2->cursor_y = motionEvt->y;
   ev2->num_lock = event.xkey.state & (1 << 4);
   ev2->caps_lock = event.xkey.state & LockMask;
 
@@ -402,7 +444,7 @@ void GlopSetTitle(OsWindowData* data, const string& title) {
 }
 
 void glopSetCurrentContext(OsWindowData* data) {
-  if (!glXMakeCurrent(display, data->window, data->context)) {
+  if(!glXMakeCurrent(display, data->window, data->context)) {
     fprintf(stderr, "glop.cpp: glxMakeCurrent failed\n");
     exit(1);
   }
