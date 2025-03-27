@@ -238,10 +238,10 @@ XButtonEvent const * toButtonEvent(XEvent const & evt) {
   }
 }
 
-static bool SynthButton(int button, bool pushed, XButtonEvent const &event, Window window, struct GlopKeyEvent *ev) {
+static bool SynthButton(bool pushed, XButtonEvent const &event, Window window, struct GlopKeyEvent *ev) {
 
   GlopKey ki;
-  switch(button) {
+  switch(event.button) {
     case Button1:
       ki = kMouseLButton;
       break;
@@ -251,17 +251,14 @@ static bool SynthButton(int button, bool pushed, XButtonEvent const &event, Wind
     case Button3:
       ki = kMouseRButton;
       break;
-#if 0
-    // these might be inverted so they're disabled for now
     case Button4:
       ki = kMouseWheelUp;
       break;
     case Button5:
       ki = kMouseWheelDown;
       break;
-#endif
     default:
-      fprintf(stderr, "SynthButton: unknown button: %d\n", button);
+      fprintf(stderr, "SynthButton: unknown button: %d\n", event.button);
       return false;
   }
 
@@ -355,7 +352,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
       case ButtonPress:
       case ButtonRelease:
-        if(SynthButton(event.xbutton.button, event.type == ButtonPress, event.xbutton, data->window, &ev))
+        if(SynthButton(event.type == ButtonPress, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;
 
