@@ -340,18 +340,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
     struct GlopKeyEvent ev;
     GlopClearKeyEvent(&ev);
     switch(event.type) {
-      case KeyPress: {
-        char buf[2];
-        KeySym sym;
-        XComposeStatus status;
-
-        XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
-
-        if(SynthKey(sym, true, event.xkey, data->window, &ev))
-          data->events.push_back(ev);
-        break;
-      }
-
+      case KeyPress:
       case KeyRelease: {
         char buf[2];
         KeySym sym;
@@ -359,7 +348,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
 
-        if(SynthKey(sym, false, event.xkey, data->window, &ev))
+        if(SynthKey(sym, event.type == KeyPress, event.xkey, data->window, &ev))
           data->events.push_back(ev);
         break;
       }
