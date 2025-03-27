@@ -1,3 +1,7 @@
+tmckee:#23 for X, we need to listen for MappingNotify events and
+XRefreshKeyboardMapping() as needed
+https://tronche.com/gui/x/xlib/utilities/keyboard/XRefreshKeyboardMapping.html
+
 tmckee:#22 clicking the 'x' button on a window doesn't close it r.n. We need to
 detect a "close message" or smth in glop.cpp.
 
@@ -66,4 +70,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #23
+next bug: #24

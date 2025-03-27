@@ -372,6 +372,9 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         XUnsetICFocus(data->inputcontext);
         break;
 
+      // TODO(tmckee): need to handle MappingNotify events and call
+      // XRefreshKeyboardMapping as needed. See:
+      // https://tronche.com/gui/x/xlib/utilities/keyboard/XRefreshKeyboardMapping.html
       case DestroyNotify:
           // TODO: probably want to do something here
 //        WindowDashDestroy(); // ffffff
