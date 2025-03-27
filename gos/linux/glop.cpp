@@ -341,9 +341,8 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
       case KeyRelease: {
         char buf[2];
         KeySym sym;
-        XComposeStatus status;
 
-        XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
+        XLookupString(&event.xkey, buf, sizeof(buf), &sym, NULL);
 
         if(SynthKey(sym, event.type == KeyPress, event.xkey, data->window, &ev))
           data->events.push_back(ev);
