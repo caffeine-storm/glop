@@ -283,9 +283,10 @@ static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, stru
   return true;
 }
 Bool EventTester(Display *display, XEvent *event, XPointer arg) {
-  // arg == windowdata->window
+  // arg == *OsWindowData
   // select for events targeted at this window
-  return event->xany.window == Window(arg);
+  OsWindowData *data = (OsWindowData*)(arg);
+  return event->xany.window == data->window;
 }
 
 int64_t GlopThink(GlopWindowHandle windowHandle) {
@@ -295,7 +296,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
   int last_botched_release = -1;
   int last_botched_time = -1;
   // TODO(tmckee): would using XCheck[Typed]WindowEvent be cleaner?
-  while(XCheckIfEvent(display, &event, &EventTester, XPointer(data->window))) {
+  while(XCheckIfEvent(display, &event, &EventTester, XPointer(data))) {
     if((event.type == KeyPress || event.type == KeyRelease) && event.xkey.keycode < 256) {
       // X is kind of a cock and likes to send us hardware repeat messages for people holding buttons down. Why do you do this, X? Why do you have to make me hate you?
 
@@ -382,7 +383,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         return gt();
 
       case ClientMessage :
-        // TODO(tmckee): ummm... shouldn't we close the window? we should
+        // TODO(tmckee#22): ummm... shouldn't we close the window? we should
         // verify that this case runs if someone clicks the 'x' through
         // window-decoration or w/e
         if(event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(close_atom)) {
