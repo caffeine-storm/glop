@@ -1,6 +1,9 @@
 package systemtest
 
-import "github.com/runningwild/glop/gin"
+import (
+	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/glog"
+)
 
 type Driver interface {
 	Click(wx, wy int)
@@ -15,8 +18,11 @@ type testDriver struct {
 
 func (d *testDriver) Click(wx, wy int) {
 	// Run 'xdotool click $wx $wy'
-	runXDoTool("mousemove", wx, wy)
-	runXDoTool("click", "1")
+	glog.DebugLogger().Debug("testDriver.Click>move", "wx", wx, "wy", wy, "self", d)
+	runXDoTool("mousemove", "--sync", wx, wy)
+	glog.DebugLogger().Debug("testDriver.Click>click", "wx", wx, "wy", wy, "self", d)
+	runXDoTool("click", "--window", d.window.hdl, "1")
+	glog.DebugLogger().Debug("testDriver.Click>done", "wx", wx, "wy", wy, "self", d)
 }
 
 func (d *testDriver) ProcessFrame() {

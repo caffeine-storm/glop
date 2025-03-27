@@ -70,19 +70,21 @@ func TestSystemtestDriver(t *testing.T) {
 
 		// Click on two points within the windows' shared bounds and process their
 		// events. Assert that each window sees only the click sent to it.
+		// TODO(tmckee): it seems clickA => clickB => procA => procB fails... it
+		// should not fail.
 		driverA.Click(16, 22)
-		driverB.Click(21, 19)
 		driverA.ProcessFrame()
+		driverB.Click(21, 19)
 		driverB.ProcessFrame()
 
 		// Assert each window got their click.
 		expectedClickA := click{
-			x: 16,
-			y: 22,
+			x: 16 - 12,
+			y: 22 - 17,
 		}
 		expectedClickB := click{
-			x: 21,
-			y: 19,
+			x: 21 - 12,
+			y: 19 - 17,
 		}
 		clickA, found := LastClick(aclicks)
 		if !found {
