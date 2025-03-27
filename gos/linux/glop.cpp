@@ -282,6 +282,7 @@ int64_t GlopThink() {
   XEvent event;
   int last_botched_release = -1;
   int last_botched_time = -1;
+  // TODO(tmckee): would using XCheck[Typed]WindowEvent be cleaner?
   while(XCheckIfEvent(display, &event, &EventTester, XPointer(data->window))) {
     if((event.type == KeyPress || event.type == KeyRelease) && event.xkey.keycode < 256) {
       // X is kind of a cock and likes to send us hardware repeat messages for people holding buttons down. Why do you do this, X? Why do you have to make me hate you?
@@ -369,6 +370,9 @@ int64_t GlopThink() {
         return gt();
 
       case ClientMessage :
+        // TODO(tmckee): ummm... shouldn't we close the window? we should
+        // verify that this case runs if someone clicks the 'x' through
+        // window-decoration or w/e
         if(event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(close_atom)) {
 //            WindowDashDestroy();
 //            LOGF("destroj\n");

@@ -1,3 +1,6 @@
+tmckee:#22 clicking the 'x' button on a window doesn't close it r.n. We need to
+detect a "close message" or smth in glop.cpp.
+
 tmckee:#21 document what the phsaes of event handling
 	- what are the phases; a good name would go a long way here
 	- what is each phase responsible for
@@ -63,4 +66,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #22
+next bug: #23
