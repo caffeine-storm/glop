@@ -238,13 +238,7 @@ XButtonEvent const * toButtonEvent(XEvent const & evt) {
   }
 }
 
-static bool SynthButton(int button, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
-
-  XButtonEvent const *btnEvent = toButtonEvent(event);
-  if(btnEvent == NULL) {
-    fprintf(stderr, "SynthButton: unknown event.type: %d\n", event.type);
-    return false;
-  }
+static bool SynthButton(int button, bool pushed, XButtonEvent const &event, Window window, struct GlopKeyEvent *ev) {
 
   GlopKey ki;
   switch(button) {
@@ -275,10 +269,10 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
   ev->device_type = glopDeviceMouse;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = btnEvent->x;
-  ev->cursor_y = btnEvent->y;
-  ev->num_lock = event.xkey.state & (1 << 4);
-  ev->caps_lock = event.xkey.state & LockMask;
+  ev->cursor_x = event.x;
+  ev->cursor_y = event.y;
+  ev->num_lock = event.state & (1 << 4);
+  ev->caps_lock = event.state & LockMask;
   return true;
 }
 
@@ -371,12 +365,12 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
       }
 
       case ButtonPress:
-        if(SynthButton(event.xbutton.button, true, event, data->window, &ev))
+        if(SynthButton(event.xbutton.button, true, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;
 
       case ButtonRelease:
-        if(SynthButton(event.xbutton.button, false, event, data->window, &ev))
+        if(SynthButton(event.xbutton.button, false, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;
 
