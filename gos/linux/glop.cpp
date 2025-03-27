@@ -106,16 +106,10 @@ XKeyEvent const * toKeyEvent(XEvent const & evt) {
   }
 }
 
-static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
+static bool SynthKey(KeySym const &sym, bool pushed, XKeyEvent const &event, Window window, struct GlopKeyEvent *ev) {
   // TODO(tmckee): this case conversion stuff is poopy.
   KeySym throwaway_lower, key;
   XConvertCase(sym, &throwaway_lower, &key);
-
-  XKeyEvent const *keyEvent = toKeyEvent(event);
-  if(keyEvent == NULL) {
-    fprintf(stderr, "SynthKey: bad event type: %d\n", event.type);
-    return false;
-  }
 
   GlopKey ki = 0;
   switch(key) {
@@ -227,10 +221,10 @@ static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window
   ev->device_type = glopDeviceKeyboard;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = keyEvent->x;
-  ev->cursor_y = keyEvent->y;
-  ev->num_lock = event.xkey.state & (1 << 4);
-  ev->caps_lock = event.xkey.state & LockMask;
+  ev->cursor_x = event.x;
+  ev->cursor_y = event.y;
+  ev->num_lock = event.state & (1 << 4);
+  ev->caps_lock = event.state & LockMask;
   return true;
 }
 
@@ -359,7 +353,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
 
-        if(SynthKey(sym, true, event, data->window, &ev))
+        if(SynthKey(sym, true, event.xkey, data->window, &ev))
           data->events.push_back(ev);
         break;
       }
@@ -371,7 +365,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
 
-        if(SynthKey(sym, false, event, data->window, &ev))
+        if(SynthKey(sym, false, event.xkey, data->window, &ev))
           data->events.push_back(ev);
         break;
       }
