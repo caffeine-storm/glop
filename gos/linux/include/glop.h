@@ -1,6 +1,7 @@
 #ifndef __GLOP_H__
 #define __GLOP_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
