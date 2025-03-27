@@ -18,8 +18,9 @@ type SystemObject struct {
 }
 
 // Call after runtime.LockOSThread(), *NOT* in an init function
-func (linux *SystemObject) Startup() {
-	C.GlopInit()
+func (linux *SystemObject) Startup() int64 {
+
+	return int64(C.GlopInit())
 }
 
 func (linux *SystemObject) Run() {

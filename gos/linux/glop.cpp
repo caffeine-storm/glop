@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <map>
+#include <mutex>
 #include <set>
 #include <string>
 #include <sys/time.h>
@@ -28,6 +29,7 @@ void GlopClearKeyEvent(struct GlopKeyEvent* event) {
 
 typedef short GlopKey;
 
+static std::mutex initMut;
 Display *display = NULL;
 int screen = 0;
 XIM xim = NULL;
@@ -66,16 +68,27 @@ unsigned long GetNativeHandle(GlopWindowHandle hdl) {
   return hdl.data->window;
 }
 
-void GlopInit() {
-  display = XOpenDisplay(NULL);
-//  ASSERT(display);
+int64_t GlopInit() {
+  auto lck = std::unique_lock(initMut);
+  if(display == NULL) {
+    display = XOpenDisplay(NULL);
+    if(display == NULL) {
+      fprintf(stderr, "fatal: couldn't open X display\n");
+      abort();
+    }
 
-  screen = DefaultScreen(display);
+    screen = DefaultScreen(display);
 
-  xim = XOpenIM(display, NULL, NULL, NULL);
-//  ASSERT(xim);
+    xim = XOpenIM(display, NULL, NULL, NULL);
+    if(xim == NULL) {
+      fprintf(stderr, "fatal: couldn't open X input method\n");
+      abort();
+    }
 
-  close_atom = XInternAtom(display, "WM_DELETE_WINDOW", false);
+    close_atom = XInternAtom(display, "WM_DELETE_WINDOW", False);
+  }
+
+  return gt();
 }
 
 void glopShutDown() {

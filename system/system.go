@@ -45,9 +45,10 @@ type System interface {
 // NewSystemInterface() which takes no parameters and returns an object that
 // implements the system.Os interface.
 type Os interface {
-	// This is properly called after runtime.LockOSThread(), not in an init
-	// function
-	Startup()
+	// This should be called after runtime.LockOSThread(). So, take care not to
+	// call it in a package init() function. Returns a timestamp like Think() or
+	// GetInputEvents().
+	Startup() int64
 
 	// Think() is called on a regular basis and always from main thread. Returns
 	// the an event horizon; a timestamp that can be compared with
@@ -103,8 +104,7 @@ func Make(os Os, input *gin.Input) System {
 }
 
 func (sys *sysObj) Startup() {
-	sys.os.Startup()
-	sys.start_ms = 14 // TODO(tmckee): get an initial timestamp from native call to GlopInit()
+	sys.start_ms = sys.os.Startup()
 }
 
 func (sys *sysObj) Think() int64 {

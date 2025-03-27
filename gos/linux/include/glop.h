@@ -107,7 +107,7 @@ typedef struct {
 } GlopWindowHandle;
 unsigned long GetNativeHandle(GlopWindowHandle);
 
-void GlopInit();
+int64_t GlopInit();
 // Returns an opaque handle for further window operations.
 GlopWindowHandle GlopCreateWindow(
     char const* title,
