@@ -354,12 +354,8 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
       }
 
       case ButtonPress:
-        if(SynthButton(event.xbutton.button, true, event.xbutton, data->window, &ev))
-          data->events.push_back(ev);
-        break;
-
       case ButtonRelease:
-        if(SynthButton(event.xbutton.button, false, event.xbutton, data->window, &ev))
+        if(SynthButton(event.xbutton.button, event.type == ButtonPress, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;
 
