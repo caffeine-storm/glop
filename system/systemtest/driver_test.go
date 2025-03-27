@@ -37,16 +37,17 @@ func WatchForMouseEvents(drv systemtest.Driver) *[]gin.MouseEvent {
 }
 
 func LastClick(events *[]gin.MouseEvent) (click, bool) {
-	if len(*events) == 0 {
-		return click{}, false
+	for i := len(*events) - 1; i >= 0; i-- {
+		evt := (*events)[i]
+		if evt.Type == gin.MouseEventTypeClick {
+			return click{
+				x: evt.X,
+				y: evt.Y,
+			}, true
+		}
 	}
 
-	evt := (*events)[len(*events)-1]
-
-	return click{
-		x: evt.X,
-		y: evt.Y,
-	}, true
+	return click{}, false
 }
 
 func TestSystemtestDriver(t *testing.T) {
