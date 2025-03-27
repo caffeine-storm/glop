@@ -288,39 +288,24 @@ static bool SynthButton(int button, bool pushed, const XEvent &event, Window win
   return true;
 }
 
-XMotionEvent const * toMotionEvent(XEvent const & evt) {
-  switch(evt.type) {
-    case MotionNotify:
-      return &evt.xmotion;
-    default:
-      return NULL;
-  }
-}
-
-static bool SynthMotion(int dx, int dy, const XEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
-  XMotionEvent const * motionEvt = toMotionEvent(event);
-  if(motionEvt == NULL) {
-    fprintf(stderr, "SynthMotion: bad event type: %d\n", event.type);
-    return false;
-  }
-
+static bool SynthMotion(int dx, int dy, const XMotionEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
   ev->index = kMouseXAxis;
   ev->device_type = glopDeviceMouse;
   ev->press_amt = dx;
   ev->timestamp = gt();
-  ev->cursor_x = motionEvt->x;
-  ev->cursor_y = motionEvt->y;
-  ev->num_lock = event.xkey.state & (1 << 4);
-  ev->caps_lock = event.xkey.state & LockMask;
+  ev->cursor_x = event.x;
+  ev->cursor_y = event.y;
+  ev->num_lock = event.state & (1 << 4);
+  ev->caps_lock = event.state & LockMask;
 
   ev2->index = kMouseYAxis;
   ev2->device_type = glopDeviceMouse;
   ev2->press_amt = dy;
   ev2->timestamp = ev->timestamp;
-  ev2->cursor_x = motionEvt->x;
-  ev2->cursor_y = motionEvt->y;
-  ev2->num_lock = event.xkey.state & (1 << 4);
-  ev2->caps_lock = event.xkey.state & LockMask;
+  ev2->cursor_x = event.x;
+  ev2->cursor_y = event.y;
+  ev2->num_lock = event.state & (1 << 4);
+  ev2->caps_lock = event.state & LockMask;
 
   return true;
 }
@@ -401,15 +386,15 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
           data->events.push_back(ev);
         break;
 
-      case MotionNotify:
+      case MotionNotify: {
         struct GlopKeyEvent ev2;
         GlopClearKeyEvent(&ev2);
-        if(SynthMotion(event.xmotion.x, event.xmotion.y, event, data->window, &ev, &ev2)) {
+        if(SynthMotion(event.xmotion.x, event.xmotion.y, event.xmotion, data->window, &ev, &ev2)) {
           data->events.push_back(ev);
           data->events.push_back(ev2);
         }
         break;
-
+      }
       case FocusIn:
         XSetICFocus(data->inputcontext);
         break;
