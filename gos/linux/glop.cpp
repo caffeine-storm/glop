@@ -376,20 +376,29 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
       // XRefreshKeyboardMapping as needed. See:
       // https://tronche.com/gui/x/xlib/utilities/keyboard/XRefreshKeyboardMapping.html
       case DestroyNotify:
-          // TODO: probably want to do something here
-//        WindowDashDestroy(); // ffffff
-//        LOGF("destroed\n");
-        return gt();
+        // WindowDashDestroy(); // ffffff
+        // LOGF("destroed\n");
+        // IIUC, the application gets this _once_ a window is destroyed, so we
+        // shouldn't need to do anything special here?
+        fprintf(stderr, "GlopThink: unhandled event type (DestroyNotify)\n");
+        break;
 
       case ClientMessage :
-        // TODO(tmckee#22): ummm... shouldn't we close the window? we should
+        // TODO(tmckee#22): ummm... should we close the window? We should
         // verify that this case runs if someone clicks the 'x' through
         // window-decoration or w/e
+
+        // IIUC, the window manager could XSendEvent to us for any number of
+        // reasons but the 'close_atom' can be used to detect a "PLEASE GO
+        // AWAY" message.
         if(event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(close_atom)) {
-//            WindowDashDestroy();
-//            LOGF("destroj\n");
-            return gt();
+          // WindowDashDestroy();
+          // LOGF("destroj\n");
+          return gt();
         }
+
+        fprintf(stderr, "GlopThink: unhandled event type (ClientMessage)\n");
+        break;
     }
   }
 
