@@ -498,7 +498,6 @@ func (g *Gui) Draw() {
 }
 
 func (g *Gui) Think(t int64) {
-	fmt.Printf("gui.Think called on horizon %d\n", t)
 	g.root.Think(g, t)
 }
 
