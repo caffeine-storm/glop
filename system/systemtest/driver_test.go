@@ -26,7 +26,7 @@ func GivenANewDriver() (systemtest.Driver, func()) {
 	return drv, cleanup
 }
 
-func WatchForClicks(drv systemtest.Driver) *[]gin.MouseEvent {
+func WatchForMouseEvents(drv systemtest.Driver) *[]gin.MouseEvent {
 	ret := new([]gin.MouseEvent)
 
 	drv.AddMouseListener(func(evt gin.MouseEvent) {
@@ -64,8 +64,8 @@ func TestSystemtestDriver(t *testing.T) {
 		driverA.ProcessFrame()
 		driverB.ProcessFrame()
 
-		aclicks := WatchForClicks(driverA)
-		bclicks := WatchForClicks(driverB)
+		mouseEventsA := WatchForMouseEvents(driverA)
+		mouseEventsB := WatchForMouseEvents(driverB)
 
 		// Click on two points within the windows' shared bounds and process their
 		// events. Assert that each window sees only the click sent to it.
@@ -85,17 +85,17 @@ func TestSystemtestDriver(t *testing.T) {
 			x: 9,
 			y: 2,
 		}
-		clickA, found := LastClick(aclicks)
+		clickA, found := LastClick(mouseEventsA)
 		if !found {
 			t.Error("no events found for driverA")
 		}
-		clickB, found := LastClick(bclicks)
+		clickB, found := LastClick(mouseEventsB)
 		if !found {
 			t.Error("no events found for driverB")
 		}
 
 		if clickA != expectedClickA || clickB != expectedClickB {
-			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", aclicks, bclicks)
+			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", mouseEventsA, mouseEventsB)
 		}
 	})
 }
