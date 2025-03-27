@@ -13,7 +13,7 @@ var (
 	_ system.Os = (*linuxSystemObject)(nil)
 )
 
-func GetSystemInterface() *linuxSystemObject {
+func NewSystemInterface() *linuxSystemObject {
 	return &linuxSystemObject{
 		SystemObject: linux.SystemObject{},
 	}

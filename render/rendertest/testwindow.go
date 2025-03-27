@@ -52,7 +52,7 @@ func checkMatrixInvariants() {
 }
 
 func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
-	linuxSystemObject := gos.GetSystemInterface()
+	linuxSystemObject := gos.NewSystemInterface()
 	sys := system.Make(linuxSystemObject, gin.MakeLogged(glog.DebugLogger()))
 
 	// Use a channel to wait for a NativeWindowHandle to show up; we want to let

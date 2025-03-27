@@ -24,7 +24,7 @@ func (win32 *win32SystemObject) Startup() {
 	C.GlopInit()
 }
 
-func GetSystemInterface() system.Os {
+func NewSystemInterface() system.Os {
 	return &win32_system_object
 }
 

@@ -7,7 +7,7 @@ import (
 type NativeWindowHandle interface{}
 
 type System interface {
-	// Call after runtime.LockOSThread(), *NOT* in an init function
+	// Call after runtime.LockOSThread(), *NOT* in an init function.
 	Startup()
 
 	// Call System.Think() every frame. Returns the 'horizon'.
@@ -40,9 +40,9 @@ type System interface {
 	AddMouseListener(func(gin.MouseEvent))
 }
 
-// This is the interface implemented by any operating system that supports
-// glop. The glop/gos package for that OS should export a function called
-// GetSystemInterface() which takes no parameters and returns an object that
+// This is the interface implemented by any operating system that glop
+// supports. The gos package on that OS should export a function called
+// NewSystemInterface() which takes no parameters and returns an object that
 // implements the system.Os interface.
 type Os interface {
 	// This is properly called after runtime.LockOSThread(), not in an init

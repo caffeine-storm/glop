@@ -25,7 +25,7 @@ func (osx *osxSystemObject) Startup() {
 	C.Init()
 }
 
-func GetSystemInterface() system.Os {
+func NewSystemInterface() system.Os {
 	return &osx_system_object
 }
 

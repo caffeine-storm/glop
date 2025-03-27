@@ -20,7 +20,7 @@ func main() {
 	toFile := os.Args[2]
 
 	runtime.LockOSThread()
-	sys := system.Make(gos.GetSystemInterface(), gin.MakeLogged(glog.InfoLogger()))
+	sys := system.Make(gos.NewSystemInterface(), gin.MakeLogged(glog.InfoLogger()))
 	wdx := 1024
 	wdy := 750
 
