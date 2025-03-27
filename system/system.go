@@ -104,7 +104,7 @@ func Make(os Os, input *gin.Input) System {
 
 func (sys *sysObj) Startup() {
 	sys.os.Startup()
-	_, sys.start_ms = sys.os.GetInputEvents()
+	sys.start_ms = 14 // TODO(tmckee): get an initial timestamp from native call to GlopInit()
 }
 
 func (sys *sysObj) Think() int64 {

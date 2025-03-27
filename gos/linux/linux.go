@@ -36,11 +36,11 @@ func (linux *SystemObject) CreateWindow(x, y, width, height int) system.NativeWi
 }
 
 func (linux *SystemObject) SwapBuffers() {
-	C.GlopSwapBuffers()
+	C.GlopSwapBuffers(linux.windowHandle)
 }
 
 func (linux *SystemObject) Think() int64 {
-	linux.horizon = int64(C.GlopThink())
+	linux.horizon = int64(C.GlopThink(linux.windowHandle))
 	return linux.horizon
 }
 
@@ -98,7 +98,11 @@ func (linux *SystemObject) GetInputEvents() ([]gin.OsEvent, int64) {
 	var length C.size_t
 	var horizon C.int64_t
 
-	C.GlopGetInputEvents(&firstEvent, &length, &horizon)
+	if linux.windowHandle.data == nil {
+		panic("can't call GetInputEvents before opening the window!")
+	}
+
+	C.GlopGetInputEvents(linux.windowHandle, &firstEvent, &length, &horizon)
 	defer C.free(unsafe.Pointer(firstEvent))
 	linux.horizon = int64(horizon)
 
@@ -144,12 +148,12 @@ func (linux *SystemObject) RawCursorToWindowCoords(x, y int) (int, int) {
 
 func (linux *SystemObject) GetWindowDims() (int, int, int, int) {
 	var x, y, dx, dy C.int
-	C.GlopGetWindowDims(&x, &y, &dx, &dy)
+	C.GlopGetWindowDims(linux.windowHandle, &x, &y, &dx, &dy)
 	return int(x), int(y), int(dx), int(dy)
 }
 
 func (linux *SystemObject) SetWindowSize(width, height int) {
-	C.GlopSetWindowSize(C.int(width), C.int(height))
+	C.GlopSetWindowSize(linux.windowHandle, C.int(width), C.int(height))
 }
 
 func (linux *SystemObject) EnableVSync(enable bool) {
@@ -160,6 +164,7 @@ func (linux *SystemObject) EnableVSync(enable bool) {
 	C.GlopEnableVSync(_enable)
 }
 
+// TODO(tmckee)(clean): this isn't used; remove it!
 func (linux *SystemObject) SetGlContext() {
 	if linux.windowHandle.data == nil {
 		// We haven't initialized a GL context yet; do nothing

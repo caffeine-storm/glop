@@ -117,13 +117,13 @@ GlopWindowHandle GlopCreateWindow(
     int height);
 
 // Returns the current time like GetInputEvents' |_horizon|.
-int64_t GlopThink();
-void GlopSwapBuffers();
+int64_t GlopThink(GlopWindowHandle);
+void GlopSwapBuffers(GlopWindowHandle);
 
-void GlopGetWindowDims(int* x, int* y, int* dx, int* dy);
-void GlopSetWindowSize(int dx, int dy);
+void GlopGetWindowDims(GlopWindowHandle, int* x, int* y, int* dx, int* dy);
+void GlopSetWindowSize(GlopWindowHandle, int dx, int dy);
 // The caller is responsible for calling free(*_events_ret)
-void GlopGetInputEvents(struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon);
+void GlopGetInputEvents(GlopWindowHandle, struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon);
 void GlopEnableVSync(int enable);
 
 // Takes a handle returned from GlopCreateWindow.

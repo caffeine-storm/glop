@@ -58,6 +58,7 @@ struct OsWindowData {
   Window window;
   XVisualInfo *vinfo;
   GLXContext context;
+  vector<struct GlopKeyEvent> events;
   XIC inputcontext;
 };
 
@@ -76,12 +77,12 @@ void GlopInit() {
 
   close_atom = XInternAtom(display, "WM_DELETE_WINDOW", false);
 }
+
 void glopShutDown() {
   XCloseIM(xim);
   XCloseDisplay(display);
 }
 
-vector<struct GlopKeyEvent> events;
 static bool SynthKey(const KeySym &sym, bool pushed, const XEvent &event, Window window, struct GlopKeyEvent *ev) {
   // mostly ignored
   Window root, child;
@@ -273,12 +274,10 @@ Bool EventTester(Display *display, XEvent *event, XPointer arg) {
   // select for events targeted at this window
   return event->xany.window == Window(arg);
 }
-OsWindowData *windowdata = NULL;
 
-int64_t GlopThink() {
-  if(!windowdata) return -1;
-
-  OsWindowData *data = windowdata;
+int64_t GlopThink(GlopWindowHandle windowHandle) {
+  // TODO(tmckee)(clean): rename data -> windowData or smth
+  OsWindowData *data = windowHandle.data;
   XEvent event;
   int last_botched_release = -1;
   int last_botched_time = -1;
@@ -320,7 +319,7 @@ int64_t GlopThink() {
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
 
         if(SynthKey(sym, true, event, data->window, &ev))
-          events.push_back(ev);
+          data->events.push_back(ev);
         break;
       }
 
@@ -332,26 +331,26 @@ int64_t GlopThink() {
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, &status);
 
         if(SynthKey(sym, false, event, data->window, &ev))
-          events.push_back(ev);
+          data->events.push_back(ev);
         break;
       }
 
       case ButtonPress:
         if(SynthButton(event.xbutton.button, true, event, data->window, &ev))
-          events.push_back(ev);
+          data->events.push_back(ev);
         break;
 
       case ButtonRelease:
         if(SynthButton(event.xbutton.button, false, event, data->window, &ev))
-          events.push_back(ev);
+          data->events.push_back(ev);
         break;
 
       case MotionNotify:
         struct GlopKeyEvent ev2;
         GlopClearKeyEvent(&ev2);
         if(SynthMotion(event.xmotion.x, event.xmotion.y, event, data->window, &ev, &ev2)) {
-          events.push_back(ev);
-          events.push_back(ev2);
+          data->events.push_back(ev);
+          data->events.push_back(ev2);
         }
         break;
 
@@ -397,8 +396,6 @@ void glopSetCurrentContext(OsWindowData* data) {
 
 GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
-//  ASSERT(!windowdata);
-  windowdata = nw;
 
   // this is bad
   if(x == -1) x = 100;
@@ -558,29 +555,30 @@ void glopGetWindowSize(const OsWindowData* data, int* width, int* height) {
   *height = attrs.height;
 }
 
-void GlopGetWindowDims(int* x, int* y, int* dx, int* dy) {
-  glopGetWindowPosition(windowdata, x, y);
-  glopGetWindowSize(windowdata, dx, dy);
+void GlopGetWindowDims(GlopWindowHandle hdl, int* x, int* y, int* dx, int* dy) {
+  glopGetWindowPosition(hdl.data, x, y);
+  glopGetWindowSize(hdl.data, dx, dy);
 }
 
-void GlopSetWindowSize(int dx, int dy) {
+void GlopSetWindowSize(GlopWindowHandle hdl, int dx, int dy) {
   // TODO(tmckee): This can generate 'BadValue' or 'BadWindow' errors. We
   // should check for them. See
   // https://tronche.com/gui/x/xlib/event-handling/protocol-errors/XSetErrorHandler.html
-  XResizeWindow(display, windowdata->window, dx, dy);
+  XResizeWindow(display, hdl.data->window, dx, dy);
 }
 
 // Input functions
 // ===============
 
-void GlopGetInputEvents(struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon) {
+void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon) {
   *_horizon = gt();
   vector<struct GlopKeyEvent> ret; // weeeeeeeeeeee
-  ret.swap(events);
+  ret.swap(hdl.data->events);
 
   *_events_ret = (struct GlopKeyEvent*)malloc(sizeof(struct GlopKeyEvent) * ret.size());
   *_num_events = ret.size();
   for (size_t i = 0; i < ret.size(); i++) {
+    // TODO(tmckee): memcpy instead?
     (*_events_ret)[i] = ret[i];
   }
 }
@@ -600,8 +598,8 @@ long long glopGetTimeMicro() {
 }
 
 
-void GlopSwapBuffers() {
-  glXSwapBuffers(display, windowdata->window);
+void GlopSwapBuffers(GlopWindowHandle hdl) {
+  glXSwapBuffers(display, hdl.data->window);
 }
 
 void GlopEnableVSync(int enable) {
