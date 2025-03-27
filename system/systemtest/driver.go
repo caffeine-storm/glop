@@ -19,7 +19,7 @@ type testDriver struct {
 func (d *testDriver) Click(wx, wy int) {
 	// Run 'xdotool click $wx $wy'
 	glog.DebugLogger().Debug("testDriver.Click>move", "wx", wx, "wy", wy, "self", d)
-	runXDoTool("mousemove", "--sync", wx, wy)
+	runXDoTool("mousemove", "--window", d.window.hdl, "--sync", wx, wy)
 	glog.DebugLogger().Debug("testDriver.Click>click", "wx", wx, "wy", wy, "self", d)
 	runXDoTool("click", "--window", d.window.hdl, "1")
 	glog.DebugLogger().Debug("testDriver.Click>done", "wx", wx, "wy", wy, "self", d)

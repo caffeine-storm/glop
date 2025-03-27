@@ -72,19 +72,19 @@ func TestSystemtestDriver(t *testing.T) {
 		// events. Assert that each window sees only the click sent to it.
 		// TODO(tmckee): it seems clickA => clickB => procA => procB fails... it
 		// should not fail.
-		driverA.Click(16, 22)
+		driverA.Click(4, 5)
 		driverA.ProcessFrame()
-		driverB.Click(21, 19)
+		driverB.Click(9, 2)
 		driverB.ProcessFrame()
 
 		// Assert each window got their click.
 		expectedClickA := click{
-			x: 16 - 12,
-			y: 22 - 17,
+			x: 4,
+			y: 5,
 		}
 		expectedClickB := click{
-			x: 21 - 12,
-			y: 19 - 17,
+			x: 9,
+			y: 2,
 		}
 		clickA, found := LastClick(aclicks)
 		if !found {
