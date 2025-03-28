@@ -1,3 +1,5 @@
+tmckee:#25 our timestamp code is scuffed in glop.cpp
+
 tmckee:#24 gui.TextLine.next_text is never used; but is needed for detecting change-in-text in gui.TextEditLine
 
 tmckee:#23 for X, we need to listen for MappingNotify events and
@@ -67,4 +69,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #25
+next bug: #26

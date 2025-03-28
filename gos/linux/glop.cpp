@@ -42,6 +42,9 @@ static long long gtm() {
   struct timeval tv;
   // TODO(tmckee): use clock_gettime with CLOCK_MONOTONIC instead
   gettimeofday(&tv, NULL);
+  // TODO(tmckee:#25) we're overflowing the long long when multiplying; we
+  // should change this entire function. Currently, this is resulting in
+  // 'current time' being negative.
   return (long long)tv.tv_sec * 1000000 + tv.tv_usec;
 }
 static int gt() {
