@@ -1,0 +1,43 @@
+It's not entirely clear from a cursory reading exactly what the expected/desired control flow is with respect to the stages of producing each frame. Here's a high-level description of what we'd expect.
+
+- each frame (haunts/main.go)
+	- sys.Think()
+		- os.Think()
+			- drain X event queue
+		- os.GetInputEvents()
+			- input-event buffer-swap
+		- input.Think(horizon-sys.start_ms, events)
+			- foreach 'event'
+				- notify mouse listeners as needed
+				- 'input.PressKey' and its baggage
+					- call Key.SetPressAmt
+						- calls Key.SetPressAmt
+						- generates gin.Event 'consequences'
+					- finding releated keys
+						- input.PressKey them too
+				- notify input listeners about all the 'consequence' events
+					- listener.HandleEventGroup
+						- !!! gui.Gui is a listener
+							- foreach widget in tree
+								- Respond()/DoRespond()
+			
+			- foreach key
+				- key.Think() (bool, float) --> need to press me with 'amount'
+					- input.pressKey(key, amt, no-cause, new-event-group)
+					- notify input listeners about all non-empty groups
+						- listener.HandleEventGroup
+							- !!! gui.Gui is a listener
+								- foreach widget in tree
+									- Respond()/DoRespond()
+
+			- foreach listener
+				- listener.Think()
+					- !!! gui.Gui is a listener
+
+	- ui.Think()
+		- !!! gui.Gui is the 'ui'
+			- WE _JUST_ HAD A THINK AT THE END OF input.Think() T_T
+		- foreach widget in tree-of-widgets
+			- Think()/DoThink()
+	- ui.Draw() [on-the-render-thread]
+		--> gui.Widgets get to Draw()
