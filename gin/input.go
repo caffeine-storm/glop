@@ -537,6 +537,7 @@ func (input *Input) GetKeyById(id KeyId) Key {
 	}
 	return key
 }
+
 func (input *Input) GetKeyByName(name string) Key {
 	input.logger.Trace("gin.Input")
 	for _, key := range input.key_map {

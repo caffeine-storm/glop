@@ -38,6 +38,8 @@ type System interface {
 
 	// Attach a Mouse listener to the underlying input delegate.
 	AddMouseListener(func(gin.MouseEvent))
+	// Attach a gin.Listener to the underlying input delegate.
+	AddInputListener(gin.Listener)
 }
 
 // This is the interface implemented by any operating system that glop
@@ -143,6 +145,10 @@ func (sys *sysObj) GetInputEvents() []gin.EventGroup {
 
 func (sys *sysObj) AddMouseListener(fn func(gin.MouseEvent)) {
 	sys.input.AddMouseListener(fn)
+}
+
+func (sys *sysObj) AddInputListener(lstnr gin.Listener) {
+	sys.input.RegisterEventListener(lstnr)
 }
 
 func (sys *sysObj) EnableVSync(enable bool) {

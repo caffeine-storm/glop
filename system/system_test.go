@@ -36,6 +36,8 @@ func (*stubSystem) GetInputEvents() []gin.EventGroup {
 
 func (*stubSystem) AddMouseListener(func(gin.MouseEvent)) {
 }
+func (*stubSystem) AddInputListener(gin.Listener) {
+}
 
 func (*stubSystem) EnableVSync(bool) {}
 

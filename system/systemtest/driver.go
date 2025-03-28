@@ -10,6 +10,7 @@ type Driver interface {
 	ProcessFrame()
 	PositionWindow(x, y int)
 	AddMouseListener(func(gin.MouseEvent))
+	AddInputListener(gin.Listener)
 }
 
 type testDriver struct {
@@ -35,6 +36,10 @@ func (d *testDriver) PositionWindow(x, y int) {
 
 func (d *testDriver) AddMouseListener(listener func(gin.MouseEvent)) {
 	d.window.sys.AddMouseListener(listener)
+}
+
+func (d *testDriver) AddInputListener(listnr gin.Listener) {
+	d.window.sys.AddInputListener(listnr)
 }
 
 var _ Driver = (*testDriver)(nil)
