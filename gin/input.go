@@ -242,14 +242,18 @@ type Input struct {
 	// depend on it in some way
 	id_to_deps map[KeyId][]Key
 
-	// map from KeyId to list of derived key families that depend on it
+	// Mapping from KeyIndex to list of derived key families that depend on it.
+	// This map should only be keyed by indices generated for derived keys;
+	// otherwise we'd have to include info to distinguish between devices too!
 	index_to_family_deps map[KeyIndex][]derivedKeyFamily
 
-	// map from KeyId to the derivedKeyFamily that it represents, if any
+	// Mapping from KeyIndex to the derivedKeyFamily that it represents, if any.
+	// This map should only be keyed by indices generated for derived keys;
+	// otherwise we'd have to include info to distinguish between devices too!
 	index_to_family map[KeyIndex]derivedKeyFamily
 
-	// map from KeyIndex to an aggregator of the appropriate type for that index,
-	// this allows us to construct Keys for devices as the events happen, rather
+	// Mapping from KeyIndex to an aggregator of the appropriate type for that index.
+	// This allows us to construct Keys for devices as the events happen, rather
 	// than needing to know what the devices are during initialization.
 	index_to_agg_type map[KeyIndex]aggregatorType
 
@@ -474,7 +478,7 @@ func (input *Input) GetKeyByParts(key_index KeyIndex, device_type DeviceType, de
 func (input *Input) GetKeyById(id KeyId) Key {
 	input.logger.Trace("gin.Input")
 	if id.Device.Type >= DeviceTypeMax || id.Device.Type < 0 {
-		panic(fmt.Sprintf("Specied invalid DeviceType, %d.", id.Device))
+		panic(fmt.Sprintf("Specified invalid DeviceType, %d.", id.Device))
 	}
 	key, ok := input.key_map[id]
 	if !ok {

@@ -223,20 +223,6 @@ type DeviceId struct {
 type DeviceIndex int
 
 const (
-	// DeviceIndexSame is used only when creating derived keys.  It allows you to
-	// specify a key combination that should be active on any keyboard.  For
-	// example, you could specify a key with the following two bindings:
-	// {LeftShift, DeviceTypeKeyboard, DeviceIndexSame}
-	// {RightShift, DeviceTypeKeyboard, DeviceIndexSame}
-	// The resulting derived key can trigger on all keyboards, and the events
-	// generated as a result will indicate the index of the keyboard that
-	// generated them.
-	// Similarly, a single binding might indicate the following two keys must be
-	// pressed:
-	// {Space, DeviceTypeKeyboard, DeviceIndexSame}
-	// {KeyA, DeviceTypeKeyboard, DeviceIndexSame}
-	// Any keyboard can do this, but Space must be pressed while A is down on the
-	// same keyboard.
 	DeviceIndexAny DeviceIndex = -1
 )
 

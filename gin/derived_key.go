@@ -138,8 +138,10 @@ func (dk *derivedKey) SetPressAmt(amt float64, ms int64, cause Event) (event Eve
 	return
 }
 
-// A Binding is considered down if PrimaryKey is down and all Modifiers'
-// IsDown()s match the corresponding entry in Down
+// A Binding, b, is considered down if b.PrimaryKey is down and all of
+// b.Modifiers[i].IsDown() matches b.Down[i]. Yes, KeyIds don't have an
+// IsDown(), we're really talking about the Key instance identified by the
+// KeyId.
 type Binding struct {
 	PrimaryKey KeyId
 	Modifiers  []KeyId
@@ -196,14 +198,14 @@ func (input *Input) BindDerivedKeyFamily(name string, bindings ...BindingFamily)
 		binding_families: bindings,
 		input:            input,
 	}
-	// TODO(🤔🤔🤔): we _replace_ values in 'index_to_family_deps'; did we mean
-	// to append to what was there?
 	// TODO(🤔🤔🤔🤔🤔🤔): we look for entries in 'input.index_to_family_deps'
 	// for a key index that we _just_ generated as unique... that can't find
 	// anything... RIGHT???
 	for _, binding := range bindings {
 		input.index_to_family_deps[binding.PrimaryIndex] = append(input.index_to_family_deps[dkf.index], dkf)
 		for _, mod := range binding.Modifiers {
+			// TODO(🤔🤔🤔): we _replace_ values in 'index_to_family_deps'; did we
+			// mean to append to what was there?
 			input.index_to_family_deps[mod] = append(input.index_to_family_deps[dkf.index], dkf)
 		}
 	}
@@ -240,8 +242,8 @@ func (dkf *derivedKeyFamily) GetKey(device DeviceId) Key {
 	return ret
 }
 
-// A BindingFamily is like a binding, but it does not specify a device.  Instead
-// a binding family can be down per device.  Example:
+// A BindingFamily is like a binding, but it does not specify a device.
+// Instead a binding family can be down per device. Example:
 //
 //	bf := BindingFamily{
 //	  PrimaryKey: KeyA,
@@ -249,9 +251,8 @@ func (dkf *derivedKeyFamily) GetKey(device DeviceId) Key {
 //	  Down: []bool{false},
 //	}
 //
-// bf will be down
-// A BindingFamily is considered down if PrimaryKey is down and all Modifiers' IsDown()s match the
-// corresponding entry in Down
+// bf is considered down if bf.PrimaryKey is down and all Keys identified by
+// elements of bf.Modifiers[i] report IsDown()==bf.Down[i]
 type BindingFamily struct {
 	PrimaryIndex KeyIndex
 	Modifiers    []KeyIndex
