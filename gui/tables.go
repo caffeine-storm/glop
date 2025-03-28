@@ -33,8 +33,8 @@ type Table interface {
 
 type VerticalTable struct {
 	EmbeddedWidget
-	NonResponder
-	NonFocuser
+	StubDoResponder
+	StubDrawFocuseder
 	BasicZone
 	StandardParent
 	params TableParams
@@ -148,8 +148,8 @@ func (w *VerticalTable) Draw(region Region, ctx DrawingContext) {
 
 type HorizontalTable struct {
 	EmbeddedWidget
-	NonResponder
-	NonFocuser
+	StubDoResponder
+	StubDrawFocuseder
 	BasicZone
 	StandardParent
 	params TableParams

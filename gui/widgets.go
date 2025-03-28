@@ -22,9 +22,9 @@ type Anchor struct {
 // a widget.
 type AnchorBox struct {
 	EmbeddedWidget
-	NonResponder
-	NonThinker
-	NonFocuser
+	StubDoResponder
+	StubDoThinker
+	StubDrawFocuseder
 	BasicZone
 	children []Widget
 	anchors  []Anchor
@@ -97,9 +97,9 @@ func (w *AnchorBox) Draw(region Region, ctx DrawingContext) {
 
 type ImageBox struct {
 	EmbeddedWidget
-	NonResponder
-	NonThinker
-	NonFocuser
+	StubDoResponder
+	StubDoThinker
+	StubDrawFocuseder
 	BasicZone
 	Childless
 
@@ -210,8 +210,8 @@ type CollapseWrapper struct {
 	EmbeddedWidget
 	Wrapper
 	CollapsableZone
-	NonResponder
-	NonFocuser
+	StubDoResponder
+	StubDrawFocuseder
 }
 
 func MakeCollapseWrapper(w Widget) *CollapseWrapper {

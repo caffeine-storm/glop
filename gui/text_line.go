@@ -10,8 +10,8 @@ import (
 type TextLine struct {
 	EmbeddedWidget
 	Childless
-	NonResponder
-	NonFocuser
+	StubDoResponder
+	StubDrawFocuseder
 	BasicZone
 	text string
 	// TODO(tmckee:#24): this isn't written to; it'll always be the empty string

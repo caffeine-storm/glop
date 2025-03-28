@@ -17,9 +17,9 @@ const (
 type checkBox struct {
 	EmbeddedWidget
 	Childless
-	NonFocuser
-	NonResponder
-	NonThinker
+	StubDrawFocuseder
+	StubDoResponder
+	StubDoThinker
 	BasicZone
 	selected checkBoxSelection
 	disabled bool

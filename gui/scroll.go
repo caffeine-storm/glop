@@ -7,8 +7,8 @@ import (
 
 type ScrollFrame struct {
 	EmbeddedWidget
-	NonFocuser
-	NonThinker
+	StubDrawFocuseder
+	StubDoThinker
 	BasicZone
 	StandardParent
 	amt float64

@@ -209,13 +209,15 @@ type Widget interface {
 	DrawFocused(Region, DrawingContext)
 	String() string
 }
+
 type CoreWidget interface {
+	Zone
+
 	DoThink(dt int64, isFocused bool)
 
 	// If change_focus is true, then the EventGroup will be consumed,
 	// regardless of the value of consume
 	DoRespond(EventGroup) (consume, change_focus bool)
-	Zone
 
 	Draw(Region, DrawingContext)
 	DrawFocused(Region, DrawingContext)
@@ -223,6 +225,7 @@ type CoreWidget interface {
 	GetChildren() []Widget
 	String() string
 }
+
 type EmbeddedWidget interface {
 	Think(*Gui, int64)
 	Respond(*Gui, EventGroup) (consume bool)
@@ -330,17 +333,17 @@ func (c Clickable) DoRespond(event_group EventGroup) (bool, bool) {
 	return false, false
 }
 
-type NonFocuser struct{}
+type StubDrawFocuseder struct{}
 
-func (n NonFocuser) DrawFocused(Region, DrawingContext) {}
+func (n StubDrawFocuseder) DrawFocused(Region, DrawingContext) {}
 
-type NonThinker struct{}
+type StubDoThinker struct{}
 
-func (n NonThinker) DoThink(int64, bool) {}
+func (n StubDoThinker) DoThink(int64, bool) {}
 
-type NonResponder struct{}
+type StubDoResponder struct{}
 
-func (n NonResponder) DoRespond(EventGroup) (bool, bool) {
+func (n StubDoResponder) DoRespond(EventGroup) (bool, bool) {
 	return false, false
 }
 
@@ -396,9 +399,9 @@ type rootWidget struct {
 	EmbeddedWidget
 	StandardParent
 	BasicZone
-	NonResponder
-	NonThinker
-	NonFocuser
+	StubDoResponder
+	StubDoThinker
+	StubDrawFocuseder
 }
 
 func (r *rootWidget) String() string {

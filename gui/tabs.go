@@ -1,7 +1,7 @@
 package gui
 
 type TabFrame struct {
-	NonFocuser
+	StubDrawFocuseder
 	BasicZone
 	StandardParent
 	active int
