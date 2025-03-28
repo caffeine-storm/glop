@@ -13,7 +13,9 @@ type TextLine struct {
 	NonResponder
 	NonFocuser
 	BasicZone
-	text      string
+	text string
+	// TODO(tmckee:#24): this isn't written to; it'll always be the empty string
+	// so TextEditLine is broken and can't see when the text changes.
 	next_text string
 	font_id   string
 	initted   bool

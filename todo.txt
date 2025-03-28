@@ -1,3 +1,5 @@
+tmckee:#24 gui.TextLine.next_text is never used; but is needed for detecting change-in-text in gui.TextEditLine
+
 tmckee:#23 for X, we need to listen for MappingNotify events and
 XRefreshKeyboardMapping() as needed
 https://tronche.com/gui/x/xlib/utilities/keyboard/XRefreshKeyboardMapping.html
@@ -70,4 +72,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #24
+next bug: #25
