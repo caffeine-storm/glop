@@ -14,16 +14,17 @@ type Key interface {
 	// Unique Id
 	Id() KeyId
 
-	// Sets the instantaneous press amount for this key at a specific time and returns the
-	// event generated, if any
+	// Sets the instantaneous press amount for this key at a specific time and
+	// returns the event generated, if any.
 	SetPressAmt(amt float64, ms int64, cause Event) Event
 
-	// Returns the Cursor associated with this key, or nil if it has no such association.
+	// Returns the Cursor associated with this key, or nil if it has no such
+	// association.
 	Cursor() Cursor
 
-	// A very select set of keys should always send events when their press amt is
-	// non-zero.  These are typically not your ordinary keys, mouse wheels, mouse
-	// pointers, etc...
+	// A very select set of keys should always send events when their press amt
+	// is non-zero. These are typically not your ordinary keys, mouse wheels,
+	// mouse pointers, etc...
 	SendAllNonZero() bool
 
 	// A Key may return true, amt from Think() to indicate that a fake event
@@ -32,6 +33,7 @@ type Key interface {
 
 	subAggregator
 }
+
 type subAggregator interface {
 	IsDown() bool
 	FramePressCount() int
@@ -44,6 +46,7 @@ type subAggregator interface {
 	CurPressAmt() float64
 	CurPressSum() float64
 }
+
 type aggregator interface {
 	subAggregator
 	Think(ms int64) (bool, float64)
@@ -59,8 +62,8 @@ const (
 	aggregatorTypeWheel
 )
 
-// Simple struct that aggregates presses and press_amts during a frame so they can be viewed
-// between Think()s
+// Simple struct that aggregates presses and press_amts during a frame so they
+// can be viewed between Think()s
 type keyStats struct {
 	press_count   int
 	release_count int
@@ -76,30 +79,39 @@ type baseAggregator struct {
 func (a *baseAggregator) FramePressCount() int {
 	return a.prev.press_count
 }
+
 func (a *baseAggregator) FrameReleaseCount() int {
 	return a.prev.release_count
 }
+
 func (a *baseAggregator) FramePressAmt() float64 {
 	return a.prev.press_amt
 }
+
 func (a *baseAggregator) FramePressSum() float64 {
 	return a.prev.press_sum
 }
+
 func (a *baseAggregator) FramePressAvg() float64 {
 	return a.prev.press_avg
 }
+
 func (a *baseAggregator) CurPressCount() int {
 	return a.this.press_count
 }
+
 func (a *baseAggregator) CurReleaseCount() int {
 	return a.this.release_count
 }
+
 func (a *baseAggregator) CurPressAmt() float64 {
 	return a.this.press_amt
 }
+
 func (a *baseAggregator) CurPressSum() float64 {
 	return a.this.press_sum
 }
+
 func (a *baseAggregator) handleEventType(event_type EventType) {
 	switch event_type {
 	case Press:
@@ -108,11 +120,12 @@ func (a *baseAggregator) handleEventType(event_type EventType) {
 		a.this.release_count++
 	}
 }
+
 func (a *baseAggregator) SendAllNonZero() bool {
 	return false
 }
 
-// the standardAggregator's sum is an integral of the press_amt over time
+// The standardAggregator's sum is an integral of the press_amt over time
 type standardAggregator struct {
 	baseAggregator
 	last_press int64
@@ -122,12 +135,14 @@ type standardAggregator struct {
 func (sa *standardAggregator) IsDown() bool {
 	return sa.this.press_amt != 0
 }
+
 func (sa *standardAggregator) SetPressAmt(amt float64, ms int64, event_type EventType) {
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
 	sa.this.press_amt = amt
 	sa.last_press = ms
 	sa.handleEventType(event_type)
 }
+
 func (sa *standardAggregator) Think(ms int64) (bool, float64) {
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
 	if ms != sa.last_think {
@@ -144,8 +159,8 @@ func (sa *standardAggregator) Think(ms int64) (bool, float64) {
 	return false, 0
 }
 
-// The axisAggregator's sum is the sum of all press amounts specified by SetPressAmt()
-// FramePressAvg() returns the same value as FramePressSum()
+// The axisAggregator's sum is the sum of all press amounts specified by
+// SetPressAmt(). FramePressAvg() returns the same value as FramePressSum().
 type axisAggregator struct {
 	baseAggregator
 	is_down bool
@@ -154,6 +169,7 @@ type axisAggregator struct {
 func (aa *axisAggregator) IsDown() bool {
 	return aa.is_down
 }
+
 func (aa *axisAggregator) SetPressAmt(amt float64, ms int64, event_type EventType) {
 	aa.this.press_sum += amt
 	aa.this.press_amt = amt
@@ -162,6 +178,7 @@ func (aa *axisAggregator) SetPressAmt(amt float64, ms int64, event_type EventTyp
 	}
 	aa.handleEventType(event_type)
 }
+
 func (aa *axisAggregator) Think(ms int64) (bool, float64) {
 	was_down := aa.prev.press_amt != 0
 	aa.prev = aa.this
@@ -265,10 +282,10 @@ func (ks *keyState) Cursor() Cursor {
 	return ks.cursor
 }
 
-// Tells this key that how much it was pressed at a particular time.  Times must be
-// monotonically increasing.
-// If this press was caused by another event (as is the case with derived keys), then
-// cause is the event that made this happen.
+// Tells this key that how much it was pressed at a particular time. Times must
+// be monotonically increasing. If this press was caused by another event (as
+// is the case with derived keys), then cause is the event that made this
+// happen.
 func (ks *keyState) SetPressAmt(amt float64, ms int64, cause Event) (event Event) {
 	event.Type = NoEvent
 	event.Key = ks

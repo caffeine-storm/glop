@@ -416,8 +416,7 @@ func (event EventType) String() string {
 	case Adjust:
 		return "adjust"
 	}
-	panic(fmt.Sprintf("%d is not a valid EventType", event))
-	return ""
+	panic(fmt.Errorf("%d is not a valid EventType", event))
 }
 
 // TODO: Consider making a Timestamp type (int64)
