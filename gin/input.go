@@ -607,6 +607,7 @@ type Listener interface {
 }
 type EventDispatcher interface {
 	RegisterEventListener(Listener)
+	AddMouseListener(MouseListenerFunc)
 }
 
 func (input *Input) RegisterEventListener(listener Listener) {

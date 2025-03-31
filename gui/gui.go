@@ -431,6 +431,28 @@ const (
 	ButtonPressTypeEnd
 )
 
+func nextPressType(current ButtonPressType, now gin.MouseEventType) ButtonPressType {
+	switch now {
+	case gin.MouseEventTypeClick:
+		switch current {
+		case ButtonPressTypeUp:
+			return ButtonPressTypeStart
+		case ButtonPressTypeDown:
+			return ButtonPressTypeDown
+		case ButtonPressTypeStart:
+			return ButtonPressTypeDown
+		case ButtonPressTypeEnd:
+			return ButtonPressTypeStart
+		}
+	case gin.MouseEventTypeMove:
+		fallthrough
+	case gin.MouseEventTypeWheel:
+		return current
+	}
+
+	panic(fmt.Errorf("unknown MouseEventType: %v", now))
+}
+
 type mouseState struct {
 	X, Y                int
 	Left, Middle, Right ButtonPressType
@@ -440,8 +462,11 @@ func (ms *mouseState) GetPosition() (int, int) {
 	return ms.X, ms.Y
 }
 
-func (ms *mouseState) Update(group gin.EventGroup) {
-	// TODO(tmckee): implement this!
+func (ms *mouseState) Update(mouseEvent gin.MouseEvent) {
+	ms.X = mouseEvent.X
+	ms.Y = mouseEvent.Y
+
+	ms.Left = nextPressType(ms.Left, mouseEvent.Type)
 }
 
 type Gui struct {
@@ -509,6 +534,7 @@ func MakeLogged(dims Dims, dispatcher gin.EventDispatcher, logger glog.Logger) (
 	g.root.Request_dims = dims
 	g.root.Render_region.Dims = dims
 	dispatcher.RegisterEventListener(&g)
+	dispatcher.AddMouseListener(g.UpdateMouseState)
 	return &g, nil
 }
 
@@ -535,10 +561,11 @@ func (g *Gui) Think(t int64) {
 	g.root.Think(g, t)
 }
 
-func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
-	// Update our cached state of the mouse
-	g.mouseState.Update(gin_group)
+func (g *Gui) UpdateMouseState(mouseEvent gin.MouseEvent) {
+	g.mouseState.Update(mouseEvent)
+}
 
+func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
 	event_group := EventGroup{gin_group, false}
 
 	// If there is one or more focused widgets, tell the top-of the focus-stack
