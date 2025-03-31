@@ -1,3 +1,6 @@
+tmckee:#26 gin.MouseEvents need to distinguish between left/middle/right
+buttons
+
 tmckee:#25 our timestamp code is scuffed in glop.cpp
 
 tmckee:#24 gui.TextLine.next_text is never used; but is needed for detecting change-in-text in gui.TextEditLine
@@ -69,4 +72,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #26
+next bug: #27

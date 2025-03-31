@@ -14,6 +14,7 @@ const (
 	MouseEventTypeWheel
 )
 
+// TODO(#26): need to distinguish between left/middle/right buttons
 type MouseEvent struct {
 	X, Y int
 	Type MouseEventType
