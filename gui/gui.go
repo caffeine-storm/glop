@@ -174,7 +174,7 @@ type Zone interface {
 
 type EventGroup struct {
 	gin.EventGroup
-	Focus bool
+	DispatchedToFocussedWidget bool
 }
 
 type WidgetParent interface {
@@ -193,6 +193,14 @@ type UpdateableDrawingContext interface {
 	DrawingContext
 	SetDictionary(fontname string, d *Dictionary)
 	SetShaders(fontname string, b *render.ShaderBank)
+}
+
+type EventHandlingContext interface {
+	IsMouseEvent(grp EventGroup) bool
+	GetMousePosition() (int, int)
+	LeftButton() bool
+	MiddleButton() bool
+	RightButton() bool
 }
 
 type Widget interface {
@@ -217,7 +225,7 @@ type CoreWidget interface {
 
 	// If change_focus is true, then the EventGroup will be consumed,
 	// regardless of the value of consume
-	DoRespond(EventGroup) (consume, change_focus bool)
+	DoRespond(EventHandlingContext, EventGroup) (consume, change_focus bool)
 
 	Draw(Region, DrawingContext)
 	DrawFocused(Region, DrawingContext)
@@ -245,18 +253,17 @@ func (w *BasicWidget) Think(gui *Gui, t int64) {
 	w.DoThink(t, w == gui.FocusWidget())
 }
 func (w *BasicWidget) Respond(gui *Gui, event_group EventGroup) bool {
-	cursor := event_group.Events[0].Key.Cursor()
-	if cursor != nil {
+	if gui.IsMouseEvent(event_group) {
 		var p Point
-		p.X, p.Y = cursor.Point()
+		p.X, p.Y = gui.GetMousePosition()
 		if !p.Inside(w.Rendered()) {
 			return false
 		}
 	}
-	consume, change_focus := w.DoRespond(event_group)
+	consume, change_focus := w.DoRespond(gui, event_group)
 
 	if change_focus {
-		if event_group.Focus {
+		if event_group.DispatchedToFocussedWidget {
 			gui.DropFocus()
 		} else {
 			gui.TakeFocus(w)
@@ -321,13 +328,13 @@ func (cz *CollapsableZone) Expandable() (bool, bool) {
 // Embed a Clickable object to run a specified function when the widget
 // is clicked and run a specified function.
 type Clickable struct {
-	on_click func(int64)
+	on_click func(EventHandlingContext, int64)
 }
 
-func (c Clickable) DoRespond(event_group EventGroup) (bool, bool) {
+func (c Clickable) DoRespond(ctx EventHandlingContext, event_group EventGroup) (bool, bool) {
 	event := event_group.Events[0]
 	if event.Type == gin.Press && event.Key.Id() == gin.AnyMouseLButton {
-		c.on_click(event_group.Timestamp)
+		c.on_click(ctx, event_group.Timestamp)
 		return true, false
 	}
 	return false, false
@@ -343,7 +350,7 @@ func (n StubDoThinker) DoThink(int64, bool) {}
 
 type StubDoResponder struct{}
 
-func (n StubDoResponder) DoRespond(EventGroup) (bool, bool) {
+func (n StubDoResponder) DoRespond(EventHandlingContext, EventGroup) (bool, bool) {
 	return false, false
 }
 
@@ -415,6 +422,28 @@ func (r *rootWidget) Draw(region Region, ctx DrawingContext) {
 	}
 }
 
+type ButtonPressType int
+
+const (
+	ButtonPressTypeUp = iota
+	ButtonPressTypeDown
+	ButtonPressTypeStart
+	ButtonPressTypeEnd
+)
+
+type mouseState struct {
+	X, Y                int
+	Left, Middle, Right ButtonPressType
+}
+
+func (ms *mouseState) GetPosition() (int, int) {
+	return ms.X, ms.Y
+}
+
+func (ms *mouseState) Update(group gin.EventGroup) {
+	// TODO(tmckee): implement this!
+}
+
 type Gui struct {
 	root rootWidget
 
@@ -424,11 +453,13 @@ type Gui struct {
 	// Stack of widgets that have focus
 	focus []Widget
 
-	logger glog.Logger
+	mouseState mouseState
+	logger     glog.Logger
 }
 
 var _ DrawingContext = (*Gui)(nil)
 var _ UpdateableDrawingContext = (*Gui)(nil)
+var _ EventHandlingContext = (*Gui)(nil)
 
 type MissingFontError struct {
 	error
@@ -505,18 +536,21 @@ func (g *Gui) Think(t int64) {
 }
 
 func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
+	// Update our cached state of the mouse
+	g.mouseState.Update(gin_group)
+
 	event_group := EventGroup{gin_group, false}
 
 	// If there is one or more focused widgets, tell the top-of the focus-stack
 	// to 'Respond' first.
 	if len(g.focus) > 0 {
-		event_group.Focus = true
+		event_group.DispatchedToFocussedWidget = true
 		consume := g.focus[len(g.focus)-1].Respond(g, event_group)
 		if consume {
 			// If the focused widget consumed the event, we're done.
 			return
 		}
-		event_group.Focus = false
+		event_group.DispatchedToFocussedWidget = false
 	}
 
 	// Without having consumed the event above, give the tree of widgets under
@@ -548,4 +582,33 @@ func (g *Gui) FocusWidget() Widget {
 		return nil
 	}
 	return g.focus[len(g.focus)-1]
+}
+
+func (g *Gui) IsMouseEvent(grp EventGroup) bool {
+	if len(grp.Events) < 0 {
+		return false
+	}
+
+	evt := grp.Events[0]
+	return evt.Key.Id().Device.Type == gin.DeviceTypeMouse
+}
+
+func (g *Gui) GetMousePosition() (int, int) {
+	return g.mouseState.GetPosition()
+}
+
+func stateToButtonFlag(tp ButtonPressType) bool {
+	return tp == ButtonPressTypeDown || tp == ButtonPressTypeStart
+}
+
+func (g *Gui) LeftButton() bool {
+	return stateToButtonFlag(g.mouseState.Left)
+}
+
+func (g *Gui) MiddleButton() bool {
+	return stateToButtonFlag(g.mouseState.Middle)
+}
+
+func (g *Gui) RightButton() bool {
+	return stateToButtonFlag(g.mouseState.Right)
 }

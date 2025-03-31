@@ -63,18 +63,20 @@ func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 			return true
 		}
 	}
-	cursor := group.Events[0].Key.Cursor()
-	if cursor != nil {
+
+	isMouseEvent := gui.IsMouseEvent(group)
+	if isMouseEvent {
 		var p Point
-		p.X, p.Y = cursor.Point()
+		p.X, p.Y = gui.GetMousePosition()
 		if !p.Inside(cb.Rendered()) {
 			return false
 		}
 	}
+
 	if cb.clicked {
 		return false
 	}
-	if group.Focus {
+	if group.DispatchedToFocussedWidget {
 		cb.scroll.Respond(gui, group)
 	}
 	if !cb.open {
@@ -83,7 +85,7 @@ func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 			cb.open = true
 		}
 	}
-	return cursor != nil
+	return isMouseEvent
 }
 
 func MakeComboBox(options []SelectableWidget, width int) *ComboBox {
@@ -92,7 +94,7 @@ func MakeComboBox(options []SelectableWidget, width int) *ComboBox {
 	for i, option := range options {
 		cb.table.AddChild(option)
 		opt := i
-		option.SetSelectFunc(func(int64) {
+		option.SetSelectFunc(func(EventHandlingContext, int64) {
 			cb.selected = opt
 			cb.clicked = true
 		})

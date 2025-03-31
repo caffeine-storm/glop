@@ -202,26 +202,6 @@ const (
 	DeleteOrBackspace
 )
 
-type Cursor interface {
-	Name() string
-	Point() (int, int)
-}
-
-type cursor struct {
-	name string
-
-	// Window coordinates of the cursor with the origin set as the lower-left
-	// corner of the window.
-	X, Y int
-}
-
-func (c *cursor) Name() string {
-	return c.name
-}
-func (c *cursor) Point() (int, int) {
-	return c.X, c.Y
-}
-
 type OsEvent struct {
 	KeyId     KeyId
 	Press_amt float64

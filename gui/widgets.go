@@ -247,7 +247,7 @@ type SelectableWidget interface {
 	Widget
 
 	// The selectable widget will call this function when clicked
-	SetSelectFunc(func(int64))
+	SetSelectFunc(func(EventHandlingContext, int64))
 
 	SetSelected(bool)
 	GetData() interface{}
@@ -262,7 +262,7 @@ type selectableOption struct {
 func (so *selectableOption) GetData() interface{} {
 	return so.data
 }
-func (so *selectableOption) SetSelectFunc(f func(int64)) {
+func (so *selectableOption) SetSelectFunc(f func(EventHandlingContext, int64)) {
 	so.on_click = f
 }
 
@@ -271,8 +271,8 @@ type textOption struct {
 	selectableOption
 }
 
-func (w *textOption) DoRespond(event_group EventGroup) (consume, change_focus bool) {
-	w.selectableOption.DoRespond(event_group)
+func (w *textOption) DoRespond(ctx EventHandlingContext, event_group EventGroup) (consume, change_focus bool) {
+	w.selectableOption.DoRespond(ctx, event_group)
 	return
 }
 
@@ -297,8 +297,8 @@ type imageOption struct {
 	selectableOption
 }
 
-func (w *imageOption) DoRespond(event_group EventGroup) (consume, change_focus bool) {
-	w.selectableOption.DoRespond(event_group)
+func (w *imageOption) DoRespond(ctx EventHandlingContext, event_group EventGroup) (consume, change_focus bool) {
+	w.selectableOption.DoRespond(ctx, event_group)
 	return
 }
 
@@ -333,7 +333,7 @@ func MakeSelectBox(options []SelectableWidget, vertical bool) *SelectBox {
 	}
 	for i := range options {
 		option := options[i]
-		option.SetSelectFunc(func(int64) {
+		option.SetSelectFunc(func(EventHandlingContext, int64) {
 			sb.SetSelectedOption(option.GetData())
 		})
 		sb.AddChild(option)

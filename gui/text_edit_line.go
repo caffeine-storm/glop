@@ -130,7 +130,7 @@ func characterFromEventGroup(event_group EventGroup) byte {
 	return 0
 }
 
-func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus bool) {
+func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGroup) (consume, change_focus bool) {
 	if w.cursor.index > len(w.text) {
 		w.cursor.index = len(w.text)
 	}
@@ -139,7 +139,7 @@ func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus 
 		return
 	}
 	key_id := event.Key.Id()
-	if event_group.Focus {
+	if event_group.DispatchedToFocussedWidget {
 		if key_id == gin.AnyEscape || key_id == gin.AnyReturn {
 			change_focus = true
 			return
@@ -162,7 +162,7 @@ func (w *TextEditLine) DoRespond(event_group EventGroup) (consume, change_focus 
 			w.cursor.index++
 			w.cursor.moved = true
 		} else if key_id == gin.AnyMouseLButton {
-			x, _ := event.Key.Cursor().Point()
+			x, _ := ctx.GetMousePosition()
 			cx := w.TextLine.Render_region.X
 			w.cursor.index = w.findIndexAtOffset(x - cx)
 			w.cursor.moved = true

@@ -18,10 +18,6 @@ type Key interface {
 	// returns the event generated, if any.
 	SetPressAmt(amt float64, ms int64, cause Event) Event
 
-	// Returns the Cursor associated with this key, or nil if it has no such
-	// association.
-	Cursor() Cursor
-
 	// A very select set of keys should always send events when their press amt
 	// is non-zero. These are typically not your ordinary keys, mouse wheels,
 	// mouse pointers, etc...
@@ -256,9 +252,8 @@ const (
 
 // natural keys and derived keys all embed a keyState
 type keyState struct {
-	id     KeyId   // Unique id among all keys ever
-	name   string  // Human readable name for the key, 'Right Shift', 'q', 'Space Bar', etc...
-	cursor *cursor // cursor associated with this key, or nil if it has no cursor association
+	id   KeyId  // Unique id among all keys ever
+	name string // Human readable name for the key, 'Right Shift', 'q', 'Space Bar', etc...
 
 	aggregator
 }
@@ -273,13 +268,6 @@ func (ks *keyState) Name() string {
 
 func (ks *keyState) Id() KeyId {
 	return ks.id
-}
-
-func (ks *keyState) Cursor() Cursor {
-	if ks.cursor == nil {
-		return nil
-	}
-	return ks.cursor
 }
 
 // Tells this key that how much it was pressed at a particular time. Times must

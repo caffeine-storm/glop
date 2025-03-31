@@ -97,7 +97,7 @@ func makeCheckRow(w Widget, target, index reflect.Value) *checkRow {
 	cr.AddChild(w)
 	return &cr
 }
-func (cr *checkRow) DoRespond(group EventGroup) (consume, change_focus bool) {
+func (cr *checkRow) DoRespond(ctx EventHandlingContext, group EventGroup) (consume, change_focus bool) {
 	if found, event := group.FindEvent(gin.AnyMouseLButton); found && event.Type == gin.Press {
 		cr.check_box.Click()
 		var selected reflect.Value
@@ -131,7 +131,7 @@ type CheckBoxes struct {
 	target reflect.Value
 }
 
-func (cb *CheckBoxes) DoRespond(group EventGroup) (consume, change_focus bool) {
+func (cb *CheckBoxes) DoRespond(ctx EventHandlingContext, group EventGroup) (consume, change_focus bool) {
 	return false, false
 }
 

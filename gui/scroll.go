@@ -27,7 +27,7 @@ func MakeScrollFrame(w Widget, dx, dy int) *ScrollFrame {
 func (w *ScrollFrame) String() string {
 	return "scroll frame"
 }
-func (w *ScrollFrame) DoRespond(group EventGroup) (consume, take_focus bool) {
+func (w *ScrollFrame) DoRespond(ctx EventHandlingContext, group EventGroup) (consume, take_focus bool) {
 	if found, event := group.FindEvent(gin.AnyMouseWheelVertical); found {
 		inc := 2 * event.Key.FramePressAmt()
 		w.amt += inc

@@ -8,7 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func GivenAButton(fn func(int64)) *gui.Button {
+func GivenAButton(fn func(gui.EventHandlingContext, int64)) *gui.Button {
 	testingFont := "glop.font"
 	testingLabel := "button-label"
 	testingWidth := 42
@@ -31,17 +31,18 @@ func ClickAButton(btn *gui.Button) {
 			Events:    []gin.Event{leftButtonEvent},
 			Timestamp: 17,
 		},
-		Focus: true,
+		DispatchedToFocussedWidget: true,
 	}
 
-	btn.DoRespond(eventGroup)
+	btn.DoRespond(nil, eventGroup)
 }
 
 func TestButton(t *testing.T) {
 	Convey("Button Widgets", t, func() {
 		Convey("can be clicked", func() {
 			clicks := []int64{}
-			onClick := func(delta int64) {
+
+			onClick := func(ctx gui.EventHandlingContext, delta int64) {
 				clicks = append(clicks, delta)
 			}
 			btn := GivenAButton(onClick)

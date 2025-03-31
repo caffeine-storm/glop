@@ -20,7 +20,6 @@ func TestPressKeyWorksForControlKey(t *testing.T) {
 	key := &keyState{
 		id:         keyId,
 		name:       "test-keystate(any-left-control)",
-		cursor:     nil,
 		aggregator: &standardAggregator{},
 	}
 	inputObj.pressKey(key, 1.0, Event{}, &group)
