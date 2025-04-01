@@ -16,11 +16,6 @@ tmckee:#20 make each EventGroup have a mousex, mousey that widgets can see
 during their 'Respond' phase. With that, we can remove the extra
 'MouseListener' concept from gin.Input.
 
-tmckee:#19 system/systemtest/click_test.go is flaky; running 'make
-test-nocache' seems to repro more often than other invocation styles. Best
-guess so far is that some competing/alternate window is occupying the target
-point when we go to click.
-
 tmckee:#18 the gin.MouseInput code doesn't support listener functions providing
 'feedback'. The old input code would optionally synthsize 'consequence'
 gin.Event instances. We might want to support the optional synthesis in the new
