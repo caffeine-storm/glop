@@ -3,6 +3,7 @@ package systemtest
 import (
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/glog"
+	"github.com/runningwild/glop/system"
 )
 
 type Driver interface {
@@ -13,6 +14,8 @@ type Driver interface {
 	PositionWindow(x, y int)
 	AddMouseListener(func(gin.MouseEvent))
 	AddInputListener(gin.Listener)
+
+	RawTool(func(system.NativeWindowHandle) []any)
 }
 
 type testDriver struct {
@@ -26,6 +29,10 @@ func (d *testDriver) Click(wx, wy int) {
 	glog.DebugLogger().Debug("testDriver.Click>click", "wx", wx, "wy", wy, "self", d)
 	xDoToolRun("click", "--window", d.window.hdl, "1")
 	glog.DebugLogger().Debug("testDriver.Click>done", "wx", wx, "wy", wy, "self", d)
+}
+
+func (d *testDriver) RawTool(fn func(system.NativeWindowHandle) []any) {
+	xDoToolRun(fn(d.window.hdl)...)
 }
 
 func (d *testDriver) ProcessFrame() {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/system"
 	"github.com/runningwild/glop/system/systemtest"
 )
 
@@ -11,10 +12,12 @@ type click struct {
 	x, y int
 }
 
+const windowScale = 64
+
 func GivenANewDriver() (systemtest.Driver, func()) {
 	driverChannel := make(chan systemtest.Driver)
 
-	go systemtest.WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
+	go systemtest.WithTestWindowDriver(windowScale, windowScale, func(driver systemtest.Driver) {
 		driverChannel <- driver
 		<-driverChannel
 	})
@@ -143,6 +146,42 @@ func TestSystemtestDriver(t *testing.T) {
 
 		if clickA != expectedClickA || clickB != expectedClickB {
 			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", mouseEventsA, mouseEventsB)
+		}
+	})
+
+	t.Run("clicks use an origin at the bottom-left", func(t *testing.T) {
+		driver, clean := GivenANewDriver()
+		defer clean()
+
+		events := WatchForMouseEvents(driver)
+
+		// Click lower half of the test window. Use RawTool for specifying polar
+		// co-ordinates that won't suffer from our glop-vs-X origin confusion.
+		driver.RawTool(func(hdl system.NativeWindowHandle) []any {
+			return []any{
+				// Move mouse to target; 3 pixels below the bottom of the centre of the
+				// window under test.
+				"mousemove", "--sync", "--window", hdl, "--polar", 180, 3,
+				// Click the left mouse button
+				"click", "--window", hdl, 1,
+			}
+		})
+		driver.ProcessFrame()
+
+		// Expect a report of (width/2, height/2 - 3).
+		yexpect := (windowScale / 2) - 3
+		expectedClick := click{
+			x: windowScale / 2,
+			y: yexpect,
+		}
+
+		lastClick, found := LastClick(events)
+		if !found {
+			t.Fatalf("couldn't find the click in %v", events)
+		}
+
+		if lastClick != expectedClick {
+			t.Fatalf("click expectation failed: expected: %+v, actual: %+v", expectedClick, lastClick)
 		}
 	})
 }
