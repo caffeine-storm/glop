@@ -22,8 +22,7 @@ type testDriver struct {
 }
 
 func (d *testDriver) glopToX(glopX, glopY int) (int, int) {
-	// TODO(tmckee): cleanse this heresy
-	height := 64
+	height := d.window.getWindowHeight()
 	return glopX, height - 1 - glopY
 }
 

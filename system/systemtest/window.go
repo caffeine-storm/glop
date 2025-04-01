@@ -29,6 +29,11 @@ func (self *testWindow) GetQueue() render.RenderQueueInterface {
 
 var _ Window = (*testWindow)(nil)
 
+func (self *testWindow) getWindowHeight() int {
+	_, _, _, dy := self.sys.GetWindowDims()
+	return dy
+}
+
 func NewTestWindow(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) Window {
 	return &testWindow{
 		sys:   sys,
