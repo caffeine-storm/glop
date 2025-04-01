@@ -5,7 +5,7 @@ import (
 	"os/exec"
 )
 
-func runXDoTool(xdotoolAnyArgs ...any) {
+func xDoToolRun(xdotoolAnyArgs ...any) {
 	xdotoolArgs := make([]string, len(xdotoolAnyArgs))
 	for i, arg := range xdotoolAnyArgs {
 		switch v := arg.(type) {

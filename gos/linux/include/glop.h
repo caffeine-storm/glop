@@ -93,8 +93,12 @@ struct GlopKeyEvent {
   short device_type;
   float press_amt;
   long long timestamp;
+
+  // X and Y co-ordinates of the mouse at the time the event happened.  In
+  // units of pixels with the bottom-most, left-most pixel as the origin.
   int cursor_x;
   int cursor_y;
+
   int num_lock;
   int caps_lock;
 };
