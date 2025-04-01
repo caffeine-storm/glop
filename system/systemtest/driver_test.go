@@ -173,7 +173,7 @@ func TestSystemtestDriver(t *testing.T) {
 		})
 		driver.ProcessFrame()
 
-		// Expect a report of (floor((width-1)/2), floor((height-1)/2) - 3).
+		// Expect a y co-ordinate of floor((height-1)/2) - 3.
 		yexpect := ((windowScale - 1) / 2) - 3
 		expectedClick := click{
 			x: windowScale / 2,

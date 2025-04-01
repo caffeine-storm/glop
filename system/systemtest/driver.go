@@ -27,7 +27,6 @@ func (d *testDriver) glopToX(glopX, glopY int) (int, int) {
 }
 
 func (d *testDriver) Click(glopX, glopY int) {
-	// Run 'xdotool click $wx $wy'
 	xorgX, xorgY := d.glopToX(glopX, glopY)
 	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", xorgX, xorgY)
 	xDoToolRun("click", "--window", d.window.hdl, "1")
