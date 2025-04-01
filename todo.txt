@@ -13,7 +13,8 @@ tmckee:#22 clicking the 'x' button on a window doesn't close it r.n. We need to
 detect a "close message" or smth in glop.cpp.
 
 tmckee:#20 make each EventGroup have a mousex, mousey that widgets can see
-during their 'Respond' phase.
+during their 'Respond' phase. With that, we can remove the extra
+'MouseListener' concept from gin.Input.
 
 tmckee:#19 system/systemtest/click_test.go is flaky; running 'make
 test-nocache' seems to repro more often than other invocation styles. Best
