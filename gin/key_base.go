@@ -250,6 +250,46 @@ const (
 	DeviceTypeMax
 )
 
+func (dt DeviceType) String() string {
+	switch dt {
+	case DeviceTypeAny:
+		return "any"
+	case DeviceTypeKeyboard:
+		return "keyboard"
+	case DeviceTypeMouse:
+		return "mouse"
+	case DeviceTypeController:
+		return "controller"
+	case DeviceTypeDerived:
+		return "derived"
+	case DeviceTypeMax:
+		return "max"
+	}
+
+	panic(fmt.Errorf("bad DeviceType: %d", int(dt)))
+}
+
+func (kid KeyId) String() string {
+	// Unfortunately, KeyId values are overloaded to also support 'querying';
+	// sometimes things have a sentinel value in order to control lookups.
+	device := "any"
+	devicetype := "any"
+	if kid.Index == AnyKey {
+		return "any-key"
+	}
+	index := fmt.Sprintf("%d", kid.Index)
+
+	if kid.Device.Type != DeviceTypeAny {
+		devicetype = fmt.Sprintf("%v", kid.Device.Type)
+	}
+
+	if kid.Device.Index != DeviceIndexAny {
+		device = fmt.Sprintf("%d", kid.Device.Index)
+	}
+
+	return fmt.Sprintf("{device: %s, devicetype: %s, index: %s}", device, devicetype, index)
+}
+
 // natural keys and derived keys all embed a keyState
 type keyState struct {
 	id   KeyId  // Unique id among all keys ever
@@ -259,7 +299,7 @@ type keyState struct {
 }
 
 func (ks *keyState) String() string {
-	return fmt.Sprintf("%d: %s", ks.id, ks.name)
+	return fmt.Sprintf("{keyState:%q id: %v}", ks.name, ks.id)
 }
 
 func (ks *keyState) Name() string {

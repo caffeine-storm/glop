@@ -2,6 +2,8 @@ package gin
 
 import (
 	"fmt"
+
+	"github.com/runningwild/glop/glog"
 )
 
 var (
@@ -128,7 +130,7 @@ func (dk *derivedKey) SetPressAmt(amt float64, ms int64, cause Event) (event Eve
 		event.Type = Release
 	}
 	if amt != 0 && index != -1 && dk.numBindingsDown() == 0 && !dk.bindings_down[index] {
-		fmt.Printf("(%p) Generated press event for %v\n", dk, dk.Id())
+		glog.TraceLogger().Trace("Generated press event", "key", dk)
 		event.Type = Press
 	}
 	if index != -1 {
