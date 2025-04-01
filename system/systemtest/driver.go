@@ -2,7 +2,6 @@ package systemtest
 
 import (
 	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/system"
 )
 
@@ -22,13 +21,17 @@ type testDriver struct {
 	window *testWindow
 }
 
-func (d *testDriver) Click(wx, wy int) {
+func (d *testDriver) glopToX(glopX, glopY int) (int, int) {
+	// TODO(tmckee): cleanse this heresy
+	height := 64
+	return glopX, height - 1 - glopY
+}
+
+func (d *testDriver) Click(glopX, glopY int) {
 	// Run 'xdotool click $wx $wy'
-	glog.DebugLogger().Debug("testDriver.Click>move", "wx", wx, "wy", wy, "self", d)
-	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", wx, wy)
-	glog.DebugLogger().Debug("testDriver.Click>click", "wx", wx, "wy", wy, "self", d)
+	xorgX, xorgY := d.glopToX(glopX, glopY)
+	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", xorgX, xorgY)
 	xDoToolRun("click", "--window", d.window.hdl, "1")
-	glog.DebugLogger().Debug("testDriver.Click>done", "wx", wx, "wy", wy, "self", d)
 }
 
 func (d *testDriver) RawTool(fn func(system.NativeWindowHandle) []any) {

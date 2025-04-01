@@ -73,19 +73,21 @@ func TestSystemtestDriver(t *testing.T) {
 
 		// Click on two points within the windows' shared bounds and process their
 		// events. Assert that each window sees only the click sent to it.
-		driverA.Click(4, 5)
+		// Note that we need to click 'above' 17 or else we're clicking off of the
+		// screen.
+		driverA.Click(4, 22)
 		driverA.ProcessFrame()
-		driverB.Click(9, 2)
+		driverB.Click(9, 19)
 		driverB.ProcessFrame()
 
 		// Assert each window got their click.
 		expectedClickA := click{
 			x: 4,
-			y: 5,
+			y: 22,
 		}
 		expectedClickB := click{
 			x: 9,
-			y: 2,
+			y: 19,
 		}
 		clickA, found := LastClick(mouseEventsA)
 		if !found {
@@ -119,21 +121,23 @@ func TestSystemtestDriver(t *testing.T) {
 		mouseEventsB := WatchForMouseEvents(driverB)
 
 		// Click on two points within the windows' shared bounds and process their
-		// events. Assert that each window sees only the click sent to it.
-		// Do both clicks then both ProcessFrame calls for a regression test.
-		driverA.Click(4, 5)
-		driverB.Click(9, 2)
+		// events. Assert that each window sees only the click sent to it. Do both
+		// clicks then both ProcessFrame calls for a regression test.
+		// Note that we need to click 'above' 17 or else we're clicking off of the
+		// screen.
+		driverA.Click(4, 22)
+		driverB.Click(9, 19)
 		driverA.ProcessFrame()
 		driverB.ProcessFrame()
 
 		// Assert each window got their click.
 		expectedClickA := click{
 			x: 4,
-			y: 5,
+			y: 22,
 		}
 		expectedClickB := click{
 			x: 9,
-			y: 2,
+			y: 19,
 		}
 		clickA, found := LastClick(mouseEventsA)
 		if !found {
@@ -160,7 +164,8 @@ func TestSystemtestDriver(t *testing.T) {
 		driver.RawTool(func(hdl system.NativeWindowHandle) []any {
 			return []any{
 				// Move mouse to target; 3 pixels below the bottom of the centre of the
-				// window under test.
+				// window under test. X will consider the centre to be at (32, 32) for
+				// a 64x64 window.
 				"mousemove", "--sync", "--window", hdl, "--polar", 180, 3,
 				// Click the left mouse button
 				"click", "--window", hdl, 1,
@@ -168,8 +173,8 @@ func TestSystemtestDriver(t *testing.T) {
 		})
 		driver.ProcessFrame()
 
-		// Expect a report of (width/2, height/2 - 3).
-		yexpect := (windowScale / 2) - 3
+		// Expect a report of (floor((width-1)/2), floor((height-1)/2) - 3).
+		yexpect := ((windowScale - 1) / 2) - 3
 		expectedClick := click{
 			x: windowScale / 2,
 			y: yexpect,

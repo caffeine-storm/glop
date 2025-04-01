@@ -109,7 +109,11 @@ XKeyEvent const * toKeyEvent(XEvent const & evt) {
   }
 }
 
-static bool SynthKey(KeySym const &sym, bool pushed, XKeyEvent const &event, Window window, struct GlopKeyEvent *ev) {
+static std::pair<int, int> XCoordToGlopCoord(XWindowAttributes const * attrs, int x, int y) {
+  return std::make_pair(x, attrs->height - 1 - y);
+}
+
+static bool SynthKey(XWindowAttributes const * attrs, KeySym const &sym, bool pushed, XKeyEvent const &event, Window window, struct GlopKeyEvent *ev) {
   // TODO(tmckee): this case conversion stuff is poopy.
   KeySym throwaway_lower, key;
   XConvertCase(sym, &throwaway_lower, &key);
@@ -224,8 +228,9 @@ static bool SynthKey(KeySym const &sym, bool pushed, XKeyEvent const &event, Win
   ev->device_type = glopDeviceKeyboard;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = event.x;
-  ev->cursor_y = event.y;
+
+  std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
+
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
   return true;
@@ -241,7 +246,7 @@ XButtonEvent const * toButtonEvent(XEvent const & evt) {
   }
 }
 
-static bool SynthButton(bool pushed, XButtonEvent const &event, Window window, struct GlopKeyEvent *ev) {
+static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEvent const &event, Window window, struct GlopKeyEvent *ev) {
 
   GlopKey ki;
   switch(event.button) {
@@ -269,14 +274,15 @@ static bool SynthButton(bool pushed, XButtonEvent const &event, Window window, s
   ev->device_type = glopDeviceMouse;
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
-  ev->cursor_x = event.x;
-  ev->cursor_y = event.y;
+
+  std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
+
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
   return true;
 }
 
-static bool SynthMotion(int dx, int dy, const XMotionEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
+static bool SynthMotion(XWindowAttributes const * attrs, int dx, int dy, const XMotionEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
   ev->index = kMouseXAxis;
   ev->device_type = glopDeviceMouse;
   ev->press_amt = dx;
@@ -290,8 +296,9 @@ static bool SynthMotion(int dx, int dy, const XMotionEvent &event, Window window
   ev2->device_type = glopDeviceMouse;
   ev2->press_amt = dy;
   ev2->timestamp = ev->timestamp;
-  ev2->cursor_x = event.x;
-  ev2->cursor_y = event.y;
+
+  std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
+
   ev2->num_lock = event.state & (1 << 4);
   ev2->caps_lock = event.state & LockMask;
 
@@ -310,6 +317,14 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
   XEvent event;
   int last_botched_release = -1;
   int last_botched_time = -1;
+
+  XWindowAttributes attrs;
+  Status ok = XGetWindowAttributes(display, data->window, &attrs);
+  if(!ok) {
+    fprintf(stderr, "glop.cpp: couldn't XGetWindowAttributes\n");
+    abort();
+  }
+
   // TODO(tmckee): would using XCheck[Typed]WindowEvent be cleaner?
   while(XCheckIfEvent(display, &event, &EventTester, XPointer(data))) {
     if((event.type == KeyPress || event.type == KeyRelease) && event.xkey.keycode < 256) {
@@ -347,21 +362,21 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
         XLookupString(&event.xkey, buf, sizeof(buf), &sym, NULL);
 
-        if(SynthKey(sym, event.type == KeyPress, event.xkey, data->window, &ev))
+        if(SynthKey(&attrs, sym, event.type == KeyPress, event.xkey, data->window, &ev))
           data->events.push_back(ev);
         break;
       }
 
       case ButtonPress:
       case ButtonRelease:
-        if(SynthButton(event.type == ButtonPress, event.xbutton, data->window, &ev))
+        if(SynthButton(&attrs, event.type == ButtonPress, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;
 
       case MotionNotify: {
         struct GlopKeyEvent ev2;
         GlopClearKeyEvent(&ev2);
-        if(SynthMotion(event.xmotion.x, event.xmotion.y, event.xmotion, data->window, &ev, &ev2)) {
+        if(SynthMotion(&attrs, event.xmotion.x, event.xmotion.y, event.xmotion, data->window, &ev, &ev2)) {
           data->events.push_back(ev);
           data->events.push_back(ev2);
         }
