@@ -287,20 +287,15 @@ static bool SynthMotion(XWindowAttributes const * attrs, int dx, int dy, const X
   ev->device_type = glopDeviceMouse;
   ev->press_amt = dx;
   ev->timestamp = gt();
+  std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
   ev->cursor_x = event.x;
   ev->cursor_y = event.y;
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
 
+  *ev2 = *ev;
   ev2->index = kMouseYAxis;
-  ev2->device_type = glopDeviceMouse;
   ev2->press_amt = dy;
-  ev2->timestamp = ev->timestamp;
-
-  std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
-
-  ev2->num_lock = event.state & (1 << 4);
-  ev2->caps_lock = event.state & LockMask;
 
   return true;
 }
