@@ -1,10 +1,10 @@
-tmckee:#20 make each EventGroup have a mousex, mousey that widgets can see
-during their 'Respond' phase. With that, we can remove the extra
-'MouseListener' concept from gin.Input.
-
 tmckee:#28 gin.Input.informDeps and gin.Input.pressKey are mutually recursive,
 and a rat's nest. We ought to be able to simplify control flow and make it
 clearer with a redesign.
+
+tmckee:#20 make each EventGroup have a mousex, mousey that widgets can see
+during their 'Respond' phase. With that, we can remove the extra
+'MouseListener' concept from gin.Input.
 
 tmckee:#26 gin.MouseEvents need to distinguish between left/middle/right
 buttons

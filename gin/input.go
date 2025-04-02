@@ -562,8 +562,8 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 	}
 
 	for _, key := range input.all_keys {
-		gen, amt := key.Think(t)
-		if !gen {
+		synthesizeNewEvent, amt := key.KeyThink(t)
+		if !synthesizeNewEvent {
 			continue
 		}
 		group := EventGroup{Timestamp: t}

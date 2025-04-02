@@ -46,7 +46,7 @@ func (*stubKey) SendAllNonZero() bool {
 	return false
 }
 
-func (*stubKey) Think(ms int64) (bool, float64) {
+func (*stubKey) KeyThink(ms int64) (bool, float64) {
 	return false, 0
 }
 

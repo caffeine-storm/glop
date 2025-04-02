@@ -25,9 +25,9 @@ type Key interface {
 	// mouse pointers, etc...
 	SendAllNonZero() bool
 
-	// A Key may return true, amt from Think() to indicate that a fake event
-	// should be generated to set its press amount to amt
-	Think(ms int64) (bool, float64)
+	// A Key may return true, amt from KeyThink() to indicate that a fake event
+	// should be generated to set its press amount to amt.
+	KeyThink(ms int64) (bool, float64)
 
 	subAggregator
 }
@@ -47,7 +47,7 @@ type subAggregator interface {
 
 type aggregator interface {
 	subAggregator
-	Think(ms int64) (bool, float64)
+	AggregatorThink(ms int64) (bool, float64)
 	SetPressAmt(amt float64, ms int64, event_type EventType)
 	SendAllNonZero() bool
 }
@@ -61,7 +61,7 @@ const (
 )
 
 // Simple struct that aggregates presses and press_amts during a frame so they
-// can be viewed between Think()s
+// can be viewed between KeyThink()s
 type keyStats struct {
 	press_count   int
 	release_count int
@@ -143,7 +143,7 @@ func (sa *standardAggregator) SetPressAmt(amt float64, ms int64, event_type Even
 	sa.handleEventType(event_type)
 }
 
-func (sa *standardAggregator) Think(ms int64) (bool, float64) {
+func (sa *standardAggregator) AggregatorThink(ms int64) (bool, float64) {
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
 	if ms != sa.last_think {
 		sa.this.press_avg = sa.this.press_sum / float64(ms-sa.last_think)
@@ -179,7 +179,7 @@ func (aa *axisAggregator) SetPressAmt(amt float64, ms int64, event_type EventTyp
 	aa.handleEventType(event_type)
 }
 
-func (aa *axisAggregator) Think(ms int64) (bool, float64) {
+func (aa *axisAggregator) AggregatorThink(ms int64) (bool, float64) {
 	was_down := aa.prev.press_amt != 0
 	aa.prev = aa.this
 	aa.this = keyStats{}
@@ -211,9 +211,9 @@ func (wa *wheelAggregator) SetPressAmt(amt float64, ms int64, event_type EventTy
 	wa.standardAggregator.SetPressAmt(amt, ms, event_type)
 }
 
-func (wa *wheelAggregator) Think(ms int64) (bool, float64) {
-	if b, _ := wa.standardAggregator.Think(ms); b {
-		panic("standardAggregator should not generate an event on Think()")
+func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {
+	if b, _ := wa.standardAggregator.AggregatorThink(ms); b {
+		panic("standardAggregator should not generate an event on AggregatorThink()")
 	}
 	if wa.CurPressAmt() != 0 {
 		if wa.event_received {
@@ -300,6 +300,12 @@ type keyState struct {
 	name string // Human readable name for the key, 'Right Shift', 'q', 'Space Bar', etc...
 
 	aggregator
+}
+
+var _ Key = (*keyState)(nil)
+
+func (ks *keyState) KeyThink(ms int64) (bool, float64) {
+	return ks.aggregator.AggregatorThink(ms)
 }
 
 func (ks *keyState) String() string {

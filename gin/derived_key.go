@@ -87,9 +87,7 @@ type derivedKey struct {
 	bindings_down []bool
 }
 
-func (dk *derivedKey) Think(ms int64) (bool, float64) {
-	return dk.keyState.Think(ms)
-}
+var _ Key = (*derivedKey)(nil)
 
 func (dk *derivedKey) CurPressAmt() float64 {
 	sum := 0.0
