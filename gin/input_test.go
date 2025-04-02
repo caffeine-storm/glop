@@ -606,8 +606,8 @@ func EventSpec() {
 		check(1, 1, 1, 2)
 	})
 
-	// This test also checks that a derived key stays down until the primary key is released
-	// CD is used here after D is released to trigger AB_CD
+	// This test also checks that a derived key stays down until the primary key
+	// is released CD is used here after D is released to trigger AB_CD.
 	Convey("Testing order 'dcbDad'.", func() {
 		injectEvent(&events, 'd', 1, gin.DeviceTypeKeyboard, 1, 1)
 		injectEvent(&events, 'c', 1, gin.DeviceTypeKeyboard, 1, 2)

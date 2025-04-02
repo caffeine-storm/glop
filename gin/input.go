@@ -202,13 +202,6 @@ const (
 	DeleteOrBackspace
 )
 
-type OsEvent struct {
-	KeyId     KeyId
-	Press_amt float64
-	Timestamp int64
-	X, Y      int
-}
-
 // Everything 'global' is put inside a struct so that tests can be run without
 // stepping on each other.
 type Input struct {
@@ -376,63 +369,6 @@ func MakeLogged(logger glog.Logger) *Input {
 	return input
 }
 
-type EventType int
-
-const (
-	NoEvent EventType = iota
-	Press
-	Release
-	Adjust // The key was and is down, but the value of it has changed
-)
-
-func (event EventType) String() string {
-	switch event {
-	case Press:
-		return "press"
-	case Release:
-		return "release"
-	case NoEvent:
-		return "noevent"
-	case Adjust:
-		return "adjust"
-	}
-	panic(fmt.Errorf("%d is not a valid EventType", event))
-}
-
-// TODO: Consider making a Timestamp type (int64)
-type Event struct {
-	Key  Key
-	Type EventType
-}
-
-func (e Event) String() string {
-	if e.Key == nil || e.Type == NoEvent {
-		return fmt.Sprintf("NoEvent")
-	}
-	return fmt.Sprintf("'%v %v'", e.Type, e.Key)
-}
-
-// An EventGroup is a series of events that were all created by a single
-// OsEvent.
-// TODO(tmckee:#20): it would be cleaner to include an (X,Y) mouse position in
-// this EventGroup than to rely on the coupling between gui.Gui and gin.Input.
-type EventGroup struct {
-	Events    []Event
-	Timestamp int64
-}
-
-// Returns a bool indicating whether an event corresponding to the given KeyId
-// is present in the EventGroup, and if so the Event returned is a copy of that
-// event.
-func (eg *EventGroup) FindEvent(id KeyId) (bool, Event) {
-	for i := range eg.Events {
-		if eg.Events[i].Key.Id() == id {
-			return true, eg.Events[i]
-		}
-	}
-	return false, Event{}
-}
-
 func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, name string) {
 	input.logger.Trace("gin.Input")
 	if index < 0 {
@@ -588,28 +524,10 @@ func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup)
 	}
 }
 
-// The Input object can have a single Listener registered with it. This object
-// will receive event groups as they are processed. During HandleEventGroup a
-// listener can query keys as to their current state (i.e. with Cur*() methods)
-// and these will accurately report their state given that the current event
-// group has happened and no future events have happened yet.
-//
-// Frame*() methods on keys will report state from last frame.
-//
-// Listener.Think() will be called after all the events for a frame have been
-// processed.
-type EventHandler interface {
-	HandleEventGroup(EventGroup)
-}
-type Listener interface {
-	EventHandler
-	Think(int64)
-}
-type EventDispatcher interface {
-	RegisterEventListener(Listener)
-	AddMouseListener(MouseListenerFunc)
-}
-
+// The Input object can have multiple Listener instances registered with it.
+// Each Listener will receive event groups as they are processed. Each Listener
+// will also get a .Think() call once per frame after all input events for the
+// frame have been processed.
 func (input *Input) RegisterEventListener(listener Listener) {
 	input.logger.Trace("gin.Input")
 	input.listeners = append(input.listeners, listener)

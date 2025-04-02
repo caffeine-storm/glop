@@ -1,3 +1,11 @@
+tmckee:#20 make each EventGroup have a mousex, mousey that widgets can see
+during their 'Respond' phase. With that, we can remove the extra
+'MouseListener' concept from gin.Input.
+
+tmckee:#28 gin.Input.informDeps and gin.Input.pressKey are mutually recursive,
+and a rat's nest. We ought to be able to simplify control flow and make it
+clearer with a redesign.
+
 tmckee:#26 gin.MouseEvents need to distinguish between left/middle/right
 buttons
 
@@ -11,10 +19,6 @@ https://tronche.com/gui/x/xlib/utilities/keyboard/XRefreshKeyboardMapping.html
 
 tmckee:#22 clicking the 'x' button on a window doesn't close it r.n. We need to
 detect a "close message" or smth in glop.cpp.
-
-tmckee:#20 make each EventGroup have a mousex, mousey that widgets can see
-during their 'Respond' phase. With that, we can remove the extra
-'MouseListener' concept from gin.Input.
 
 tmckee:#18 the gin.MouseInput code doesn't support listener functions providing
 'feedback'. The old input code would optionally synthsize 'consequence'
@@ -68,4 +72,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #27
+next bug: #28

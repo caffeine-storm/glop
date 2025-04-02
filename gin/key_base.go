@@ -16,6 +16,8 @@ type Key interface {
 
 	// Sets the instantaneous press amount for this key at a specific time and
 	// returns the event generated, if any.
+	// TODO(tmckee:#20): Key and aggregators both have a SetPressAmt; we ought to
+	// come up with distinct names.
 	SetPressAmt(amt float64, ms int64, cause Event) Event
 
 	// A very select set of keys should always send events when their press amt
@@ -108,6 +110,8 @@ func (a *baseAggregator) CurPressSum() float64 {
 	return a.this.press_sum
 }
 
+// TODO(tmckee:#20): we ought to improve the name here; something like
+// updateTransitionCounts or smth
 func (a *baseAggregator) handleEventType(event_type EventType) {
 	switch event_type {
 	case Press:
