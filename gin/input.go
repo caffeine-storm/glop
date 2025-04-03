@@ -481,6 +481,32 @@ func (input *Input) addCauseEffect(cause KeyId, effect Key) {
 	input.cause_to_effect[cause] = list
 }
 
+func (input *Input) removeCauseEffect(cause KeyId, effect Key) {
+	list, ok := input.cause_to_effect[cause]
+	if !ok {
+		panic(fmt.Errorf("no effects known for cause %v", cause))
+	}
+
+	newList := make([]Key, len(list))
+	out := 0
+	for i := 0; i < len(list); i++ {
+		if list[i] == effect {
+			continue
+		}
+
+		newList[out] = list[i]
+		out++
+	}
+
+	// If there was no match, the caller is probably confused.
+	if out == len(list) {
+		panic(fmt.Errorf("no cause/effect existed for %v/%v", cause, effect))
+	}
+
+	newList = newList[:out]
+	input.cause_to_effect[cause] = newList
+}
+
 // Look for Keys related to the event's Key and notify them as needed.
 func (input *Input) informDeps(event Event, group *EventGroup) {
 	id := event.Key.Id()
