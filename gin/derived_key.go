@@ -19,34 +19,24 @@ func genDerivedKeyIndex() KeyIndex {
 	return next_derived_key_index
 }
 
-// TODO: Handle removal of dependencies
-func (input *Input) registerDependence(derived Key, dep KeyId) {
-	input.logger.Trace("gin.Input>registerDependence", "derived", derived, "dep", dep)
-	if derived.Id() == dep {
-		panic(fmt.Errorf("Can't have a key (%v) depend on itself", dep))
-	}
-
-	list := input.id_to_deps[dep]
-	list = append(list, derived)
-	input.id_to_deps[dep] = list
-}
-
 func (input *Input) BindDerivedKey(name string, bindings ...Binding) Key {
 	input.logger.Trace("gin.input")
 	return input.bindDerivedKeyWithIndex(
 		name,
 		genDerivedKeyIndex(),
-		DeviceId{Index: 1, Type: DeviceTypeDerived},
 		bindings...)
 }
 
-func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, device DeviceId, bindings ...Binding) Key {
+func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, bindings ...Binding) Key {
 	input.logger.Trace("gin.input")
 	dk := &derivedKey{
 		keyState: keyState{
 			id: KeyId{
-				Index:  index,
-				Device: device,
+				Index: index,
+				Device: DeviceId{
+					Index: 1,
+					Type:  DeviceTypeDerived,
+				},
 			},
 			name:       name,
 			aggregator: &standardAggregator{},
@@ -54,6 +44,11 @@ func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, device 
 		Bindings:      bindings,
 		bindings_down: make([]bool, len(bindings)),
 	}
+
+	// TODO: Figure out a way to move this into Input.GetKeyById() or something.
+	// It's really dirty to have these maps/slices populated in multiple places.
+	input.key_map[dk.id] = dk
+	input.all_keys = append(input.all_keys, dk)
 
 	// TODO: Decide whether or not this is true, might need to register them for
 	// when the game loses focus.
@@ -67,10 +62,6 @@ func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, device 
 		}
 	}
 
-	// TODO: Figure out a way to move this into Input.GetKeyById() or something.
-	// It's really dirty to have these maps/slices populated in multiple places.
-	input.key_map[dk.id] = dk
-	input.all_keys = append(input.all_keys, dk)
 	return dk
 }
 

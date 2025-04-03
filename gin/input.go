@@ -435,6 +435,52 @@ func (input *Input) RegisterEventListener(listener Listener) {
 	input.listeners = append(input.listeners, listener)
 }
 
+// Returns true iff triggering 'from' will trigger 'to'.
+func (input *Input) dependsOn(from, to KeyId) bool {
+	if from == to {
+		return true
+	}
+
+	// input.id_to_deps encodes a DAG of KeyId interdependence. Start at the
+	// 'from' node and BFS for 'to' in the set of descendents.
+	visited := map[KeyId]bool{}
+	workQueue := []KeyId{from}
+
+	for len(workQueue) > 0 {
+		next := workQueue[0]
+		workQueue = workQueue[1:]
+
+		if visited[next] {
+			continue
+		}
+
+		visited[next] = true
+		for _, dep := range input.id_to_deps[next] {
+			if dep.Id() == to {
+				return true
+			}
+			if !visited[dep.Id()] {
+				workQueue = append(workQueue, dep.Id())
+			}
+		}
+	}
+
+	return false
+}
+
+// TODO: Handle removal of dependencies
+func (input *Input) registerDependence(derived Key, dep KeyId) {
+	input.logger.Trace("gin.Input>registerDependence", "derived", derived, "dep", dep)
+
+	if input.dependsOn(dep, derived.Id()) {
+		panic(fmt.Errorf("depedency cycle detected: %v depends on %v", dep, derived.Id()))
+	}
+
+	list := input.id_to_deps[dep]
+	list = append(list, derived)
+	input.id_to_deps[dep] = list
+}
+
 // Look for Keys related to the event's Key and notify them as needed.
 func (input *Input) informDeps(event Event, group *EventGroup) {
 	id := event.Key.Id()
