@@ -426,6 +426,15 @@ func (input *Input) GetKeyByName(name string) Key {
 	return nil
 }
 
+// The Input object can have multiple Listener instances registered with it.
+// Each Listener will receive event groups as they are processed. Each Listener
+// will also get a .Think() call once per frame after all input events for the
+// frame have been processed.
+func (input *Input) RegisterEventListener(listener Listener) {
+	input.logger.Trace("gin.Input")
+	input.listeners = append(input.listeners, listener)
+}
+
 // Look for Keys related to the event's Key and notify them as needed.
 func (input *Input) informDeps(event Event, group *EventGroup) {
 	id := event.Key.Id()
@@ -473,15 +482,6 @@ func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup)
 			input.pressKey(general_key, amt, cause, group)
 		}
 	}
-}
-
-// The Input object can have multiple Listener instances registered with it.
-// Each Listener will receive event groups as they are processed. Each Listener
-// will also get a .Think() call once per frame after all input events for the
-// frame have been processed.
-func (input *Input) RegisterEventListener(listener Listener) {
-	input.logger.Trace("gin.Input")
-	input.listeners = append(input.listeners, listener)
 }
 
 func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
