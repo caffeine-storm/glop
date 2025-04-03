@@ -1,7 +1,6 @@
 package gin
 
 import (
-	"os"
 	"testing"
 
 	"github.com/runningwild/glop/glog"
@@ -28,10 +27,7 @@ func TestPressKeyWorksForControlKey(t *testing.T) {
 func TestBindingGetPrimaryPressAmt(t *testing.T) {
 	require := require.New(t)
 
-	glogopts := &glog.Opts{
-		Output: os.Stdout,
-	}
-	inputObj := MakeLogged(glog.New(glogopts))
+	inputObj := MakeLogged(glog.VoidLogger())
 	require.NotNil(inputObj)
 
 	xKey := AnyKeyX
@@ -77,7 +73,6 @@ func TestKeyDependency(t *testing.T) {
 	t.Run("attempting to create a cycle panics", func(t *testing.T) {
 		require := require.New(t)
 
-		// TODO(tmckee): refactor other tests to use VoidLogger
 		inputObj := MakeLogged(glog.VoidLogger())
 		require.NotNil(inputObj)
 
@@ -111,7 +106,6 @@ func TestKeyDependency(t *testing.T) {
 	t.Run("can remove cause-effect links", func(t *testing.T) {
 		require := require.New(t)
 
-		// TODO(tmckee): refactor other tests to use VoidLogger
 		inputObj := MakeLogged(glog.VoidLogger())
 		require.NotNil(inputObj)
 
