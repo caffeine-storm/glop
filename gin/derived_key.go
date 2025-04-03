@@ -22,15 +22,13 @@ func genDerivedKeyIndex() KeyIndex {
 // TODO: Handle removal of dependencies
 func (input *Input) registerDependence(derived Key, dep KeyId) {
 	input.logger.Trace("gin.Input>registerDependence", "derived", derived, "dep", dep)
-	list, ok := input.id_to_deps[dep]
-	if !ok {
-		list = make([]Key, 0)
+	if derived.Id() == dep {
+		panic(fmt.Errorf("Can't have a key (%v) depend on itself", dep))
 	}
+
+	list := input.id_to_deps[dep]
 	list = append(list, derived)
 	input.id_to_deps[dep] = list
-	if derived.Id() == dep {
-		panic("Can't have a key depend on itself.")
-	}
 }
 
 func (input *Input) BindDerivedKey(name string, bindings ...Binding) Key {
