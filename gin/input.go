@@ -215,11 +215,6 @@ type Input struct {
 	// depend on it in some way
 	id_to_deps map[KeyId][]Key
 
-	// Mapping from KeyIndex to list of derived key families that depend on it.
-	// This map should only be keyed by indices generated for derived keys;
-	// otherwise we'd have to include info to distinguish between devices too!
-	index_to_family_deps map[KeyIndex][]derivedKeyFamily
-
 	// Mapping from KeyIndex to an aggregator of the appropriate type for that index.
 	// This allows us to construct Keys for devices as the events happen, rather
 	// than needing to know what the devices are during initialization.
@@ -276,7 +271,6 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.id_to_deps = make(map[KeyId][]Key, 16)
 	input.index_to_agg_type = make(map[KeyIndex]aggregatorType)
 	input.index_to_name = make(map[KeyIndex]string)
-	input.index_to_family_deps = make(map[KeyIndex][]derivedKeyFamily)
 	input.SetLogger(logger)
 	input.mouse.logger = logger
 
@@ -470,16 +464,6 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 		keysToPress = append(keysToPress, dep)
 	}
 
-	// Skip over notifying relevant 'key families' for derived keys (why???) or
-	// keys that do not distinguish between device instances (why???).
-	if id.Device.Type != DeviceTypeDerived && id.Device.Index != DeviceIndexAny {
-		// Select each {key-that-has-multiple-triggers} that should be triggered by
-		// the current key for pressing.
-		for _, family_dep := range input.index_to_family_deps[id.Index] {
-			key := family_dep.GetKey(id.Device)
-			keysToPress = append(keysToPress, key)
-		}
-	}
 	for _, dep := range keysToPress {
 		input.pressKey(dep, dep.CurPressAmt(), event, group)
 	}
