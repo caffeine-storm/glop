@@ -205,9 +205,8 @@ const (
 // Everything 'global' is put inside a struct so that tests can be run without
 // stepping on each other.
 type Input struct {
-	// TODO(tmckee): I think 'all_keys' is a misnomer; we only put derived keys
-	// in this collection... Seems to be done so that they can be prodded with a
-	// 'Think' on _each frame_ :(
+	// TODO(tmckee): This exists so that every key can be prodded with a
+	// 'KeyThink' on _each frame_.
 	all_keys []Key
 	key_map  map[KeyId]Key
 

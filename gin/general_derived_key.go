@@ -1,54 +1,8 @@
 package gin
 
-// func (input *Input) registerDependence(derived Key, dep KeyId) {
-// 	list, ok := input.id_to_deps[dep]
-// 	if !ok {
-// 		list = make([]Key, 0)
-// 	}
-// 	list = append(list, derived)
-// 	input.id_to_deps[dep] = list
-// }
-
-// func (input *Input) BindDerivedKey(name string, bindings ...Binding) Key {
-// 	return input.bindDerivedKeyWithIndex(name, genDerivedKeyIndex(), bindings...)
-// }
-
-// func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, bindings ...Binding) Key {
-// 	dk := &derivedKey{
-// 		keyState: keyState{
-// 			id: KeyId{
-// 				Index: index,
-// 				Device: DeviceId{
-// 					Index: 1,
-// 					Type:  DeviceTypeDerived,
-// 				},
-// 			},
-// 			name:       name,
-// 			aggregator: &standardAggregator{},
-// 		},
-// 		Bindings:      bindings,
-// 		bindings_down: make([]bool, len(bindings)),
-// 	}
-
-// 	// TODO: Decide whether or not this is true, might need to register them for
-// 	// when the game loses focus.
-// 	// I think it might not be necessary to register derived keys.
-// 	// input.registerKeyIndex(dk.id.Index, &standardAggregator{}, name)
-
-// 	for _, binding := range bindings {
-// 		input.registerDependence(dk, binding.PrimaryKey)
-// 		for _, modifier := range binding.Modifiers {
-// 			input.registerDependence(dk, modifier)
-// 		}
-// 	}
-// 	input.key_map[dk.id] = dk
-// 	input.all_keys = append(input.all_keys, dk)
-// 	return dk
-// }
-
-// A generalDerivedKey represents a group of natural keys.  A key is specified
-// with (key index, device type, device index).  Given these there variables,
-// the following are possible:
+// A generalDerivedKey represents a group of natural keys. A key is specified
+// with a KeyID which is a tuple of (key index, device type, device index).
+// Given these components, the following are possible:
 // (specific, specific, specific) - These are natural keys
 // (specific, specific, general) - Specific key on any device of a specific type
 // (specific, general, general) - Specific key on any device at all
@@ -67,6 +21,8 @@ type generalDerivedKey struct {
 }
 
 func (gdk *generalDerivedKey) CurPressAmt() float64 {
+	// TODO(#28): this needs to go away; we've got keys indexed by a many of
+	// their KeyID components so we should be doing lookups instead.
 	sum := 0.0
 	for _, key := range gdk.input.all_keys {
 		if key.Id().Index == AnyKey ||
