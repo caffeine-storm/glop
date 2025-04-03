@@ -18,11 +18,6 @@ type Key interface {
 	// returns the event generated, if any.
 	KeySetPressAmt(amt float64, ms int64, cause Event) Event
 
-	// A very select set of keys should always send events when their press amt
-	// is non-zero. These are typically not your ordinary keys, mouse wheels,
-	// mouse pointers, etc...
-	SendAllNonZero() bool
-
 	// A Key may return true, amt from KeyThink() to indicate that a fake event
 	// should be generated to set its press amount to amt.
 	KeyThink(ms int64) (bool, float64)
@@ -47,6 +42,10 @@ type aggregator interface {
 	subAggregator
 	AggregatorThink(ms int64) (bool, float64)
 	AggregatorSetPressAmt(amt float64, ms int64, event_type EventType)
+
+	// A very select set of keys should always send events when their press amt
+	// is non-zero. These are typically not your ordinary keys, mouse wheels,
+	// mouse pointers, etc...
 	SendAllNonZero() bool
 }
 
