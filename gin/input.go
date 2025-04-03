@@ -210,9 +210,9 @@ type Input struct {
 	all_keys []Key
 	key_map  map[KeyId]Key
 
-	// map from keyId to list of derived Keys and general derived Keys that
-	// depend on it in some way
-	id_to_deps map[KeyId][]Key
+	// map from some keyId to a list of Keys that are observing keyId's presses.
+	// e.g. 'S' -> []{'save-key', 'screenshot-key', ...}
+	cause_to_effect map[KeyId][]Key
 
 	// Mapping from KeyIndex to an aggregator of the appropriate type for that index.
 	// This allows us to construct Keys for devices as the events happen, rather
@@ -267,7 +267,7 @@ func MakeLogged(logger glog.Logger) *Input {
 	input := new(Input)
 	input.all_keys = make([]Key, 0, 512)
 	input.key_map = make(map[KeyId]Key, 512)
-	input.id_to_deps = make(map[KeyId][]Key, 16)
+	input.cause_to_effect = make(map[KeyId][]Key, 16)
 	input.index_to_agg_type = make(map[KeyIndex]aggregatorType)
 	input.index_to_name = make(map[KeyIndex]string)
 	input.SetLogger(logger)
@@ -435,32 +435,33 @@ func (input *Input) RegisterEventListener(listener Listener) {
 	input.listeners = append(input.listeners, listener)
 }
 
-// Returns true iff triggering 'from' will trigger 'to'.
-func (input *Input) dependsOn(from, to KeyId) bool {
-	if from == to {
+// Returns true if triggering 'cause' will trigger 'effect'.
+func (input *Input) willTrigger(cause, effect KeyId) bool {
+	if cause == effect {
 		return true
 	}
 
 	// input.id_to_deps encodes a DAG of KeyId interdependence. Start at the
 	// 'from' node and BFS for 'to' in the set of descendents.
 	visited := map[KeyId]bool{}
-	workQueue := []KeyId{from}
+	workQueue := []KeyId{cause}
 
 	for len(workQueue) > 0 {
-		next := workQueue[0]
+		nextCause := workQueue[0]
 		workQueue = workQueue[1:]
 
-		if visited[next] {
+		if visited[nextCause] {
 			continue
 		}
 
-		visited[next] = true
-		for _, dep := range input.id_to_deps[next] {
-			if dep.Id() == to {
+		visited[nextCause] = true
+		for _, nextEffect := range input.cause_to_effect[nextCause] {
+			if nextEffect.Id() == effect {
 				return true
 			}
-			if !visited[dep.Id()] {
-				workQueue = append(workQueue, dep.Id())
+			if !visited[nextEffect.Id()] {
+				// Check for transitive effects by treating effects as new causes.
+				workQueue = append(workQueue, nextEffect.Id())
 			}
 		}
 	}
@@ -469,16 +470,17 @@ func (input *Input) dependsOn(from, to KeyId) bool {
 }
 
 // TODO: Handle removal of dependencies
-func (input *Input) registerDependence(derived Key, dep KeyId) {
-	input.logger.Trace("gin.Input>registerDependence", "derived", derived, "dep", dep)
+// TODO(clean): rename to addCauseEffect while reordering parameters
+func (input *Input) addEffectCause(effect Key, cause KeyId) {
+	input.logger.Trace("gin.Input>addObserver", "derived", effect, "dep", cause)
 
-	if input.dependsOn(dep, derived.Id()) {
-		panic(fmt.Errorf("depedency cycle detected: %v depends on %v", dep, derived.Id()))
+	if input.willTrigger(effect.Id(), cause) {
+		panic(fmt.Errorf("depedency cycle detected: %v depends on %v", cause, effect.Id()))
 	}
 
-	list := input.id_to_deps[dep]
-	list = append(list, derived)
-	input.id_to_deps[dep] = list
+	list := input.cause_to_effect[cause]
+	list = append(list, effect)
+	input.cause_to_effect[cause] = list
 }
 
 // Look for Keys related to the event's Key and notify them as needed.
@@ -489,7 +491,7 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 	id_ignoring_device_index.Device.Index = DeviceIndexAny
 
 	// Direct dependencies are recorded in input.id_to_deps
-	keysToPress := input.id_to_deps[id]
+	keysToPress := input.cause_to_effect[id]
 
 	// TODO(tmckee): consider using a set instead of a list for the keys to
 	// press... if presses are idempotent, we don't need to press them again (so
@@ -499,7 +501,7 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 	// Dependencies for keys organized by the same 'KeyIndex' but not pinned to a
 	// particular device instance, though the 'DeviceType' does need to match
 	// 🤔...
-	for _, dep := range input.id_to_deps[id_ignoring_device_index] {
+	for _, dep := range input.cause_to_effect[id_ignoring_device_index] {
 		keysToPress = append(keysToPress, dep)
 	}
 
