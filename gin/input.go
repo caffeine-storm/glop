@@ -220,11 +220,6 @@ type Input struct {
 	// otherwise we'd have to include info to distinguish between devices too!
 	index_to_family_deps map[KeyIndex][]derivedKeyFamily
 
-	// Mapping from KeyIndex to the derivedKeyFamily that it represents, if any.
-	// This map should only be keyed by indices generated for derived keys;
-	// otherwise we'd have to include info to distinguish between devices too!
-	index_to_family map[KeyIndex]derivedKeyFamily
-
 	// Mapping from KeyIndex to an aggregator of the appropriate type for that index.
 	// This allows us to construct Keys for devices as the events happen, rather
 	// than needing to know what the devices are during initialization.
@@ -282,7 +277,6 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.index_to_agg_type = make(map[KeyIndex]aggregatorType)
 	input.index_to_name = make(map[KeyIndex]string)
 	input.index_to_family_deps = make(map[KeyIndex][]derivedKeyFamily)
-	input.index_to_family = make(map[KeyIndex]derivedKeyFamily)
 	input.SetLogger(logger)
 	input.mouse.logger = logger
 
@@ -399,9 +393,7 @@ func (input *Input) GetKeyById(id KeyId) Key {
 	}
 	key, ok := input.key_map[id]
 	if !ok {
-		if _, ok := input.index_to_family[id.Index]; ok {
-			panic(fmt.Errorf("#28: deprecated code path that shouldn't have happened"))
-		} else if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
+		if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
 			// If we're looking for a general key we know how to create those
 			if id.Device.Type == DeviceTypeAny && id.Device.Index != DeviceIndexAny {
 				panic("Cannot specify a Device Index but not a Device Type.")
