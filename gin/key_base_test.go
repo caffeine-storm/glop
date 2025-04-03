@@ -42,10 +42,6 @@ func (*stubKey) KeySetPressAmt(amt float64, ms int64, cause gin.Event) gin.Event
 	return gin.Event{}
 }
 
-func (*stubKey) SendAllNonZero() bool {
-	return false
-}
-
 func (*stubKey) KeyThink(ms int64) (bool, float64) {
 	return false, 0
 }
