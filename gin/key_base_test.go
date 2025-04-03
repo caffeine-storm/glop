@@ -38,7 +38,7 @@ func (*stubKey) Id() gin.KeyId {
 	return gin.KeyId{}
 }
 
-func (*stubKey) SetPressAmt(amt float64, ms int64, cause gin.Event) gin.Event {
+func (*stubKey) KeySetPressAmt(amt float64, ms int64, cause gin.Event) gin.Event {
 	return gin.Event{}
 }
 

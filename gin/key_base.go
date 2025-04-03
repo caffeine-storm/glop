@@ -16,9 +16,7 @@ type Key interface {
 
 	// Sets the instantaneous press amount for this key at a specific time and
 	// returns the event generated, if any.
-	// TODO(tmckee:#20): Key and aggregators both have a SetPressAmt; we ought to
-	// come up with distinct names.
-	SetPressAmt(amt float64, ms int64, cause Event) Event
+	KeySetPressAmt(amt float64, ms int64, cause Event) Event
 
 	// A very select set of keys should always send events when their press amt
 	// is non-zero. These are typically not your ordinary keys, mouse wheels,
@@ -48,7 +46,7 @@ type subAggregator interface {
 type aggregator interface {
 	subAggregator
 	AggregatorThink(ms int64) (bool, float64)
-	SetPressAmt(amt float64, ms int64, event_type EventType)
+	AggregatorSetPressAmt(amt float64, ms int64, event_type EventType)
 	SendAllNonZero() bool
 }
 
@@ -157,7 +155,7 @@ func (sa *standardAggregator) IsDown() bool {
 	return sa.this.press_amt != 0
 }
 
-func (sa *standardAggregator) SetPressAmt(amt float64, ms int64, event_type EventType) {
+func (sa *standardAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
 	sa.this.press_amt = amt
 	sa.last_press = ms
@@ -191,7 +189,7 @@ func (aa *axisAggregator) IsDown() bool {
 	return aa.is_down
 }
 
-func (aa *axisAggregator) SetPressAmt(amt float64, ms int64, event_type EventType) {
+func (aa *axisAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
 	aa.this.press_sum += amt
 	aa.this.press_amt = amt
 	if amt != 0 {
@@ -227,9 +225,9 @@ func (wa *wheelAggregator) SendAllNonZero() bool {
 	return true
 }
 
-func (wa *wheelAggregator) SetPressAmt(amt float64, ms int64, event_type EventType) {
+func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
 	wa.event_received = wa.last_press < wa.last_think
-	wa.standardAggregator.SetPressAmt(amt, ms, event_type)
+	wa.standardAggregator.AggregatorSetPressAmt(amt, ms, event_type)
 }
 
 func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {
@@ -354,7 +352,7 @@ func (ks *keyState) Id() KeyId {
 // be monotonically increasing. If this press was caused by another event (as
 // is the case with derived keys), then cause is the event that made this
 // happen.
-func (ks *keyState) SetPressAmt(amt float64, ms int64, cause Event) (event Event) {
+func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
 	event.Type = NoEvent
 	event.Key = ks
 	if (ks.CurPressAmt() == 0) != (amt == 0) {
@@ -370,6 +368,6 @@ func (ks *keyState) SetPressAmt(amt float64, ms int64, cause Event) (event Event
 			event.Type = Adjust
 		}
 	}
-	ks.aggregator.SetPressAmt(amt, ms, event.Type)
+	ks.aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
 	return
 }

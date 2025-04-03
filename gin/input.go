@@ -457,7 +457,7 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 }
 
 func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup) {
-	event := k.SetPressAmt(amt, group.Timestamp, cause)
+	event := k.KeySetPressAmt(amt, group.Timestamp, cause)
 	input.informDeps(event, group)
 
 	// Press synthetic keys (like, the 'Any' key)

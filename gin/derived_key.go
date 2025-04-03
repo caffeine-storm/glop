@@ -113,7 +113,7 @@ func (dk *derivedKey) numBindingsDown() int {
 	return count
 }
 
-func (dk *derivedKey) SetPressAmt(amt float64, ms int64, cause Event) (event Event) {
+func (dk *derivedKey) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
 	index := -1
 	for i, binding := range dk.Bindings {
 		if cause.Key.Id() == binding.PrimaryKey {
@@ -132,7 +132,7 @@ func (dk *derivedKey) SetPressAmt(amt float64, ms int64, cause Event) (event Eve
 	if index != -1 {
 		dk.bindings_down[index] = dk.Bindings[index].CurPressAmt() != 0
 	}
-	dk.keyState.aggregator.SetPressAmt(amt, ms, event.Type)
+	dk.keyState.aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
 	return
 }
 

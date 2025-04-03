@@ -54,7 +54,7 @@ func (gdk *generalDerivedKey) IsDown() bool {
 	return gdk.press_amt > 0
 }
 
-func (gdk *generalDerivedKey) SetPressAmt(amt float64, ms int64, cause Event) (event Event) {
+func (gdk *generalDerivedKey) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
 	event.Type = NoEvent
 	event.Key = &gdk.keyState
 	old_press_amt := gdk.press_amt
@@ -67,6 +67,6 @@ func (gdk *generalDerivedKey) SetPressAmt(amt float64, ms int64, cause Event) (e
 	} else {
 		event.Type = Release
 	}
-	gdk.keyState.aggregator.SetPressAmt(gdk.press_amt, ms, event.Type)
+	gdk.keyState.aggregator.AggregatorSetPressAmt(gdk.press_amt, ms, event.Type)
 	return
 }
