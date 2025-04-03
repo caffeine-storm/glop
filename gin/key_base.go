@@ -133,9 +133,7 @@ func (a *baseAggregator) CurPressSum() float64 {
 	return a.this.press_sum
 }
 
-// TODO(tmckee:#20): we ought to improve the name here; something like
-// updateTransitionCounts or smth
-func (a *baseAggregator) handleEventType(event_type EventType) {
+func (a *baseAggregator) updateCounts(event_type EventType) {
 	switch event_type {
 	case Press:
 		a.this.press_count++
@@ -163,7 +161,7 @@ func (sa *standardAggregator) SetPressAmt(amt float64, ms int64, event_type Even
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
 	sa.this.press_amt = amt
 	sa.last_press = ms
-	sa.handleEventType(event_type)
+	sa.updateCounts(event_type)
 }
 
 func (sa *standardAggregator) AggregatorThink(ms int64) (bool, float64) {
@@ -199,7 +197,7 @@ func (aa *axisAggregator) SetPressAmt(amt float64, ms int64, event_type EventTyp
 	if amt != 0 {
 		aa.is_down = true
 	}
-	aa.handleEventType(event_type)
+	aa.updateCounts(event_type)
 }
 
 func (aa *axisAggregator) AggregatorThink(ms int64) (bool, float64) {
