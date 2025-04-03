@@ -399,17 +399,8 @@ func (input *Input) GetKeyById(id KeyId) Key {
 	}
 	key, ok := input.key_map[id]
 	if !ok {
-		if family, ok := input.index_to_family[id.Index]; ok {
-			// If the index indicates a family but the key doesn't exist, go ahead
-			// and have the family create it.
-			input.key_map[id] = family.GetKey(id.Device)
-			key = input.key_map[id]
-
-			// TODO(tmckee): there are three blocks here and they all add a key to
-			// input.all_keys, but this one does it implicitly through
-			// family.GetKey(). We should find a way to avoid this and have all
-			// additions to all_keys be in the same place.
-			// input.all_keys = append(input.all_keys, key)
+		if _, ok := input.index_to_family[id.Index]; ok {
+			panic(fmt.Errorf("#28: deprecated code path that shouldn't have happened"))
 		} else if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
 			// If we're looking for a general key we know how to create those
 			if id.Device.Type == DeviceTypeAny && id.Device.Index != DeviceIndexAny {

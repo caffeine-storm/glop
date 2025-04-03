@@ -190,29 +190,6 @@ type derivedKeyFamily struct {
 	input            *Input
 }
 
-func (input *Input) BindDerivedKeyFamily(name string, bindings ...BindingFamily) KeyIndex {
-	input.logger.Trace("gin.input")
-	dkf := derivedKeyFamily{
-		name:             name,
-		index:            genDerivedKeyIndex(),
-		binding_families: bindings,
-		input:            input,
-	}
-	// TODO(🤔🤔🤔🤔🤔🤔): we look for entries in 'input.index_to_family_deps'
-	// for a key index that we _just_ generated as unique... that can't find
-	// anything... RIGHT???
-	for _, binding := range bindings {
-		input.index_to_family_deps[binding.PrimaryIndex] = append(input.index_to_family_deps[dkf.index], dkf)
-		for _, mod := range binding.Modifiers {
-			// TODO(🤔🤔🤔): we _replace_ values in 'index_to_family_deps'; did we
-			// mean to append to what was there?
-			input.index_to_family_deps[mod] = append(input.index_to_family_deps[dkf.index], dkf)
-		}
-	}
-	dkf.input.index_to_family[dkf.index] = dkf
-	return dkf.index
-}
-
 func (dkf *derivedKeyFamily) GetKey(device DeviceId) Key {
 	id := KeyId{Index: dkf.index, Device: device}
 	if _, ok := dkf.input.key_map[id]; !ok {

@@ -13,7 +13,6 @@ func TestGinSpecs(t *testing.T) {
 		Convey("NaturalKeySpec", NaturalKeySpec)
 		Convey("DerivedKeySpec", DerivedKeySpec)
 		Convey("DeviceSpec", DeviceSpec)
-		Convey("DeviceFamilySpec", DeviceFamilySpec)
 		Convey("NestedDerivedKeySpec", NestedDerivedKeySpec)
 		Convey("EventSpec", EventSpec)
 		Convey("AxisSpec", AxisSpec)
@@ -256,74 +255,6 @@ func DerivedKeySpec() {
 		input.Think(60, events)
 		So(ABc_Ef.IsDown(), ShouldEqual, false)
 		So(ABc_Ef.FramePressCount(), ShouldEqual, 0)
-	})
-}
-
-// Check that derived keys can properly differentiate between the same key
-// pressed on different devices.
-func DeviceFamilySpec() {
-	input := gin.Make()
-	binding := input.MakeBindingFamily(gin.KeyA, []gin.KeyIndex{gin.KeyB}, []bool{true})
-	monkey_index := input.BindDerivedKeyFamily("monkey", binding)
-
-	monkey1 := input.GetKeyByParts(monkey_index, gin.DeviceTypeKeyboard, 1)
-	monkey2 := input.GetKeyByParts(monkey_index, gin.DeviceTypeKeyboard, 2)
-	monkeyAny := input.GetKeyByParts(monkey_index, gin.DeviceTypeKeyboard, gin.DeviceIndexAny)
-
-	Convey("Derived key families work properly.", func() {
-		// Test that first binding can trigger a press
-		events := make([]gin.OsEvent, 0)
-		injectEvent(&events, gin.KeyA, 1, gin.DeviceTypeKeyboard, 1, 1)
-		injectEvent(&events, gin.KeyA, 2, gin.DeviceTypeKeyboard, 1, 1)
-		input.Think(2, events)
-		So(monkey1.IsDown(), ShouldEqual, false)
-		So(monkey1.FramePressCount(), ShouldEqual, 0)
-		So(monkey2.IsDown(), ShouldEqual, false)
-		So(monkey2.FramePressCount(), ShouldEqual, 0)
-		So(monkeyAny.IsDown(), ShouldEqual, false)
-		So(monkeyAny.FramePressCount(), ShouldEqual, 0)
-
-		events = events[0:0]
-		injectEvent(&events, gin.KeyA, 1, gin.DeviceTypeKeyboard, 0, 3)
-		injectEvent(&events, gin.KeyA, 2, gin.DeviceTypeKeyboard, 0, 3)
-		input.Think(4, events)
-		So(monkey1.IsDown(), ShouldEqual, false)
-		So(monkey1.FramePressCount(), ShouldEqual, 0)
-		So(monkey2.IsDown(), ShouldEqual, false)
-		So(monkey2.FramePressCount(), ShouldEqual, 0)
-		So(monkeyAny.IsDown(), ShouldEqual, false)
-		So(monkeyAny.FramePressCount(), ShouldEqual, 0)
-
-		events = events[0:0]
-		injectEvent(&events, gin.KeyB, 1, gin.DeviceTypeKeyboard, 1, 5)
-		injectEvent(&events, gin.KeyA, 1, gin.DeviceTypeKeyboard, 1, 5)
-		input.Think(6, events)
-		So(monkey1.IsDown(), ShouldEqual, true)
-		So(monkey1.FramePressCount(), ShouldEqual, 1)
-		So(monkey2.IsDown(), ShouldEqual, false)
-		So(monkey2.FramePressCount(), ShouldEqual, 0)
-		So(monkeyAny.IsDown(), ShouldEqual, true)
-		So(monkeyAny.FramePressCount(), ShouldEqual, 1)
-
-		events = events[0:0]
-		injectEvent(&events, gin.KeyA, 1, gin.DeviceTypeKeyboard, 0, 7)
-		input.Think(8, events)
-		So(monkey1.IsDown(), ShouldEqual, false)
-		So(monkey1.FrameReleaseCount(), ShouldEqual, 1)
-		So(monkey2.IsDown(), ShouldEqual, false)
-		So(monkey2.FrameReleaseCount(), ShouldEqual, 0)
-		So(monkeyAny.IsDown(), ShouldEqual, false)
-		So(monkeyAny.FrameReleaseCount(), ShouldEqual, 1)
-
-		events = events[0:0]
-		injectEvent(&events, gin.KeyA, 1, gin.DeviceTypeKeyboard, 1, 9)
-		input.Think(10, events)
-		So(monkey1.IsDown(), ShouldEqual, true)
-		So(monkey1.FramePressCount(), ShouldEqual, 1)
-		So(monkey2.IsDown(), ShouldEqual, false)
-		So(monkey2.FramePressCount(), ShouldEqual, 0)
-		So(monkeyAny.IsDown(), ShouldEqual, true)
-		So(monkeyAny.FramePressCount(), ShouldEqual, 1)
 	})
 }
 
