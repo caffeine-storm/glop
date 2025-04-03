@@ -84,27 +84,27 @@ func TestKeyDependency(t *testing.T) {
 		keyA := inputObj.GetKeyById(keyIdA)
 		require.True(inputObj.willTrigger(keyA.Id(), keyA.Id()))
 		require.Panics(func() {
-			inputObj.addEffectCause(keyA, keyA.Id())
+			inputObj.addCauseEffect(keyA.Id(), keyA)
 		}, "1-cycles are not allowed")
 
 		keyB := inputObj.GetKeyById(keyIdB)
 		require.False(inputObj.willTrigger(keyA.Id(), keyB.Id()))
 		require.False(inputObj.willTrigger(keyB.Id(), keyA.Id()))
 
-		inputObj.addEffectCause(keyB, keyA.Id())
+		inputObj.addCauseEffect(keyA.Id(), keyB)
 		require.True(inputObj.willTrigger(keyA.Id(), keyB.Id()))
 
 		require.Panics(func() {
-			inputObj.addEffectCause(keyA, keyB.Id())
+			inputObj.addCauseEffect(keyB.Id(), keyA)
 		}, "2-cycles are not allowed")
 
 		keyC := inputObj.GetKeyById(keyIdC)
-		inputObj.addEffectCause(keyC, keyB.Id())
+		inputObj.addCauseEffect(keyB.Id(), keyC)
 		require.True(inputObj.willTrigger(keyB.Id(), keyC.Id()))
 		require.True(inputObj.willTrigger(keyA.Id(), keyC.Id()))
 
 		require.Panics(func() {
-			inputObj.addEffectCause(keyA, keyC.Id())
+			inputObj.addCauseEffect(keyC.Id(), keyA)
 		}, "no cycles are allowed")
 	})
 }

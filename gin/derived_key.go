@@ -56,9 +56,9 @@ func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, binding
 	// input.registerKeyIndex(dk.id.Index, &standardAggregator{}, name)
 
 	for _, binding := range bindings {
-		input.addEffectCause(dk, binding.PrimaryKey)
+		input.addCauseEffect(binding.PrimaryKey, dk)
 		for _, modifier := range binding.Modifiers {
-			input.addEffectCause(dk, modifier)
+			input.addCauseEffect(modifier, dk)
 		}
 	}
 

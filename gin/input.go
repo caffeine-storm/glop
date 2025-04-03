@@ -469,9 +469,8 @@ func (input *Input) willTrigger(cause, effect KeyId) bool {
 	return false
 }
 
-// TODO: Handle removal of dependencies
-// TODO(clean): rename to addCauseEffect while reordering parameters
-func (input *Input) addEffectCause(effect Key, cause KeyId) {
+// TODO(tmckee): Handle removal of cause/effect relationship
+func (input *Input) addCauseEffect(cause KeyId, effect Key) {
 	input.logger.Trace("gin.Input>addObserver", "derived", effect, "dep", cause)
 
 	if input.willTrigger(effect.Id(), cause) {
