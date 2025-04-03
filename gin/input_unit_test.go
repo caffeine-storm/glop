@@ -54,3 +54,50 @@ func TestBindingGetPrimaryPressAmt(t *testing.T) {
 	keyPressAmount := testKey.CurPressAmt()
 	require.Equal(0.0, keyPressAmount)
 }
+
+func TestKeyDependency(t *testing.T) {
+	t.Run("attempting to create a cycle panics", func(t *testing.T) {
+		require := require.New(t)
+
+		// TODO(tmckee): refactor other tests to use VoidLogger
+		inputObj := MakeLogged(glog.VoidLogger())
+		require.NotNil(inputObj)
+
+		keyboard1 := DeviceId{
+			Index: 1,
+			Type:  DeviceTypeKeyboard,
+		}
+		kid := KeyId{
+			Index:  0,
+			Device: keyboard1,
+		}
+
+		keyIdA := kid
+		keyIdA.Index = 'a'
+
+		keyIdB := kid
+		keyIdB.Index = 'b'
+
+		keyIdC := kid
+		keyIdC.Index = 'c'
+
+		keyA := inputObj.GetKeyById(keyIdA)
+		require.Panics(func() {
+			inputObj.registerDependence(keyA, keyA.Id())
+		}, "1-cycles are not allowed")
+
+		keyB := inputObj.GetKeyById(keyIdB)
+		inputObj.registerDependence(keyA, keyB.Id())
+
+		require.Panics(func() {
+			inputObj.registerDependence(keyB, keyA.Id())
+		}, "2-cycles are not allowed")
+
+		keyC := inputObj.GetKeyById(keyIdC)
+		inputObj.registerDependence(keyB, keyC.Id())
+
+		require.Panics(func() {
+			inputObj.registerDependence(keyC, keyA.Id())
+		}, "no cycles are allowed")
+	})
+}
