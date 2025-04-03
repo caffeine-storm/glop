@@ -347,6 +347,7 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.registerKeyIndex(MouseRButton, aggregatorTypeStandard, "MouseRButton")
 	input.registerKeyIndex(MouseMButton, aggregatorTypeStandard, "MouseMButton")
 
+	// TODO(#28): bind these 'default' derived keys
 	// input.bindDerivedKeyWithId("Shift", EitherShift, input.MakeBinding(LeftShift, nil, nil), input.MakeBinding(RightShift, nil, nil))
 	// input.bindDerivedKeyWithId("Control", EitherControl, input.MakeBinding(LeftControl, nil, nil), input.MakeBinding(RightControl, nil, nil))
 	// input.bindDerivedKeyWithId("Alt", EitherAlt, input.MakeBinding(LeftAlt, nil, nil), input.MakeBinding(RightAlt, nil, nil))
@@ -359,10 +360,10 @@ func MakeLogged(logger glog.Logger) *Input {
 func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, name string) {
 	input.logger.Trace("gin.Input")
 	if index < 0 {
-		panic(fmt.Sprintf("Cannot register a key with index %d, indexes must be greater than 0.", index))
+		panic(fmt.Errorf("cannot register a key with a negative index: %d", index))
 	}
 	if prev, ok := input.index_to_name[index]; ok {
-		panic(fmt.Sprintf("Cannot register key index %d, it has already been registered with the name %s and aggregator %v.", index, prev, agg_type))
+		panic(fmt.Errorf("cannot overwrite key registration: index %d, new name %q, old name %q", index, name, prev))
 	}
 	input.index_to_agg_type[index] = agg_type
 	input.index_to_name[index] = name
@@ -381,16 +382,11 @@ func (input *Input) GetKeyByParts(key_index KeyIndex, device_type DeviceType, de
 
 func (input *Input) GetKeyById(id KeyId) Key {
 	input.logger.Trace("gin.Input")
-	if id.Device.Type >= DeviceTypeMax || id.Device.Type < 0 {
-		panic(fmt.Sprintf("Specified invalid DeviceType, %d.", id.Device))
-	}
+	id.MustValidate()
 	key, ok := input.key_map[id]
 	if !ok {
 		if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
 			// If we're looking for a general key we know how to create those
-			if id.Device.Type == DeviceTypeAny && id.Device.Index != DeviceIndexAny {
-				panic("Cannot specify a Device Index but not a Device Type.")
-			}
 			input.key_map[id] = &generalDerivedKey{
 				keyState: keyState{
 					id:         id,
@@ -406,23 +402,12 @@ func (input *Input) GetKeyById(id KeyId) Key {
 			// key the appropriate device.
 			agg_type, ok := input.index_to_agg_type[id.Index]
 			if !ok {
-				panic(fmt.Sprintf("No key registered with id == %v.", id))
-			}
-			var agg aggregator
-			switch agg_type {
-			case aggregatorTypeStandard:
-				agg = &standardAggregator{}
-			case aggregatorTypeAxis:
-				agg = &axisAggregator{}
-			case aggregatorTypeWheel:
-				agg = &wheelAggregator{}
-			default:
-				panic(fmt.Sprintf("Unknown aggregator type specified: %T.", agg_type))
+				panic(fmt.Errorf("no key registered with id == %v", id))
 			}
 			input.key_map[id] = &keyState{
 				id:         id,
 				name:       input.index_to_name[id.Index],
-				aggregator: agg,
+				aggregator: aggregatorForType(agg_type),
 			}
 			key = input.key_map[id]
 			input.all_keys = append(input.all_keys, key)

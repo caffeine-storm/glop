@@ -60,6 +60,29 @@ const (
 	aggregatorTypeWheel
 )
 
+func aggregatorForType(tp aggregatorType) aggregator {
+	switch tp {
+	case aggregatorTypeStandard:
+		return &standardAggregator{}
+	case aggregatorTypeAxis:
+		return &axisAggregator{}
+	case aggregatorTypeWheel:
+		return &wheelAggregator{}
+	}
+
+	panic(fmt.Errorf("unknown aggregatorType: %d", tp))
+}
+
+func (at aggregatorType) MustValidate() {
+	switch at {
+	case aggregatorTypeStandard:
+	case aggregatorTypeAxis:
+	case aggregatorTypeWheel:
+	default:
+		panic(fmt.Errorf("invalid aggregatorType: %d", at))
+	}
+}
+
 // Simple struct that aggregates presses and press_amts during a frame so they
 // can be viewed between KeyThink()s
 type keyStats struct {
@@ -230,6 +253,15 @@ type KeyIndex int
 type KeyId struct {
 	Device DeviceId
 	Index  KeyIndex
+}
+
+func (kid KeyId) MustValidate() {
+	if kid.Device.Type >= DeviceTypeMax || kid.Device.Type < 0 {
+		panic(fmt.Errorf("invalid device type: %d", kid.Device.Type))
+	}
+	if kid.Device.Type == DeviceTypeAny && kid.Device.Index != DeviceIndexAny {
+		panic(fmt.Errorf("DeviceTypeAny requires DeviceIndexAny but got %v", kid.Device))
+	}
 }
 
 type DeviceId struct {
