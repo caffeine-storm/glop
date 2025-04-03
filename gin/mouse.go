@@ -64,7 +64,9 @@ func classifyMouseEventType(event OsEvent) MouseEventType {
 	panic(fmt.Errorf("Unmapped KeyId: %v (should have had a mouse-specific KeyId.Index)", event.KeyId))
 }
 
-func (in *MouseInput) Handle(event OsEvent, group *EventGroup) {
+// TODO(#18): we could return an optional gin.Event if we decide to
+// support optional MouseListenerFunc 'feedback'.
+func (in *MouseInput) Handle(event OsEvent) {
 	if in.logger == nil {
 		in.logger = glog.VoidLogger()
 	}
@@ -79,10 +81,6 @@ func (in *MouseInput) Handle(event OsEvent, group *EventGroup) {
 	for _, fn := range in.listeners {
 		fn(mevt)
 	}
-
-	// TODO(#18): here is where we could add to 'group.Events' if we decide to
-	// support optional MouseListenerFunc 'feedback'.
-	// group.events = append(group.events, Event{kinda-thingy})
 }
 
 func (in *Input) AddMouseListener(listenerFunc MouseListenerFunc) {

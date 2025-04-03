@@ -495,7 +495,7 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 		}
 
 		if os_event.KeyId.Device.Type == DeviceTypeMouse {
-			input.mouse.Handle(os_event, &group)
+			input.mouse.Handle(os_event)
 		}
 
 		input.pressKey(
