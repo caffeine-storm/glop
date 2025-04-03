@@ -218,6 +218,8 @@ static bool SynthKey(XWindowAttributes const * attrs, KeySym const &sym, bool pu
     case XK_comma: ki = ','; break;
     case XK_period: ki = '.'; break;
     case XK_slash: ki = '/'; break;
+    // TODO(tmckee:#10): we probably want to map space to space, not to slash,
+    // right?!
     case XK_space: ki = '/'; break;
   }
 

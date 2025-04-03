@@ -78,7 +78,8 @@ func NativeToGin(linux RawCursorToWindowCoordser, nativeEvent *NativeKeyEvent) g
 	wx, wy := linux.RawCursorToWindowCoords(int(nativeEvent.cursor_x), int(nativeEvent.cursor_y))
 	keyId := gin.KeyId{
 		Device: gin.DeviceId{
-			Type:  nativeDeviceToGinDevice(nativeEvent.device_type),
+			Type: nativeDeviceToGinDevice(nativeEvent.device_type),
+			// TODO(#28): shouldn't we be indexing devices?
 			Index: 0, // gin.DeviceIndex(nativeEvent.device_index),
 		},
 		Index: gin.KeyIndex(nativeEvent.index),
