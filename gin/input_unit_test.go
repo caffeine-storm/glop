@@ -56,30 +56,30 @@ func TestBindingGetPrimaryPressAmt(t *testing.T) {
 }
 
 func TestKeyDependency(t *testing.T) {
+	keyboard1 := DeviceId{
+		Index: 1,
+		Type:  DeviceTypeKeyboard,
+	}
+	kid := KeyId{
+		Index:  0,
+		Device: keyboard1,
+	}
+
+	keyIdA := kid
+	keyIdA.Index = 'a'
+
+	keyIdB := kid
+	keyIdB.Index = 'b'
+
+	keyIdC := kid
+	keyIdC.Index = 'c'
+
 	t.Run("attempting to create a cycle panics", func(t *testing.T) {
 		require := require.New(t)
 
 		// TODO(tmckee): refactor other tests to use VoidLogger
 		inputObj := MakeLogged(glog.VoidLogger())
 		require.NotNil(inputObj)
-
-		keyboard1 := DeviceId{
-			Index: 1,
-			Type:  DeviceTypeKeyboard,
-		}
-		kid := KeyId{
-			Index:  0,
-			Device: keyboard1,
-		}
-
-		keyIdA := kid
-		keyIdA.Index = 'a'
-
-		keyIdB := kid
-		keyIdB.Index = 'b'
-
-		keyIdC := kid
-		keyIdC.Index = 'c'
 
 		keyA := inputObj.GetKeyById(keyIdA)
 		require.True(inputObj.willTrigger(keyA.Id(), keyA.Id()))
@@ -106,5 +106,29 @@ func TestKeyDependency(t *testing.T) {
 		require.Panics(func() {
 			inputObj.addCauseEffect(keyC.Id(), keyA)
 		}, "no cycles are allowed")
+	})
+
+	t.Run("can remove cause-effect links", func(t *testing.T) {
+		require := require.New(t)
+
+		// TODO(tmckee): refactor other tests to use VoidLogger
+		inputObj := MakeLogged(glog.VoidLogger())
+		require.NotNil(inputObj)
+
+		keyA := inputObj.GetKeyById(keyIdA)
+		keyB := inputObj.GetKeyById(keyIdB)
+		keyC := inputObj.GetKeyById(keyIdC)
+
+		// Setup A -causes-> B -causes-> C
+		inputObj.addCauseEffect(keyA.Id(), keyB)
+		inputObj.addCauseEffect(keyB.Id(), keyC)
+
+		require.True(inputObj.willTrigger(keyA.Id(), keyB.Id()))
+		require.True(inputObj.willTrigger(keyA.Id(), keyC.Id()))
+
+		inputObj.removeCauseEffect(keyB.Id(), keyC)
+
+		require.True(inputObj.willTrigger(keyA.Id(), keyB.Id()))
+		require.False(inputObj.willTrigger(keyA.Id(), keyC.Id()))
 	})
 }
