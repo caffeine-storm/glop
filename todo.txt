@@ -1,6 +1,3 @@
-tmckee:#26 gin.MouseEvents need to distinguish between left/middle/right
-buttons
-
 tmckee:#25 our timestamp code is scuffed in glop.cpp
 
 tmckee:#24 gui.TextLine.next_text is never used; but is needed for detecting change-in-text in gui.TextEditLine
