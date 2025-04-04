@@ -125,4 +125,47 @@ func TestKeyDependency(t *testing.T) {
 		require.True(inputObj.willTrigger(keyA.Id(), keyB.Id()))
 		require.False(inputObj.willTrigger(keyA.Id(), keyC.Id()))
 	})
+
+	t.Run("cause-effect links understand DeviceIndexAny", func(t *testing.T) {
+		t.Run("a triggers b triggers-ignoring-deviceindex c", func(t *testing.T) {
+			require := require.New(t)
+
+			inputObj := MakeLogged(glog.VoidLogger())
+			require.NotNil(inputObj)
+
+			keyIdBIgnoringDeviceIndex := keyIdB
+			keyIdBIgnoringDeviceIndex.Device.Index = DeviceIndexAny
+
+			keyA := inputObj.GetKeyById(keyIdA)
+			keyB := inputObj.GetKeyById(keyIdB)
+			keyC := inputObj.GetKeyById(keyIdC)
+
+			// Setup A -causes-> B -causes-ignoring-device-index> C
+			inputObj.addCauseEffect(keyA.Id(), keyB)
+			inputObj.addCauseEffect(keyIdBIgnoringDeviceIndex, keyC)
+
+			require.True(inputObj.willTrigger(keyA.Id(), keyB.Id()))
+			require.True(inputObj.willTrigger(keyA.Id(), keyC.Id()))
+		})
+		t.Run("a triggers-ignoring-deviceindex b triggers c", func(t *testing.T) {
+			require := require.New(t)
+
+			inputObj := MakeLogged(glog.VoidLogger())
+			require.NotNil(inputObj)
+
+			keyIdAIgnoringDeviceIndex := keyIdA
+			keyIdAIgnoringDeviceIndex.Device.Index = DeviceIndexAny
+
+			keyA := inputObj.GetKeyById(keyIdA)
+			keyB := inputObj.GetKeyById(keyIdB)
+			keyC := inputObj.GetKeyById(keyIdC)
+
+			// Setup A -causes-ignoring-device-index-> B -causes-> C
+			inputObj.addCauseEffect(keyIdAIgnoringDeviceIndex, keyB)
+			inputObj.addCauseEffect(keyB.Id(), keyC)
+
+			require.True(inputObj.willTrigger(keyA.Id(), keyB.Id()))
+			require.True(inputObj.willTrigger(keyA.Id(), keyC.Id()))
+		})
+	})
 }
