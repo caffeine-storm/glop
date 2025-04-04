@@ -575,6 +575,8 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 	for _, os_event := range os_events {
 		group := EventGroup{
 			Timestamp: os_event.Timestamp,
+			X:         os_event.X,
+			Y:         os_event.Y,
 		}
 
 		if os_event.KeyId.Device.Type == DeviceTypeMouse {
