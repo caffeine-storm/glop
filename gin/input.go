@@ -464,6 +464,18 @@ func (input *Input) willTrigger(cause, effect KeyId) bool {
 				workQueue = append(workQueue, nextEffect.Id())
 			}
 		}
+
+		nextCauseIgnoringDeviceIndex := nextCause
+		nextCauseIgnoringDeviceIndex.Device.Index = DeviceIndexAny
+		for _, nextEffect := range input.cause_to_effect[nextCauseIgnoringDeviceIndex] {
+			if nextEffect.Id() == effect {
+				return true
+			}
+			if !visited[nextEffect.Id()] {
+				// Check for transitive effects by treating effects as new causes.
+				workQueue = append(workQueue, nextEffect.Id())
+			}
+		}
 	}
 
 	return false
