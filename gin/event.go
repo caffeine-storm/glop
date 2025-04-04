@@ -48,10 +48,9 @@ func (e Event) String() string {
 
 // An EventGroup is a series of events that were all created by a single
 // OsEvent.
-// TODO(tmckee:#20): it would be cleaner to include an (X,Y) mouse position in
-// this EventGroup than to rely on the coupling between gui.Gui and gin.Input.
 type EventGroup struct {
 	Events    []Event
+	X, Y      int
 	Timestamp int64
 }
 
