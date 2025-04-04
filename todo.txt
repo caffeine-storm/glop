@@ -1,3 +1,6 @@
+tmckee:#28 text_edit_line.go is checking for a click but only checking the x
+co-ordinate... would clicking below the box move the cursor??? need to test!
+
 tmckee:#25 our timestamp code is scuffed in glop.cpp
 
 tmckee:#24 gui.TextLine.next_text is never used; but is needed for detecting change-in-text in gui.TextEditLine
@@ -52,4 +55,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #28
+next bug: #29

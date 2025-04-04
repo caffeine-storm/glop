@@ -64,18 +64,17 @@ func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 		}
 	}
 
-	isMouseEvent := gui.IsMouseEvent(group)
-	if isMouseEvent {
-		var p Point
-		p.X, p.Y = gui.GetMousePosition(group)
+	isMouseEvent := false
+	if p, ok := gui.UseMousePosition(group); ok {
+		isMouseEvent = true
 		if !p.Inside(cb.Rendered()) {
 			return false
 		}
 	}
-
 	if cb.clicked {
 		return false
 	}
+
 	if group.DispatchedToFocussedWidget {
 		cb.scroll.Respond(gui, group)
 	}

@@ -162,10 +162,12 @@ func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGrou
 			w.cursor.index++
 			w.cursor.moved = true
 		} else if key_id == gin.AnyMouseLButton {
-			x, _ := ctx.GetMousePosition(event_group)
-			cx := w.TextLine.Render_region.X
-			w.cursor.index = w.findIndexAtOffset(x - cx)
-			w.cursor.moved = true
+			// TODO(#28): probably want to look at the Y co-ordinate too, right?
+			if pt, ok := ctx.UseMousePosition(event_group); ok {
+				cx := w.TextLine.Render_region.X
+				w.cursor.index = w.findIndexAtOffset(pt.X - cx)
+				w.cursor.moved = true
+			}
 		} else if found, _ := event_group.FindEvent(gin.AnyLeft); found {
 			if w.cursor.index > 0 {
 				w.cursor.index--

@@ -50,13 +50,11 @@ func (fw *FileWidget) Respond(ui *Gui, group EventGroup) bool {
 	if fw.Button.Respond(ui, group) {
 		return true
 	}
-	if !ui.IsMouseEvent(group) {
-		return false
+
+	if pt, ok := ui.UseMousePosition(group); ok {
+		return pt.Inside(fw.Rendered())
 	}
-	var p Point
-	p.X, p.Y = ui.GetMousePosition(group)
-	v := p.Inside(fw.Rendered())
-	return v
+	return false
 }
 
 // If path represents a directory, returns path

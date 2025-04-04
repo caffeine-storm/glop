@@ -196,8 +196,6 @@ type UpdateableDrawingContext interface {
 }
 
 type EventHandlingContext interface {
-	IsMouseEvent(grp EventGroup) bool
-	GetMousePosition(grp EventGroup) (int, int)
 	UseMousePosition(grp EventGroup) (Point, bool)
 	LeftButton(grp EventGroup) bool
 	MiddleButton(grp EventGroup) bool
@@ -568,19 +566,9 @@ func (g *Gui) FocusWidget() Widget {
 	return g.focus[len(g.focus)-1]
 }
 
-func (g *Gui) IsMouseEvent(grp EventGroup) bool {
-	if len(grp.Events) < 0 {
-		return false
-	}
-
-	evt := grp.PrimaryEvent()
-	return evt.Key.Id().Device.Type == gin.DeviceTypeMouse
-}
-
-func (g *Gui) GetMousePosition(grp EventGroup) (int, int) {
-	return grp.GetMousePosition()
-}
-
+// Returns (point, ok) describing where the mouse was during the given event
+// group. If the event group doesn't track mouse position, the 'ok' flag will
+// be false.
 func (g *Gui) UseMousePosition(grp EventGroup) (Point, bool) {
 	var p Point
 	found := false
