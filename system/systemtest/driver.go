@@ -13,7 +13,7 @@ type Driver interface {
 
 	// Put the top-left extent of the window at (x, y) in glop-coords.
 	PositionWindow(x, y int)
-	// AddInputListener(gin.Listener)
+	AddInputListener(gin.Listener)
 
 	RawTool(func(system.NativeWindowHandle) []any)
 
@@ -81,6 +81,10 @@ func (d *testDriver) GetEvents() []gin.EventGroup {
 }
 
 func (d *testDriver) Think(int64) {}
+
+func (d *testDriver) AddInputListener(l gin.Listener) {
+	d.window.sys.AddInputListener(l)
+}
 
 var _ Driver = (*testDriver)(nil)
 
