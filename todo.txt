@@ -9,8 +9,6 @@ https://tronche.com/gui/x/xlib/utilities/keyboard/XRefreshKeyboardMapping.html
 tmckee:#22 clicking the 'x' button on a window doesn't close it r.n. We need to
 detect a "close message" or smth in glop.cpp.
 
-tmckee:#6 in gos/cgo_linux.go, mouse position needs to get un-stubbed
-
 ----
 
 tmckee:#16 consider adding a Makefile recipe to generate a compile_commands.json file for the C++ code. Something like `go build -a -toolexec 'bear --' ./...`
