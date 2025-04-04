@@ -1,10 +1,12 @@
 package gin_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/gui"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -34,6 +36,60 @@ func injectEvent(events *[]gin.OsEvent, key_index gin.KeyIndex, device_index gin
 			Timestamp: timestamp,
 		},
 	)
+}
+
+var dontCare = struct {
+	Amount    float64
+	Timestamp int64
+}{
+	Amount:    1337,
+	Timestamp: 1337,
+}
+
+func injectMouseClick(events *[]gin.OsEvent, target gui.Point) {
+	clickEvent := gin.OsEvent{
+		KeyId: gin.KeyId{
+			Index: gin.MouseLButton,
+			Device: gin.DeviceId{
+				Index: 0, // First mouse
+				Type:  gin.DeviceTypeMouse,
+			},
+		},
+		X:         target.X,
+		Y:         target.Y,
+		Press_amt: dontCare.Amount,
+		Timestamp: dontCare.Timestamp,
+	}
+	*events = append(*events, clickEvent)
+}
+
+type testMouseListener struct {
+	clicks []gui.Point
+}
+
+var _ gin.Listener = (*testMouseListener)(nil)
+
+func (self *testMouseListener) HandleEventGroup(group gin.EventGroup) {
+	for _, evt := range group.Events {
+		kid := evt.Key.Id()
+		if kid.Index == gin.MouseLButton {
+			pt := gui.Point{
+				X: group.X,
+				Y: group.Y,
+			}
+			fmt.Printf("X: %d Y: %d\n", group.X, group.Y)
+			self.clicks = append(self.clicks, pt)
+			return
+		}
+	}
+}
+func (*testMouseListener) Think(int64) {}
+
+func (self *testMouseListener) ExpectClicks(pts []gui.Point) {
+	if self.clicks == nil {
+		self.clicks = []gui.Point{}
+	}
+	So(pts, ShouldEqual, self.clicks)
 }
 
 func NaturalKeySpec() {
@@ -667,6 +723,27 @@ func EventListenerSpec() {
 			lab.ExpectReleaseCounts(0, 0, 0, 0, 0, 1)
 			lab.ExpectPressAmts(0, 0, 0, 1, 1, 0)
 			input.Think(0, events)
+		})
+	})
+	Convey("Event Listeners get notified of mouse events", func() {
+		l := &testMouseListener{}
+		input.RegisterEventListener(l)
+
+		clickPoint := gui.Point{
+			X: 17,
+			Y: 42,
+		}
+
+		events := events[0:0]
+		injectMouseClick(&events, clickPoint)
+
+		// No clicks yet because we haven't input.Think'd
+		l.ExpectClicks([]gui.Point{})
+
+		input.Think(0, events)
+
+		l.ExpectClicks([]gui.Point{
+			clickPoint,
 		})
 	})
 }
