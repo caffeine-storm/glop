@@ -1,7 +1,6 @@
 package gin_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -71,18 +70,19 @@ var _ gin.Listener = (*testMouseListener)(nil)
 
 func (self *testMouseListener) HandleEventGroup(group gin.EventGroup) {
 	for _, evt := range group.Events {
+		if !group.HasMousePosition() {
+			continue
+		}
 		kid := evt.Key.Id()
 		if kid.Index == gin.MouseLButton {
-			pt := gui.Point{
-				X: group.X,
-				Y: group.Y,
-			}
-			fmt.Printf("X: %d Y: %d\n", group.X, group.Y)
+			var pt gui.Point
+			pt.X, pt.Y = group.GetMousePosition()
 			self.clicks = append(self.clicks, pt)
 			return
 		}
 	}
 }
+
 func (*testMouseListener) Think(int64) {}
 
 func (self *testMouseListener) ExpectClicks(pts []gui.Point) {

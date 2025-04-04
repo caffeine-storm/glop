@@ -63,13 +63,16 @@ func (d *testDriver) HandleEventGroup(grp gin.EventGroup) {
 func (d *testDriver) GetLastClick() (int, int) {
 	for i := len(d.eventGroups) - 1; i > 0; i-- {
 		each := d.eventGroups[i]
+		if !each.HasMousePosition() {
+			continue
+		}
 		switch each.PrimaryEvent().Key.Id().Index {
 		case gin.MouseLButton:
 			fallthrough
 		case gin.MouseMButton:
 			fallthrough
 		case gin.MouseRButton:
-			return each.X, each.Y
+			return each.GetMousePosition()
 		}
 	}
 

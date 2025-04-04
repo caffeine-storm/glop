@@ -198,6 +198,7 @@ type UpdateableDrawingContext interface {
 type EventHandlingContext interface {
 	IsMouseEvent(grp EventGroup) bool
 	GetMousePosition(grp EventGroup) (int, int)
+	UseMousePosition(grp EventGroup) (Point, bool)
 	LeftButton(grp EventGroup) bool
 	MiddleButton(grp EventGroup) bool
 	RightButton(grp EventGroup) bool
@@ -253,10 +254,8 @@ func (w *BasicWidget) Think(gui *Gui, t int64) {
 	w.DoThink(t, w == gui.FocusWidget())
 }
 func (w *BasicWidget) Respond(gui *Gui, event_group EventGroup) bool {
-	if gui.IsMouseEvent(event_group) {
-		var p Point
-		p.X, p.Y = gui.GetMousePosition(event_group)
-		if !p.Inside(w.Rendered()) {
+	if mpos, ok := gui.UseMousePosition(event_group); ok {
+		if !mpos.Inside(w.Rendered()) {
 			return false
 		}
 	}
@@ -536,6 +535,8 @@ func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
 		event_group.DispatchedToFocussedWidget = false
 	}
 
+	glog.TraceLogger().Trace("gui>HandleEventGroup", "group", event_group)
+
 	// Without having consumed the event above, give the tree of widgets under
 	// 'root' a shot at handling the event.
 	g.root.Respond(g, event_group)
@@ -577,7 +578,17 @@ func (g *Gui) IsMouseEvent(grp EventGroup) bool {
 }
 
 func (g *Gui) GetMousePosition(grp EventGroup) (int, int) {
-	return grp.X, grp.Y
+	return grp.GetMousePosition()
+}
+
+func (g *Gui) UseMousePosition(grp EventGroup) (Point, bool) {
+	var p Point
+	found := false
+	if grp.HasMousePosition() {
+		p.X, p.Y = grp.GetMousePosition()
+		found = true
+	}
+	return p, found
 }
 
 func stateToButtonFlag(tp ButtonPressType) bool {

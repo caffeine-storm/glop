@@ -46,11 +46,15 @@ func (e Event) String() string {
 	return fmt.Sprintf("'%v %v'", e.Type, e.Key)
 }
 
+type MousePosition struct {
+	X, Y int
+}
+
 // An EventGroup is a series of events that were all created by a single
 // OsEvent.
 type EventGroup struct {
 	Events    []Event
-	X, Y      int
+	mousePos  *MousePosition
 	Timestamp int64
 }
 
@@ -73,6 +77,24 @@ func (eg *EventGroup) PrimaryEvent() Event {
 		panic(fmt.Errorf("no (primary) event for eventgroup"))
 	}
 	return eg.Events[0]
+}
+
+func (eg *EventGroup) HasMousePosition() bool {
+	return eg.mousePos != nil
+}
+
+func (eg *EventGroup) GetMousePosition() (int, int) {
+	if !eg.HasMousePosition() {
+		panic(fmt.Errorf("can't GetMousePosition when it's nil"))
+	}
+	return eg.mousePos.X, eg.mousePos.Y
+}
+
+func (eg *EventGroup) SetMousePosition(x, y int) {
+	eg.mousePos = &MousePosition{
+		X: x,
+		Y: y,
+	}
 }
 
 // During HandleEventGroup a Listener can query keys as to their current state

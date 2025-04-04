@@ -568,9 +568,14 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 	for _, os_event := range os_events {
 		group := EventGroup{
 			Timestamp: os_event.Timestamp,
-			X:         os_event.X,
-			Y:         os_event.Y,
 		}
+
+		// Whether this was a keyboard keystroke or actually a mouse thing, still
+		// update the x/y mouse position. Imagine, for example, a hotkey that
+		// behaves differently depending on where the mouse is; it will need to
+		// have a way to find current mouse position. Don't worry, native code is
+		// expected to populate cursor_x, cursor_y for all OsEvents.
+		group.SetMousePosition(os_event.X, os_event.Y)
 
 		input.pressKey(
 			input.GetKeyById(os_event.KeyId),
@@ -591,7 +596,13 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 		if !synthesizeNewEvent {
 			continue
 		}
-		group := EventGroup{Timestamp: t}
+		glog.InfoLogger().Info("synthetic event", "source key", key)
+
+		// Here, we don't set a mouse position because it wouldn't make sense for
+		// synthetic keys.
+		group := EventGroup{
+			Timestamp: t,
+		}
 		input.pressKey(key, amt, Event{}, &group)
 		if len(group.Events) > 0 {
 			groups = append(groups, group)
