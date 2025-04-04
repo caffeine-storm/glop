@@ -507,10 +507,8 @@ func (input *Input) removeCauseEffect(cause KeyId, effect Key) {
 	input.cause_to_effect[cause] = newList
 }
 
-// Look for Keys related to the event's Key and notify them as needed.
-func (input *Input) informDeps(event Event, group *EventGroup) {
-	id := event.Key.Id()
-
+// Returns the Keys that need to be notified when the given KeyId is triggered.
+func (input *Input) findKeyIdObservers(id KeyId) []Key {
 	id_ignoring_device_index := id
 	id_ignoring_device_index.Device.Index = DeviceIndexAny
 
@@ -529,17 +527,18 @@ func (input *Input) informDeps(event Event, group *EventGroup) {
 		keysToPress = append(keysToPress, dep)
 	}
 
-	for _, dep := range keysToPress {
-		input.pressKey(dep, dep.CurPressAmt(), event, group)
-	}
-	if event.Type != NoEvent {
-		group.Events = append(group.Events, event)
-	}
+	return keysToPress
 }
 
 func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup) {
 	event := k.KeySetPressAmt(amt, group.Timestamp, cause)
-	input.informDeps(event, group)
+	keysToPress := input.findKeyIdObservers(event.Key.Id())
+	if event.Type != NoEvent {
+		group.Events = append(group.Events, event)
+	}
+	for _, dep := range keysToPress {
+		input.pressKey(dep, dep.CurPressAmt(), event, group)
+	}
 
 	// Press synthetic keys (like, the 'Any' key)
 	if k.Id().Index != AnyKey && k.Id().Device.Type != DeviceTypeAny && k.Id().Device.Type != DeviceTypeDerived && k.Id().Device.Index != DeviceIndexAny {
