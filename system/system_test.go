@@ -34,8 +34,6 @@ func (*stubSystem) GetInputEvents() []gin.EventGroup {
 	return nil
 }
 
-func (*stubSystem) AddMouseListener(func(gin.MouseEvent)) {
-}
 func (*stubSystem) AddInputListener(gin.Listener) {
 }
 

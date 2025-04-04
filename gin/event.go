@@ -66,6 +66,15 @@ func (eg *EventGroup) FindEvent(id KeyId) (bool, Event) {
 	return false, Event{}
 }
 
+// Returns the root-cause event of the EventGroup. Useful for classifying the
+// group as a whole.
+func (eg *EventGroup) PrimaryEvent() Event {
+	if len(eg.Events) == 0 {
+		panic(fmt.Errorf("no (primary) event for eventgroup"))
+	}
+	return eg.Events[0]
+}
+
 // During HandleEventGroup a Listener can query keys as to their current state
 // (i.e.  with Cur*() methods) and these will accurately report their state.
 //
@@ -84,6 +93,4 @@ type Listener interface {
 
 type EventDispatcher interface {
 	RegisterEventListener(Listener)
-	// TODO(tmckee:#20): this should be irrelevant once #20 is fixed.
-	AddMouseListener(MouseListenerFunc)
 }

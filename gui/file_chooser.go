@@ -54,7 +54,7 @@ func (fw *FileWidget) Respond(ui *Gui, group EventGroup) bool {
 		return false
 	}
 	var p Point
-	p.X, p.Y = ui.GetMousePosition()
+	p.X, p.Y = ui.GetMousePosition(group)
 	v := p.Inside(fw.Rendered())
 	return v
 }

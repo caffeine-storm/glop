@@ -197,10 +197,10 @@ type UpdateableDrawingContext interface {
 
 type EventHandlingContext interface {
 	IsMouseEvent(grp EventGroup) bool
-	GetMousePosition() (int, int)
-	LeftButton() bool
-	MiddleButton() bool
-	RightButton() bool
+	GetMousePosition(grp EventGroup) (int, int)
+	LeftButton(grp EventGroup) bool
+	MiddleButton(grp EventGroup) bool
+	RightButton(grp EventGroup) bool
 }
 
 type Widget interface {
@@ -255,7 +255,7 @@ func (w *BasicWidget) Think(gui *Gui, t int64) {
 func (w *BasicWidget) Respond(gui *Gui, event_group EventGroup) bool {
 	if gui.IsMouseEvent(event_group) {
 		var p Point
-		p.X, p.Y = gui.GetMousePosition()
+		p.X, p.Y = gui.GetMousePosition(event_group)
 		if !p.Inside(w.Rendered()) {
 			return false
 		}
@@ -332,7 +332,7 @@ type Clickable struct {
 }
 
 func (c Clickable) DoRespond(ctx EventHandlingContext, event_group EventGroup) (bool, bool) {
-	event := event_group.Events[0]
+	event := event_group.PrimaryEvent()
 	if event.Type == gin.Press && event.Key.Id() == gin.AnyMouseLButton {
 		c.on_click(ctx, event_group.Timestamp)
 		return true, false
@@ -431,44 +431,6 @@ const (
 	ButtonPressTypeEnd
 )
 
-func nextPressType(current ButtonPressType, now gin.MouseEventType) ButtonPressType {
-	switch now {
-	case gin.MouseEventTypeClick:
-		switch current {
-		case ButtonPressTypeUp:
-			return ButtonPressTypeStart
-		case ButtonPressTypeDown:
-			return ButtonPressTypeDown
-		case ButtonPressTypeStart:
-			return ButtonPressTypeDown
-		case ButtonPressTypeEnd:
-			return ButtonPressTypeStart
-		}
-	case gin.MouseEventTypeMove:
-		fallthrough
-	case gin.MouseEventTypeWheel:
-		return current
-	}
-
-	panic(fmt.Errorf("unknown MouseEventType: %v", now))
-}
-
-type mouseState struct {
-	X, Y                int
-	Left, Middle, Right ButtonPressType
-}
-
-func (ms *mouseState) GetPosition() (int, int) {
-	return ms.X, ms.Y
-}
-
-func (ms *mouseState) Update(mouseEvent gin.MouseEvent) {
-	ms.X = mouseEvent.X
-	ms.Y = mouseEvent.Y
-
-	ms.Left = nextPressType(ms.Left, mouseEvent.Type)
-}
-
 type Gui struct {
 	root rootWidget
 
@@ -478,8 +440,7 @@ type Gui struct {
 	// Stack of widgets that have focus
 	focus []Widget
 
-	mouseState mouseState
-	logger     glog.Logger
+	logger glog.Logger
 }
 
 var _ DrawingContext = (*Gui)(nil)
@@ -534,7 +495,6 @@ func MakeLogged(dims Dims, dispatcher gin.EventDispatcher, logger glog.Logger) (
 	g.root.Request_dims = dims
 	g.root.Render_region.Dims = dims
 	dispatcher.RegisterEventListener(&g)
-	dispatcher.AddMouseListener(g.UpdateMouseState)
 	return &g, nil
 }
 
@@ -559,10 +519,6 @@ func (g *Gui) Draw() {
 
 func (g *Gui) Think(t int64) {
 	g.root.Think(g, t)
-}
-
-func (g *Gui) UpdateMouseState(mouseEvent gin.MouseEvent) {
-	g.mouseState.Update(mouseEvent)
 }
 
 func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
@@ -616,26 +572,27 @@ func (g *Gui) IsMouseEvent(grp EventGroup) bool {
 		return false
 	}
 
-	evt := grp.Events[0]
+	evt := grp.PrimaryEvent()
 	return evt.Key.Id().Device.Type == gin.DeviceTypeMouse
 }
 
-func (g *Gui) GetMousePosition() (int, int) {
-	return g.mouseState.GetPosition()
+func (g *Gui) GetMousePosition(grp EventGroup) (int, int) {
+	return grp.X, grp.Y
 }
 
 func stateToButtonFlag(tp ButtonPressType) bool {
 	return tp == ButtonPressTypeDown || tp == ButtonPressTypeStart
 }
 
-func (g *Gui) LeftButton() bool {
-	return stateToButtonFlag(g.mouseState.Left)
+func (g *Gui) LeftButton(grp EventGroup) bool {
+	// TODO(#20): yuck! helper pls?
+	return grp.PrimaryEvent().Key.Id().Index == gin.MouseLButton
 }
 
-func (g *Gui) MiddleButton() bool {
-	return stateToButtonFlag(g.mouseState.Middle)
+func (g *Gui) MiddleButton(grp EventGroup) bool {
+	return grp.PrimaryEvent().Key.Id().Index == gin.MouseMButton
 }
 
-func (g *Gui) RightButton() bool {
-	return stateToButtonFlag(g.mouseState.Right)
+func (g *Gui) RightButton(grp EventGroup) bool {
+	return grp.PrimaryEvent().Key.Id().Index == gin.MouseRButton
 }

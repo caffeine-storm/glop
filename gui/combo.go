@@ -67,7 +67,7 @@ func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 	isMouseEvent := gui.IsMouseEvent(group)
 	if isMouseEvent {
 		var p Point
-		p.X, p.Y = gui.GetMousePosition()
+		p.X, p.Y = gui.GetMousePosition(group)
 		if !p.Inside(cb.Rendered()) {
 			return false
 		}

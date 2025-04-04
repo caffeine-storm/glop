@@ -134,7 +134,7 @@ func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGrou
 	if w.cursor.index > len(w.text) {
 		w.cursor.index = len(w.text)
 	}
-	event := event_group.Events[0]
+	event := event_group.PrimaryEvent()
 	if event.Type != gin.Press {
 		return
 	}
@@ -162,7 +162,7 @@ func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGrou
 			w.cursor.index++
 			w.cursor.moved = true
 		} else if key_id == gin.AnyMouseLButton {
-			x, _ := ctx.GetMousePosition()
+			x, _ := ctx.GetMousePosition(event_group)
 			cx := w.TextLine.Render_region.X
 			w.cursor.index = w.findIndexAtOffset(x - cx)
 			w.cursor.moved = true

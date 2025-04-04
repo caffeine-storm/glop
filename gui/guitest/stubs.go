@@ -9,8 +9,7 @@ import (
 
 type stubEventDispatcher struct{}
 
-func (*stubEventDispatcher) RegisterEventListener(gin.Listener)     {}
-func (*stubEventDispatcher) AddMouseListener(gin.MouseListenerFunc) {}
+func (*stubEventDispatcher) RegisterEventListener(gin.Listener) {}
 
 func MakeStubbedEventDispatcher() gin.EventDispatcher {
 	return &stubEventDispatcher{}

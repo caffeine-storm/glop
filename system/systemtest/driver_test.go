@@ -3,7 +3,6 @@ package systemtest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system"
 	"github.com/runningwild/glop/system/systemtest"
 )
@@ -29,30 +28,6 @@ func GivenANewDriver() (systemtest.Driver, func()) {
 	return drv, cleanup
 }
 
-func WatchForMouseEvents(drv systemtest.Driver) *[]gin.MouseEvent {
-	ret := new([]gin.MouseEvent)
-
-	drv.AddMouseListener(func(evt gin.MouseEvent) {
-		*ret = append(*ret, evt)
-	})
-
-	return ret
-}
-
-func LastClick(events *[]gin.MouseEvent) (click, bool) {
-	for i := len(*events) - 1; i >= 0; i-- {
-		evt := (*events)[i]
-		if evt.Type == gin.MouseEventTypeClick {
-			return click{
-				x: evt.X,
-				y: evt.Y,
-			}, true
-		}
-	}
-
-	return click{}, false
-}
-
 func TestSystemtestDriver(t *testing.T) {
 	t.Run("xdotool commands are sent to the correct native window", func(t *testing.T) {
 		// Make two windows of the same size.
@@ -67,9 +42,6 @@ func TestSystemtestDriver(t *testing.T) {
 		driverB.PositionWindow(12, 17)
 		driverA.ProcessFrame()
 		driverB.ProcessFrame()
-
-		mouseEventsA := WatchForMouseEvents(driverA)
-		mouseEventsB := WatchForMouseEvents(driverB)
 
 		// Click on two points within the windows' shared bounds and process their
 		// events. Assert that each window sees only the click sent to it.
@@ -89,17 +61,12 @@ func TestSystemtestDriver(t *testing.T) {
 			x: 9,
 			y: 19,
 		}
-		clickA, found := LastClick(mouseEventsA)
-		if !found {
-			t.Error("no events found for driverA")
-		}
-		clickB, found := LastClick(mouseEventsB)
-		if !found {
-			t.Error("no events found for driverB")
-		}
+		var clickA, clickB click
+		clickA.x, clickA.y = driverA.GetLastClick()
+		clickB.x, clickB.y = driverB.GetLastClick()
 
 		if clickA != expectedClickA || clickB != expectedClickB {
-			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", mouseEventsA, mouseEventsB)
+			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", driverA.GetEvents(), driverB.GetEvents())
 		}
 	})
 
@@ -116,9 +83,6 @@ func TestSystemtestDriver(t *testing.T) {
 		driverB.PositionWindow(12, 17)
 		driverA.ProcessFrame()
 		driverB.ProcessFrame()
-
-		mouseEventsA := WatchForMouseEvents(driverA)
-		mouseEventsB := WatchForMouseEvents(driverB)
 
 		// Click on two points within the windows' shared bounds and process their
 		// events. Assert that each window sees only the click sent to it. Do both
@@ -139,25 +103,18 @@ func TestSystemtestDriver(t *testing.T) {
 			x: 9,
 			y: 19,
 		}
-		clickA, found := LastClick(mouseEventsA)
-		if !found {
-			t.Error("no events found for driverA")
-		}
-		clickB, found := LastClick(mouseEventsB)
-		if !found {
-			t.Error("no events found for driverB")
-		}
+		var clickA, clickB click
+		clickA.x, clickA.y = driverA.GetLastClick()
+		clickB.x, clickB.y = driverB.GetLastClick()
 
 		if clickA != expectedClickA || clickB != expectedClickB {
-			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", mouseEventsA, mouseEventsB)
+			t.Fatalf("click expectations failed: aclicks: %+v, bclicks: %+v", driverA.GetEvents(), driverB.GetEvents())
 		}
 	})
 
 	t.Run("clicks use an origin at the bottom-left", func(t *testing.T) {
 		driver, clean := GivenANewDriver()
 		defer clean()
-
-		events := WatchForMouseEvents(driver)
 
 		// Click lower half of the test window. Use RawTool for specifying polar
 		// co-ordinates that won't suffer from our glop-vs-X origin confusion.
@@ -180,10 +137,8 @@ func TestSystemtestDriver(t *testing.T) {
 			y: yexpect,
 		}
 
-		lastClick, found := LastClick(events)
-		if !found {
-			t.Fatalf("couldn't find the click in %v", events)
-		}
+		var lastClick click
+		lastClick.x, lastClick.y = driver.GetLastClick()
 
 		if lastClick != expectedClick {
 			t.Fatalf("click expectation failed: expected: %+v, actual: %+v", expectedClick, lastClick)

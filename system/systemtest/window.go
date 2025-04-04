@@ -18,9 +18,13 @@ type testWindow struct {
 }
 
 func (self *testWindow) NewDriver() Driver {
-	return &testDriver{
+	result := &testDriver{
 		window: self,
 	}
+
+	self.sys.AddInputListener(result)
+
+	return result
 }
 
 func (self *testWindow) GetQueue() render.RenderQueueInterface {

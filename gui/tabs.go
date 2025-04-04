@@ -32,7 +32,7 @@ func (w *TabFrame) SelectedTab() int {
 func (w *TabFrame) Respond(gui *Gui, group EventGroup) bool {
 	if gui.IsMouseEvent(group) {
 		var p Point
-		p.X, p.Y = gui.GetMousePosition()
+		p.X, p.Y = gui.GetMousePosition(group)
 		if !p.Inside(w.Rendered()) {
 			return false
 		}

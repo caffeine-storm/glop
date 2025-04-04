@@ -227,11 +227,6 @@ type Input struct {
 	// notified of a particular event group can change from group to group.
 	listeners []Listener
 
-	// Delegate for Mouse events/handling. Assumes only one 'pointer' device at a
-	// time. To handle multiple pointers, we'll need a collection distinguished
-	// by device ID.
-	mouse MouseInput
-
 	// Optional logger instance to trace calls to Input.
 	logger glog.Logger
 }
@@ -241,7 +236,6 @@ func (input *Input) SetLogger(logger glog.Logger) {
 		logger = glog.VoidLogger()
 	}
 	input.logger = logger
-	input.mouse.logger = logger
 }
 
 // The standard input object
@@ -271,7 +265,6 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.index_to_agg_type = make(map[KeyIndex]aggregatorType)
 	input.index_to_name = make(map[KeyIndex]string)
 	input.SetLogger(logger)
-	input.mouse.logger = logger
 
 	input.registerKeyIndex(AnyKey, aggregatorTypeStandard, "AnyKey")
 	for c := 'a'; c <= 'z'; c++ {
@@ -577,10 +570,6 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 			Timestamp: os_event.Timestamp,
 			X:         os_event.X,
 			Y:         os_event.Y,
-		}
-
-		if os_event.KeyId.Device.Type == DeviceTypeMouse {
-			input.mouse.Handle(os_event)
 		}
 
 		input.pressKey(

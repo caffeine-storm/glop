@@ -4,29 +4,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system/systemtest"
 )
 
 func TestE2EClickHelper(t *testing.T) {
 	systemtest.WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
 		expectedX, expectedY := 10, 42
-		mouseEvents := []gin.MouseEvent{}
-
-		driver.AddMouseListener(func(mouseEvent gin.MouseEvent) {
-			mouseEvents = append(mouseEvents, mouseEvent)
-		})
 
 		driver.Click(expectedX, expectedY)
 		driver.ProcessFrame()
 
 		// Check that gin saw it.
-		if len(mouseEvents) == 0 {
-			t.Fatalf("didn't see a click!")
+		allEvents := driver.GetEvents()
+		if len(allEvents) == 0 {
+			t.Fatalf("didn't see any events!")
 		}
 
-		lastEvent := mouseEvents[len(mouseEvents)-1]
-		actualX, actualY := lastEvent.GetPosition()
+		actualX, actualY := driver.GetLastClick()
 
 		if actualX != expectedX || actualY != expectedY {
 			t.Fatalf("click co-ordinates didn't match! expected: %s actual %s",

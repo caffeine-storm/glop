@@ -1,6 +1,8 @@
 package systemtest
 
 import (
+	"fmt"
+
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system"
 )
@@ -11,14 +13,24 @@ type Driver interface {
 
 	// Put the top-left extent of the window at (x, y) in glop-coords.
 	PositionWindow(x, y int)
-	AddMouseListener(func(gin.MouseEvent))
-	AddInputListener(gin.Listener)
+	// AddInputListener(gin.Listener)
 
 	RawTool(func(system.NativeWindowHandle) []any)
+
+	GetEvents() []gin.EventGroup
+
+	// Panics if there were no clicks
+	GetLastClick() (int, int)
+
+	gin.Listener
 }
 
 type testDriver struct {
 	window *testWindow
+
+	// Each testDriver listens for input events from gin and records each event
+	// group here.
+	eventGroups []gin.EventGroup
 }
 
 func (d *testDriver) glopToX(glopX, glopY int) (int, int) {
@@ -44,13 +56,31 @@ func (d *testDriver) PositionWindow(x, y int) {
 	xDoToolRun("windowmove", d.window.hdl, x, y)
 }
 
-func (d *testDriver) AddMouseListener(listener func(gin.MouseEvent)) {
-	d.window.sys.AddMouseListener(listener)
+func (d *testDriver) HandleEventGroup(grp gin.EventGroup) {
+	d.eventGroups = append(d.eventGroups, grp)
 }
 
-func (d *testDriver) AddInputListener(listnr gin.Listener) {
-	d.window.sys.AddInputListener(listnr)
+func (d *testDriver) GetLastClick() (int, int) {
+	for i := len(d.eventGroups) - 1; i > 0; i-- {
+		each := d.eventGroups[i]
+		switch each.PrimaryEvent().Key.Id().Index {
+		case gin.MouseLButton:
+			fallthrough
+		case gin.MouseMButton:
+			fallthrough
+		case gin.MouseRButton:
+			return each.X, each.Y
+		}
+	}
+
+	panic(fmt.Errorf("couldn't find click in events: %v", d.eventGroups))
 }
+
+func (d *testDriver) GetEvents() []gin.EventGroup {
+	return d.eventGroups
+}
+
+func (d *testDriver) Think(int64) {}
 
 var _ Driver = (*testDriver)(nil)
 
