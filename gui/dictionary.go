@@ -279,8 +279,8 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 		info := d.getInfo(r)
 		xleft_px := x_pos_px
 		xright_px := x_pos_px + float64(info.Bounds.Dx())*horizontalScale
-		ytop_px := float32(y_pos_px)
-		ybot_px := float32(y_pos_px - height_px)
+		ybot_px := float32(y_pos_px)
+		ytop_px := float32(y_pos_px + height_px)
 		start := uint16(len(blittingData.vertexData))
 		blittingData.indicesData = append(blittingData.indicesData, start+0)
 		blittingData.indicesData = append(blittingData.indicesData, start+1)
@@ -339,7 +339,7 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 //	Centre: use 'target.X' for the middle of what's drawn
 //	Right: use 'target.X' for the right-hand extent of what's drawn
 //
-// The top of text's bounding box is aligned to the Y co-ordinate of the
+// The bottom of the text's bounding box is aligned to the Y co-ordinate of the
 // target.
 func (d *Dictionary) RenderString(s string, target Point, height int, just Justification, shaders *render.ShaderBank) {
 	d.logger.Trace("RenderString called", "s", s, "target", target, "height", height, "just", just)

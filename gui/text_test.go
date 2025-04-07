@@ -173,14 +173,14 @@ func DictionaryRenderStringSpec() {
 		testnumber := rendertest.TestNumber(testIndex)
 		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
 			leftPixel := testcase.screenDimensions.Dx / 2
-			topPixel := testcase.screenDimensions.Dy / 2
+			bottomPixel := testcase.screenDimensions.Dy / 2
 			height := 22
 			just := Left
 			var logger glog.Logger = glog.TraceLogger()
 
 			rendertest.WithGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
-					renderStringForTest(toDraw, leftPixel, topPixel, height, sys, render, just, logger)
+					renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
 				}
 
 				Convey("Can render 'lol'", func() {
@@ -200,7 +200,7 @@ func DictionaryRenderStringSpec() {
 				Convey("Can render somewhere other than the origin", func() {
 					Convey("can render at the bottom left", func() {
 						leftPixel = 10
-						topPixel = 32
+						bottomPixel = 10
 						doRenderString("offset")
 
 						So(render, rendertest.ShouldLookLikeText, "offset", testnumber)
@@ -222,9 +222,9 @@ func DictionaryRenderStringSpec() {
 				})
 
 				Convey("Can render multiple strings", func() {
-					topPixel = height
+					bottomPixel = 0
 					doRenderString("first string")
-					topPixel = height * 3
+					bottomPixel = height * 2
 					doRenderString("second string")
 
 					So(render, rendertest.ShouldLookLikeText, "multiple-lines", testnumber)
