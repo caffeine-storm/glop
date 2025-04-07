@@ -596,7 +596,7 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 		if !synthesizeNewEvent {
 			continue
 		}
-		glog.InfoLogger().Info("synthetic event", "source key", key)
+		glog.TraceLogger().Trace("synthetic event", "source key", key)
 
 		// Here, we don't set a mouse position because it wouldn't make sense for
 		// synthetic keys.
