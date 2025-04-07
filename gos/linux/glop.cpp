@@ -284,20 +284,18 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
   return true;
 }
 
-static bool SynthMotion(XWindowAttributes const * attrs, int dx, int dy, const XMotionEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
+static bool SynthMotion(XWindowAttributes const * attrs, const XMotionEvent &event, Window window, struct GlopKeyEvent *ev, struct GlopKeyEvent *ev2) {
   ev->index = kMouseXAxis;
   ev->device_type = glopDeviceMouse;
-  ev->press_amt = dx;
+  ev->press_amt = event.x;
   ev->timestamp = gt();
   std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
-  ev->cursor_x = event.x;
-  ev->cursor_y = event.y;
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
 
   *ev2 = *ev;
   ev2->index = kMouseYAxis;
-  ev2->press_amt = dy;
+  ev2->press_amt = event.y;
 
   return true;
 }
@@ -373,7 +371,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
       case MotionNotify: {
         struct GlopKeyEvent ev2;
         GlopClearKeyEvent(&ev2);
-        if(SynthMotion(&attrs, event.xmotion.x, event.xmotion.y, event.xmotion, data->window, &ev, &ev2)) {
+        if(SynthMotion(&attrs, event.xmotion, data->window, &ev, &ev2)) {
           data->events.push_back(ev);
           data->events.push_back(ev2);
         }
