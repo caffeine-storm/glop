@@ -3,6 +3,7 @@ package gin
 import (
 	"testing"
 
+	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/glog"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +20,7 @@ func TestPressKeyWorksForControlKey(t *testing.T) {
 	key := &keyState{
 		id:         keyId,
 		name:       "test-keystate(any-left-control)",
-		Aggregator: &standardAggregator{},
+		Aggregator: aggregator.AggregatorForType(aggregator.AggregatorTypeStandard),
 	}
 	inputObj.pressKey(key, 1.0, Event{}, &group)
 }

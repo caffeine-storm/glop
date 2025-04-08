@@ -40,7 +40,7 @@ func (input *Input) bindDerivedKeyWithIndex(name string, index KeyIndex, binding
 				},
 			},
 			name:       name,
-			Aggregator: &standardAggregator{},
+			Aggregator: aggregator.AggregatorForType(aggregator.AggregatorTypeStandard),
 		},
 		Bindings:      bindings,
 		bindings_down: make([]bool, len(bindings)),

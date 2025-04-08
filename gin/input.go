@@ -218,7 +218,7 @@ type Input struct {
 	// Mapping from KeyIndex to an aggregator of the appropriate type for that index.
 	// This allows us to construct Keys for devices as the events happen, rather
 	// than needing to know what the devices are during initialization.
-	index_to_agg_type map[KeyIndex]AggregatorType
+	index_to_agg_type map[KeyIndex]aggregator.AggregatorType
 
 	// map from KeyIndex to a human-readable name for that key
 	index_to_name map[KeyIndex]string
@@ -263,83 +263,83 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.all_keys = make([]Key, 0, 512)
 	input.key_map = make(map[KeyId]Key, 512)
 	input.cause_to_effect = make(map[KeyId][]Key, 16)
-	input.index_to_agg_type = make(map[KeyIndex]AggregatorType)
+	input.index_to_agg_type = make(map[KeyIndex]aggregator.AggregatorType)
 	input.index_to_name = make(map[KeyIndex]string)
 	input.SetLogger(logger)
 
-	input.registerKeyIndex(AnyKey, AggregatorTypeStandard, "AnyKey")
+	input.registerKeyIndex(AnyKey, aggregator.AggregatorTypeStandard, "AnyKey")
 	for c := 'a'; c <= 'z'; c++ {
 		name := fmt.Sprintf("Key %c", c+'A'-'a')
-		input.registerKeyIndex(KeyIndex(c), AggregatorTypeStandard, name)
+		input.registerKeyIndex(KeyIndex(c), aggregator.AggregatorTypeStandard, name)
 	}
 	for _, c := range "0123456789`[]\\-=;',./" {
 		name := fmt.Sprintf("Key %c", c)
-		input.registerKeyIndex(KeyIndex(c), AggregatorTypeStandard, name)
+		input.registerKeyIndex(KeyIndex(c), aggregator.AggregatorTypeStandard, name)
 	}
-	input.registerKeyIndex(Space, AggregatorTypeStandard, "Space")
-	input.registerKeyIndex(Backspace, AggregatorTypeStandard, "Backspace")
-	input.registerKeyIndex(Tab, AggregatorTypeStandard, "Tab")
-	input.registerKeyIndex(Return, AggregatorTypeStandard, "Return")
-	input.registerKeyIndex(Escape, AggregatorTypeStandard, "Escape")
-	input.registerKeyIndex(F1, AggregatorTypeStandard, "F1")
-	input.registerKeyIndex(F2, AggregatorTypeStandard, "F2")
-	input.registerKeyIndex(F3, AggregatorTypeStandard, "F3")
-	input.registerKeyIndex(F4, AggregatorTypeStandard, "F4")
-	input.registerKeyIndex(F5, AggregatorTypeStandard, "F5")
-	input.registerKeyIndex(F6, AggregatorTypeStandard, "F6")
-	input.registerKeyIndex(F7, AggregatorTypeStandard, "F7")
-	input.registerKeyIndex(F8, AggregatorTypeStandard, "F8")
-	input.registerKeyIndex(F9, AggregatorTypeStandard, "F9")
-	input.registerKeyIndex(F10, AggregatorTypeStandard, "F10")
-	input.registerKeyIndex(F11, AggregatorTypeStandard, "F11")
-	input.registerKeyIndex(F12, AggregatorTypeStandard, "F12")
-	input.registerKeyIndex(CapsLock, AggregatorTypeStandard, "CapsLock")
-	input.registerKeyIndex(NumLock, AggregatorTypeStandard, "NumLock")
-	input.registerKeyIndex(ScrollLock, AggregatorTypeStandard, "ScrollLock")
-	input.registerKeyIndex(PrintScreen, AggregatorTypeStandard, "PrintScreen")
-	input.registerKeyIndex(Pause, AggregatorTypeStandard, "Pause")
-	input.registerKeyIndex(LeftShift, AggregatorTypeStandard, "LeftShift")
-	input.registerKeyIndex(RightShift, AggregatorTypeStandard, "RightShift")
-	input.registerKeyIndex(LeftControl, AggregatorTypeStandard, "LeftControl")
-	input.registerKeyIndex(RightControl, AggregatorTypeStandard, "RightControl")
-	input.registerKeyIndex(LeftAlt, AggregatorTypeStandard, "LeftAlt")
-	input.registerKeyIndex(RightAlt, AggregatorTypeStandard, "RightAlt")
-	input.registerKeyIndex(LeftGui, AggregatorTypeStandard, "LeftGui")
-	input.registerKeyIndex(RightGui, AggregatorTypeStandard, "RightGui")
-	input.registerKeyIndex(Right, AggregatorTypeStandard, "Right")
-	input.registerKeyIndex(Left, AggregatorTypeStandard, "Left")
-	input.registerKeyIndex(Up, AggregatorTypeStandard, "Up")
-	input.registerKeyIndex(Down, AggregatorTypeStandard, "Down")
-	input.registerKeyIndex(KeyPadDivide, AggregatorTypeStandard, "KeyPadDivide")
-	input.registerKeyIndex(KeyPadMultiply, AggregatorTypeStandard, "KeyPadMultiply")
-	input.registerKeyIndex(KeyPadSubtract, AggregatorTypeStandard, "KeyPadSubtract")
-	input.registerKeyIndex(KeyPadAdd, AggregatorTypeStandard, "KeyPadAdd")
-	input.registerKeyIndex(KeyPadEnter, AggregatorTypeStandard, "KeyPadEnter")
-	input.registerKeyIndex(KeyPadDecimal, AggregatorTypeStandard, "KeyPadDecimal")
-	input.registerKeyIndex(KeyPadEquals, AggregatorTypeStandard, "KeyPadEquals")
-	input.registerKeyIndex(KeyPad0, AggregatorTypeStandard, "KeyPad0")
-	input.registerKeyIndex(KeyPad1, AggregatorTypeStandard, "KeyPad1")
-	input.registerKeyIndex(KeyPad2, AggregatorTypeStandard, "KeyPad2")
-	input.registerKeyIndex(KeyPad3, AggregatorTypeStandard, "KeyPad3")
-	input.registerKeyIndex(KeyPad4, AggregatorTypeStandard, "KeyPad4")
-	input.registerKeyIndex(KeyPad5, AggregatorTypeStandard, "KeyPad5")
-	input.registerKeyIndex(KeyPad6, AggregatorTypeStandard, "KeyPad6")
-	input.registerKeyIndex(KeyPad7, AggregatorTypeStandard, "KeyPad7")
-	input.registerKeyIndex(KeyPad8, AggregatorTypeStandard, "KeyPad8")
-	input.registerKeyIndex(KeyPad9, AggregatorTypeStandard, "KeyPad9")
-	input.registerKeyIndex(KeyDelete, AggregatorTypeStandard, "KeyDelete")
-	input.registerKeyIndex(KeyHome, AggregatorTypeStandard, "KeyHome")
-	input.registerKeyIndex(KeyInsert, AggregatorTypeStandard, "KeyInsert")
-	input.registerKeyIndex(KeyEnd, AggregatorTypeStandard, "KeyEnd")
-	input.registerKeyIndex(KeyPageUp, AggregatorTypeStandard, "KeyPageUp")
-	input.registerKeyIndex(KeyPageDown, AggregatorTypeStandard, "KeyPageDown")
+	input.registerKeyIndex(Space, aggregator.AggregatorTypeStandard, "Space")
+	input.registerKeyIndex(Backspace, aggregator.AggregatorTypeStandard, "Backspace")
+	input.registerKeyIndex(Tab, aggregator.AggregatorTypeStandard, "Tab")
+	input.registerKeyIndex(Return, aggregator.AggregatorTypeStandard, "Return")
+	input.registerKeyIndex(Escape, aggregator.AggregatorTypeStandard, "Escape")
+	input.registerKeyIndex(F1, aggregator.AggregatorTypeStandard, "F1")
+	input.registerKeyIndex(F2, aggregator.AggregatorTypeStandard, "F2")
+	input.registerKeyIndex(F3, aggregator.AggregatorTypeStandard, "F3")
+	input.registerKeyIndex(F4, aggregator.AggregatorTypeStandard, "F4")
+	input.registerKeyIndex(F5, aggregator.AggregatorTypeStandard, "F5")
+	input.registerKeyIndex(F6, aggregator.AggregatorTypeStandard, "F6")
+	input.registerKeyIndex(F7, aggregator.AggregatorTypeStandard, "F7")
+	input.registerKeyIndex(F8, aggregator.AggregatorTypeStandard, "F8")
+	input.registerKeyIndex(F9, aggregator.AggregatorTypeStandard, "F9")
+	input.registerKeyIndex(F10, aggregator.AggregatorTypeStandard, "F10")
+	input.registerKeyIndex(F11, aggregator.AggregatorTypeStandard, "F11")
+	input.registerKeyIndex(F12, aggregator.AggregatorTypeStandard, "F12")
+	input.registerKeyIndex(CapsLock, aggregator.AggregatorTypeStandard, "CapsLock")
+	input.registerKeyIndex(NumLock, aggregator.AggregatorTypeStandard, "NumLock")
+	input.registerKeyIndex(ScrollLock, aggregator.AggregatorTypeStandard, "ScrollLock")
+	input.registerKeyIndex(PrintScreen, aggregator.AggregatorTypeStandard, "PrintScreen")
+	input.registerKeyIndex(Pause, aggregator.AggregatorTypeStandard, "Pause")
+	input.registerKeyIndex(LeftShift, aggregator.AggregatorTypeStandard, "LeftShift")
+	input.registerKeyIndex(RightShift, aggregator.AggregatorTypeStandard, "RightShift")
+	input.registerKeyIndex(LeftControl, aggregator.AggregatorTypeStandard, "LeftControl")
+	input.registerKeyIndex(RightControl, aggregator.AggregatorTypeStandard, "RightControl")
+	input.registerKeyIndex(LeftAlt, aggregator.AggregatorTypeStandard, "LeftAlt")
+	input.registerKeyIndex(RightAlt, aggregator.AggregatorTypeStandard, "RightAlt")
+	input.registerKeyIndex(LeftGui, aggregator.AggregatorTypeStandard, "LeftGui")
+	input.registerKeyIndex(RightGui, aggregator.AggregatorTypeStandard, "RightGui")
+	input.registerKeyIndex(Right, aggregator.AggregatorTypeStandard, "Right")
+	input.registerKeyIndex(Left, aggregator.AggregatorTypeStandard, "Left")
+	input.registerKeyIndex(Up, aggregator.AggregatorTypeStandard, "Up")
+	input.registerKeyIndex(Down, aggregator.AggregatorTypeStandard, "Down")
+	input.registerKeyIndex(KeyPadDivide, aggregator.AggregatorTypeStandard, "KeyPadDivide")
+	input.registerKeyIndex(KeyPadMultiply, aggregator.AggregatorTypeStandard, "KeyPadMultiply")
+	input.registerKeyIndex(KeyPadSubtract, aggregator.AggregatorTypeStandard, "KeyPadSubtract")
+	input.registerKeyIndex(KeyPadAdd, aggregator.AggregatorTypeStandard, "KeyPadAdd")
+	input.registerKeyIndex(KeyPadEnter, aggregator.AggregatorTypeStandard, "KeyPadEnter")
+	input.registerKeyIndex(KeyPadDecimal, aggregator.AggregatorTypeStandard, "KeyPadDecimal")
+	input.registerKeyIndex(KeyPadEquals, aggregator.AggregatorTypeStandard, "KeyPadEquals")
+	input.registerKeyIndex(KeyPad0, aggregator.AggregatorTypeStandard, "KeyPad0")
+	input.registerKeyIndex(KeyPad1, aggregator.AggregatorTypeStandard, "KeyPad1")
+	input.registerKeyIndex(KeyPad2, aggregator.AggregatorTypeStandard, "KeyPad2")
+	input.registerKeyIndex(KeyPad3, aggregator.AggregatorTypeStandard, "KeyPad3")
+	input.registerKeyIndex(KeyPad4, aggregator.AggregatorTypeStandard, "KeyPad4")
+	input.registerKeyIndex(KeyPad5, aggregator.AggregatorTypeStandard, "KeyPad5")
+	input.registerKeyIndex(KeyPad6, aggregator.AggregatorTypeStandard, "KeyPad6")
+	input.registerKeyIndex(KeyPad7, aggregator.AggregatorTypeStandard, "KeyPad7")
+	input.registerKeyIndex(KeyPad8, aggregator.AggregatorTypeStandard, "KeyPad8")
+	input.registerKeyIndex(KeyPad9, aggregator.AggregatorTypeStandard, "KeyPad9")
+	input.registerKeyIndex(KeyDelete, aggregator.AggregatorTypeStandard, "KeyDelete")
+	input.registerKeyIndex(KeyHome, aggregator.AggregatorTypeStandard, "KeyHome")
+	input.registerKeyIndex(KeyInsert, aggregator.AggregatorTypeStandard, "KeyInsert")
+	input.registerKeyIndex(KeyEnd, aggregator.AggregatorTypeStandard, "KeyEnd")
+	input.registerKeyIndex(KeyPageUp, aggregator.AggregatorTypeStandard, "KeyPageUp")
+	input.registerKeyIndex(KeyPageDown, aggregator.AggregatorTypeStandard, "KeyPageDown")
 
-	input.registerKeyIndex(MouseXAxis, AggregatorTypeAxis, "X Axis")
-	input.registerKeyIndex(MouseYAxis, AggregatorTypeAxis, "Y Axis")
-	input.registerKeyIndex(MouseWheelVertical, AggregatorTypeWheel, "MouseWheel")
-	input.registerKeyIndex(MouseLButton, AggregatorTypeStandard, "MouseLButton")
-	input.registerKeyIndex(MouseRButton, AggregatorTypeStandard, "MouseRButton")
-	input.registerKeyIndex(MouseMButton, AggregatorTypeStandard, "MouseMButton")
+	input.registerKeyIndex(MouseXAxis, aggregator.AggregatorTypeAxis, "X Axis")
+	input.registerKeyIndex(MouseYAxis, aggregator.AggregatorTypeAxis, "Y Axis")
+	input.registerKeyIndex(MouseWheelVertical, aggregator.AggregatorTypeWheel, "MouseWheel")
+	input.registerKeyIndex(MouseLButton, aggregator.AggregatorTypeStandard, "MouseLButton")
+	input.registerKeyIndex(MouseRButton, aggregator.AggregatorTypeStandard, "MouseRButton")
+	input.registerKeyIndex(MouseMButton, aggregator.AggregatorTypeStandard, "MouseMButton")
 
 	// TODO(#28): bind these 'default' derived keys
 	// input.bindDerivedKeyWithId("Shift", EitherShift, input.MakeBinding(LeftShift, nil, nil), input.MakeBinding(RightShift, nil, nil))
@@ -351,7 +351,7 @@ func MakeLogged(logger glog.Logger) *Input {
 	return input
 }
 
-func (input *Input) registerKeyIndex(index KeyIndex, agg_type AggregatorType, name string) {
+func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregator.AggregatorType, name string) {
 	if index < 0 {
 		panic(fmt.Errorf("cannot register a key with a negative index: %d", index))
 	}
@@ -382,7 +382,7 @@ func (input *Input) GetKeyById(id KeyId) Key {
 				keyState: keyState{
 					id:         id,
 					name:       "Name me?",
-					Aggregator: &standardAggregator{},
+					Aggregator: aggregator.AggregatorForType(aggregator.AggregatorTypeStandard),
 				},
 				input: input,
 			}
@@ -398,7 +398,7 @@ func (input *Input) GetKeyById(id KeyId) Key {
 			input.key_map[id] = &keyState{
 				id:         id,
 				name:       input.index_to_name[id.Index],
-				Aggregator: aggregatorForType(agg_type),
+				Aggregator: aggregator.AggregatorForType(agg_type),
 			}
 			key = input.key_map[id]
 			input.all_keys = append(input.all_keys, key)
