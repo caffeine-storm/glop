@@ -27,32 +27,32 @@ type Key interface {
 	aggregator.SubAggregator
 }
 
-type aggregatorType int
+type AggregatorType int
 
 const (
-	aggregatorTypeStandard aggregatorType = iota
-	aggregatorTypeAxis
-	aggregatorTypeWheel
+	AggregatorTypeStandard AggregatorType = iota
+	AggregatorTypeAxis
+	AggregatorTypeWheel
 )
 
-func aggregatorForType(tp aggregatorType) aggregator.Aggregator {
+func aggregatorForType(tp AggregatorType) aggregator.Aggregator {
 	switch tp {
-	case aggregatorTypeStandard:
+	case AggregatorTypeStandard:
 		return &standardAggregator{}
-	case aggregatorTypeAxis:
+	case AggregatorTypeAxis:
 		return &axisAggregator{}
-	case aggregatorTypeWheel:
+	case AggregatorTypeWheel:
 		return &wheelAggregator{}
 	}
 
 	panic(fmt.Errorf("unknown aggregatorType: %d", tp))
 }
 
-func (at aggregatorType) MustValidate() {
+func (at AggregatorType) MustValidate() {
 	switch at {
-	case aggregatorTypeStandard:
-	case aggregatorTypeAxis:
-	case aggregatorTypeWheel:
+	case AggregatorTypeStandard:
+	case AggregatorTypeAxis:
+	case AggregatorTypeWheel:
 	default:
 		panic(fmt.Errorf("invalid aggregatorType: %d", at))
 	}
