@@ -40,11 +40,11 @@ func TestMouseInput(t *testing.T) {
 			inputObj := gin.MakeLogged(logger)
 			wheelUp := inputObj.GetKeyById(verticalWheelKeyId)
 
-			assert.Equal(wheelUp.CurPressAmt(), float64(0), "a fresh gin.Key should have no press amount")
+			assert.Equal(wheelUp.FramePressAmt(), float64(0), "a fresh gin.Key should have no press amount")
 
 			inputObj.Think(scrollUpSequence())
 
-			assert.Greater(wheelUp.CurPressAmt(), float64(0), "after a scroll up, the 'MouseWheelVertical' key should have a positive press amount")
+			assert.Greater(wheelUp.FramePressAmt(), float64(0), "after a scroll up, the 'MouseWheelVertical' key should have a positive press amount")
 		})
 	})
 }
