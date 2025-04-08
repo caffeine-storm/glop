@@ -3,7 +3,7 @@ package gin
 import (
 	"fmt"
 
-	agg "github.com/runningwild/glop/gin/aggregator"
+	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/glog"
 )
 
@@ -536,7 +536,7 @@ func (input *Input) findKeyIdObservers(id KeyId) []Key {
 func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup) {
 	event := k.KeySetPressAmt(amt, group.Timestamp, cause)
 	keysToPress := input.findKeyIdObservers(event.Key.Id())
-	if event.Type != agg.NoEvent {
+	if event.Type != aggregator.NoEvent {
 		group.Events = append(group.Events, event)
 	}
 	for _, dep := range keysToPress {

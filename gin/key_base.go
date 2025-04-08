@@ -3,7 +3,7 @@ package gin
 import (
 	"fmt"
 	"github.com/runningwild/glop/glog"
-	agg "github.com/runningwild/glop/gin/aggregator"
+	"github.com/runningwild/glop/gin/aggregator"
 )
 
 type Key interface {
@@ -24,7 +24,7 @@ type Key interface {
 	// should be generated to set its press amount to amt.
 	KeyThink(ms int64) (bool, float64)
 
-	agg.SubAggregator
+	aggregator.SubAggregator
 }
 
 type aggregatorType int
@@ -35,7 +35,7 @@ const (
 	aggregatorTypeWheel
 )
 
-func aggregatorForType(tp aggregatorType) agg.Aggregator {
+func aggregatorForType(tp aggregatorType) aggregator.Aggregator {
 	switch tp {
 	case aggregatorTypeStandard:
 		return &standardAggregator{}
@@ -122,11 +122,11 @@ func (a *baseAggregator) CurPressSum() float64 {
 	return a.this.press_sum
 }
 
-func (a *baseAggregator) updateCounts(event_type agg.EventType) {
+func (a *baseAggregator) updateCounts(event_type aggregator.EventType) {
 	switch event_type {
-	case agg.Press:
+	case aggregator.Press:
 		a.this.press_count++
-	case agg.Release:
+	case aggregator.Release:
 		a.this.release_count++
 	}
 }
@@ -146,7 +146,7 @@ func (sa *standardAggregator) IsDown() bool {
 	return sa.this.press_amt != 0
 }
 
-func (sa *standardAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type agg.EventType) {
+func (sa *standardAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type aggregator.EventType) {
 	// Accumulate how much press_amt there was since the last time we
 	// accumulated.
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
@@ -182,7 +182,7 @@ func (aa *axisAggregator) IsDown() bool {
 	return aa.is_down
 }
 
-func (aa *axisAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type agg.EventType) {
+func (aa *axisAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type aggregator.EventType) {
 	aa.this.press_sum += amt
 	aa.this.press_amt = amt
 	if amt != 0 {
@@ -218,7 +218,7 @@ func (wa *wheelAggregator) SendAllNonZero() bool {
 	return true
 }
 
-func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type agg.EventType) {
+func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type aggregator.EventType) {
 	wa.event_received = wa.last_press < wa.last_think
 	wa.standardAggregator.AggregatorSetPressAmt(amt, ms, event_type)
 }
@@ -323,7 +323,7 @@ type keyState struct {
 	id   KeyId  // Unique id among all keys ever
 	name string // Human readable name for the key, 'Right Shift', 'q', 'Space Bar', etc...
 
-	agg.Aggregator
+	aggregator.Aggregator
 }
 
 var _ Key = (*keyState)(nil)
@@ -350,19 +350,19 @@ func (ks *keyState) Id() KeyId {
 // happen.
 func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
 	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.Aggregator)
-	event.Type = agg.NoEvent
+	event.Type = aggregator.NoEvent
 	event.Key = ks
 	if (ks.CurPressAmt() == 0) != (amt == 0) {
 		if amt == 0 {
-			event.Type = agg.Release
+			event.Type = aggregator.Release
 		} else {
-			event.Type = agg.Press
+			event.Type = aggregator.Press
 		}
 	} else {
 		if ks.CurPressAmt() != 0 && ks.CurPressAmt() != amt {
-			event.Type = agg.Adjust
+			event.Type = aggregator.Adjust
 		} else if ks.SendAllNonZero() {
-			event.Type = agg.Adjust
+			event.Type = aggregator.Adjust
 		}
 	}
 	ks.Aggregator.AggregatorSetPressAmt(amt, ms, event.Type)

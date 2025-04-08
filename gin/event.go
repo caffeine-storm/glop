@@ -3,7 +3,7 @@ package gin
 import (
 	"fmt"
 
-	agg "github.com/runningwild/glop/gin/aggregator"
+	"github.com/runningwild/glop/gin/aggregator"
 )
 
 // A view over the data that comes back from native code.
@@ -17,18 +17,18 @@ type OsEvent struct {
 // TODO: Consider making a Timestamp type (int64)
 type Event struct {
 	Key  Key
-	Type agg.EventType
+	Type aggregator.EventType
 }
 
 func (e Event) String() string {
-	if e.Key == nil || e.Type == agg.NoEvent {
+	if e.Key == nil || e.Type == aggregator.NoEvent {
 		return fmt.Sprintf("NoEvent")
 	}
 	return fmt.Sprintf("'%v %v'", e.Type, e.Key)
 }
 
 func (e Event) IsPress() bool {
-	return e.Type == agg.Press
+	return e.Type == aggregator.Press
 }
 
 type MousePosition struct {
@@ -62,7 +62,7 @@ func (eg *EventGroup) IsPressed(id KeyId) bool {
 	if !found {
 		return false
 	}
-	return ev.Type == agg.Press
+	return ev.Type == aggregator.Press
 }
 
 // Returns the root-cause event of the EventGroup. Useful for classifying the

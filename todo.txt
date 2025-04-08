@@ -1,3 +1,5 @@
+tmckee:#31 stringifying a gin.EventGroup includes the pointer-to-MousePosition; let's use <nil> or (x,y) instead.
+
 tmckee:#30 add a "LOG" macro to native code to easily toggle verbosity
 
 tmckee:#29 shouldn't we be subtracting 'sys.start_ms' from the 'horizon' in system.System.Think() ?
@@ -59,4 +61,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #31
+next bug: #32

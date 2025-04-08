@@ -3,7 +3,7 @@ package gin
 import (
 	"fmt"
 
-	agg "github.com/runningwild/glop/gin/aggregator"
+	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/glog"
 )
 
@@ -112,14 +112,14 @@ func (dk *derivedKey) KeySetPressAmt(amt float64, ms int64, cause Event) (event 
 			index = i
 		}
 	}
-	event.Type = agg.NoEvent
+	event.Type = aggregator.NoEvent
 	event.Key = &dk.keyState
 	if amt == 0 && index != -1 && dk.numBindingsDown() == 1 && dk.bindings_down[index] {
-		event.Type = agg.Release
+		event.Type = aggregator.Release
 	}
 	if amt != 0 && index != -1 && dk.numBindingsDown() == 0 && !dk.bindings_down[index] {
 		glog.TraceLogger().Trace("Generated press event", "key", dk)
-		event.Type = agg.Press
+		event.Type = aggregator.Press
 	}
 	if index != -1 {
 		dk.bindings_down[index] = dk.Bindings[index].CurPressAmt() != 0

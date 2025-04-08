@@ -1,6 +1,6 @@
 package gin
 
-import agg "github.com/runningwild/glop/gin/aggregator"
+import "github.com/runningwild/glop/gin/aggregator"
 
 // A generalDerivedKey represents a group of natural keys. A key is specified
 // with a KeyID which is a tuple of (key index, device type, device index).
@@ -57,7 +57,7 @@ func (gdk *generalDerivedKey) IsDown() bool {
 }
 
 func (gdk *generalDerivedKey) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
-	event.Type = agg.NoEvent
+	event.Type = aggregator.NoEvent
 	event.Key = &gdk.keyState
 	old_press_amt := gdk.press_amt
 	gdk.press_amt = gdk.CurPressAmt()
@@ -65,9 +65,9 @@ func (gdk *generalDerivedKey) KeySetPressAmt(amt float64, ms int64, cause Event)
 		return
 	}
 	if gdk.press_amt > 0 {
-		event.Type = agg.Press
+		event.Type = aggregator.Press
 	} else {
-		event.Type = agg.Release
+		event.Type = aggregator.Release
 	}
 	gdk.keyState.Aggregator.AggregatorSetPressAmt(gdk.press_amt, ms, event.Type)
 	return
