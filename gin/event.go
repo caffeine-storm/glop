@@ -42,6 +42,7 @@ type EventGroup struct {
 // Returns a bool indicating whether an event corresponding to the given KeyId
 // is present in the EventGroup, and if so the Event returned is a copy of that
 // event.
+// TODO: this should return (Event, bool)
 func (eg *EventGroup) FindEvent(id KeyId) (bool, Event) {
 	for i := range eg.Events {
 		if eg.Events[i].Key.Id() == id {
@@ -49,6 +50,16 @@ func (eg *EventGroup) FindEvent(id KeyId) (bool, Event) {
 		}
 	}
 	return false, Event{}
+}
+
+// Returns true if the given KeyId is considered 'Pressed' within this event
+// group.
+func (eg *EventGroup) IsPressed(id KeyId) bool {
+	found, ev := eg.FindEvent(id)
+	if !found {
+		return false
+	}
+	return ev.Type == agg.Press
 }
 
 // Returns the root-cause event of the EventGroup. Useful for classifying the

@@ -2,7 +2,6 @@ package gui
 
 import (
 	"github.com/runningwild/glop/gin"
-	agg "github.com/runningwild/glop/gin/aggregator"
 )
 
 type ComboBox struct {
@@ -59,7 +58,7 @@ func (cb *ComboBox) DrawFocused(region Region, ctx DrawingContext) {
 }
 func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 	if cb.open {
-		if found, event := group.FindEvent(gin.AnyEscape); found && event.Type == agg.Press {
+		if group.IsPressed(gin.AnyEscape) {
 			cb.clicked = true
 			return true
 		}
@@ -80,7 +79,7 @@ func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 		cb.scroll.Respond(gui, group)
 	}
 	if !cb.open {
-		if found, event := group.FindEvent(gin.AnyMouseLButton); found && event.Type == agg.Press {
+		if group.IsPressed(gin.AnyMouseLButton) {
 			gui.TakeFocus(cb)
 			cb.open = true
 		}

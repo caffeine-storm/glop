@@ -145,7 +145,7 @@ func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGrou
 			change_focus = true
 			return
 		}
-		if found, _ := event_group.FindEvent(gin.AnyBackspace); found {
+		if event_group.IsPressed(gin.AnyBackspace) {
 			if len(w.text) > 0 && w.cursor.index > 0 {
 				var pre, post string
 				if w.cursor.index > 0 {
@@ -169,12 +169,12 @@ func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGrou
 				w.cursor.index = w.findIndexAtOffset(pt.X - cx)
 				w.cursor.moved = true
 			}
-		} else if found, _ := event_group.FindEvent(gin.AnyLeft); found {
+		} else if event_group.IsPressed(gin.AnyLeft) {
 			if w.cursor.index > 0 {
 				w.cursor.index--
 				w.cursor.moved = true
 			}
-		} else if found, _ := event_group.FindEvent(gin.AnyRight); found {
+		} else if event_group.IsPressed(gin.AnyRight) {
 			if w.cursor.index < len(w.text) {
 				w.cursor.index++
 				w.cursor.moved = true
