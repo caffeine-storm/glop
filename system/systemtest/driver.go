@@ -5,6 +5,8 @@ import (
 
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system"
+
+	agg "github.com/runningwild/glop/gin/aggregator"
 )
 
 type Driver interface {
@@ -103,7 +105,7 @@ func (d *testDriver) GetLastScroll() float64 {
 			continue
 		}
 		ev := each.PrimaryEvent()
-		if ev.Type != gin.Press {
+		if ev.Type != agg.Press {
 			continue
 		}
 

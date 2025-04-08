@@ -3,6 +3,7 @@ package gui
 import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
+	agg "github.com/runningwild/glop/gin/aggregator"
 )
 
 type cursor struct {
@@ -135,7 +136,7 @@ func (w *TextEditLine) DoRespond(ctx EventHandlingContext, event_group EventGrou
 		w.cursor.index = len(w.text)
 	}
 	event := event_group.PrimaryEvent()
-	if event.Type != gin.Press {
+	if event.Type != agg.Press {
 		return
 	}
 	key_id := event.Key.Id()

@@ -1,9 +1,11 @@
 package gui
 
 import (
+	"reflect"
+
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
-	"reflect"
+	agg "github.com/runningwild/glop/gin/aggregator"
 )
 
 type checkBoxSelection int
@@ -98,7 +100,7 @@ func makeCheckRow(w Widget, target, index reflect.Value) *checkRow {
 	return &cr
 }
 func (cr *checkRow) DoRespond(ctx EventHandlingContext, group EventGroup) (consume, change_focus bool) {
-	if found, event := group.FindEvent(gin.AnyMouseLButton); found && event.Type == gin.Press {
+	if found, event := group.FindEvent(gin.AnyMouseLButton); found && event.Type == agg.Press {
 		cr.check_box.Click()
 		var selected reflect.Value
 		if cr.check_box.selected == checkBoxSelected {

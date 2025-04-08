@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
+	agg "github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/gui"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -21,10 +22,10 @@ func ClickAButton(btn *gui.Button) {
 
 	leftMouseButtonKeyId := gin.AnyMouseLButton
 
-	// if event.Type == gin.Press && event.Key.Id() == gin.AnyMouseLButton {
+	// if event.Type == agg.Press && event.Key.Id() == gin.AnyMouseLButton {
 	leftButtonEvent := gin.Event{
 		Key:  input.GetKeyById(leftMouseButtonKeyId),
-		Type: gin.Press,
+		Type: agg.Press,
 	}
 	eventGroup := gui.EventGroup{
 		EventGroup: gin.EventGroup{

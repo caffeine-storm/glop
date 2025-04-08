@@ -3,6 +3,7 @@ package gui
 import (
 	"fmt"
 	"github.com/runningwild/glop/gin"
+	agg "github.com/runningwild/glop/gin/aggregator"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +32,7 @@ func (fw *FileWidget) Think(ui *Gui, t int64) {
 	fw.Button.Think(ui, t)
 }
 func (fw *FileWidget) Respond(ui *Gui, group EventGroup) bool {
-	if found, event := group.FindEvent(gin.AnyEscape); found && event.Type == gin.Press {
+	if found, event := group.FindEvent(gin.AnyEscape); found && event.Type == agg.Press {
 		if fw.popup != nil {
 			fw.ui.DropFocus()
 			fw.ui.RemoveChild(fw.popup)
@@ -110,7 +111,7 @@ type FileChooser struct {
 
 func (fc *FileChooser) Respond(gui *Gui, group EventGroup) bool {
 	fc.VerticalTable.Respond(gui, group)
-	if found, event := group.FindEvent(gin.AnyEscape); found && event.Type == gin.Press {
+	if found, event := group.FindEvent(gin.AnyEscape); found && event.Type == agg.Press {
 		fc.terminate = true
 	}
 	return true

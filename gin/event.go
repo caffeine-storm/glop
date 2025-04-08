@@ -1,29 +1,10 @@
 package gin
 
-import "fmt"
+import (
+	"fmt"
 
-type EventType int
-
-const (
-	NoEvent EventType = iota
-	Press
-	Release
-	Adjust // The key was and is down, but the value of it has changed
+	agg "github.com/runningwild/glop/gin/aggregator"
 )
-
-func (event EventType) String() string {
-	switch event {
-	case Press:
-		return "press"
-	case Release:
-		return "release"
-	case NoEvent:
-		return "noevent"
-	case Adjust:
-		return "adjust"
-	}
-	panic(fmt.Errorf("%d is not a valid EventType", event))
-}
 
 // A view over the data that comes back from native code.
 type OsEvent struct {
@@ -36,11 +17,11 @@ type OsEvent struct {
 // TODO: Consider making a Timestamp type (int64)
 type Event struct {
 	Key  Key
-	Type EventType
+	Type agg.EventType
 }
 
 func (e Event) String() string {
-	if e.Key == nil || e.Type == NoEvent {
+	if e.Key == nil || e.Type == agg.NoEvent {
 		return fmt.Sprintf("NoEvent")
 	}
 	return fmt.Sprintf("'%v %v'", e.Type, e.Key)

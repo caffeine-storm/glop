@@ -7,7 +7,7 @@ import (
 	"github.com/runningwild/glop/gin"
 )
 
-// Stub implementation of gin.subAggregator
+// Stub implementation of aggregator.SubAggregator
 type stubAggregator struct{}
 
 func (*stubAggregator) IsDown() bool           { return false }

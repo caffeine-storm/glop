@@ -2,8 +2,8 @@ package gin
 
 import (
 	"fmt"
-
 	"github.com/runningwild/glop/glog"
+	agg "github.com/runningwild/glop/gin/aggregator"
 )
 
 type Key interface {
@@ -24,35 +24,7 @@ type Key interface {
 	// should be generated to set its press amount to amt.
 	KeyThink(ms int64) (bool, float64)
 
-	subAggregator
-}
-
-// A subAggregator is the intersection (blech!) between the Key interface and
-// the aggregator interface. It's really two APIs in one; the "Frame*"
-// functions for consumption external to the gin package and the "Cur*"
-// functions for querying running totals during frame event processing.
-type subAggregator interface {
-	IsDown() bool
-	FramePressCount() int
-	FrameReleaseCount() int
-	FramePressAmt() float64
-	FramePressSum() float64
-	FramePressAvg() float64
-	CurPressCount() int
-	CurReleaseCount() int
-	CurPressAmt() float64
-	CurPressSum() float64
-}
-
-type aggregator interface {
-	subAggregator
-	AggregatorThink(ms int64) (bool, float64)
-	AggregatorSetPressAmt(amt float64, ms int64, event_type EventType)
-
-	// A very select set of keys should always send events when their press amt
-	// is non-zero. These are typically not your ordinary keys, mouse wheels,
-	// mouse pointers, etc...
-	SendAllNonZero() bool
+	agg.SubAggregator
 }
 
 type aggregatorType int
@@ -63,7 +35,7 @@ const (
 	aggregatorTypeWheel
 )
 
-func aggregatorForType(tp aggregatorType) aggregator {
+func aggregatorForType(tp aggregatorType) agg.Aggregator {
 	switch tp {
 	case aggregatorTypeStandard:
 		return &standardAggregator{}
@@ -150,11 +122,11 @@ func (a *baseAggregator) CurPressSum() float64 {
 	return a.this.press_sum
 }
 
-func (a *baseAggregator) updateCounts(event_type EventType) {
+func (a *baseAggregator) updateCounts(event_type agg.EventType) {
 	switch event_type {
-	case Press:
+	case agg.Press:
 		a.this.press_count++
-	case Release:
+	case agg.Release:
 		a.this.release_count++
 	}
 }
@@ -174,7 +146,7 @@ func (sa *standardAggregator) IsDown() bool {
 	return sa.this.press_amt != 0
 }
 
-func (sa *standardAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
+func (sa *standardAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type agg.EventType) {
 	// Accumulate how much press_amt there was since the last time we
 	// accumulated.
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
@@ -210,7 +182,7 @@ func (aa *axisAggregator) IsDown() bool {
 	return aa.is_down
 }
 
-func (aa *axisAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
+func (aa *axisAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type agg.EventType) {
 	aa.this.press_sum += amt
 	aa.this.press_amt = amt
 	if amt != 0 {
@@ -246,7 +218,7 @@ func (wa *wheelAggregator) SendAllNonZero() bool {
 	return true
 }
 
-func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
+func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type agg.EventType) {
 	wa.event_received = wa.last_press < wa.last_think
 	wa.standardAggregator.AggregatorSetPressAmt(amt, ms, event_type)
 }
@@ -351,17 +323,17 @@ type keyState struct {
 	id   KeyId  // Unique id among all keys ever
 	name string // Human readable name for the key, 'Right Shift', 'q', 'Space Bar', etc...
 
-	aggregator
+	agg.Aggregator
 }
 
 var _ Key = (*keyState)(nil)
 
 func (ks *keyState) KeyThink(ms int64) (bool, float64) {
-	return ks.aggregator.AggregatorThink(ms)
+	return ks.Aggregator.AggregatorThink(ms)
 }
 
 func (ks *keyState) String() string {
-	return fmt.Sprintf("{keyState: %q id: %v agg: %v}", ks.name, ks.id, ks.aggregator)
+	return fmt.Sprintf("{keyState: %q id: %v agg: %v}", ks.name, ks.id, ks.Aggregator)
 }
 
 func (ks *keyState) Name() string {
@@ -377,22 +349,22 @@ func (ks *keyState) Id() KeyId {
 // is the case with derived keys), then cause is the event that made this
 // happen.
 func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
-	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.aggregator)
-	event.Type = NoEvent
+	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.Aggregator)
+	event.Type = agg.NoEvent
 	event.Key = ks
 	if (ks.CurPressAmt() == 0) != (amt == 0) {
 		if amt == 0 {
-			event.Type = Release
+			event.Type = agg.Release
 		} else {
-			event.Type = Press
+			event.Type = agg.Press
 		}
 	} else {
 		if ks.CurPressAmt() != 0 && ks.CurPressAmt() != amt {
-			event.Type = Adjust
+			event.Type = agg.Adjust
 		} else if ks.SendAllNonZero() {
-			event.Type = Adjust
+			event.Type = agg.Adjust
 		}
 	}
-	ks.aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
+	ks.Aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
 	return
 }
