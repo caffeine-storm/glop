@@ -25,6 +25,10 @@ type Key interface {
 	subAggregator
 }
 
+// A subAggregator is the intersection (blech!) between the Key interface and
+// the aggregator interface. It's really two APIs in one; the "Frame*"
+// functions for consumption external to the gin package and the "Cur*"
+// functions for querying running totals during frame event processing.
 type subAggregator interface {
 	IsDown() bool
 	FramePressCount() int
