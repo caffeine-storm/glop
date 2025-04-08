@@ -267,6 +267,7 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
     case Button5:
       ki = kMouseWheelDown;
       break;
+    // TODO: add support for button6+7; wheel left and right respectively
     default:
       fprintf(stderr, "SynthButton: unknown button: %d\n", event.button);
       return false;
@@ -274,6 +275,7 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
 
   ev->index = ki;
   ev->device_type = glopDeviceMouse;
+  // TODO: for mouse wheel up vs. down, negate the press_amt ... ?
   ev->press_amt = pushed ? 1.0 : 0.0;
   ev->timestamp = gt();
 

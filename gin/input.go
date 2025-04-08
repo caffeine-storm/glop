@@ -351,7 +351,6 @@ func MakeLogged(logger glog.Logger) *Input {
 }
 
 func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, name string) {
-	input.logger.Trace("gin.Input")
 	if index < 0 {
 		panic(fmt.Errorf("cannot register a key with a negative index: %d", index))
 	}
@@ -363,7 +362,6 @@ func (input *Input) registerKeyIndex(index KeyIndex, agg_type aggregatorType, na
 }
 
 func (input *Input) GetKeyByParts(key_index KeyIndex, device_type DeviceType, device_index DeviceIndex) Key {
-	input.logger.Trace("gin.Input")
 	return input.GetKeyById(KeyId{
 		Index: key_index,
 		Device: DeviceId{
@@ -374,7 +372,6 @@ func (input *Input) GetKeyByParts(key_index KeyIndex, device_type DeviceType, de
 }
 
 func (input *Input) GetKeyById(id KeyId) Key {
-	input.logger.Trace("gin.Input")
 	id.MustValidate()
 	key, ok := input.key_map[id]
 	if !ok {
