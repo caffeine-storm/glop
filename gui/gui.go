@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
-	agg "github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )
@@ -330,8 +329,7 @@ type Clickable struct {
 }
 
 func (c Clickable) DoRespond(ctx EventHandlingContext, event_group EventGroup) (bool, bool) {
-	event := event_group.PrimaryEvent()
-	if event.Type == agg.Press && event.Key.Id() == gin.AnyMouseLButton {
+	if event_group.IsPressed(gin.AnyMouseLButton) {
 		c.on_click(ctx, event_group.Timestamp)
 		return true, false
 	}

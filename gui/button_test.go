@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
-	agg "github.com/runningwild/glop/gin/aggregator"
+	"github.com/runningwild/glop/gin/gintesting"
 	"github.com/runningwild/glop/gui"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -20,18 +20,8 @@ func GivenAButton(fn func(gui.EventHandlingContext, int64)) *gui.Button {
 func ClickAButton(btn *gui.Button) {
 	input := gin.Make()
 
-	leftMouseButtonKeyId := gin.AnyMouseLButton
-
-	// if event.Type == agg.Press && event.Key.Id() == gin.AnyMouseLButton {
-	leftButtonEvent := gin.Event{
-		Key:  input.GetKeyById(leftMouseButtonKeyId),
-		Type: agg.Press,
-	}
 	eventGroup := gui.EventGroup{
-		EventGroup: gin.EventGroup{
-			Events:    []gin.Event{leftButtonEvent},
-			Timestamp: 17,
-		},
+		EventGroup:                 gintesting.ClickEventGroup(input),
 		DispatchedToFocussedWidget: true,
 	}
 

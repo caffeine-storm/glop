@@ -27,6 +27,10 @@ func (e Event) String() string {
 	return fmt.Sprintf("'%v %v'", e.Type, e.Key)
 }
 
+func (e Event) IsPress() bool {
+	return e.Type == agg.Press
+}
+
 type MousePosition struct {
 	X, Y int
 }
