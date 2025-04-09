@@ -77,8 +77,8 @@ func TestAggregators(t *testing.T) {
 				So(agg.FramePressAmt(), ShouldEqual, 7)
 			})
 
-			Convey("the last frame's PressAmt is the initial PressAmt for the current frame", func() {
-				So(agg.CurPressAmt(), ShouldEqual, 7)
+			Convey("for an AxisAggregator, the initial PressAmt for the current frame is 0", func() {
+				So(agg.CurPressAmt(), ShouldEqual, 0)
 			})
 
 			agg.AggregatorSetPressAmt(13, time4, aggregator.Press)
