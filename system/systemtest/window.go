@@ -1,6 +1,7 @@
 package systemtest
 
 import (
+	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
@@ -9,6 +10,7 @@ import (
 type Window interface {
 	NewDriver() Driver
 	GetQueue() render.RenderQueueInterface
+	GetDims() gui.Dims
 }
 
 type testWindow struct {
@@ -29,6 +31,14 @@ func (self *testWindow) NewDriver() Driver {
 
 func (self *testWindow) GetQueue() render.RenderQueueInterface {
 	return self.queue
+}
+
+func (self *testWindow) GetDims() gui.Dims {
+	_, _, dx, dy := self.sys.GetWindowDims()
+	return gui.Dims{
+		Dx: dx,
+		Dy: dy,
+	}
 }
 
 var _ Window = (*testWindow)(nil)
