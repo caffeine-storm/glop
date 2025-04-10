@@ -563,6 +563,8 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 	// necessarily be in sorted order.
 	var groups []EventGroup
 	for _, os_event := range os_events {
+		glog.TraceLogger().Trace("Input.Think", "os_event", os_event)
+
 		group := EventGroup{
 			Timestamp: os_event.Timestamp,
 		}

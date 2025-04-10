@@ -2,6 +2,8 @@ package gin
 
 import (
 	"fmt"
+
+	"github.com/runningwild/glop/glog"
 )
 
 type Key interface {
@@ -98,6 +100,20 @@ type baseAggregator struct {
 	this, prev keyStats
 }
 
+func (a *baseAggregator) String() string {
+	ret := map[string]float64{}
+	ret["FramePressAmt"] = a.FramePressAmt()
+	ret["FramePressSum"] = a.FramePressSum()
+	ret["FramePressAvg"] = a.FramePressAvg()
+	ret["FramePressCount"] = float64(a.FramePressCount())
+	ret["FrameReleaseCount"] = float64(a.FrameReleaseCount())
+	ret["CurPressAmt"] = a.CurPressAmt()
+	ret["CurPressSum"] = a.CurPressSum()
+	ret["CurPressCount"] = float64(a.CurPressCount())
+	ret["CurReleaseCount"] = float64(a.CurReleaseCount())
+	return fmt.Sprintf("[aggregator: %v]", ret)
+}
+
 func (a *baseAggregator) FramePressCount() int {
 	return a.prev.press_count
 }
@@ -159,6 +175,8 @@ func (sa *standardAggregator) IsDown() bool {
 }
 
 func (sa *standardAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
+	// Accumulate how much press_amt there was since the last time we
+	// accumulated.
 	sa.this.press_sum += sa.this.press_amt * float64(ms-sa.last_press)
 	sa.this.press_amt = amt
 	sa.last_press = ms
@@ -340,7 +358,7 @@ func (ks *keyState) KeyThink(ms int64) (bool, float64) {
 }
 
 func (ks *keyState) String() string {
-	return fmt.Sprintf("{keyState:%q id: %v}", ks.name, ks.id)
+	return fmt.Sprintf("{keyState: %q id: %v agg: %v}", ks.name, ks.id, ks.aggregator)
 }
 
 func (ks *keyState) Name() string {
@@ -356,6 +374,7 @@ func (ks *keyState) Id() KeyId {
 // is the case with derived keys), then cause is the event that made this
 // happen.
 func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
+	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.aggregator)
 	event.Type = NoEvent
 	event.Key = ks
 	if (ks.CurPressAmt() == 0) != (amt == 0) {

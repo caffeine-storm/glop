@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/system"
 )
 
@@ -84,13 +85,17 @@ func NativeToGin(linux RawCursorToWindowCoordser, nativeEvent *NativeKeyEvent) g
 		},
 		Index: gin.KeyIndex(nativeEvent.index),
 	}
-	return gin.OsEvent{
+	ret := gin.OsEvent{
 		KeyId:     keyId,
 		Press_amt: float64(nativeEvent.press_amt),
 		Timestamp: int64(nativeEvent.timestamp),
 		X:         wx,
 		Y:         wy,
 	}
+
+	glog.TraceLogger().Trace("native to gin", "native", *nativeEvent, "ret", ret)
+
+	return ret
 }
 
 // TODO: Make sure that events are given in sorted order (by timestamp)
