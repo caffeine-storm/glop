@@ -31,6 +31,10 @@ func (e Event) IsPress() bool {
 	return e.Type == aggregator.Press
 }
 
+func (e Event) IsRelease() bool {
+	return e.Type == aggregator.Release
+}
+
 type MousePosition struct {
 	X, Y int
 }
