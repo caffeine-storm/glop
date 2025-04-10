@@ -249,6 +249,7 @@ XButtonEvent const * toButtonEvent(XEvent const & evt) {
 }
 
 static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEvent const &event, Window window, struct GlopKeyEvent *ev) {
+  bool negate = false;
 
   GlopKey ki;
   switch(event.button) {
@@ -261,13 +262,16 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
     case Button3:
       ki = kMouseRButton;
       break;
-    case Button4:
-      ki = kMouseWheelUp;
-      break;
     case Button5:
-      ki = kMouseWheelDown;
+      negate = true;
+    case Button4:
+      ki = kMouseWheelVertical;
       break;
-    // TODO: add support for button6+7; wheel left and right respectively
+    case 7:
+      negate = true;
+    case 6:
+      ki = kMouseWheelHorizontal;
+      break;
     default:
       fprintf(stderr, "SynthButton: unknown button: %d\n", event.button);
       return false;
@@ -275,8 +279,10 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
 
   ev->index = ki;
   ev->device_type = glopDeviceMouse;
-  // TODO: for mouse wheel up vs. down, negate the press_amt ... ?
   ev->press_amt = pushed ? 1.0 : 0.0;
+  if(negate) {
+    ev->press_amt *= -1;
+  }
   ev->timestamp = gt();
 
   std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
