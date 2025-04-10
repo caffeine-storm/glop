@@ -24,4 +24,9 @@ func TestEventGroup(t *testing.T) {
 			t.Fatalf("reading the mouse position should return whatever was set")
 		}
 	})
+	t.Run("events have a useful API", func(t *testing.T) {
+		ev := gin.Event{}
+		ev.IsPress()
+		ev.IsRelease()
+	})
 }
