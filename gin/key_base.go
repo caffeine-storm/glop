@@ -2,8 +2,8 @@ package gin
 
 import (
 	"fmt"
-	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/runningwild/glop/glog"
 )
 
 type Key interface {
