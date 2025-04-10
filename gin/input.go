@@ -337,6 +337,7 @@ func MakeLogged(logger glog.Logger) *Input {
 	input.registerKeyIndex(MouseXAxis, aggregator.AggregatorTypeAxis, "X Axis")
 	input.registerKeyIndex(MouseYAxis, aggregator.AggregatorTypeAxis, "Y Axis")
 	input.registerKeyIndex(MouseWheelVertical, aggregator.AggregatorTypeWheel, "MouseWheel")
+	input.registerKeyIndex(MouseWheelHorizontal, aggregator.AggregatorTypeWheel, "MouseWheelTilt")
 	input.registerKeyIndex(MouseLButton, aggregator.AggregatorTypeStandard, "MouseLButton")
 	input.registerKeyIndex(MouseRButton, aggregator.AggregatorTypeStandard, "MouseRButton")
 	input.registerKeyIndex(MouseMButton, aggregator.AggregatorTypeStandard, "MouseMButton")
