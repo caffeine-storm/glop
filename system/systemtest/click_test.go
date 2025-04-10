@@ -59,7 +59,7 @@ func TestE2EMouseWheelHelper(t *testing.T) {
 			actualScroll := driver.GetLastScroll()
 
 			if actualScroll != testcase.expectedScroll {
-				t.Fatalf("scroll amount didn't match! expected: %d actual %d", testcase.expectedScroll, actualScroll)
+				t.Fatalf("scroll amount didn't match! expected: %v actual: %v", testcase.expectedScroll, actualScroll)
 			}
 		})
 	}
