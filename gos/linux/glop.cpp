@@ -280,6 +280,8 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
   ev->timestamp = gt();
 
   std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
+  // TODO(#30): LOG this event
+  // fprintf(stderr, "SynthButton: cx/cy: %d/%d\n", ev->cursor_x, ev->cursor_y);
 
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
@@ -366,6 +368,8 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
       case ButtonPress:
       case ButtonRelease:
+        // TODO(#30): LOG this event
+        // fprintf(stderr, "ButtonPress/Release: event.xbutton: %d event.type: %d\n", event.xbutton.button, event.type);
         if(SynthButton(&attrs, event.type == ButtonPress, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;

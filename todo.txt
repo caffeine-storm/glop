@@ -1,3 +1,5 @@
+tmckee:#30 add a "LOG" macro to native code to easily toggle verbosity
+
 tmckee:#29 shouldn't we be subtracting 'sys.start_ms' from the 'horizon' in system.System.Think() ?
 
 tmckee:#28 text_edit_line.go is checking for a click but only checking the x
@@ -57,4 +59,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #30
+next bug: #31
