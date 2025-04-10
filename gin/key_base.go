@@ -255,6 +255,9 @@ func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {
 	if b, _ := wa.standardAggregator.AggregatorThink(ms); b {
 		panic("standardAggregator should not generate an event on AggregatorThink()")
 	}
+
+	// Note: 'CurPressAmt' here should be read as "press amount as-of end of last
+	// frame" because we called standardAggregator.AggregatorThink above.
 	if wa.CurPressAmt() != 0 {
 		if wa.event_received {
 			wa.event_received = false
