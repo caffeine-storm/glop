@@ -18,6 +18,7 @@ func TestGinSpecs(t *testing.T) {
 		Convey("EventSpec", EventSpec)
 		Convey("AxisSpec", AxisSpec)
 		Convey("EventListenerSpec", EventListenerSpec)
+		Convey("Regressions", InputRegressionSpec)
 	})
 }
 
@@ -745,5 +746,12 @@ func EventListenerSpec() {
 		l.ExpectClicks([]gui.Point{
 			clickPoint,
 		})
+	})
+}
+
+func InputRegressionSpec() {
+	Convey("MouseWheelTilt is registered", func() {
+		inputObj := gin.Make()
+		So(inputObj.GetKeyByParts(gin.MouseWheelHorizontal, gin.DeviceTypeMouse, 0), ShouldNotBeNil)
 	})
 }
