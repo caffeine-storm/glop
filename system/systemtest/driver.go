@@ -9,6 +9,7 @@ import (
 
 type Driver interface {
 	Click(wx, wy int)
+	Scroll(dy float64)
 	ProcessFrame()
 
 	// Put the top-left extent of the window at (x, y) in glop-coords.
@@ -21,6 +22,9 @@ type Driver interface {
 
 	// Panics if there were no clicks
 	GetLastClick() (int, int)
+
+	// Panics if there were no scrolls
+	GetLastScroll() float64
 
 	gin.Listener
 }
@@ -42,6 +46,19 @@ func (d *testDriver) Click(glopX, glopY int) {
 	xorgX, xorgY := d.glopToX(glopX, glopY)
 	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", xorgX, xorgY)
 	xDoToolRun("click", "--window", d.window.hdl, "1")
+}
+
+func (d *testDriver) Scroll(dy float64) {
+	if dy == 0 {
+		panic(fmt.Errorf("can't scroll by a distance of 0"))
+	}
+	x, y := d.glopToX(5, 5)
+	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", x, y)
+	btn := 4 // 'scroll up' is button4 in X parlance
+	if dy < 0 {
+		btn = 5 // 'scroll down' is button5 in X parlance
+	}
+	xDoToolRun("click", "--window", d.window.hdl, btn)
 }
 
 func (d *testDriver) RawTool(fn func(system.NativeWindowHandle) []any) {
@@ -77,6 +94,28 @@ func (d *testDriver) GetLastClick() (int, int) {
 	}
 
 	panic(fmt.Errorf("couldn't find click in events: %v", d.eventGroups))
+}
+
+func (d *testDriver) GetLastScroll() float64 {
+	for i := len(d.eventGroups) - 1; i > 0; i-- {
+		each := d.eventGroups[i]
+		if !each.HasMousePosition() {
+			continue
+		}
+		ev := each.PrimaryEvent()
+		if ev.Type != gin.Press {
+			continue
+		}
+
+		switch ev.Key.Id().Index {
+		case gin.MouseWheelVertical:
+			// TODO: this counts number of scrolls; not direction/distance of
+			// scroll...
+			return float64(ev.Key.FramePressCount())
+		}
+	}
+
+	panic(fmt.Errorf("couldn't find MouseWheelVertical in events: %v", d.eventGroups))
 }
 
 func (d *testDriver) GetEvents() []gin.EventGroup {

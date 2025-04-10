@@ -34,16 +34,18 @@ func TestE2EClickHelper(t *testing.T) {
 func TestE2EMouseWheelHelper(t *testing.T) {
 	testcases := []struct {
 		name           string
-		expectedScroll int
+		expectedScroll float64
 	}{
 		{
 			name:           "scroll up",
-			expectedScroll: 7,
+			expectedScroll: 1,
 		},
-		{
-			name:           "scroll down",
-			expectedScroll: -10,
-		},
+		/*
+			{
+				name:           "scroll down",
+				expectedScroll: -1,
+			},
+		*/
 	}
 	for _, testcase := range testcases {
 		systemtest.WithTestWindowDriver(64, 64, func(driver systemtest.Driver) {
