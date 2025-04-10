@@ -408,16 +408,6 @@ func (input *Input) GetKeyById(id KeyId) Key {
 	return key
 }
 
-func (input *Input) GetKeyByName(name string) Key {
-	input.logger.Trace("gin.Input")
-	for _, key := range input.key_map {
-		if key.Name() == name {
-			return key
-		}
-	}
-	return nil
-}
-
 // The Input object can have multiple Listener instances registered with it.
 // Each Listener will receive event groups as they are processed. Each Listener
 // will also get a .Think() call once per frame after all input events for the
