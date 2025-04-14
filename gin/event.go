@@ -103,10 +103,6 @@ func (eg *EventGroup) SetMousePosition(x, y int) {
 //
 // Listener.Think() will be called after all the events for a frame have been
 // processed.
-//
-// TODO(tmckee:#20) Instead of having every Listener (maybe, Thinker?) also
-// implement 'EventHandler', don't couple them. Just register the same object
-// that implmenets both interfaces with two registration calls.
 type Listener interface {
 	HandleEventGroup(EventGroup)
 	Think(int64)

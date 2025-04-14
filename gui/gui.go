@@ -39,8 +39,6 @@ type Dims struct {
 	Dx, Dy int
 }
 
-// TODO(tmckee): are we sure we want to embed Point and Dims? Seems more like
-// they should just be named fields.
 type Region struct {
 	Point
 	Dims
@@ -151,10 +149,6 @@ func (r Region) PopClipPlanes() {
 		clippers[len(clippers)-1].setClipPlanes()
 	}
 }
-
-//func (r Region) setViewport() {
-//  gl.Viewport(r.Point.X, r.Point.Y, r.Dims.Dx, r.Dims.Dy)
-//}
 
 type Zone interface {
 	// Returns the dimensions that this Widget would like available to
@@ -583,7 +577,6 @@ func stateToButtonFlag(tp ButtonPressType) bool {
 }
 
 func (g *Gui) LeftButton(grp EventGroup) bool {
-	// TODO(#20): yuck! helper pls?
 	return grp.PrimaryEvent().Key.Id().Index == gin.MouseLButton
 }
 
