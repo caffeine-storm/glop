@@ -12,6 +12,40 @@
 #include <GL/glx.h>
 #include "include/glop.h"
 
+#define LOGGING_LEVEL_FATAL 4
+#define LOGGING_LEVEL_ERROR 3
+#define LOGGING_LEVEL_WARN  2
+#define LOGGING_LEVEL_DEBUG 1
+
+// By default, only DEBUG messages are suppressed
+#define LOGGING_LEVEL LOGGING_LEVEL_WARN
+
+#define DO_LOG(label, fmtstring, ...) fprintf(stderr, label ": " fmtstring __VA_OPT__(,) __VA_ARGS__)
+
+#if LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
+#define LOG_FATAL(args...) DO_LOG("FATAL", args)
+#else
+#define LOG_FATAL(fmtstring, args...) do{}while(false)
+#endif // LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
+
+#if LOGGING_LEVEL <= LOGGING_LEVEL_ERROR
+#define LOG_ERROR(args...) DO_LOG("ERROR", args)
+#else
+#define LOG_ERROR(fmtstring, args...) do{}while(false)
+#endif // LOGGING_LEVEL <= LOGGING_LEVEL_ERROR
+
+#if LOGGING_LEVEL <= LOGGING_LEVEL_WARN
+#define LOG_WARN(args...) DO_LOG("WARN", args)
+#else
+#define LOG_WARN(args...) do{}while(false)
+#endif // LOGGING_LEVEL <= LOGGING_LEVEL_WARN
+
+#if LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
+#define LOG_DEBUG(args...) DO_LOG("DEBUG", args)
+#else
+#define LOG_DEBUG(args...) do{}while(false)
+#endif // LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
+
 extern "C" {
 
 void GlopClearKeyEvent(struct GlopKeyEvent* event) {
@@ -74,7 +108,7 @@ int64_t GlopInit() {
   if(display == NULL) {
     display = XOpenDisplay(NULL);
     if(display == NULL) {
-      fprintf(stderr, "fatal: couldn't open X display\n");
+      LOG_FATAL("couldn't open X display\n");
       abort();
     }
 
@@ -82,7 +116,7 @@ int64_t GlopInit() {
 
     xim = XOpenIM(display, NULL, NULL, NULL);
     if(xim == NULL) {
-      fprintf(stderr, "fatal: couldn't open X input method\n");
+      LOG_FATAL("couldn't open X input method\n");
       abort();
     }
 
@@ -271,7 +305,7 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
       ki = kMouseWheelHorizontal;
       break;
     default:
-      fprintf(stderr, "SynthButton: unknown button: %d\n", event.button);
+      LOG_DEBUG("SynthButton: unknown button: %d\n", event.button);
       return false;
   }
 
@@ -284,8 +318,7 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed, XButtonEven
   ev->timestamp = gt();
 
   std::tie(ev->cursor_x, ev->cursor_y) = XCoordToGlopCoord(attrs, event.x, event.y);
-  // TODO(#30): LOG this event
-  // fprintf(stderr, "SynthButton: cx/cy: %d/%d\n", ev->cursor_x, ev->cursor_y);
+  LOG_DEBUG("SynthButton: cx/cy: %d/%d\n", ev->cursor_x, ev->cursor_y);
 
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
@@ -324,7 +357,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
   XWindowAttributes attrs;
   Status ok = XGetWindowAttributes(display, data->window, &attrs);
   if(!ok) {
-    fprintf(stderr, "glop.cpp: couldn't XGetWindowAttributes\n");
+    LOG_FATAL("couldn't XGetWindowAttributes\n");
     abort();
   }
 
@@ -372,8 +405,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
       case ButtonPress:
       case ButtonRelease:
-        // TODO(#30): LOG this event
-        // fprintf(stderr, "ButtonPress/Release: event.xbutton: %d event.type: %d\n", event.xbutton.button, event.type);
+        LOG_DEBUG("ButtonPress/Release: event.xbutton: %d event.type: %d\n", event.xbutton.button, event.type);
         if(SynthButton(&attrs, event.type == ButtonPress, event.xbutton, data->window, &ev))
           data->events.push_back(ev);
         break;
@@ -403,7 +435,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         // LOGF("destroed\n");
         // IIUC, the application gets this _once_ a window is destroyed, so we
         // shouldn't need to do anything special here?
-        fprintf(stderr, "GlopThink: unhandled event type (DestroyNotify)\n");
+        LOG_WARN("GlopThink: unhandled event type (DestroyNotify)\n");
         break;
 
       case ClientMessage :
@@ -415,12 +447,12 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         // reasons but the 'close_atom' can be used to detect a "PLEASE GO
         // AWAY" message.
         if(event.xclient.format == 32 && event.xclient.data.l[0] == static_cast<long>(close_atom)) {
+          LOG_WARN("Window Manager close request received but ignored\n");
           // WindowDashDestroy();
-          // LOGF("destroj\n");
           return gt();
         }
 
-        fprintf(stderr, "GlopThink: unhandled event type (ClientMessage)\n");
+        LOG_WARN("GlopThink: unhandled event type (ClientMessage)\n");
         break;
     }
   }
@@ -434,7 +466,7 @@ void GlopSetTitle(OsWindowData* data, const std::string& title) {
 
 void glopSetCurrentContext(OsWindowData* data) {
   if(!glXMakeCurrent(display, data->window, data->context)) {
-    fprintf(stderr, "glop.cpp: glxMakeCurrent failed\n");
+    LOG_FATAL("glxMakeCurrent failed\n");
     exit(1);
   }
 }
@@ -648,7 +680,7 @@ void GlopSwapBuffers(GlopWindowHandle hdl) {
 }
 
 void GlopEnableVSync(int enable) {
-  fprintf(stderr, "WARN: glop.cpp: GlopEnableVSync: unimplemented\n");
+  LOG_WARN("GlopEnableVSync: unimplemented\n");
 }
 
 void GlopSetGlContext(GlopWindowHandle hdl) {

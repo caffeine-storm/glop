@@ -1,5 +1,3 @@
-tmckee:#30 add a "LOG" macro to native code to easily toggle verbosity
-
 tmckee:#32 for testing, having a quick way to run under the context of a
 'fresh' gl state would be nice.
 
