@@ -1,0 +1,47 @@
+make test
+xvfb-run --server-args="-screen 0 512x64x24" --auto-servernum go test                    ./...
+ok      github.com/runningwild/glop/ai  (cached)
+?       github.com/runningwild/glop/cache/cachetest     [no test files]
+ok      github.com/runningwild/glop/cache       (cached)
+?       github.com/runningwild/glop/gin/gintesting      [no test files]
+?       github.com/runningwild/glop/glew        [no test files]
+?       github.com/runningwild/glop/gos [no test files]
+ok      github.com/runningwild/glop/debug       1.056s
+ok      github.com/runningwild/glop/gin (cached)
+ok      github.com/runningwild/glop/gin/aggregator      (cached)
+ok      github.com/runningwild/glop/glog        (cached)
+ok      github.com/runningwild/glop/glog/glogtest       (cached)
+ok      github.com/runningwild/glop/gloptest    (cached)
+ok      github.com/runningwild/glop/gos/linux   (cached)
+?       github.com/runningwild/glop/gui/guitest [no test files]
+?       github.com/runningwild/glop/tools/font-recoder  [no test files]
+ok      github.com/runningwild/glop/gui 1.502s
+ok      github.com/runningwild/glop/imgmanip    0.010s
+ok      github.com/runningwild/glop/render      0.462s
+ok      github.com/runningwild/glop/render/rendertest   0.578s
+ok      github.com/runningwild/glop/sprite      0.078s
+ok      github.com/runningwild/glop/strmanip    (cached)
+ok      github.com/runningwild/glop/system      (cached)
+WARN: glop.cpp: GlopEnableVSync: unimplemented
+panic: couldn't find MouseWheelVertical in events: [{['press {keyState: "MouseWheel" id: {device: 0, devicetype: mouse, index: 302} agg: &{{{{0 0 0 0 0} {1 1 0 0 0}} 646 646} false}}' 'press {keyState: "Name me?" id: any-key agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'press {keyState: "Name me?" id: any-key agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'press {keyState: "Name me?" id: any-key agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'press {keyState: "Name me?" id: {device: any, devicetype: mouse, index: 302} agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'press {keyState: "Name me?" id: {device: any, devicetype: any, index: 302} agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}'] 0xc000206110 646} {['release {keyState: "MouseWheel" id: {device: 0, devicetype: mouse, index: 302} agg: &{{{{0 0 0 0 0} {1 1 0 0 0}} 646 646} false}}' 'release {keyState: "Name me?" id: any-key agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'release {keyState: "Name me?" id: any-key agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'release {keyState: "Name me?" id: any-key agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'release {keyState: "Name me?" id: {device: any, devicetype: mouse, index: 302} agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}' 'release {keyState: "Name me?" id: {device: any, devicetype: any, index: 302} agg: &{{{0 0 0 0 0} {1 1 0 0 0}} 646 646}}'] 0xc000206130 646}]
+
+goroutine 7 [running, locked to thread]:
+github.com/runningwild/glop/system/systemtest.(*testDriver).GetLastScroll(0xc000078120)
+        /home/tmckee/workspace/deps-for-haunts/glop/system/systemtest/driver.go:120 +0x16e
+github.com/runningwild/glop/system/systemtest_test.TestE2EMouseWheelHelper.func1({0x6243f0, 0xc000078120})
+        /home/tmckee/workspace/deps-for-haunts/glop/system/systemtest/click_test.go:61 +0x99
+github.com/runningwild/glop/system/systemtest.WithTestWindowDriver.func1({0x622928?, 0xc00010ce40?})
+        /home/tmckee/workspace/deps-for-haunts/glop/system/systemtest/driver.go:137 +0x34
+github.com/runningwild/glop/system/systemtest.WithTestWindowDriver.WithTestWindow.func2.1({0xc0001281c0?, 0xc000100380?})
+        /home/tmckee/workspace/deps-for-haunts/glop/system/systemtest/window.go:63 +0x1f
+github.com/runningwild/glop/render.runAndNotify(0xc000078100, {0x621de0, 0xc00005a550}, 0x0)
+        /home/tmckee/workspace/deps-for-haunts/glop/render/render.go:82 +0x5d
+github.com/runningwild/glop/render.(*renderQueue).loop(0xc00010cd50)
+        /home/tmckee/workspace/deps-for-haunts/glop/render/render.go:103 +0x16f
+created by github.com/runningwild/glop/render.(*renderQueue).StartProcessing in goroutine 6
+        /home/tmckee/workspace/deps-for-haunts/glop/render/render.go:174 +0x59
+FAIL    github.com/runningwild/glop/system/systemtest   0.685s
+ok      github.com/runningwild/glop/tools/png-cmp       (cached)
+ok      github.com/runningwild/glop/util/algorithm      (cached)
+FAIL
+make: *** [Makefile:46: test] Error 1

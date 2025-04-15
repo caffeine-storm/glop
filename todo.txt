@@ -1,3 +1,5 @@
+tmckee:#33 systemtest_test.TestE2EMouseWheelHelper is flaky!
+
 tmckee:#32 for testing, having a quick way to run under the context of a
 'fresh' gl state would be nice.
 
@@ -64,4 +66,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #33
+next bug: #34
