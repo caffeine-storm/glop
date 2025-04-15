@@ -3,6 +3,7 @@ package render
 import (
 	"github.com/MobRulesGames/mathgl"
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glew"
 )
 
 type MatrixMode int32
@@ -81,5 +82,29 @@ func WithMultMatrixInMode(mat *Matrix, mode MatrixMode, fn func()) {
 		gl.MultMatrixf((*[16]float32)(mat))
 
 		fn()
+	})
+}
+
+func WithFreshMatrices(fn func()) {
+	ident := &Matrix{}
+	ident.Identity()
+
+	var colourMat *Matrix
+	if glew.GL_ARB_imaging {
+		colourMat = ident
+	}
+
+	WithMatrixInMode(ident, MatrixModeModelView, func() {
+		WithMatrixInMode(ident, MatrixModeProjection, func() {
+			WithMatrixInMode(ident, MatrixModeTexture, func() {
+				if colourMat != nil {
+					WithMatrixInMode(ident, MatrixModeColour, func() {
+						fn()
+					})
+				} else {
+					fn()
+				}
+			})
+		})
 	})
 }
