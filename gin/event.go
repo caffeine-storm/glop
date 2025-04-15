@@ -14,7 +14,6 @@ type OsEvent struct {
 	X, Y      int
 }
 
-// TODO: Consider making a Timestamp type (int64)
 type Event struct {
 	Key  Key
 	Type aggregator.EventType
@@ -45,6 +44,16 @@ type EventGroup struct {
 	Events    []Event
 	mousePos  *MousePosition
 	Timestamp int64
+}
+
+func (eg EventGroup) String() string {
+	mouseInfo := "<mousePos: nil>"
+	if eg.HasMousePosition() {
+		x, y := eg.GetMousePosition()
+		mouseInfo = fmt.Sprintf("{%d %d}", x, y)
+	}
+
+	return fmt.Sprintf("{%v %s %v}", eg.Events, mouseInfo, eg.Timestamp)
 }
 
 // Returns a bool indicating whether an event corresponding to the given KeyId

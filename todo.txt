@@ -1,7 +1,3 @@
-tmckee:#31 stringifying a gin.EventGroup includes the pointer-to-MousePosition; let's use <nil> or (x,y) instead.
-
----- target done today: 2025-04-15
-
 tmckee:#29 shouldn't we be subtracting 'sys.start_ms' from the 'horizon' in system.System.Think() ?
 
 tmckee:#28 text_edit_line.go is checking for a click but only checking the x

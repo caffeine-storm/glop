@@ -33,12 +33,22 @@ func TestEventGroup(t *testing.T) {
 	})
 	t.Run("EventGroup.String() should be useful", func(t *testing.T) {
 		eg := gin.EventGroup{}
-		eg.SetMousePosition(14, 44)
 
 		stringified := fmt.Sprintf("%v", eg)
+		if !strings.Contains(stringified, "mousePos: nil") {
+			t.Fatalf("non-mouse event groups need to report 'nil' for mouse position but got %q", stringified)
+		}
+
+		eg.SetMousePosition(14, 44)
+		stringified = fmt.Sprintf("%v", eg)
 
 		if !strings.Contains(stringified, "14 44") {
-			t.Fatalf("the event group should show the mouse x/y when stringified but got %q", stringified)
+			t.Fatalf("a mouse-event group should show the mouse x/y when stringified but got %q", stringified)
+		}
+
+		pointerStringified := fmt.Sprintf("%v", &eg)
+		if stringified != pointerStringified {
+			t.Fatalf("format difference when showing value vs pointer-to-value: %q %q", stringified, pointerStringified)
 		}
 	})
 }
