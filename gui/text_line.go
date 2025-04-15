@@ -96,7 +96,6 @@ func (w *TextLine) postDraw(region Region, ctx DrawingContext) {
 }
 
 func (w *TextLine) Draw(region Region, ctx DrawingContext) {
-	glog.DebugLogger().Debug("textline Draw", "region", region, "text", w.text)
 	region.PushClipPlanes()
 	defer region.PopClipPlanes()
 	w.preDraw(region, ctx)

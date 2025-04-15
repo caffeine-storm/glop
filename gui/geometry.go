@@ -127,7 +127,7 @@ func (r Region) setClipPlanes() {
 }
 
 func (r Region) PushClipPlanes() {
-	glog.DebugLogger().Debug("pushclip", "clippers", clippers)
+	glog.TraceLogger().Trace("pushclip", "clippers", clippers)
 	if len(clippers) == 0 {
 		gl.Enable(gl.CLIP_PLANE0)
 		gl.Enable(gl.CLIP_PLANE1)
