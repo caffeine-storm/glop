@@ -19,6 +19,7 @@ require (
 	github.com/runningwild/yedparse v0.0.0-20120306014153-f7df1db2f9d9
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
 )
 
 require (

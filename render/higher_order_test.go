@@ -5,9 +5,12 @@ import (
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/glew"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 )
 
 func pickADifferentMode(someMatrixMode render.MatrixMode) render.MatrixMode {
@@ -34,6 +37,34 @@ func pickADifferentMatrix(someMatrix render.Matrix) render.Matrix {
 	}
 	someMatrix.Multiply(&notIdentity)
 	return someMatrix
+}
+
+func assertFreshState(t *testing.T, st *debug.GlState) {
+	ident64 := make([]float64, 16)
+	for i := range 4 {
+		ident64[4*i+i] = 1.0
+	}
+
+	for i, stateComponent := range [][]float64{
+		st.ModelViewMatrix,
+		st.ProjectionMatrix,
+		st.TextureMatrix,
+	} {
+		if !slices.Equal(ident64, stateComponent) {
+			t.Logf("mismatch: component#%d, %v vs %v", i, ident64, stateComponent)
+			t.Fail()
+		}
+	}
+
+	expectedColorMat := ident64
+	if !glew.GL_ARB_imaging {
+		expectedColorMat = nil
+	}
+
+	if !slices.Equal(expectedColorMat, st.ColorMatrix) {
+		t.Logf("mismatch: colormatrix, %v vs %v", ident64, st.ColorMatrix)
+		t.Fail()
+	}
 }
 
 func TestWithMatrixMode(t *testing.T) {
@@ -81,4 +112,44 @@ func TestWithMatrixInMode(t *testing.T) {
 
 	assert.True(t, render.MatrixIsEqual(duringMat, targetMat))
 	assert.True(t, render.MatrixIsEqual(afterMat, beforeMat))
+}
+
+func TestWithFreshMatrices(t *testing.T) {
+	ident := render.Matrix{}
+	ident.Identity()
+	notIdent := pickADifferentMatrix(ident)
+
+	var beforeState, entryState, exitState, afterState *debug.GlState
+
+	rendertest.WithGl(func() {
+		// Start out with matrics that are 'not-fresh'.
+		gl.MatrixMode(gl.MODELVIEW)
+		gl.LoadMatrixf((*[16]float32)(&notIdent))
+
+		beforeState = debug.GetGlState()
+
+		render.WithFreshMatrices(func() {
+			entryState = debug.GetGlState()
+
+			// clobbering the current matrix must not persist
+			curMode := render.GetCurrentMatrixMode()
+			notCurMode := pickADifferentMode(curMode)
+			curMat := render.GetCurrentMatrix(curMode)
+			notCurMat := pickADifferentMatrix(curMat)
+			gl.LoadMatrixf((*[16]float32)(&notCurMat))
+
+			// clobbering the matrix mode must not persist
+			gl.MatrixMode(gl.GLenum(notCurMode))
+
+			exitState = debug.GetGlState()
+			assert.NotEqual(t, entryState, exitState)
+		})
+
+		afterState = debug.GetGlState()
+	})
+
+	assert.Equal(t, beforeState, afterState)
+	assert.NotEqual(t, entryState, beforeState)
+
+	assertFreshState(t, entryState)
 }
