@@ -1,6 +1,8 @@
 package gin_test
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/runningwild/glop/gin"
@@ -28,5 +30,15 @@ func TestEventGroup(t *testing.T) {
 		ev := gin.Event{}
 		ev.IsPress()
 		ev.IsRelease()
+	})
+	t.Run("EventGroup.String() should be useful", func(t *testing.T) {
+		eg := gin.EventGroup{}
+		eg.SetMousePosition(14, 44)
+
+		stringified := fmt.Sprintf("%v", eg)
+
+		if !strings.Contains(stringified, "14 44") {
+			t.Fatalf("the event group should show the mouse x/y when stringified but got %q", stringified)
+		}
 	})
 }
