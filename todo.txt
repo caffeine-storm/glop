@@ -1,3 +1,6 @@
+tmckee:#32 for testing, having a quick way to run under the context of a
+'fresh' gl state would be nice.
+
 tmckee:#31 stringifying a gin.EventGroup includes the pointer-to-MousePosition; let's use <nil> or (x,y) instead.
 
 tmckee:#30 add a "LOG" macro to native code to easily toggle verbosity
@@ -61,4 +64,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #32
+next bug: #33
