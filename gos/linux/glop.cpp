@@ -12,8 +12,6 @@
 #include <GL/glx.h>
 #include "include/glop.h"
 
-using namespace std;
-
 extern "C" {
 
 void GlopClearKeyEvent(struct GlopKeyEvent* event) {
@@ -63,7 +61,7 @@ struct OsWindowData {
   Window window;
   XVisualInfo *vinfo;
   GLXContext context;
-  vector<struct GlopKeyEvent> events;
+  std::vector<struct GlopKeyEvent> events;
   XIC inputcontext;
 };
 
@@ -430,7 +428,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
   return gt();
 }
 
-void GlopSetTitle(OsWindowData* data, const string& title) {
+void GlopSetTitle(OsWindowData* data, const std::string& title) {
   XStoreName(display, data->window, title.c_str());
 }
 
@@ -619,7 +617,7 @@ void GlopSetWindowSize(GlopWindowHandle hdl, int dx, int dy) {
 
 void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent** _events_ret, size_t* _num_events, int64_t* _horizon) {
   *_horizon = gt();
-  vector<struct GlopKeyEvent> ret; // weeeeeeeeeeee
+  std::vector<struct GlopKeyEvent> ret; // weeeeeeeeeeee
   ret.swap(hdl.data->events);
 
   *_events_ret = (struct GlopKeyEvent*)malloc(sizeof(struct GlopKeyEvent) * ret.size());
