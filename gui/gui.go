@@ -352,14 +352,12 @@ func (g *Gui) GetWindowDimensions() Dims {
 }
 
 func (g *Gui) Draw() {
-	gl.MatrixMode(gl.PROJECTION)
+	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 	region := g.root.Render_region
 	gl.Ortho(float64(region.X), float64(region.X+region.Dx), float64(region.Y), float64(region.Y+region.Dy), 1000, -1000)
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-	gl.MatrixMode(gl.MODELVIEW)
-	gl.LoadIdentity()
 	g.root.Draw(region, g)
 	if g.FocusWidget() != nil {
 		g.FocusWidget().DrawFocused(region, g)

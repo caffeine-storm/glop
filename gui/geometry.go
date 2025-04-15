@@ -1,6 +1,10 @@
 package gui
 
-import "github.com/go-gl-legacy/gl"
+import (
+	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/glog"
+)
 
 type Point struct {
 	X, Y int
@@ -108,10 +112,24 @@ var clippers []Region
 var eqs [4][4]float64
 
 func (r Region) setClipPlanes() {
-	eqs[0][0], eqs[0][1], eqs[0][2], eqs[0][3] = 1, 0, 0, -float64(r.X)
-	eqs[1][0], eqs[1][1], eqs[1][2], eqs[1][3] = -1, 0, 0, float64(r.X+r.Dx)
-	eqs[2][0], eqs[2][1], eqs[2][2], eqs[2][3] = 0, 1, 0, -float64(r.Y)
-	eqs[3][0], eqs[3][1], eqs[3][2], eqs[3][3] = 0, -1, 0, float64(r.Y+r.Dy)
+	// Regions are defined with clip-space co-ordinates but gl.ClipPlane needs
+	// NDC.
+	_, _, viewportWidth, viewportHeight := debug.GetViewport()
+	leftExtent := -1 + 2*float64(r.X)/float64(viewportWidth)
+	rightExtent := -1 + 2*float64(r.X+r.Dx)/float64(viewportWidth)
+	bottomExtent := -1 + 2*float64(r.Y)/float64(viewportHeight)
+	topExtent := -1 + 2*float64(r.Y+r.Dy)/float64(viewportHeight)
+
+	leftExtent = float64(r.X)
+	rightExtent = float64(r.X + r.Dx)
+	bottomExtent = float64(r.Y)
+	topExtent = float64(r.Y + r.Dy)
+
+	eqs[0][0], eqs[0][1], eqs[0][2], eqs[0][3] = 1, 0, 0, -leftExtent
+	eqs[1][0], eqs[1][1], eqs[1][2], eqs[1][3] = -1, 0, 0, rightExtent
+	eqs[2][0], eqs[2][1], eqs[2][2], eqs[2][3] = 0, 1, 0, -bottomExtent
+	eqs[3][0], eqs[3][1], eqs[3][2], eqs[3][3] = 0, -1, 0, topExtent
+	glog.DebugLogger().Debug("setClipPlanes", "viewport", []any{viewportWidth, viewportHeight}, "region", r, "extents", []any{leftExtent, rightExtent, bottomExtent, topExtent}, "eqs", eqs, "modelview matrix", debug.GetModelViewMatrix())
 	gl.ClipPlane(gl.CLIP_PLANE0, eqs[0][:])
 	gl.ClipPlane(gl.CLIP_PLANE1, eqs[1][:])
 	gl.ClipPlane(gl.CLIP_PLANE2, eqs[2][:])
@@ -119,6 +137,7 @@ func (r Region) setClipPlanes() {
 }
 
 func (r Region) PushClipPlanes() {
+	glog.DebugLogger().Debug("pushclip", "clippers", clippers)
 	if len(clippers) == 0 {
 		gl.Enable(gl.CLIP_PLANE0)
 		gl.Enable(gl.CLIP_PLANE1)

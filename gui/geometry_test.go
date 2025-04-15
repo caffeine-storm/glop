@@ -32,7 +32,6 @@ func TestRegionClipping(t *testing.T) {
 
 				// Draw a red square across the 'whole' viewport.
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
-
 			})
 			queue.Purge()
 

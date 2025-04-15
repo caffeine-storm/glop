@@ -3,6 +3,7 @@ package gui
 import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/glog"
 )
 
 type cursor struct {
@@ -205,6 +206,7 @@ func (w *TextEditLine) Draw(region Region, ctx DrawingContext) {
 	} else {
 		gl.Color3d(0.5, 0.3, 0)
 	}
+	glog.DebugLogger().Debug("drawing cursor", "w.cursor", w.cursor, "region", region, "text", w.text)
 	gl.Begin(gl.LINES)
 	gl.Vertex2i(region.X+int(w.cursor.pos), region.Y)
 	gl.Vertex2i(region.X+int(w.cursor.pos), region.Y+region.Dy)
