@@ -3,8 +3,6 @@ tmckee:#32 for testing, having a quick way to run under the context of a
 
 tmckee:#31 stringifying a gin.EventGroup includes the pointer-to-MousePosition; let's use <nil> or (x,y) instead.
 
-tmckee:#33 systemtest_test.TestE2EMouseWheelHelper is flaky!
-
 tmckee:#29 shouldn't we be subtracting 'sys.start_ms' from the 'horizon' in system.System.Think() ?
 
 tmckee:#28 text_edit_line.go is checking for a click but only checking the x

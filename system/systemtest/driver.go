@@ -99,7 +99,7 @@ func (d *testDriver) GetLastClick() (int, int) {
 }
 
 func (d *testDriver) GetLastScroll() float64 {
-	for i := len(d.eventGroups) - 1; i > 0; i-- {
+	for i := len(d.eventGroups) - 1; i >= 0; i-- {
 		each := d.eventGroups[i]
 		if !each.HasMousePosition() {
 			continue
