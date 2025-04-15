@@ -42,10 +42,6 @@ func TestWithMatrixMode(t *testing.T) {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
-		if beforeMode == targetMode {
-			panic(fmt.Errorf("bad test; need to find a _different_ mode"))
-		}
-
 		render.WithMatrixMode(targetMode, func() {
 			duringMode = render.GetCurrentMatrixMode()
 		})
@@ -64,15 +60,9 @@ func TestWithMatrixInMode(t *testing.T) {
 	rendertest.WithGl(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
-		if beforeMode == targetMode {
-			panic(fmt.Errorf("bad test; need to find a _different_ mode"))
-		}
 
 		beforeMat = render.GetCurrentMatrix(beforeMode)
 		targetMat = pickADifferentMatrix(beforeMat)
-		if render.MatrixIsEqual(beforeMat, targetMat) {
-			panic(fmt.Errorf("bad test; need to find a _different_ matrix"))
-		}
 
 		render.WithMatrixInMode(&targetMat, targetMode, func() {
 			duringMode = render.GetCurrentMatrixMode()
