@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/png"
 	"os"
@@ -71,4 +72,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Printf("%+v\n", d)
 }

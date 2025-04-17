@@ -48,8 +48,7 @@ func TestDictionarySerialization(t *testing.T) {
 		buf := bytes.Buffer{}
 		d.Store(&buf)
 
-		// Load it back, compare to 'd_prime.Data' to 'd.Data', make sure they
-		// match.
+		// Load it back, compare 'd_prime.Data' to 'd.Data', make sure they match.
 		d_prime := gui.Dictionary{}
 		err := d_prime.Load(bytes.NewReader(buf.Bytes()))
 		require.Nil(err)
