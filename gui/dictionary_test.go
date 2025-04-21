@@ -139,11 +139,7 @@ func TestDictionaryRenderString(t *testing.T) {
 			})
 			queue.Purge()
 
-			// TODO(tmckee): add a rendertest API for non-Convey tests.
-			testresult := rendertest.ShouldLookLikeFile(queue, "laughing")
-			if testresult != "" {
-				t.Fatalf("expectation mismatch: %s", testresult)
-			}
+			rendertest.MustLookLikeFile(t, queue, "laughing")
 		})
 	})
 }

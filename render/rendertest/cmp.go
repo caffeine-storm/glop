@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"io"
 	"os"
+	"testing"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
@@ -265,6 +266,18 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 		return imageShouldLookLikeFile(v, expected...)
 	default:
 		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
+	}
+}
+
+// Usage is
+//
+//	'MustLookLikeFile(t, something, options...)'
+//
+// 'options' is an optional bag of control parameters
+func MustLookLikeFile(t *testing.T, actual any, expected ...any) {
+	testresult := ShouldLookLikeFile(actual, expected...)
+	if testresult != "" {
+		t.Fatalf("image mismatch: %s", testresult)
 	}
 }
 
