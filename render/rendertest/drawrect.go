@@ -11,6 +11,7 @@ func BlankAndDrawRectNdc(x1, y1, x2, y2 float64) {
 	DrawRectNdc(x1, y1, x2, y2)
 }
 
+// TODO(tmckee:#34): need to disable then re-renable-as-needed gl.TEXTURE_2D
 func DrawRectNdc(x1, y1, x2, y2 float64) {
 	render.WithFreshMatrices(func() {
 		gl.Begin(gl.TRIANGLES)
