@@ -10,9 +10,12 @@ import (
 
 	"code.google.com/p/freetype-go/freetype"
 	"code.google.com/p/freetype-go/freetype/truetype"
+	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gui"
+	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -121,5 +124,26 @@ func TestDictionaryRenderString(t *testing.T) {
 		// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
 		// copy-pasta.
 		d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left, rendertest.StubShaderBank("glop.font"))
+	})
+
+	t.Run("works regardless of whether gl.TEXTURE_2D is enabled or not", func(t *testing.T) {
+		rendertest.WithGlForTest(128, 32, func(sys system.System, queue render.RenderQueueInterface) {
+
+			d := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
+
+			queue.Queue(func(st render.RenderQueueState) {
+				gl.Enable(gl.TEXTURE_2D)
+				d.RenderString("kekw    ", gui.Point{}, d.MaxHeight(), gui.Left, st.Shaders())
+				gl.Disable(gl.TEXTURE_2D)
+				d.RenderString("    rofl", gui.Point{}, d.MaxHeight(), gui.Left, st.Shaders())
+			})
+			queue.Purge()
+
+			// TODO(tmckee): add a rendertest API for non-Convey tests.
+			testresult := rendertest.ShouldLookLikeFile(queue, "laughing")
+			if testresult != "" {
+				t.Fatalf("expectation mismatch: %s", testresult)
+			}
+		})
 	})
 }
