@@ -414,7 +414,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n/256) + float64(n%256)/256.0
 }
 
-func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
+func RasterizeFont(font *truetype.Font, pointSize int) rasteredFont {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -422,7 +422,7 @@ func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue rend
 	height := 300
 	context.SetSrc(image.White)
 	dpi := 150.0
-	context.SetFontSize(float64(size))
+	context.SetFontSize(float64(pointSize))
 	context.SetDPI(dpi)
 
 	// Use a glyph packing scheme. Each glyph gets a cell in a grid.
@@ -470,38 +470,54 @@ func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue rend
 
 	pim := image.NewRGBA(image.Rect(0, 0, dx, dy))
 	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
-	var dict Dictionary
-	dict.Data.Pix = pim.Pix
-	dict.Data.Dx = pim.Bounds().Dx()
-	dict.Data.Dy = pim.Bounds().Dy()
-	dict.Data.Info = rune_info
 
-	dict.Data.rebuildAsciiInfo()
-	dict.Data.Baseline = dict.Data.Info['.'].Bounds.Min.Y
+	var result rasteredFont
+	result.Pix = pim.Pix
+	result.Dx = pim.Bounds().Dx()
+	result.Dy = pim.Bounds().Dy()
+	result.Info = rune_info
 
-	dict.Data.Miny = int(1e9)
-	dict.Data.Maxy = int(-1e9)
-	for _, info := range dict.Data.Info {
-		if info.Bounds.Min.Y < dict.Data.Miny {
-			dict.Data.Miny = info.Bounds.Min.Y
+	result.rebuildAsciiInfo()
+	result.Baseline = result.Info['.'].Bounds.Min.Y
+
+	result.Miny = int(1e9)
+	result.Maxy = int(-1e9)
+	for _, info := range result.Info {
+		if info.Bounds.Min.Y < result.Miny {
+			result.Miny = info.Bounds.Min.Y
 		}
-		if info.Bounds.Max.Y > dict.Data.Maxy {
-			dict.Data.Maxy = info.Bounds.Max.Y
+		if info.Bounds.Max.Y > result.Maxy {
+			result.Maxy = info.Bounds.Max.Y
 		}
 	}
 
-	dict.initialize(logger, renderQueue)
+	return result
+}
+
+func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
+	dict := Dictionary{
+		Data:                   RasterizeFont(font, size),
+		logger:                 logger,
+		stringBlittingCache:    map[string]blitBuffer{},
+		paragraphBlittingCache: map[string]blitBuffer{},
+	}
+
+	dict.initialize(renderQueue)
 	return &dict
 }
 
 func LoadAndInitializeDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger glog.Logger) (*Dictionary, error) {
-	var d Dictionary
+	d := Dictionary{
+		stringBlittingCache:    map[string]blitBuffer{},
+		paragraphBlittingCache: map[string]blitBuffer{},
+	}
 	err := d.Load(r)
 	if err != nil {
 		return nil, err
 	}
+	d.logger = logger
 
-	d.initialize(logger, renderQueue)
+	d.initialize(renderQueue)
 	return &d, nil
 }
 
@@ -519,8 +535,7 @@ func (d *Dictionary) Store(outputStream io.Writer) error {
 	return gob.NewEncoder(outputStream).Encode(d.Data)
 }
 
-func (d *Dictionary) initialize(logger glog.Logger, renderQueue render.RenderQueueInterface) {
-	d.logger = logger
+func (d *Dictionary) initialize(renderQueue render.RenderQueueInterface) {
 	d.compileShaders("glop.font", renderQueue)
 	d.uploadGlyphTexture(renderQueue)
 }
@@ -539,8 +554,6 @@ func (d *Dictionary) compileShaders(shaderName string, renderQueue render.Render
 }
 
 func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface) {
-	d.stringBlittingCache = make(map[string]blitBuffer)
-	d.paragraphBlittingCache = make(map[string]blitBuffer)
 
 	renderQueue.Queue(func(render.RenderQueueState) {
 		d.texture = gl.GenTexture()
