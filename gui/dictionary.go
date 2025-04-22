@@ -55,7 +55,7 @@ const (
 )
 
 type Dictionary struct {
-	Data rasteredFont
+	Data RasteredFont
 
 	logger glog.Logger
 
@@ -67,7 +67,7 @@ type Dictionary struct {
 	paragraphBlittingCache map[string]blitBuffer
 }
 
-type rasteredFont struct {
+type RasteredFont struct {
 	// The Pix data of an image.RGBA of the packed 'grid of glyphs'.
 	Pix []byte
 
@@ -99,7 +99,7 @@ type rasteredFont struct {
 	Miny, Maxy int
 }
 
-func (d *rasteredFont) rebuildAsciiInfo() {
+func (d *RasteredFont) rebuildAsciiInfo() {
 	d.asciiInfo = make([]runeInfo, 256)
 	for r := rune(0); r < 256; r++ {
 		if info, ok := d.Info[r]; ok {
@@ -185,7 +185,7 @@ func (d *Dictionary) MaxHeight() int {
 	return d.Data.MaxHeight()
 }
 
-func (rast *rasteredFont) MaxHeight() int {
+func (rast *RasteredFont) MaxHeight() int {
 	res := rast.Maxy - rast.Miny
 	if res < 0 {
 		res = 0
@@ -418,7 +418,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n/256) + float64(n%256)/256.0
 }
 
-func RasterizeFont(font *truetype.Font, pointSize int) rasteredFont {
+func RasterizeFont(font *truetype.Font, pointSize int) RasteredFont {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -475,7 +475,7 @@ func RasterizeFont(font *truetype.Font, pointSize int) rasteredFont {
 	pim := image.NewRGBA(image.Rect(0, 0, dx, dy))
 	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
 
-	var result rasteredFont
+	var result RasteredFont
 	result.Pix = pim.Pix
 	result.Dx = pim.Bounds().Dx()
 	result.Dy = pim.Bounds().Dy()

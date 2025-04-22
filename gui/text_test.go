@@ -81,7 +81,7 @@ func TestDictionaryMaxHeight(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
-			Data: rasteredFont{
+			Data: RasteredFont{
 				Miny: 42,
 				Maxy: 42,
 			},
@@ -93,7 +93,7 @@ func TestDictionaryMaxHeight(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
-			Data: rasteredFont{
+			Data: RasteredFont{
 				Miny: 42,
 				Maxy: 0,
 			},
@@ -105,7 +105,7 @@ func TestDictionaryMaxHeight(t *testing.T) {
 		require := require.New(t)
 
 		d := Dictionary{
-			Data: rasteredFont{
+			Data: RasteredFont{
 				Miny: 0,
 				Maxy: 42,
 			},

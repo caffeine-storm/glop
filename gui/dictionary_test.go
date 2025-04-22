@@ -39,7 +39,7 @@ func givenAFont() *truetype.Font {
 }
 
 func TestDictionarySerialization(t *testing.T) {
-	t.Run("rasteredFont must round-trip through encoding/decoding", func(t *testing.T) {
+	t.Run("RasteredFont must round-trip through encoding/decoding", func(t *testing.T) {
 		assert := assert.New(t)
 		require := require.New(t)
 
