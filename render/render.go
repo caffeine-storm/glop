@@ -7,7 +7,15 @@ import (
 	"runtime"
 	"sync/atomic"
 	"time"
+
+	"github.com/runningwild/glop/render/tls"
 )
+
+func MustBeOnRenderThread() {
+	if !tls.IsSentinelSet() {
+		panic(fmt.Errorf("not on render thread"))
+	}
+}
 
 // TODO(tmckee): clean: is there a better name for this? RenderContext?
 type RenderQueueState interface {
@@ -139,6 +147,7 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 	// own initialization that should happen on the loop's thread.
 	result.Queue(func(st RenderQueueState) {
 		runtime.LockOSThread()
+		tls.SetSentinel()
 		initialization(st)
 	})
 	return &result

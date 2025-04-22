@@ -1,6 +1,7 @@
 // package tls uses native code to expose Thread Local Storage primitives.
 package tls
 
+// #include "stdint.h"
 // #include "stdlib.h"
 // #include "threads.h"
 //
@@ -8,15 +9,13 @@ package tls
 //   return tss_create(out, NULL);
 // }
 //
-// void setflag(tss_t* flag, int val) {
-//   int* valptr = malloc(sizeof(int));
-//   *valptr = val;
-//   tss_set(*flag, valptr);
+// void setflag(tss_t* flag, uintptr_t val) {
+//   tss_set(*flag, (void *)val);
 // }
 //
-// int getflag(tss_t* flag) {
-//   int* val = tss_get(*flag);
-//   return *val;
+// uintptr_t getflag(tss_t* flag) {
+//   void* val = tss_get(*flag);
+//   return (uintptr_t)val;
 // }
 import "C"
 import "fmt"

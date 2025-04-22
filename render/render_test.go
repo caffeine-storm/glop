@@ -10,6 +10,7 @@ import (
 
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -267,5 +268,16 @@ func TestRenderJob(t *testing.T) {
 		attribution := someJob.GetSourceAttribution()
 
 		assert.Contains(t, attribution, "render/render_test.go")
+	})
+}
+
+func TestAssertingOnRenderThread(t *testing.T) {
+	t.Run("If not on render thread, panic", func(t *testing.T) {
+		assert.Panics(t, render.MustBeOnRenderThread)
+	})
+	t.Run("If on a render thread, relax", func(t *testing.T) {
+		rendertest.WithGl(func() {
+			render.MustBeOnRenderThread()
+		})
 	})
 }
