@@ -48,7 +48,7 @@ func main() {
 	logger := glog.New(&glog.Opts{
 		Level: glog.LevelTrace,
 	})
-	d, err := gui.LoadDictionary(dictReader, renderQueue, logger)
+	d, err := gui.LoadAndInitializeDictionary(dictReader, renderQueue, logger)
 	if err != nil {
 		panic(err)
 	}

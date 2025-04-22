@@ -66,7 +66,7 @@ func main() {
 
 	trueTypeFont := mustLoadFont(ttfFile)
 
-	d := gui.MakeDictionary(trueTypeFont, pointSizeInt, render, glog.VoidLogger())
+	d := gui.MakeAndInitializeDictionary(trueTypeFont, pointSizeInt, render, glog.VoidLogger())
 	if d == nil {
 		panic("gui.MakeDictionary returned nil!")
 	}

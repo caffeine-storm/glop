@@ -46,7 +46,7 @@ func TestDictionarySerialization(t *testing.T) {
 		discardQueue := rendertest.MakeDiscardingRenderQueue()
 
 		font := givenAFont()
-		d := gui.MakeDictionary(font, 10, discardQueue, glog.VoidLogger())
+		d := gui.MakeAndInitializeDictionary(font, 10, discardQueue, glog.VoidLogger())
 
 		buf := bytes.Buffer{}
 		d.Store(&buf)
@@ -100,7 +100,7 @@ func TestMakeDictionary(t *testing.T) {
 		logger := glog.VoidLogger()
 		font := givenAFont()
 
-		d := gui.MakeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), logger)
+		d := gui.MakeAndInitializeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), logger)
 
 		t.Run("grid of glyphs constructed", func(t *testing.T) {
 			assert.NotEmpty(t, d.Data.Pix)

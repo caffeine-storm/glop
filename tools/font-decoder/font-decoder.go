@@ -43,7 +43,7 @@ func main() {
 		panic(err)
 	}
 
-	d, err := gui.LoadDictionary(dictReader, render, glog.TraceLogger())
+	d, err := gui.LoadAndInitializeDictionary(dictReader, render, glog.TraceLogger())
 	if err != nil {
 		panic(err)
 	}

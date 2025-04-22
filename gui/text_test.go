@@ -22,7 +22,7 @@ func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
 	}
 
-	d, err := LoadDictionary(dictReader, renderQueue, logger)
+	d, err := LoadAndInitializeDictionary(dictReader, renderQueue, logger)
 	if err != nil {
 		panic(fmt.Errorf("couldn't LoadDictionary: %w", err))
 	}

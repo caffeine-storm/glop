@@ -412,7 +412,7 @@ func fix24_8_to_float64(n raster.Fix32) float64 {
 	return float64(n/256) + float64(n%256)/256.0
 }
 
-func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
+func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
 	alphabet := " abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*([]{};:'\",.<>/?\\|`~-_=+"
 	context := freetype.NewContext()
 	context.SetFont(font)
@@ -500,7 +500,7 @@ func MakeDictionary(font *truetype.Font, size int, renderQueue render.RenderQueu
 	return &dict
 }
 
-func LoadDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger glog.Logger) (*Dictionary, error) {
+func LoadAndInitializeDictionary(r io.Reader, renderQueue render.RenderQueueInterface, logger glog.Logger) (*Dictionary, error) {
 	var d Dictionary
 	err := d.Load(r)
 	if err != nil {
