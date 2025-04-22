@@ -119,11 +119,13 @@ func TestMakeDictionary(t *testing.T) {
 
 func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
-		d := gui.LoadDictionaryForTest(rendertest.MakeDiscardingRenderQueue(), glog.DebugLogger())
+		rendertest.WithGlForTest(128, 32, func(sys system.System, queue render.RenderQueueInterface) {
+			d := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
 
-		// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
-		// copy-pasta.
-		d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left, rendertest.StubShaderBank("glop.font"))
+			// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
+			// copy-pasta.
+			d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left, rendertest.StubShaderBank("glop.font"))
+		})
 	})
 
 	t.Run("works regardless of whether gl.TEXTURE_2D is enabled or not", func(t *testing.T) {

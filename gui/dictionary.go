@@ -344,6 +344,10 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 func (d *Dictionary) RenderString(s string, target Point, height int, just Justification, shaders *render.ShaderBank) {
 	d.logger.Trace("RenderString called", "s", s, "target", target, "height", height, "just", just)
 
+	if d.texture == 0 {
+		panic(fmt.Errorf("can't RenderString for uninitialized Dictionary"))
+	}
+
 	if len(s) == 0 {
 		return
 	}
