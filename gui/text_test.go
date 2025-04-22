@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
+func LoadAndInitializeDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
 	dictReader, err := os.Open("testdata/fonts/dict_10.gob")
 	if err != nil {
 		panic(fmt.Errorf("couldn't os.Open: %w", err))
@@ -45,7 +45,7 @@ func LoadDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.
 
 // Renders the given string with pixel units and an origin at the bottom-left.
 func renderStringForTest(toDraw string, x, y, height int, sys system.System, queue render.RenderQueueInterface, just Justification, logger glog.Logger) {
-	d := LoadDictionaryForTest(queue, logger)
+	d := LoadAndInitializeDictionaryForTest(queue, logger)
 
 	queue.Queue(func(st render.RenderQueueState) {
 		d.RenderString(toDraw, Point{x, y}, height, just, st.Shaders())
@@ -105,7 +105,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 		assert := assert.New(t)
 
 		queue := rendertest.MakeDiscardingRenderQueue()
-		d := LoadDictionaryForTest(queue, glog.TraceLogger())
+		d := LoadAndInitializeDictionaryForTest(queue, glog.TraceLogger())
 
 		emptyRuneInfo := runeInfo{}
 		// In ascii, all the characters we care about are between 0x20 (space) and

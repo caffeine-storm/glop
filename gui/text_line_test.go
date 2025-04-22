@@ -26,7 +26,7 @@ type GenericLine interface {
 func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLine) {
 	Convey("Can make a 'lol' line", func() {
 		renderQueue := rendertest.MakeDiscardingRenderQueue()
-		dict := gui.LoadDictionaryForTest(renderQueue, glog.VoidLogger())
+		dict := gui.LoadAndInitializeDictionaryForTest(renderQueue, glog.VoidLogger())
 		g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 		g.SetDictionary("dict_10", dict)
 		g.SetShaders("glop.font", &render.ShaderBank{})
@@ -37,7 +37,7 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 
 	Convey("TextLine draws the given text", func() {
 		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
-			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
+			dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 
 			var shaderBank *render.ShaderBank
@@ -71,7 +71,7 @@ func MultipleTextLineTest(widgetBuilder func(text string) GenericLine) {
 		line3 := widgetBuilder("third line")
 
 		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
-			dict := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
+			dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 
 			var shaderBank *render.ShaderBank

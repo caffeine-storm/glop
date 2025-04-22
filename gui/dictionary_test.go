@@ -118,7 +118,7 @@ func TestMakeAndInitializeDictionary(t *testing.T) {
 func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
 		rendertest.WithGlForTest(128, 32, func(sys system.System, queue render.RenderQueueInterface) {
-			d := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
+			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 
 			// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
 			// copy-pasta.
@@ -129,7 +129,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	t.Run("works regardless of whether gl.TEXTURE_2D is enabled or not", func(t *testing.T) {
 		rendertest.WithGlForTest(128, 32, func(sys system.System, queue render.RenderQueueInterface) {
 
-			d := gui.LoadDictionaryForTest(queue, glog.DebugLogger())
+			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 
 			queue.Queue(func(st render.RenderQueueState) {
 				gl.Enable(gl.TEXTURE_2D)
