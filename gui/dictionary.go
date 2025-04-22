@@ -55,7 +55,7 @@ const (
 )
 
 type Dictionary struct {
-	Data dictData
+	Data rasteredFont
 
 	logger glog.Logger
 
@@ -67,7 +67,7 @@ type Dictionary struct {
 	paragraphBlittingCache map[string]blitBuffer
 }
 
-type dictData struct {
+type rasteredFont struct {
 	// The Pix data of an image.RGBA of the packed 'grid of glyphs'.
 	Pix []byte
 
@@ -99,7 +99,7 @@ type dictData struct {
 	Miny, Maxy int
 }
 
-func (d *dictData) rebuildAsciiInfo() {
+func (d *rasteredFont) rebuildAsciiInfo() {
 	d.asciiInfo = make([]runeInfo, 256)
 	for r := rune(0); r < 256; r++ {
 		if info, ok := d.Info[r]; ok {
