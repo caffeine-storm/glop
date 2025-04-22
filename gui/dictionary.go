@@ -172,11 +172,15 @@ type blitVertex struct {
 const stride = int(unsafe.Sizeof(blitVertex{}))
 
 func (d *Dictionary) getInfo(r rune) runeInfo {
+	return d.Data.getInfo(r)
+}
+
+func (font *RasteredFont) getInfo(r rune) runeInfo {
 	var info runeInfo
 	if r >= 0 && r < 256 {
-		info = d.Data.asciiInfo[r]
+		info = font.asciiInfo[r]
 	} else {
-		info, _ = d.Data.Info[r]
+		info, _ = font.Info[r]
 	}
 	return info
 }
@@ -185,8 +189,8 @@ func (d *Dictionary) MaxHeight() int {
 	return d.Data.MaxHeight()
 }
 
-func (rast *RasteredFont) MaxHeight() int {
-	res := rast.Maxy - rast.Miny
+func (font *RasteredFont) MaxHeight() int {
+	res := font.Maxy - font.Miny
 	if res < 0 {
 		res = 0
 	}
@@ -253,14 +257,18 @@ func (d *Dictionary) RenderParagraph(s string, x, y, boundingWidth int, lineHeig
 
 // Figures out how wide a string will be if rendered at its natural size.
 func (d *Dictionary) StringPixelWidth(s string) float64 {
+	return d.Data.StringPixelWidth(s)
+}
+
+func (font *RasteredFont) StringPixelWidth(s string) float64 {
 	width := 0.0
 	var prev rune
 	for _, r := range s {
-		info := d.getInfo(r)
+		info := font.getInfo(r)
 		width += info.Advance
 
 		// Need to account for kerning adjustments
-		if kernData, ok := d.Data.Kerning[prev]; ok {
+		if kernData, ok := font.Kerning[prev]; ok {
 			width += float64(kernData[r])
 		}
 		prev = r
