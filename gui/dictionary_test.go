@@ -143,3 +143,10 @@ func TestDictionaryRenderString(t *testing.T) {
 		})
 	})
 }
+
+func TestGetFontMetrics(t *testing.T) {
+	t.Run("can get font metrics", func(t *testing.T) {
+		d := gui.LoadDictionaryForTest()
+		assert.NotEqual(t, 0, d.MaxHeight())
+	})
+}

@@ -16,6 +16,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func LoadDictionaryForTest() *Dictionary {
+	dictReader, err := os.Open("testdata/fonts/dict_10.gob")
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.Open: %w", err))
+	}
+
+	var d Dictionary
+	err = d.Load(dictReader)
+	if err != nil {
+		panic(fmt.Errorf("couldn't Dictionary.Load: %w", err))
+	}
+
+	return &d
+}
+
 func LoadAndInitializeDictionaryForTest(renderQueue render.RenderQueueInterface, logger glog.Logger) *Dictionary {
 	dictReader, err := os.Open("testdata/fonts/dict_10.gob")
 	if err != nil {
