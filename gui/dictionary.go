@@ -490,10 +490,7 @@ func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue rend
 		}
 	}
 
-	dict.logger = logger
-	dict.compileShaders("glop.font", renderQueue)
-	dict.uploadGlyphTexture(renderQueue)
-
+	dict.initialize(logger, renderQueue)
 	return &dict
 }
 
@@ -503,9 +500,8 @@ func LoadAndInitializeDictionary(r io.Reader, renderQueue render.RenderQueueInte
 	if err != nil {
 		return nil, err
 	}
-	d.logger = logger
-	d.compileShaders("glop.font", renderQueue)
-	d.uploadGlyphTexture(renderQueue)
+
+	d.initialize(logger, renderQueue)
 	return &d, nil
 }
 
@@ -521,6 +517,12 @@ func (d *Dictionary) Load(inputStream io.Reader) error {
 
 func (d *Dictionary) Store(outputStream io.Writer) error {
 	return gob.NewEncoder(outputStream).Encode(d.Data)
+}
+
+func (d *Dictionary) initialize(logger glog.Logger, renderQueue render.RenderQueueInterface) {
+	d.logger = logger
+	d.compileShaders("glop.font", renderQueue)
+	d.uploadGlyphTexture(renderQueue)
 }
 
 func (d *Dictionary) compileShaders(shaderName string, renderQueue render.RenderQueueInterface) {
