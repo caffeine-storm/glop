@@ -39,16 +39,17 @@ func givenAFont() *truetype.Font {
 }
 
 func TestDictionarySerialization(t *testing.T) {
-	t.Run("Dictionary.Data must round-trip through encoding/decoding", func(t *testing.T) {
+	t.Run("rasteredFont must round-trip through encoding/decoding", func(t *testing.T) {
 		assert := assert.New(t)
 		require := require.New(t)
 
-		discardQueue := rendertest.MakeDiscardingRenderQueue()
-
 		font := givenAFont()
-		d := gui.MakeAndInitializeDictionary(font, 10, discardQueue, glog.VoidLogger())
+		rastered := gui.RasterizeFont(font, 10)
 
 		buf := bytes.Buffer{}
+		d := gui.Dictionary{
+			Data: rastered,
+		}
 		d.Store(&buf)
 
 		// Load it back, compare 'd_prime.Data' to 'd.Data', make sure they match.
@@ -95,17 +96,16 @@ func TestMakeAndInitializeDictionary(t *testing.T) {
 	})
 
 	t.Run("fonts are correctly interpreted", func(t *testing.T) {
-		logger := glog.VoidLogger()
 		font := givenAFont()
 
-		d := gui.MakeAndInitializeDictionary(font, 18, rendertest.MakeDiscardingRenderQueue(), logger)
+		rasterized := gui.RasterizeFont(font, 18)
 
 		t.Run("grid of glyphs constructed", func(t *testing.T) {
-			assert.NotEmpty(t, d.Data.Pix)
+			assert.NotEmpty(t, rasterized.Pix)
 		})
 
 		t.Run("rune info for 'M' should make sense", func(t *testing.T) {
-			minfo, ok := d.Data.Info['M']
+			minfo, ok := rasterized.Info['M']
 			require.True(t, ok)
 
 			// The 'Advance' for an M ought to be about as much as the glyph is wide.
