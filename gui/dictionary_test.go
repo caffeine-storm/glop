@@ -74,7 +74,7 @@ func TestDictionarySerialization(t *testing.T) {
 	})
 }
 
-func TestMakeDictionary(t *testing.T) {
+func TestMakeAndInitializeDictionary(t *testing.T) {
 	t.Run("minimalSubImage respects the origin", func(t *testing.T) {
 		assert := assert.New(t)
 
