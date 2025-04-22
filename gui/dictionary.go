@@ -182,7 +182,11 @@ func (d *Dictionary) getInfo(r rune) runeInfo {
 }
 
 func (d *Dictionary) MaxHeight() int {
-	res := d.Data.Maxy - d.Data.Miny
+	return d.Data.MaxHeight()
+}
+
+func (rast *rasteredFont) MaxHeight() int {
+	res := rast.Maxy - rast.Miny
 	if res < 0 {
 		res = 0
 	}
