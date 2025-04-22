@@ -86,12 +86,10 @@ type dictData struct {
 	// Map from rune to that rune's runeInfo.
 	Info map[rune]runeInfo
 
-	// runeInfo for all r < 256 will be stored here as well as in info so we can
-	// avoid map lookups if possible.
-	// TODO(tmckee): don't export this field; we don't need to include it in the
-	// serialization if we remember to rebuild it on load. I don't want to try to
-	// hide it now becuase that might break decoding old .gob files.
-	Ascii_info []runeInfo
+	// runeInfo for all r < 256 will be stored here as well as in Info so we can
+	// avoid map lookups if possible. Not stored on disk but reconstructed when
+	// deserializing.
+	asciiInfo []runeInfo
 
 	// At what vertical value is the line on which text is logically rendered.
 	// This is determined by the positioning of the '.' rune.
@@ -99,6 +97,15 @@ type dictData struct {
 
 	// The lowest and highest relative pixel position amongst the glyphs.
 	Miny, Maxy int
+}
+
+func (d *dictData) rebuildAsciiInfo() {
+	d.asciiInfo = make([]runeInfo, 256)
+	for r := rune(0); r < 256; r++ {
+		if info, ok := d.Info[r]; ok {
+			d.asciiInfo[r] = info
+		}
+	}
 }
 
 // Holds the metadata of a glyph in a 'grid-of-glyphs' texture. This metadata
@@ -167,7 +174,7 @@ const stride = int(unsafe.Sizeof(blitVertex{}))
 func (d *Dictionary) getInfo(r rune) runeInfo {
 	var info runeInfo
 	if r >= 0 && r < 256 {
-		info = d.Data.Ascii_info[r]
+		info = d.Data.asciiInfo[r]
 	} else {
 		info, _ = d.Data.Info[r]
 	}
@@ -469,12 +476,7 @@ func MakeAndInitializeDictionary(font *truetype.Font, size int, renderQueue rend
 	dict.Data.Dy = pim.Bounds().Dy()
 	dict.Data.Info = rune_info
 
-	dict.Data.Ascii_info = make([]runeInfo, 256)
-	for r := rune(0); r < 256; r++ {
-		if info, ok := dict.Data.Info[r]; ok {
-			dict.Data.Ascii_info[r] = info
-		}
-	}
+	dict.Data.rebuildAsciiInfo()
 	dict.Data.Baseline = dict.Data.Info['.'].Bounds.Min.Y
 
 	dict.Data.Miny = int(1e9)
@@ -508,7 +510,13 @@ func LoadAndInitializeDictionary(r io.Reader, renderQueue render.RenderQueueInte
 }
 
 func (d *Dictionary) Load(inputStream io.Reader) error {
-	return gob.NewDecoder(inputStream).Decode(&d.Data)
+	if err := gob.NewDecoder(inputStream).Decode(&d.Data); err != nil {
+		return err
+	}
+
+	d.Data.rebuildAsciiInfo()
+
+	return nil
 }
 
 func (d *Dictionary) Store(outputStream io.Writer) error {

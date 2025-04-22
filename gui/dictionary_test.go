@@ -69,7 +69,6 @@ func TestDictionarySerialization(t *testing.T) {
 
 		assert.Equal(expectedData.Kerning, reloadedData.Kerning)
 		assert.Equal(expectedData.Info, reloadedData.Info)
-		assert.Equal(expectedData.Ascii_info, reloadedData.Ascii_info)
 
 		assert.Exactly(expectedData.Pix, reloadedData.Pix)
 	})
