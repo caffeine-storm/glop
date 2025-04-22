@@ -97,11 +97,6 @@ type dictData struct {
 	// This is determined by the positioning of the '.' rune.
 	Baseline int
 
-	// Amount glyphs were scaled down during packing.
-	// TODO(tmckee): this doesn't seem to be present in old .gob files and nobody
-	// seems to read it; we should remove it.
-	Scale float64
-
 	// The lowest and highest relative pixel position amongst the glyphs.
 	Miny, Maxy int
 }
@@ -168,10 +163,6 @@ type blitVertex struct {
 }
 
 const stride = int(unsafe.Sizeof(blitVertex{}))
-
-func (d *Dictionary) Scale() float64 {
-	return d.Data.Scale
-}
 
 func (d *Dictionary) getInfo(r rune) runeInfo {
 	var info runeInfo

@@ -63,7 +63,6 @@ func TestDictionarySerialization(t *testing.T) {
 		assert.Equal(expectedData.Dy, reloadedData.Dy)
 
 		assert.Equal(expectedData.Baseline, reloadedData.Baseline)
-		assert.Equal(expectedData.Scale, reloadedData.Scale)
 
 		assert.Equal(expectedData.Miny, reloadedData.Miny)
 		assert.Equal(expectedData.Maxy, reloadedData.Maxy)
