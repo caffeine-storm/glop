@@ -48,6 +48,9 @@ test:
 test-verbose:
 	${testing_env} go test -v                ${testrunargs} ${testrunpackages}
 
+test-racy:
+	${testing_env} go test -race             ${testrunargs} ${testrunpackages}
+
 test-spec:
 	${testing_env} go test -run ".*Specs"    ${testrunargs} ${testrunpackages}
 
