@@ -72,6 +72,17 @@ func runWithDeadline(deadline time.Duration, op func()) error {
 	}
 }
 
+func TestRenderQueueStartProcessing(t *testing.T) {
+	t.Run("StartProcessing must be called no more than once", func(t *testing.T) {
+		q := render.MakeQueue(nop)
+		q.StartProcessing()
+
+		assert.Panics(t, func() {
+			q.StartProcessing()
+		})
+	})
+}
+
 func TestRenderQueueIsPurging(t *testing.T) {
 	t.Run("a new queue is not purging", func(t *testing.T) {
 		q := render.MakeQueue(nop)

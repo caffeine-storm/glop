@@ -80,7 +80,7 @@ type renderQueue struct {
 	queue_state *renderQueueState
 	work_queue  chan *jobWithTiming
 	purge       chan chan bool
-	is_running  bool
+	is_running  atomic.Bool
 	is_purging  atomic.Bool
 	listener    *JobTimingListener
 }
@@ -138,7 +138,7 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		},
 		work_queue: make(chan *jobWithTiming, 1000),
 		purge:      make(chan chan bool),
-		is_running: false,
+		is_running: atomic.Bool{}, // zero-value is false
 		is_purging: atomic.Bool{}, // zero-value is false
 		listener:   listener,
 	}
@@ -164,7 +164,7 @@ func (q *renderQueue) Queue(f RenderJob) {
 
 // Waits until all render thread functions have been run
 func (q *renderQueue) Purge() {
-	if !q.is_running {
+	if !q.is_running.Load() {
 		slog.Warn("render.RenderQueue.Purge called on non-started queue")
 	}
 	ack := make(chan bool)
@@ -176,10 +176,9 @@ func (q *renderQueue) Purge() {
 }
 
 func (q *renderQueue) StartProcessing() {
-	if q.is_running {
+	if !q.is_running.CompareAndSwap(false, true) {
 		panic("must not call 'StartProcessing' twice")
 	}
-	q.is_running = true
 	go q.loop()
 }
 
