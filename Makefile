@@ -49,7 +49,10 @@ test-verbose:
 	${testing_env} go test -v                ${testrunargs} ${testrunpackages}
 
 test-racy:
-	${testing_env} go test -race             ${testrunargs} ${testrunpackages}
+	${testing_env} go test -count=1 -race    ${testrunargs} ${testrunpackages}
+
+test-racy-with-cache:
+	${testing_env} go test          -race    ${testrunargs} ${testrunpackages}
 
 test-spec:
 	${testing_env} go test -run ".*Specs"    ${testrunargs} ${testrunpackages}
