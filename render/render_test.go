@@ -214,35 +214,51 @@ func TestExitOnRenderQueue(t *testing.T) {
 	})
 }
 
+func pollingDrain(ch chan bool) int {
+	count := 0
+	for {
+		select {
+		case <-ch:
+			count++
+		default:
+			return count
+		}
+	}
+}
+
 func TestJobTiming(t *testing.T) {
 	t.Run("Can listen for jobs", func(t *testing.T) {
 		assert := assert.New(t)
 		require := require.New(t)
 
-		jobsSeen := 0
-		allJobs := &render.JobTimingListener{
+		onNotifyEvents := make(chan bool, 64)
+		listenForAllJobs := &render.JobTimingListener{
 			OnNotify: func(*render.JobTimingInfo, string) {
-				jobsSeen++
+				onNotifyEvents <- true
 			},
 			Threshold: 0, // get notified for ALL jobs
 		}
-		queue := GivenATimedQueue(allJobs)
+		queue := GivenATimedQueue(listenForAllJobs)
+		jobsSoFar := pollingDrain(onNotifyEvents)
+		require.Equal(0, jobsSoFar, "no jobs should have run before StartProcessing()")
 
 		queue.StartProcessing()
 
-		require.Equal(0, jobsSeen, "no job notifications should have been sent before any jobs were queued")
+		jobsSoFar += pollingDrain(onNotifyEvents)
+		require.LessOrEqual(jobsSoFar, 1, "only an initialization job could have run; there shouldn't be any 'user jobs' yet")
 
-		jobDidRun := false
+		userJobDidRun := false
 		queue.Queue(func(render.RenderQueueState) {
-			// It doesn't matter what we do here; the listener has a threshold of 0
-			// so should still get notified about this running.
-			jobDidRun = true
+			// It doesn't matter how long this takes; the listener has a threshold of
+			// 0 so should still get notified about this running.
+			userJobDidRun = true
 		})
 		queue.Purge()
 
-		require.True(jobDidRun, "we purged the queue, but the job didn't run!")
+		require.True(userJobDidRun, "we purged the queue, but the job didn't run!")
 
-		assert.Less(0, jobsSeen, "the listener should have been notified")
+		jobsSoFar += pollingDrain(onNotifyEvents)
+		assert.Equal(2, jobsSoFar, "the listener should have been notified about an initialization job and one user job")
 	})
 
 	t.Run("Source attribution is reported", func(t *testing.T) {

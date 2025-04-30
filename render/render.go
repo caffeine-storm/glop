@@ -104,7 +104,6 @@ func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener 
 }
 
 func (q *renderQueue) loop() {
-	defer close(q.purge)
 	for {
 		select {
 		case job := <-q.work_queue:
