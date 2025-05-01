@@ -108,3 +108,31 @@ func WithFreshMatrices(fn func()) {
 		})
 	})
 }
+
+func WithTexture2DSetting(enableT2D bool, fn func()) {
+	oldval := []bool{false}
+	gl.GetBooleanv(gl.TEXTURE_2D, oldval)
+
+	defer func() {
+		if oldval[0] {
+			gl.Enable(gl.TEXTURE_2D)
+		} else {
+			gl.Disable(gl.TEXTURE_2D)
+		}
+	}()
+
+	if enableT2D {
+		gl.Enable(gl.TEXTURE_2D)
+	} else {
+		gl.Disable(gl.TEXTURE_2D)
+	}
+	fn()
+}
+
+func WithTexturing(fn func()) {
+	WithTexture2DSetting(true, fn)
+}
+
+func WithoutTexturing(fn func()) {
+	WithTexture2DSetting(false, fn)
+}

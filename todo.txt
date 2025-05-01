@@ -1,10 +1,6 @@
 tmckee:#35 need a way to target distinct rejection files if two tests want to
 re-use an expected file
 
-tmckee:#34 rendertest.DrawRectNdc is sensitive to whether gl.TEXTURE_2D is
-enabled or not; we should make it work regardless and reset any gl state it
-modifies.
-
 tmckee:#29 shouldn't we be subtracting 'sys.start_ms' from the 'horizon' in system.System.Think() ?
 
 tmckee:#28 text_edit_line.go is checking for a click but only checking the x
