@@ -5,6 +5,7 @@ import (
 	"image"
 	"testing"
 
+	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
@@ -20,19 +21,43 @@ func DrawRectSpec() {
 	width, height := 50, 50
 	var result *image.RGBA
 
-	rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
-		queue.Queue(func(render.RenderQueueState) {
-			rendertest.BlankAndDrawRectNdc(-1, -1, 1, 1)
-			result = debug.ScreenShotRgba(width, height)
+	Convey("with gl.TEXTURE_2D enabled", func() {
+		rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
+			queue.Queue(func(render.RenderQueueState) {
+				gl.Enable(gl.TEXTURE_2D)
+				rendertest.BlankAndDrawRectNdc(-1, -1, 1, 1)
+				result = debug.ScreenShotRgba(width, height)
+			})
+			queue.Purge()
+
+			if len(result.Pix) != width*height*4 {
+				panic(fmt.Errorf("wrong number of bytes, expected %d got %d", width*height*4, len(result.Pix)))
+			}
+
+			Convey("Should see red pixels", func() {
+				So(queue, rendertest.ShouldLookLikeFile, "red")
+			})
 		})
-		queue.Purge()
+	})
 
-		if len(result.Pix) != width*height*4 {
-			panic(fmt.Errorf("wrong number of bytes, expected %d got %d", width*height*4, len(result.Pix)))
-		}
+	Convey("with gl.TEXTURE_2D disabled", func() {
+		rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
+			queue.Queue(func(render.RenderQueueState) {
+				gl.Disable(gl.TEXTURE_2D)
+				rendertest.BlankAndDrawRectNdc(-1, -1, 1, 1)
+				result = debug.ScreenShotRgba(width, height)
+			})
+			queue.Purge()
 
-		Convey("Should see red pixels", func() {
-			So(queue, rendertest.ShouldLookLikeFile, "red")
+			if len(result.Pix) != width*height*4 {
+				panic(fmt.Errorf("wrong number of bytes, expected %d got %d", width*height*4, len(result.Pix)))
+			}
+
+			Convey("Should see red pixels", func() {
+				// TODO(tmckee:#35): pick a different expected file or else we'd
+				// clobber things if both tests fail.
+				So(queue, rendertest.ShouldLookLikeFile, "red")
+			})
 		})
 	})
 }

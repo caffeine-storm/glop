@@ -1,3 +1,6 @@
+tmckee:#35 need a way to target distinct rejection files if two tests want to
+re-use an expected file
+
 tmckee:#34 rendertest.DrawRectNdc is sensitive to whether gl.TEXTURE_2D is
 enabled or not; we should make it work regardless and reset any gl state it
 modifies.
@@ -61,4 +64,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#35 <next>
+<owner>:#36 <next>
