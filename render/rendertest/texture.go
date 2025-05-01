@@ -75,7 +75,8 @@ func GivenATexture(imageFilePath string) gl.Texture {
 }
 
 func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *render.ShaderBank) {
-	var left, right, top, bottom int32 = 0, int32(pixelBounds.Dx()), int32(pixelBounds.Dy()), 0
+	var left, bottom int32 = int32(pixelBounds.Min.X), int32(pixelBounds.Min.Y)
+	var right, top int32 = int32(pixelBounds.Max.X), int32(pixelBounds.Max.Y)
 	var texleft, texright, textop, texbottom int32 = 0, 1, 1, 0
 
 	// - enable texturing shaders
@@ -97,6 +98,7 @@ func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *rend
 
 		// - upload geometry
 		vertexBuffer := gl.GenBuffer()
+		defer vertexBuffer.Delete()
 		vertexBuffer.Bind(gl.ARRAY_BUFFER)
 		// stride is how many bytes per vertex
 		// 4 components * 4 bytes per component

@@ -14,7 +14,7 @@ import (
 func TestDrawTexturedQuad(t *testing.T) {
 	Convey("enables texturing itself", t, func() {
 		screen := image.Rect(0, 0, 64, 64)
-		subscreen := image.Rect(16, 16, 32, 32)
+		subscreen := image.Rect(16, 16, 48, 48)
 		rendertest.WithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				tex := rendertest.GivenATexture("red/0.png")
