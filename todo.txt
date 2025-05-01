@@ -37,13 +37,13 @@ tmckee:#7 installed multilib support to get the build going; is it necessary?
 
 ----
 
-tmckee#3: port Haunts' "make update-appveyor-image" helper to glop
+tmckee:#3 port Haunts' "make update-appveyor-image" helper to glop
 
-tmckee#4: we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
+tmckee:#4 we need to change Dictionary to use 'constant' geometry and support positioning by offset through shader-uniform-variables.
 
 ----
 
-tmckee#5: opengl deprecated/removed GL_QUADS; we'll need to migrate away from
+tmckee:#5 opengl deprecated/removed GL_QUADS; we'll need to migrate away from
 gl.QUADS
 
 tmckee:#8 use type system to make initialization ordering constraints explicit
@@ -61,4 +61,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-next bug: #35
+<owner>:#35 <next>
