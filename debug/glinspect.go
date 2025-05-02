@@ -84,9 +84,33 @@ type GlState struct {
 }
 
 func GetFlagSet() map[string]gl.GLenum {
+	intbools := map[bool]gl.GLenum{
+		true:  gl.TRUE,
+		false: gl.FALSE,
+	}
 	ret := map[string]gl.GLenum{}
 
 	ret["ACTIVE_TEXTURE"] = GetActiveTextureUnit()
+	ret["GL_BLEND"] = intbools[gl.IsEnabled(gl.BLEND)]
+	ret["GL_CLIP_PLANE0"] = intbools[gl.IsEnabled(gl.CLIP_PLANE0)]
+	ret["GL_CLIP_PLANE1"] = intbools[gl.IsEnabled(gl.CLIP_PLANE1)]
+	ret["GL_CLIP_PLANE2"] = intbools[gl.IsEnabled(gl.CLIP_PLANE2)]
+	ret["GL_CLIP_PLANE3"] = intbools[gl.IsEnabled(gl.CLIP_PLANE3)]
+	ret["GL_CULL_FACE"] = intbools[gl.IsEnabled(gl.CULL_FACE)]
+
+	ret["GL_DEPTH_TEST"] = intbools[gl.IsEnabled(gl.DEPTH_TEST)]
+	ret["GL_DITHER"] = intbools[gl.IsEnabled(gl.DITHER)]
+	ret["GL_INDEX_ARRAY"] = intbools[gl.IsEnabled(gl.INDEX_ARRAY)]
+	ret["GL_NORMAL_ARRAY"] = intbools[gl.IsEnabled(gl.NORMAL_ARRAY)]
+	ret["GL_NORMALIZE"] = intbools[gl.IsEnabled(gl.NORMALIZE)]
+	ret["GL_SCISSOR_TEST"] = intbools[gl.IsEnabled(gl.SCISSOR_TEST)]
+	ret["GL_STENCIL_TEST"] = intbools[gl.IsEnabled(gl.STENCIL_TEST)]
+	ret["GL_TEXTURE_2D"] = intbools[gl.IsEnabled(gl.TEXTURE_2D)]
+	ret["GL_TEXTURE_3D"] = intbools[gl.IsEnabled(gl.TEXTURE_3D)]
+	ret["GL_TEXTURE_COORD_ARRAY"] = intbools[gl.IsEnabled(gl.TEXTURE_COORD_ARRAY)]
+	ret["GL_VERTEX_ARRAY"] = intbools[gl.IsEnabled(gl.VERTEX_ARRAY)]
+	ret["GL_VERTEX_PROGRAM_POINT_SIZE"] = intbools[gl.IsEnabled(gl.VERTEX_PROGRAM_POINT_SIZE)]
+	ret["GL_VERTEX_PROGRAM_TWO_SIDE"] = intbools[gl.IsEnabled(gl.VERTEX_PROGRAM_TWO_SIDE)]
 
 	return ret
 }
