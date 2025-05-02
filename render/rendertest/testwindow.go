@@ -170,6 +170,13 @@ func WithGlAndHandleForTest(width, height int, fn func(system.System, system.Nat
 	}
 }
 
+func WithIsolatedGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	newContext := newGlContextForTest(width, height)
+	newContext.Prep(width, height)
+	newContext.Run(fn)
+	newContext.Clean()
+}
+
 func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
 	WithGlAndHandleForTest(width, height, func(sys system.System, _ system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		fn(sys, queue)
