@@ -67,12 +67,28 @@ func GetDepthRange() (float64, float64) {
 	return buffer[0], buffer[1]
 }
 
+func GetActiveTextureUnit() gl.GLenum {
+	val := []int32{0}
+	gl.GetIntegerv(gl.ACTIVE_TEXTURE, val[:])
+
+	return gl.GLenum(gl.TEXTURE0 - val[0])
+}
+
 type GlState struct {
 	MatrixMode       string
 	ModelViewMatrix  []float64
 	ProjectionMatrix []float64
 	ColorMatrix      []float64
 	TextureMatrix    []float64
+	FlagSet          map[string]gl.GLenum
+}
+
+func GetFlagSet() map[string]gl.GLenum {
+	ret := map[string]gl.GLenum{}
+
+	ret["ACTIVE_TEXTURE"] = GetActiveTextureUnit()
+
+	return ret
 }
 
 func (st *GlState) String() string {
@@ -87,5 +103,6 @@ func GetGlState() *GlState {
 		ProjectionMatrix: GetProjectionMatrix(),
 		ColorMatrix:      GetColorMatrix(),
 		TextureMatrix:    GetTextureMatrix(),
+		FlagSet:          GetFlagSet(),
 	}
 }
