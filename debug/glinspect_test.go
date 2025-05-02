@@ -1,11 +1,13 @@
 package debug_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGlInspect(t *testing.T) {
@@ -24,5 +26,18 @@ func TestGlInspect(t *testing.T) {
 			// TODO(tmckee): add a helper to strerror error codes from GL.
 			t.Fatalf("GetColorMatrix queued %d errors: %v", len(errors), errors)
 		}
+	})
+
+	t.Run("GetGlState exposes helpful data", func(t *testing.T) {
+		var glstate *debug.GlState
+		rendertest.WithGl(func() {
+			glstate = debug.GetGlState()
+		})
+
+		stringified := fmt.Sprintf("%v", glstate)
+
+		t.Run("active texture unit", func(t *testing.T) {
+			assert.Contains(t, stringified, "ACTIVE_TEXTURE")
+		})
 	})
 }
