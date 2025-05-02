@@ -153,3 +153,30 @@ func TestWithFreshMatrices(t *testing.T) {
 
 	assertFreshState(t, entryState)
 }
+
+func TestTexture2DHelpers(t *testing.T) {
+	rendertest.WithGl(func() {
+		testcase := func() {
+			flags := []bool{false, false, false}
+			gl.GetBooleanv(gl.TEXTURE_2D, flags[0:])
+
+			render.WithTexture2DSetting(!flags[0], func() {
+				gl.GetBooleanv(gl.TEXTURE_2D, flags[1:])
+			})
+
+			gl.GetBooleanv(gl.TEXTURE_2D, flags[2:])
+
+			if flags[0] != flags[2] {
+				t.Fatalf("mismatch texture2d state before: %v, in: %v, after: %v", flags[0], flags[1], flags[2])
+			}
+
+			if flags[0] == flags[1] {
+				t.Fatalf("didn't toggle texture2d state before: %v, in: %v, after: %v", flags[0], flags[1], flags[2])
+			}
+		}
+		gl.Disable(gl.TEXTURE_2D)
+		testcase()
+		gl.Enable(gl.TEXTURE_2D)
+		testcase()
+	})
+}
