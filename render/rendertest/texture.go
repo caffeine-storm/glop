@@ -28,18 +28,6 @@ func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 	// first.
 	imgmanip.FlipVertically(img)
 
-	// sanity check: what are the alpha values in the image? We're expecting
-	// 4 row chunks of 4-black, 4-transparent, 4-red pixels
-	// What's the first row?
-	var reds, greens, blues []byte
-	alphas := []byte{}
-	for pix := 0; pix < img.Bounds().Dx(); pix++ {
-		reds = append(reds, img.Pix[pix*4+0])
-		greens = append(greens, img.Pix[pix*4+1])
-		blues = append(blues, img.Pix[pix*4+2])
-		alphas = append(alphas, img.Pix[pix*4+3])
-	}
-
 	gl.ActiveTexture(gl.TEXTURE0 + 0)
 	gl.TexImage2D(
 		gl.TEXTURE_2D,
