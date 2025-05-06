@@ -1,3 +1,6 @@
+tmckee:#36 running `make testrunargs='-shuffle=on' test-nocache` should work;
+ie. tests should pass regardless of which order they're run in
+
 tmckee:#35 need a way to target distinct rejection files if two tests want to
 re-use an expected file
 
@@ -60,4 +63,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#36 <next>
+<owner>:#37 <next>
