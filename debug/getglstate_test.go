@@ -39,5 +39,15 @@ func TestGlInspect(t *testing.T) {
 		t.Run("active texture unit", func(t *testing.T) {
 			assert.Contains(t, stringified, "ACTIVE_TEXTURE")
 		})
+
+		t.Run("bindings", func(t *testing.T) {
+			assert.Contains(t, stringified, "ARRAY_BUFFER_BINDING")
+			assert.Contains(t, stringified, "ELEMENT_ARRAY_BUFFER_BINDING")
+			assert.Contains(t, stringified, "PIXEL_PACK_BUFFER_BINDING")
+			assert.Contains(t, stringified, "PIXEL_UNPACK_BUFFER_BINDING")
+			assert.Contains(t, stringified, "TEXTURE_BINDING_2D")
+			assert.Contains(t, stringified, "TEXTURE_COORD_ARRAY_BUFFER_BINDING")
+			assert.Contains(t, stringified, "VERTEX_ARRAY_BUFFER_BINDING")
+		})
 	})
 }
