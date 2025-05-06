@@ -80,6 +80,7 @@ type GlState struct {
 	ProjectionMatrix []float64
 	ColorMatrix      []float64
 	TextureMatrix    []float64
+	Bindings         map[string]int32
 	FlagSet          map[string]gl.GLenum
 }
 
@@ -115,6 +116,26 @@ func GetFlagSet() map[string]gl.GLenum {
 	return ret
 }
 
+func GetBindingsSet() map[string]int32 {
+	ret := map[string]int32{}
+
+	getbinding := func(name gl.GLenum) int32 {
+		ret := [1]int32{}
+		gl.GetIntegerv(name, ret[:])
+		return ret[0]
+	}
+
+	ret["ARRAY_BUFFER_BINDING"] = getbinding(gl.ARRAY_BUFFER_BINDING)
+	ret["ELEMENT_ARRAY_BUFFER_BINDING"] = getbinding(gl.ELEMENT_ARRAY_BUFFER_BINDING)
+	ret["PIXEL_PACK_BUFFER_BINDING"] = getbinding(gl.PIXEL_PACK_BUFFER_BINDING)
+	ret["PIXEL_UNPACK_BUFFER_BINDING"] = getbinding(gl.PIXEL_UNPACK_BUFFER_BINDING)
+	ret["TEXTURE_BINDING_2D"] = getbinding(gl.TEXTURE_BINDING_2D)
+	ret["TEXTURE_COORD_ARRAY_BUFFER_BINDING"] = getbinding(gl.TEXTURE_COORD_ARRAY_BUFFER_BINDING)
+	ret["VERTEX_ARRAY_BUFFER_BINDING"] = getbinding(gl.VERTEX_ARRAY_BUFFER_BINDING)
+
+	return ret
+}
+
 func (st *GlState) String() string {
 	return fmt.Sprintf("%+v", *st)
 }
@@ -127,6 +148,8 @@ func GetGlState() *GlState {
 		ProjectionMatrix: GetProjectionMatrix(),
 		ColorMatrix:      GetColorMatrix(),
 		TextureMatrix:    GetTextureMatrix(),
-		FlagSet:          GetFlagSet(),
+
+		Bindings: GetBindingsSet(),
+		FlagSet:  GetFlagSet(),
 	}
 }
