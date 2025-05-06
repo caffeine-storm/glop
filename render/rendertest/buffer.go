@@ -7,9 +7,8 @@ import (
 )
 
 func GivenABufferWithData(data []float32) gl.Buffer {
-	oldbuf := [1]int32{}
-	gl.GetIntegerv(gl.ARRAY_BUFFER_BINDING, oldbuf[:])
-	defer gl.Buffer(oldbuf[0]).Bind(gl.ARRAY_BUFFER)
+	oldbuf := gl.GetInteger(gl.ARRAY_BUFFER_BINDING)
+	defer gl.Buffer(oldbuf).Bind(gl.ARRAY_BUFFER)
 
 	result := gl.GenBuffer()
 	result.Bind(gl.ARRAY_BUFFER)

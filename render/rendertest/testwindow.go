@@ -13,13 +13,14 @@ import (
 )
 
 func matrixStacksMustBeSize1() {
-	var buffer [3]int32
-	gl.GetIntegerv(gl.MODELVIEW_STACK_DEPTH, buffer[0:1])
-	gl.GetIntegerv(gl.PROJECTION_STACK_DEPTH, buffer[1:2])
-	gl.GetIntegerv(gl.TEXTURE_STACK_DEPTH, buffer[2:3])
+	sizes := [3]int{
+		gl.GetInteger(gl.MODELVIEW_STACK_DEPTH),
+		gl.GetInteger(gl.PROJECTION_STACK_DEPTH),
+		gl.GetInteger(gl.TEXTURE_STACK_DEPTH),
+	}
 
-	if buffer[0] != 1 || buffer[1] != 1 || buffer[2] != 1 {
-		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", buffer))
+	if sizes[0] != 1 || sizes[1] != 1 || sizes[2] != 1 {
+		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", sizes))
 	}
 }
 

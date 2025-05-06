@@ -18,9 +18,7 @@ func mappedSymbols() map[gl.GLenum]string {
 
 // Returns an enum denoting the current matrix mode.
 func GetMatrixMode() gl.GLenum {
-	buffer := []int32{0}
-	gl.GetIntegerv(gl.MATRIX_MODE, buffer)
-	return gl.GLenum(buffer[0])
+	return gl.GLenum(gl.GetInteger(gl.MATRIX_MODE))
 }
 
 func getMatrix(paramName gl.GLenum) []float64 {
@@ -68,10 +66,7 @@ func GetDepthRange() (float64, float64) {
 }
 
 func GetActiveTextureUnit() gl.GLenum {
-	val := []int32{0}
-	gl.GetIntegerv(gl.ACTIVE_TEXTURE, val[:])
-
-	return gl.GLenum(gl.TEXTURE0 - val[0])
+	return gl.GLenum(gl.TEXTURE0 - gl.GetInteger(gl.ACTIVE_TEXTURE))
 }
 
 type GlState struct {
@@ -80,7 +75,7 @@ type GlState struct {
 	ProjectionMatrix []float64
 	ColorMatrix      []float64
 	TextureMatrix    []float64
-	Bindings         map[string]int32
+	Bindings         map[string]int
 	FlagSet          map[string]gl.GLenum
 }
 
@@ -116,22 +111,16 @@ func GetFlagSet() map[string]gl.GLenum {
 	return ret
 }
 
-func GetBindingsSet() map[string]int32 {
-	ret := map[string]int32{}
+func GetBindingsSet() map[string]int {
+	ret := map[string]int{}
 
-	getbinding := func(name gl.GLenum) int32 {
-		ret := [1]int32{}
-		gl.GetIntegerv(name, ret[:])
-		return ret[0]
-	}
-
-	ret["ARRAY_BUFFER_BINDING"] = getbinding(gl.ARRAY_BUFFER_BINDING)
-	ret["ELEMENT_ARRAY_BUFFER_BINDING"] = getbinding(gl.ELEMENT_ARRAY_BUFFER_BINDING)
-	ret["PIXEL_PACK_BUFFER_BINDING"] = getbinding(gl.PIXEL_PACK_BUFFER_BINDING)
-	ret["PIXEL_UNPACK_BUFFER_BINDING"] = getbinding(gl.PIXEL_UNPACK_BUFFER_BINDING)
-	ret["TEXTURE_BINDING_2D"] = getbinding(gl.TEXTURE_BINDING_2D)
-	ret["TEXTURE_COORD_ARRAY_BUFFER_BINDING"] = getbinding(gl.TEXTURE_COORD_ARRAY_BUFFER_BINDING)
-	ret["VERTEX_ARRAY_BUFFER_BINDING"] = getbinding(gl.VERTEX_ARRAY_BUFFER_BINDING)
+	ret["ARRAY_BUFFER_BINDING"] = gl.GetInteger(gl.ARRAY_BUFFER_BINDING)
+	ret["ELEMENT_ARRAY_BUFFER_BINDING"] = gl.GetInteger(gl.ELEMENT_ARRAY_BUFFER_BINDING)
+	ret["PIXEL_PACK_BUFFER_BINDING"] = gl.GetInteger(gl.PIXEL_PACK_BUFFER_BINDING)
+	ret["PIXEL_UNPACK_BUFFER_BINDING"] = gl.GetInteger(gl.PIXEL_UNPACK_BUFFER_BINDING)
+	ret["TEXTURE_BINDING_2D"] = gl.GetInteger(gl.TEXTURE_BINDING_2D)
+	ret["TEXTURE_COORD_ARRAY_BUFFER_BINDING"] = gl.GetInteger(gl.TEXTURE_COORD_ARRAY_BUFFER_BINDING)
+	ret["VERTEX_ARRAY_BUFFER_BINDING"] = gl.GetInteger(gl.VERTEX_ARRAY_BUFFER_BINDING)
 
 	return ret
 }

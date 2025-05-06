@@ -16,9 +16,7 @@ const (
 )
 
 func GetCurrentMatrixMode() MatrixMode {
-	var matmode [1]int32
-	gl.GetIntegerv(gl.MATRIX_MODE, matmode[:])
-	return MatrixMode(matmode[0])
+	return MatrixMode(gl.GetInteger(gl.MATRIX_MODE))
 }
 
 type Matrix = mathgl.Mat4

@@ -4,7 +4,7 @@ go 1.23.0
 
 replace code.google.com/p/freetype-go => github.com/golang/freetype v0.0.0-20120725121025-28cc5fbc5d0b
 
-replace github.com/go-gl-legacy/gl => github.com/caffeine-storm/gl v0.0.0-20250430135644-d77ee19e0153
+replace github.com/go-gl-legacy/gl => github.com/caffeine-storm/gl v0.0.0-20250506174032-5994dccd6839
 
 replace github.com/go-gl-legacy/glu => github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6
 
