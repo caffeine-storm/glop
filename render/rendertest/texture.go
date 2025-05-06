@@ -107,6 +107,8 @@ func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *rend
 		// bytes so the first texture co-ordinate is 8 bytes in.
 		gl.TexCoordPointer(2, gl.INT, stride, uintptr(8))
 
+		gl.Buffer(0).Bind(gl.ELEMENT_ARRAY_BUFFER)
+
 		// - render geometry
 		indices := []uint16{0, 1, 2, 3, 4, 5}
 		gl.DrawElements(gl.TRIANGLES, len(indices), gl.UNSIGNED_SHORT, indices)
