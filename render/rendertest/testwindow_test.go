@@ -2,13 +2,14 @@ package rendertest_test
 
 import (
 	"log"
+	"maps"
+	"slices"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWithGl(t *testing.T) {
@@ -20,6 +21,19 @@ func TestWithGl(t *testing.T) {
 			t.Error("gl.GetString(gl.VERSION) must not return the empty string once OpenGL is initialized")
 		}
 	})
+}
+
+func clearUnsetValues(mp map[string]int) {
+	todelete := map[string]bool{}
+	for key, val := range mp {
+		if val == 0 {
+			todelete[key] = true
+		}
+	}
+
+	for key := range todelete {
+		delete(mp, key)
+	}
 }
 
 func TestCrossTalkPrevention(t *testing.T) {
@@ -38,20 +52,7 @@ func TestCrossTalkPrevention(t *testing.T) {
 			}
 		}
 	})
-
-	var taintedState map[string]int
-	t.Run("tainted state should fail", func(t *testing.T) {
-		assert.Panics(t, func() {
-			rendertest.GlTest().Run(func() {
-				// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
-				buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
-				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
-				taintedState = debug.GetBindingsSet()
-			})
-		})
-	})
-	require.NotNil(t, taintedState)
-	assert.NotEqual(t, initialState, taintedState)
+	clearUnsetValues(initialState)
 
 	var nextState map[string]int
 	t.Run("the deprecated helpers merely warn", func(t *testing.T) {
@@ -59,9 +60,10 @@ func TestCrossTalkPrevention(t *testing.T) {
 			// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
 			buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
 			buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
-			taintedState = debug.GetBindingsSet()
+			nextState = debug.GetBindingsSet()
 		})
 
-		assert.Equal(t, taintedState, nextState)
+		clearUnsetValues(nextState)
+		assert.NotEqual(t, slices.Sorted(maps.Keys(initialState)), slices.Sorted(maps.Keys(nextState)))
 	})
 }

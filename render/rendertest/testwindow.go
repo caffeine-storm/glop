@@ -52,6 +52,78 @@ func checkMatrixInvariants() {
 	matrixStacksMustBeIdentity()
 }
 
+func checkBindingsInvariants() {
+	bindings := []gl.GLenum{
+		gl.ARRAY_BUFFER_BINDING,
+		gl.ELEMENT_ARRAY_BUFFER_BINDING,
+		gl.PIXEL_PACK_BUFFER_BINDING,
+		gl.PIXEL_UNPACK_BUFFER_BINDING,
+		gl.TEXTURE_BINDING_2D,
+	}
+
+	badvals := []gl.GLenum{}
+	for _, name := range bindings {
+		val := gl.GetInteger(name)
+		if val != 0 {
+			badvals = append(badvals, name)
+		}
+	}
+
+	if len(badvals) != 0 {
+		panic(fmt.Errorf("need bindings unset but found bindings for: %v", badvals))
+	}
+}
+
+func checkInvariants() {
+	checkMatrixInvariants()
+	checkBindingsInvariants()
+}
+
+func enforceMatrixStacksMustBeIdentitySingletons() {
+	sizes := [3]int{
+		gl.GetInteger(gl.MODELVIEW_STACK_DEPTH),
+		gl.GetInteger(gl.PROJECTION_STACK_DEPTH),
+		gl.GetInteger(gl.TEXTURE_STACK_DEPTH),
+	}
+	modes := [3]render.MatrixMode{
+		render.MatrixModeModelView,
+		render.MatrixModeProjection,
+		render.MatrixModeTexture,
+	}
+
+	for i, sizei := range sizes {
+		gl.MatrixMode(gl.GLenum(modes[i]))
+		for j := sizei; j > 1; j-- {
+			gl.PopMatrix()
+		}
+		gl.LoadIdentity()
+	}
+}
+
+func enforceClearBindingsSet() {
+	bufferBindings := []gl.GLenum{
+		gl.ARRAY_BUFFER,
+		gl.ELEMENT_ARRAY_BUFFER,
+		gl.PIXEL_PACK_BUFFER,
+		gl.PIXEL_UNPACK_BUFFER,
+	}
+	for _, name := range bufferBindings {
+		gl.Buffer(0).Bind(name)
+	}
+
+	textureBindings := []gl.GLenum{
+		gl.TEXTURE_2D,
+	}
+	for _, name := range textureBindings {
+		gl.Texture(0).Bind(name)
+	}
+}
+
+func enforceInvariants() {
+	enforceMatrixStacksMustBeIdentitySingletons()
+	enforceClearBindingsSet()
+}
+
 func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
 	linuxSystemObject := gos.NewSystemInterface()
 	sys := system.Make(linuxSystemObject, gin.MakeLogged(glog.DebugLogger()))
@@ -86,13 +158,19 @@ type glContext struct {
 	render       render.RenderQueueInterface
 }
 
-func (ctx *glContext) Prep(width, height int) {
+const InvariantsCheckNo = false
+const InvariantsCheckYes = true
+
+func (ctx *glContext) prep(width, height int, invariantscheck bool) {
 	if ctx.windowHandle == nil {
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
-		checkMatrixInvariants()
+		if invariantscheck {
+			checkInvariants()
+		}
+		enforceInvariants()
 
 		ctx.sys.SetWindowSize(width, height)
 
@@ -123,7 +201,7 @@ func (ctx *glContext) Prep(width, height int) {
 	ctx.render.Purge()
 }
 
-func (ctx *glContext) Clean() {
+func (ctx *glContext) clean(invariantscheck bool) {
 	ctx.render.Queue(func(render.RenderQueueState) {
 		// Undo matrix mode identity loads
 		gl.MatrixMode(gl.TEXTURE)
@@ -135,12 +213,15 @@ func (ctx *glContext) Clean() {
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.PopMatrix()
 
-		checkMatrixInvariants()
+		if invariantscheck {
+			checkInvariants()
+		}
+		enforceInvariants()
 	})
 	ctx.render.Purge()
 }
 
-func (ctx *glContext) Run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	fn(ctx.sys, ctx.windowHandle, ctx.render)
 }
 
@@ -159,15 +240,15 @@ var glTestContextSource = make(chan *glContext, 24)
 func DeprecatedWithGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	select {
 	case cachedContext := <-glTestContextSource:
-		cachedContext.Prep(width, height)
-		cachedContext.Run(fn)
-		cachedContext.Clean()
+		cachedContext.prep(width, height, InvariantsCheckNo)
+		cachedContext.run(fn)
+		cachedContext.clean(InvariantsCheckNo)
 		glTestContextSource <- cachedContext
 	default:
 		newContext := newGlContextForTest(width, height)
-		newContext.Prep(width, height)
-		newContext.Run(fn)
-		newContext.Clean()
+		newContext.prep(width, height, InvariantsCheckNo)
+		newContext.run(fn)
+		newContext.clean(InvariantsCheckNo)
 		glTestContextSource <- newContext
 	}
 }
@@ -175,9 +256,9 @@ func DeprecatedWithGlAndHandleForTest(width, height int, fn func(system.System, 
 // TODO(#37): prefer GlTest()
 func DeprecatedWithIsolatedGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	newContext := newGlContextForTest(width, height)
-	newContext.Prep(width, height)
-	newContext.Run(fn)
-	newContext.Clean()
+	newContext.prep(width, height, InvariantsCheckNo)
+	newContext.run(fn)
+	newContext.clean(InvariantsCheckNo)
 }
 
 // TODO(#37): prefer GlTest()

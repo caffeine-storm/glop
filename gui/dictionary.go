@@ -332,10 +332,12 @@ func buildBlittingData(s string, d *Dictionary, x_pos_px, y_pos_px, height_px fl
 	d.logger.Trace("geometry", "verts", blittingData.vertexData, "idxs", blittingData.indicesData)
 	blittingData.vertexBuffer = gl.GenBuffer()
 	blittingData.vertexBuffer.Bind(gl.ARRAY_BUFFER)
+	defer gl.Buffer(0).Bind(gl.ARRAY_BUFFER)
 	gl.BufferData(gl.ARRAY_BUFFER, stride*len(blittingData.vertexData), blittingData.vertexData, gl.STATIC_DRAW)
 
 	blittingData.indicesBuffer = gl.GenBuffer()
 	blittingData.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	defer gl.Buffer(0).Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, int(unsafe.Sizeof(blittingData.indicesData[0]))*len(blittingData.indicesData), blittingData.indicesData, gl.STATIC_DRAW)
 
 	return blittingData
@@ -403,15 +405,18 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 	d.texture.Bind(gl.TEXTURE_2D)
+	defer gl.Texture(0).Bind(gl.TEXTURE_2D)
 
 	gl.EnableClientState(gl.VERTEX_ARRAY)
 	defer gl.DisableClientState(gl.VERTEX_ARRAY)
 	blittingData.vertexBuffer.Bind(gl.ARRAY_BUFFER)
+	defer gl.Buffer(0).Bind(gl.ARRAY_BUFFER)
 	gl.VertexPointer(2, gl.FLOAT, stride, nil)
 
 	gl.EnableClientState(gl.TEXTURE_COORD_ARRAY)
 	defer gl.DisableClientState(gl.TEXTURE_COORD_ARRAY)
 	blittingData.indicesBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
+	defer gl.Buffer(0).Bind(gl.ELEMENT_ARRAY_BUFFER)
 	gl.TexCoordPointer(2, gl.FLOAT, stride, unsafe.Offsetof(blittingData.vertexData[0].u))
 
 	gl.DrawElements(gl.TRIANGLES, len(blittingData.indicesData), gl.UNSIGNED_SHORT, nil)
@@ -570,6 +575,7 @@ func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface)
 	renderQueue.Queue(func(render.RenderQueueState) {
 		d.texture = gl.GenTexture()
 		d.texture.Bind(gl.TEXTURE_2D)
+		defer gl.Texture(0).Bind(gl.TEXTURE_2D)
 		gl.PixelStorei(gl.UNPACK_ALIGNMENT, 1)
 		gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
 		gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)

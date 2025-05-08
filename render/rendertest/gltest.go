@@ -5,6 +5,22 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
+func runTestWithCachedContext(width, height int, checkinvariants bool, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	select {
+	case cachedContext := <-glTestContextSource:
+		cachedContext.prep(width, height, checkinvariants)
+		cachedContext.run(fn)
+		cachedContext.clean(checkinvariants)
+		glTestContextSource <- cachedContext
+	default:
+		newContext := newGlContextForTest(width, height)
+		newContext.prep(width, height, checkinvariants)
+		newContext.run(fn)
+		newContext.clean(checkinvariants)
+		glTestContextSource <- newContext
+	}
+}
+
 type GlTestBuilder struct {
 	Dx, Dy int
 }
@@ -45,7 +61,7 @@ func (b *queueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
 		dy = 64
 	}
 
-	DeprecatedWithGlForTest(int(dx), int(dy), func(sys system.System, queue render.RenderQueueInterface) {
+	runTestWithCachedContext(int(dx), int(dy), InvariantsCheckYes, func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		fn(queue)
 	})
 }

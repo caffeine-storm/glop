@@ -95,6 +95,7 @@ func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *rend
 
 		// - setup rendering parameters
 		tex.Bind(gl.TEXTURE_2D)
+		defer gl.Texture(0).Bind(gl.TEXTURE_2D)
 
 		gl.EnableClientState(gl.VERTEX_ARRAY)
 		defer gl.DisableClientState(gl.VERTEX_ARRAY)
