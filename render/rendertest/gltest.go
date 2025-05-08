@@ -5,11 +5,33 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-type GlTestBuilder struct{}
-type queueGlTestBuilder struct{}
+type GlTestBuilder struct {
+	Dx, Dy uint
+}
+
+type queueGlTestBuilder struct {
+	ctx *GlTestBuilder
+}
 
 func (b *GlTestBuilder) Run(fn func()) {
-	WithGl(fn)
+	dx, dy := b.Dx, b.Dy
+	if dx == 0 || dy == 0 {
+		// Pick a default of 64x64
+		dx = 64
+		dy = 64
+	}
+	WithGlForTest(int(dx), int(dy), func(sys system.System, queue render.RenderQueueInterface) {
+		queue.Queue(func(render.RenderQueueState) {
+			fn()
+		})
+		queue.Purge()
+	})
+}
+
+func (b *GlTestBuilder) WithSize(dx, dy uint) *GlTestBuilder {
+	b.Dx = dx
+	b.Dy = dy
+	return b
 }
 
 func (b *queueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
