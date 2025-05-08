@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 )
 
@@ -16,5 +17,13 @@ func TestWithGl(t *testing.T) {
 		if versionString == "" {
 			t.Error("gl.GetString(gl.VERSION) must not return the empty string once OpenGL is initialized")
 		}
+	})
+}
+
+func TestGlTestHelpers(t *testing.T) {
+	t.Run("default builder runs on render thread", func(t *testing.T) {
+		rendertest.GlTest().Run(func() {
+			render.MustBeOnRenderThread()
+		})
 	})
 }
