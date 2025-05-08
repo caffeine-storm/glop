@@ -9,7 +9,7 @@ import (
 )
 
 func TestWithGl(t *testing.T) {
-	rendertest.DeprecatedWithGl(func() {
+	rendertest.GlTest().Run(func() {
 		versionString := gl.GetString(gl.VERSION)
 		log.Printf("versionString: %q\n", versionString)
 
