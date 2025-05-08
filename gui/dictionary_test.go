@@ -117,7 +117,7 @@ func TestMakeAndInitializeDictionary(t *testing.T) {
 
 func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
-		rendertest.WithGlForTest(128, 32, func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.GlTest().WithQueue().Run(func(queue render.RenderQueueInterface) {
 			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 
 			// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
