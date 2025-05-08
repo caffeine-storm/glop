@@ -45,7 +45,7 @@ func (b *queueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
 		dy = 64
 	}
 
-	WithGlForTest(int(dx), int(dy), func(sys system.System, queue render.RenderQueueInterface) {
+	DeprecatedWithGlForTest(int(dx), int(dy), func(sys system.System, queue render.RenderQueueInterface) {
 		fn(queue)
 	})
 }

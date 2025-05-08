@@ -12,7 +12,7 @@ import (
 )
 
 func TestClearScreen(t *testing.T) {
-	rendertest.WithGlForTest(50, 50, func(_ system.System, queue render.RenderQueueInterface) {
+	rendertest.DeprecatedWithGlForTest(50, 50, func(_ system.System, queue render.RenderQueueInterface) {
 		var imgResult *image.RGBA
 		queue.Queue(func(st render.RenderQueueState) {
 			// draw some stuff

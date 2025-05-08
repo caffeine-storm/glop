@@ -13,7 +13,7 @@ import (
 func TestGlInspect(t *testing.T) {
 	t.Run("GetColorMatrix", func(t *testing.T) {
 		errors := []gl.GLenum{}
-		rendertest.WithGl(func() {
+		rendertest.DeprecatedWithGl(func() {
 			debug.GetColorMatrix()
 
 			for err := gl.GetError(); err != 0; err = gl.GetError() {
@@ -30,7 +30,7 @@ func TestGlInspect(t *testing.T) {
 
 	t.Run("GetGlState exposes helpful data", func(t *testing.T) {
 		var glstate *debug.GlState
-		rendertest.WithGl(func() {
+		rendertest.DeprecatedWithGl(func() {
 			glstate = debug.GetGlState()
 		})
 

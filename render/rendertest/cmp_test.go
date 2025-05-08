@@ -189,7 +189,7 @@ func TestCompareTransparentExpectations(t *testing.T) {
 	t.Run("opaque result vs. transparent expectation", func(t *testing.T) {
 		// rendertest.ShouldLookLikeFile should work out-of-the-box when the
 		// expectation file has transparent pixels.
-		rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
+		rendertest.DeprecatedWithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				// - Convert it to a texture
 				tex := rendertest.GivenATexture("checker/0.png")
@@ -281,7 +281,7 @@ func TestCmpSpecs(t *testing.T) {
 			})
 
 			Convey("for rendered textures", func() {
-				rendertest.WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
+				rendertest.DeprecatedWithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
 					queue.Queue(func(st render.RenderQueueState) {
 						tex := rendertest.GivenATexture("checker/0.png")
 

@@ -303,7 +303,7 @@ func TestAssertingOnRenderThread(t *testing.T) {
 		assert.Panics(t, render.MustBeOnRenderThread)
 	})
 	t.Run("If on a render thread, relax", func(t *testing.T) {
-		rendertest.WithGl(func() {
+		rendertest.DeprecatedWithGl(func() {
 			render.MustBeOnRenderThread()
 		})
 	})

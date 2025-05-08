@@ -12,7 +12,7 @@ import (
 
 func TestRegionClipping(t *testing.T) {
 	Convey("region clipping", t, func() {
-		rendertest.WithGlForTest(64, 64, func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.DeprecatedWithGlForTest(64, 64, func(sys system.System, queue render.RenderQueueInterface) {
 			// Set a clipping region to block any drawing outside of a square in the
 			// middle.
 			r := gui.Region{

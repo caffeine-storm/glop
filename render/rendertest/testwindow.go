@@ -155,7 +155,8 @@ func newGlContextForTest(width, height int) *glContext {
 
 var glTestContextSource = make(chan *glContext, 24)
 
-func WithGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+// TODO(#37): prefer GlTest()
+func DeprecatedWithGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	select {
 	case cachedContext := <-glTestContextSource:
 		cachedContext.Prep(width, height)
@@ -171,21 +172,24 @@ func WithGlAndHandleForTest(width, height int, fn func(system.System, system.Nat
 	}
 }
 
-func WithIsolatedGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+// TODO(#37): prefer GlTest()
+func DeprecatedWithIsolatedGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	newContext := newGlContextForTest(width, height)
 	newContext.Prep(width, height)
 	newContext.Run(fn)
 	newContext.Clean()
 }
 
-func WithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
-	WithGlAndHandleForTest(width, height, func(sys system.System, _ system.NativeWindowHandle, queue render.RenderQueueInterface) {
+// TODO(#37): prefer GlTest()
+func DeprecatedWithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
+	DeprecatedWithGlAndHandleForTest(width, height, func(sys system.System, _ system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		fn(sys, queue)
 	})
 }
 
-func WithGl(fn func()) {
-	WithGlForTest(50, 50, func(sys system.System, renderQueue render.RenderQueueInterface) {
+// TODO(#37): prefer GlTest()
+func DeprecatedWithGl(fn func()) {
+	DeprecatedWithGlForTest(50, 50, func(sys system.System, renderQueue render.RenderQueueInterface) {
 		logger := glog.ErrorLogger()
 
 		errors := []gl.GLenum{}

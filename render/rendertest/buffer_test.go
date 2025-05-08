@@ -12,7 +12,7 @@ func TestBuffer(t *testing.T) {
 	t.Run("rendertest.GivenABufferWithData", func(t *testing.T) {
 		t.Run("shouldn't clobber gl.ARRAY_BUFFER", func(t *testing.T) {
 			assert := assert.New(t)
-			rendertest.WithGl(func() {
+			rendertest.DeprecatedWithGl(func() {
 				oldbuf := gl.GetInteger(gl.ARRAY_BUFFER_BINDING)
 				buf := rendertest.GivenABufferWithData([]float32{
 					0, 1, 2, 3, 4, 5,
@@ -25,7 +25,7 @@ func TestBuffer(t *testing.T) {
 		})
 		t.Run("shouldn't clobber gl.ELEMENT_ARRAY_BUFFER", func(t *testing.T) {
 			assert := assert.New(t)
-			rendertest.WithGl(func() {
+			rendertest.DeprecatedWithGl(func() {
 				oldbuf := gl.GetInteger(gl.ELEMENT_ARRAY_BUFFER_BINDING)
 				buf := rendertest.GivenABufferWithData([]float32{
 					0, 1, 2, 3, 4, 5,

@@ -1,3 +1,6 @@
+tmckee:#37 tracking bug for migrating from WithGlForTest to GlTest() family of
+helpers. 
+
 tmckee:#36 running `make testrunargs='-shuffle=on' test-nocache` should work;
 ie. tests should pass regardless of which order they're run in
 
@@ -63,4 +66,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#37 <next>
+<owner>:#38 <next>

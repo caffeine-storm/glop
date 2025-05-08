@@ -193,7 +193,7 @@ func DictionaryRenderStringSpec() {
 			just := Left
 			var logger glog.Logger = glog.TraceLogger()
 
-			rendertest.WithGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
+			rendertest.DeprecatedWithGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
 					renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
 				}

@@ -24,7 +24,7 @@ func TestDumpBuffer(t *testing.T) {
 	data := GivenSomeFloats()
 
 	var dumpResult []float32
-	rendertest.WithGl(func() {
+	rendertest.DeprecatedWithGl(func() {
 		buf := rendertest.GivenABufferWithData(data)
 		dumpResult = debug.DumpBuffer[float32](buf)
 	})
@@ -36,7 +36,7 @@ func TestDumpBufferBytes(t *testing.T) {
 	data := GivenSomeFloats()
 
 	var dumpResult []byte
-	rendertest.WithGl(func() {
+	rendertest.DeprecatedWithGl(func() {
 		buf := rendertest.GivenABufferWithData(data)
 		dumpResult = debug.DumpBuffer[byte](buf)
 	})

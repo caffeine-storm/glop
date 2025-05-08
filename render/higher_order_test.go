@@ -69,7 +69,7 @@ func assertFreshState(t *testing.T, st *debug.GlState) {
 
 func TestWithMatrixMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
-	rendertest.WithGl(func() {
+	rendertest.DeprecatedWithGl(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
@@ -88,7 +88,7 @@ func TestWithMatrixInMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
 	var beforeMat, duringMat, targetMat, afterMat render.Matrix
 
-	rendertest.WithGl(func() {
+	rendertest.DeprecatedWithGl(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
@@ -121,7 +121,7 @@ func TestWithFreshMatrices(t *testing.T) {
 
 	var beforeState, entryState, exitState, afterState *debug.GlState
 
-	rendertest.WithGl(func() {
+	rendertest.DeprecatedWithGl(func() {
 		// Start out with matrics that are 'not-fresh'.
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.LoadMatrixf((*[16]float32)(&notIdent))
@@ -155,7 +155,7 @@ func TestWithFreshMatrices(t *testing.T) {
 }
 
 func TestTexture2DHelpers(t *testing.T) {
-	rendertest.WithGl(func() {
+	rendertest.DeprecatedWithGl(func() {
 		testcase := func() {
 			flags := []bool{false, false, false}
 			gl.GetBooleanv(gl.TEXTURE_2D, flags[0:])

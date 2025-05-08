@@ -15,7 +15,7 @@ func TestDrawTexturedQuad(t *testing.T) {
 	Convey("doesn't care about state of gl.TEXTURE_2D", t, func() {
 		screen := image.Rect(0, 0, 64, 64)
 		subscreen := image.Rect(16, 16, 48, 48)
-		rendertest.WithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.DeprecatedWithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				gl.Disable(gl.TEXTURE_2D)
 				tex := rendertest.GivenATexture("red/0.png")
@@ -25,7 +25,7 @@ func TestDrawTexturedQuad(t *testing.T) {
 
 			So(queue, rendertest.ShouldLookLikeFile, "subred")
 		})
-		rendertest.WithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.DeprecatedWithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				gl.Enable(gl.TEXTURE_2D)
 				tex := rendertest.GivenATexture("red/0.png")
@@ -41,7 +41,7 @@ func TestDrawTexturedQuad(t *testing.T) {
 	Convey("doesn't care about state of gl.ELEMENT_ARRAY_BUFFER", t, func() {
 		screen := image.Rect(0, 0, 64, 64)
 		subscreen := image.Rect(16, 16, 48, 48)
-		rendertest.WithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.DeprecatedWithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				gl.Buffer(0).Bind(gl.ELEMENT_ARRAY_BUFFER)
 				tex := rendertest.GivenATexture("red/0.png")
@@ -51,7 +51,7 @@ func TestDrawTexturedQuad(t *testing.T) {
 
 			So(queue, rendertest.ShouldLookLikeFile, "subred")
 		})
-		rendertest.WithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.DeprecatedWithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				someStaleBuffer := rendertest.GivenABufferWithData([]float32{
 					77, 55, 44, 33, 22, 11,

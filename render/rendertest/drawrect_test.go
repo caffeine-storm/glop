@@ -20,7 +20,7 @@ func TestDrawRect(t *testing.T) {
 var width, height = 50, 50
 
 func RunTest(withTex2d bool) {
-	rendertest.WithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
+	rendertest.DeprecatedWithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
 		var result *image.RGBA
 		queue.Queue(func(render.RenderQueueState) {
 			if withTex2d {
