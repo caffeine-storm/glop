@@ -40,5 +40,35 @@ func TestGlTestHelpers(t *testing.T) {
 				assert.Equal(dy, uint32(128))
 			})
 		})
+
+		t.Run("and get the queue after", func(t *testing.T) {
+			assert := assert.New(t)
+			rendertest.GlTest().WithSize(64, 128).WithQueue().Run(func(queue render.RenderQueueInterface) {
+				assert.Panics(func() {
+					render.MustBeOnRenderThread()
+				})
+				queue.Queue(func(render.RenderQueueState) {
+					_, _, dx, dy := debug.GetViewport()
+					assert.Equal(dx, uint32(64))
+					assert.Equal(dy, uint32(128))
+				})
+				queue.Purge()
+			})
+		})
+
+		t.Run("and get the queue first", func(t *testing.T) {
+			assert := assert.New(t)
+			rendertest.GlTest().WithQueue().WithSize(64, 128).Run(func(queue render.RenderQueueInterface) {
+				assert.Panics(func() {
+					render.MustBeOnRenderThread()
+				})
+				queue.Queue(func(render.RenderQueueState) {
+					_, _, dx, dy := debug.GetViewport()
+					assert.Equal(dx, uint32(64))
+					assert.Equal(dy, uint32(128))
+				})
+				queue.Purge()
+			})
+		})
 	})
 }
