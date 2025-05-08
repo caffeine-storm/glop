@@ -13,7 +13,6 @@ import (
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
 )
 
 const maxuint16 = 0xffff
@@ -221,7 +220,7 @@ func TestTextureDebugging(t *testing.T) {
 
 		bounds := expectedImage.Bounds()
 		width, height := bounds.Dx(), bounds.Dy()
-		rendertest.WithGlForTest(width, height, func(_ system.System, queue render.RenderQueueInterface) {
+		rendertest.GlTest().WithSize(width, height).WithQueue().Run(func(queue render.RenderQueueInterface) {
 			var result bool
 			var resultImage image.Image
 			queue.Queue(func(st render.RenderQueueState) {

@@ -15,7 +15,6 @@ import (
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -127,7 +126,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	})
 
 	t.Run("works regardless of whether gl.TEXTURE_2D is enabled or not", func(t *testing.T) {
-		rendertest.WithGlForTest(128, 32, func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.GlTest().WithSize(128, 32).WithQueue().Run(func(queue render.RenderQueueInterface) {
 
 			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 

@@ -10,7 +10,6 @@ import (
 	"github.com/runningwild/glop/gui/guitest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
 )
 
 func TestRunTextLineSpecs(t *testing.T) {
@@ -36,7 +35,7 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 	})
 
 	Convey("TextLine draws the given text", func() {
-		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.GlTest().WithSize(screenWidth, screenHeight).WithQueue().Run(func(queue render.RenderQueueInterface) {
 			dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 
@@ -70,7 +69,7 @@ func MultipleTextLineTest(widgetBuilder func(text string) GenericLine) {
 		line2 := widgetBuilder("second line")
 		line3 := widgetBuilder("third line")
 
-		rendertest.WithGlForTest(screenWidth, screenHeight, func(sys system.System, queue render.RenderQueueInterface) {
+		rendertest.GlTest().WithSize(screenWidth, screenHeight).WithQueue().Run(func(queue render.RenderQueueInterface) {
 			dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 
