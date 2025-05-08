@@ -6,7 +6,7 @@ import (
 )
 
 type GlTestBuilder struct {
-	Dx, Dy uint
+	Dx, Dy int
 }
 
 type queueGlTestBuilder struct {
@@ -31,7 +31,7 @@ func (b *GlTestBuilder) Run(fn func()) {
 	})
 }
 
-func (b *GlTestBuilder) WithSize(dx, dy uint) *GlTestBuilder {
+func (b *GlTestBuilder) WithSize(dx, dy int) *GlTestBuilder {
 	b.Dx = dx
 	b.Dy = dy
 	return b
@@ -50,7 +50,7 @@ func (b *queueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
 	})
 }
 
-func (b *queueGlTestBuilder) WithSize(dx, dy uint) *queueGlTestBuilder {
+func (b *queueGlTestBuilder) WithSize(dx, dy int) *queueGlTestBuilder {
 	b.ctx.Dx = dx
 	b.ctx.Dy = dy
 	return b
