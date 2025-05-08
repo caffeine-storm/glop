@@ -13,14 +13,17 @@ type queueGlTestBuilder struct {
 	ctx *GlTestBuilder
 }
 
-func (b *GlTestBuilder) Run(fn func()) {
-	dx, dy := b.Dx, b.Dy
-	if dx == 0 || dy == 0 {
-		// Pick a default of 64x64
-		dx = 64
-		dy = 64
+func (b *GlTestBuilder) WithQueue() *queueGlTestBuilder {
+	return &queueGlTestBuilder{
+		ctx: b,
 	}
-	WithGlForTest(int(dx), int(dy), func(sys system.System, queue render.RenderQueueInterface) {
+}
+
+func (b *GlTestBuilder) Run(fn func()) {
+	delegate := &queueGlTestBuilder{
+		ctx: b,
+	}
+	delegate.Run(func(queue render.RenderQueueInterface) {
 		queue.Queue(func(render.RenderQueueState) {
 			fn()
 		})
@@ -35,13 +38,22 @@ func (b *GlTestBuilder) WithSize(dx, dy uint) *GlTestBuilder {
 }
 
 func (b *queueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
-	WithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
+	dx, dy := b.ctx.Dx, b.ctx.Dy
+	if dx == 0 || dy == 0 {
+		// Pick a default of 64x64
+		dx = 64
+		dy = 64
+	}
+
+	WithGlForTest(int(dx), int(dy), func(sys system.System, queue render.RenderQueueInterface) {
 		fn(queue)
 	})
 }
 
-func (b *GlTestBuilder) WithQueue() *queueGlTestBuilder {
-	return &queueGlTestBuilder{}
+func (b *queueGlTestBuilder) WithSize(dx, dy uint) *queueGlTestBuilder {
+	b.ctx.Dx = dx
+	b.ctx.Dy = dy
+	return b
 }
 
 func GlTest() *GlTestBuilder {
