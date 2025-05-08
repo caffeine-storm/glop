@@ -213,3 +213,13 @@ func WithGl(fn func()) {
 		}
 	})
 }
+
+type GlTestBuilder struct{}
+
+func (b *GlTestBuilder) Run(fn func()) {
+	WithGl(fn)
+}
+
+func GlTest() *GlTestBuilder {
+	return &GlTestBuilder{}
+}
