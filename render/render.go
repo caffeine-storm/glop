@@ -80,13 +80,12 @@ type jobWithTiming struct {
 	QueuedAt time.Time
 }
 
-// TODO(clean): snake_case ==> camelCase
 type renderQueue struct {
-	queue_state    *renderQueueState
-	work_queue     chan *jobWithTiming
+	queueState     *renderQueueState
+	workQueue      chan *jobWithTiming
 	purge          chan chan bool
-	is_running     atomic.Bool
-	is_purging     atomic.Bool
+	isRunning      atomic.Bool
+	isPurging      atomic.Bool
 	listener       *JobTimingListener
 	errorCallbacks []func(RenderQueueInterface, error)
 }
@@ -132,20 +131,20 @@ func (q *renderQueue) loopWithErrorTracking() {
 func (q *renderQueue) loop() {
 	for {
 		select {
-		case job := <-q.work_queue:
-			runAndNotify(job, q.queue_state, q.listener)
+		case job := <-q.workQueue:
+			runAndNotify(job, q.queueState, q.listener)
 		case ack := <-q.purge:
-			q.is_purging.Store(true)
+			q.isPurging.Store(true)
 			for {
 				select {
-				case job := <-q.work_queue:
-					runAndNotify(job, q.queue_state, q.listener)
+				case job := <-q.workQueue:
+					runAndNotify(job, q.queueState, q.listener)
 				default:
 					goto purged
 				}
 			}
 		purged:
-			q.is_purging.Store(false)
+			q.isPurging.Store(false)
 			ack <- true
 		}
 	}
@@ -157,13 +156,13 @@ func MakeQueue(initialization RenderJob) RenderQueueInterface {
 
 func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) RenderQueueInterface {
 	result := renderQueue{
-		queue_state: &renderQueueState{
+		queueState: &renderQueueState{
 			shaders: MakeShaderBank(),
 		},
-		work_queue:     make(chan *jobWithTiming, 1000),
+		workQueue:      make(chan *jobWithTiming, 1000),
 		purge:          make(chan chan bool),
-		is_running:     atomic.Bool{}, // zero-value is false
-		is_purging:     atomic.Bool{}, // zero-value is false
+		isRunning:      atomic.Bool{}, // zero-value is false
+		isPurging:      atomic.Bool{}, // zero-value is false
 		listener:       listener,
 		errorCallbacks: []func(RenderQueueInterface, error){},
 	}
@@ -185,7 +184,7 @@ func (q *renderQueue) AddErrorCallback(fn func(RenderQueueInterface, error)) {
 // TODO(tmckee): inject a GL dependency to given func for testability and to
 // keep arbitrary code from calling GL off of the render thread.
 func (q *renderQueue) Queue(f RenderJob) {
-	q.work_queue <- &jobWithTiming{
+	q.workQueue <- &jobWithTiming{
 		Job:      f,
 		QueuedAt: time.Now(),
 	}
@@ -193,7 +192,7 @@ func (q *renderQueue) Queue(f RenderJob) {
 
 // Waits until all render thread functions have been run
 func (q *renderQueue) Purge() {
-	if !q.is_running.Load() {
+	if !q.isRunning.Load() {
 		slog.Warn("render.RenderQueue.Purge called on non-started queue")
 	}
 	ack := make(chan bool)
@@ -205,12 +204,12 @@ func (q *renderQueue) Purge() {
 }
 
 func (q *renderQueue) StartProcessing() {
-	if !q.is_running.CompareAndSwap(false, true) {
+	if !q.isRunning.CompareAndSwap(false, true) {
 		panic("must not call 'StartProcessing' twice")
 	}
 	go q.loopWithErrorTracking()
 }
 
 func (q *renderQueue) IsPurging() bool {
-	return q.is_purging.Load()
+	return q.isPurging.Load()
 }
