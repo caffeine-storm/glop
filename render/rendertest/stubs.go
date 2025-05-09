@@ -22,6 +22,8 @@ type stubbedQueue struct{}
 
 var _ render.RenderQueueInterface = ((*stubbedQueue)(nil))
 
+func (*stubbedQueue) AddErrorCallback(func(render.RenderQueueInterface, error)) {}
+
 func (*stubbedQueue) Queue(_ render.RenderJob) {}
 func (*stubbedQueue) Purge()                   {}
 func (*stubbedQueue) StartProcessing()         {}

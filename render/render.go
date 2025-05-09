@@ -38,6 +38,10 @@ func (j *RenderJob) GetSourceAttribution() string {
 // Accepts jobs for running on a dedicated, internal thread of control. Helpful
 // for ensuring certain preconditions needed for calling into OpenGL.
 type RenderQueueInterface interface {
+	// Attaches a callback to this render queue. It will get called with errors
+	// that reach the top of the stack for the inner goroutine.
+	AddErrorCallback(func(RenderQueueInterface, error))
+
 	// Eventually runs the given closure on a thread dedicated to OpenGL
 	// operations. Jobs are run sequentially in the order queued. Each job is
 	// passed a reference to data that must only be used on this
@@ -76,13 +80,15 @@ type jobWithTiming struct {
 	QueuedAt time.Time
 }
 
+// TODO(clean): snake_case ==> camelCase
 type renderQueue struct {
-	queue_state *renderQueueState
-	work_queue  chan *jobWithTiming
-	purge       chan chan bool
-	is_running  atomic.Bool
-	is_purging  atomic.Bool
-	listener    *JobTimingListener
+	queue_state    *renderQueueState
+	work_queue     chan *jobWithTiming
+	purge          chan chan bool
+	is_running     atomic.Bool
+	is_purging     atomic.Bool
+	listener       *JobTimingListener
+	errorCallbacks []func(RenderQueueInterface, error)
 }
 
 func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener *JobTimingListener) time.Duration {
@@ -103,13 +109,32 @@ func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener 
 	return delta
 }
 
+func (q *renderQueue) onError(e error) {
+	for _, cb := range q.errorCallbacks {
+		cb(q, e)
+	}
+}
+
+func (q *renderQueue) loopWithErrorTracking() {
+	for {
+		func() {
+			defer func() {
+				if e := recover(); e != nil {
+					q.onError(e.(error))
+				}
+			}()
+
+			q.loop()
+		}()
+	}
+}
+
 func (q *renderQueue) loop() {
 	for {
 		select {
 		case job := <-q.work_queue:
 			runAndNotify(job, q.queue_state, q.listener)
 		case ack := <-q.purge:
-			defer close(ack)
 			q.is_purging.Store(true)
 			for {
 				select {
@@ -135,11 +160,12 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		queue_state: &renderQueueState{
 			shaders: MakeShaderBank(),
 		},
-		work_queue: make(chan *jobWithTiming, 1000),
-		purge:      make(chan chan bool),
-		is_running: atomic.Bool{}, // zero-value is false
-		is_purging: atomic.Bool{}, // zero-value is false
-		listener:   listener,
+		work_queue:     make(chan *jobWithTiming, 1000),
+		purge:          make(chan chan bool),
+		is_running:     atomic.Bool{}, // zero-value is false
+		is_purging:     atomic.Bool{}, // zero-value is false
+		listener:       listener,
+		errorCallbacks: []func(RenderQueueInterface, error){},
 	}
 
 	// We're guaranteed that this render job will run first. We can include our
@@ -150,6 +176,10 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		initialization(st)
 	})
 	return &result
+}
+
+func (q *renderQueue) AddErrorCallback(fn func(RenderQueueInterface, error)) {
+	q.errorCallbacks = append(q.errorCallbacks, fn)
 }
 
 // TODO(tmckee): inject a GL dependency to given func for testability and to
@@ -178,7 +208,7 @@ func (q *renderQueue) StartProcessing() {
 	if !q.is_running.CompareAndSwap(false, true) {
 		panic("must not call 'StartProcessing' twice")
 	}
-	go q.loop()
+	go q.loopWithErrorTracking()
 }
 
 func (q *renderQueue) IsPurging() bool {
