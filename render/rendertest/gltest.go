@@ -6,33 +6,33 @@ import (
 )
 
 func runTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	dotest := func(ctx *glContext) {
+		e := ctx.prep(width, height, InvariantsCheckYes)
+		if e != nil {
+			// Even on error cases, we shouldn't leak GL state.
+			ctx.clean(InvariantsCheckNo)
+			panic(e)
+		}
+
+		ctx.run(fn)
+
+		e = ctx.clean(InvariantsCheckYes)
+		if e != nil {
+			panic(e)
+		}
+	}
+
+	var theContext *glContext
 	select {
 	case cachedContext := <-glTestContextSource:
-		e := cachedContext.prep(width, height, InvariantsCheckYes)
-		if e != nil {
-			cachedContext.clean(InvariantsCheckNo)
-			panic(e)
-		}
-		cachedContext.run(fn)
-		e = cachedContext.clean(InvariantsCheckYes)
-		if e != nil {
-			panic(e)
-		}
-		glTestContextSource <- cachedContext
+		theContext = cachedContext
 	default:
-		newContext := newGlContextForTest(width, height)
-		e := newContext.prep(width, height, InvariantsCheckYes)
-		if e != nil {
-			newContext.clean(InvariantsCheckNo)
-			panic(e)
-		}
-		newContext.run(fn)
-		e = newContext.clean(InvariantsCheckYes)
-		if e != nil {
-			panic(e)
-		}
-		glTestContextSource <- newContext
+		theContext = newGlContextForTest(width, height)
 	}
+
+	dotest(theContext)
+
+	glTestContextSource <- theContext
 }
 
 type GlTestBuilder struct {
