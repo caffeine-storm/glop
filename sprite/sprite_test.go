@@ -20,7 +20,7 @@ func TestSpriteSpecs(t *testing.T) {
 }
 
 func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
-	discardQueue := rendertest.MakeDiscardingRenderQueue()
+	discardQueue := rendertest.MakeStubbedRenderQueue()
 	spriteMan := sprite.MakeManager(discardQueue, func(path string) cache.ByteBank {
 		return cache.MakeLockingByteBank(cache.MakeRamByteBank())
 	})
@@ -124,7 +124,7 @@ func SyncSpec() {
 
 func ManagerSpec() {
 	Convey("A manager must take a cacheing dependency", func() {
-		discardQueue := rendertest.MakeDiscardingRenderQueue()
+		discardQueue := rendertest.MakeStubbedRenderQueue()
 		spyCache := &cachetest.SpyedCache{
 			Impl: cache.MakeRamByteBank(),
 		}

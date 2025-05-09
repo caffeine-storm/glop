@@ -119,7 +119,7 @@ func TestDictionaryGetInfo(t *testing.T) {
 	t.Run("AsciiInfoSucceeds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queue := rendertest.MakeDiscardingRenderQueue()
+		queue := rendertest.MakeStubbedRenderQueue()
 		d := LoadAndInitializeDictionaryForTest(queue, glog.TraceLogger())
 
 		emptyRuneInfo := runeInfo{}

@@ -24,7 +24,7 @@ type GenericLine interface {
 
 func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLine) {
 	Convey("Can make a 'lol' line", func() {
-		renderQueue := rendertest.MakeDiscardingRenderQueue()
+		renderQueue := rendertest.MakeStubbedRenderQueue()
 		dict := gui.LoadAndInitializeDictionaryForTest(renderQueue, glog.VoidLogger())
 		g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 		g.SetDictionary("dict_10", dict)
