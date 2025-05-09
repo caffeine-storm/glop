@@ -212,6 +212,32 @@ func TestExitOnRenderQueue(t *testing.T) {
 		allOutput := strings.Join(output, "\n")
 		assert.Contains(t, allOutput, "we expect to see this string in the logs")
 	})
+
+	t.Run("support error reporting from render thread", func(t *testing.T) {
+		queue := render.MakeQueue(nop)
+		errorSeen := false
+		thisIsFine := &everythingIsFine{}
+		queue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
+			if !errors.Is(e, thisIsFine) {
+				t.Fatalf("got an unexpected error type: %T", e)
+			}
+			errorSeen = true
+		})
+		queue.StartProcessing()
+
+		// Make sure to synchronize with the render thread.
+		queue.Queue(nop)
+		queue.Purge()
+
+		require.False(t, errorSeen, "we shouldn't have seen the error yet")
+
+		queue.Queue(func(render.RenderQueueState) {
+			panic(thisIsFine)
+		})
+		queue.Purge()
+
+		require.True(t, errorSeen, "panicing on the render thread must trigger the OnError behaviour")
+	})
 }
 
 func pollingDrain(ch chan bool) int {
