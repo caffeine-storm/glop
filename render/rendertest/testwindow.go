@@ -162,6 +162,14 @@ type glContext struct {
 const InvariantsCheckNo = false
 const InvariantsCheckYes = true
 
+// Helper for getting the last on-render-queue error; the returned value does
+// need to be run on the render queue.
+func (ctx *glContext) pollForError(out *error) func(render.RenderQueueState) {
+	return func(render.RenderQueueState) {
+		*out = ctx.lastFailure
+	}
+}
+
 func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 	if ctx.windowHandle == nil {
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
@@ -201,10 +209,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 	})
 
 	var e error
-	ctx.render.Queue(func(render.RenderQueueState) {
-		e = ctx.lastFailure
-		ctx.lastFailure = nil
-	})
+	ctx.render.Queue(ctx.pollForError(&e))
 	ctx.render.Purge()
 
 	return e
@@ -227,11 +232,9 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 		}
 		enforceInvariants()
 	})
+
 	var e error
-	ctx.render.Queue(func(render.RenderQueueState) {
-		e = ctx.lastFailure
-		ctx.lastFailure = nil
-	})
+	ctx.render.Queue(ctx.pollForError(&e))
 	ctx.render.Purge()
 
 	return e
