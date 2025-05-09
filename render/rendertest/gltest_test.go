@@ -3,6 +3,7 @@ package rendertest_test
 import (
 	"testing"
 
+	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
@@ -71,6 +72,18 @@ func TestGlTestHelpers(t *testing.T) {
 					assert.Equal(dy, uint32(128))
 				})
 				queue.Purge()
+			})
+		})
+	})
+}
+
+func TestGlStateLeakage(t *testing.T) {
+	t.Run("GlTest should complain upon leakage", func(t *testing.T) {
+		assert.Panics(t, func() {
+			rendertest.GlTest().Run(func() {
+				// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
+				buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
+				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
 			})
 		})
 	})
