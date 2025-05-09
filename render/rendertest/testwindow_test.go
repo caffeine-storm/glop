@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
 )
@@ -53,6 +54,32 @@ func TestCrossTalkPrevention(t *testing.T) {
 		}
 	})
 	clearUnsetValues(initialState)
+	assert.Empty(t, initialState, "tests should be allowed to expect a clean initial state")
+
+	var taintedState map[string]int
+	t.Run("GlTest() sends errors if state-change is leaked", func(t *testing.T) {
+		var expectedError error = nil
+		rendertest.GlTest().WithQueue().Run(func(queue render.RenderQueueInterface) {
+			queue.AddErrorCallback(func(_ render.RenderQueueInterface, e error) {
+				expectedError = e
+			})
+			queue.Queue(func(render.RenderQueueState) {
+				// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
+				buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
+				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
+				taintedState = debug.GetBindingsSet()
+			})
+			queue.Purge()
+
+			// We haven't run the "cleanup" phase of this GlTest so state leakage
+			// should not be checked yet.
+			assert.Nil(t, expectedError)
+		})
+		assert.NotNil(t, expectedError)
+
+		clearUnsetValues(taintedState)
+		assert.NotEqual(t, slices.Sorted(maps.Keys(initialState)), slices.Sorted(maps.Keys(taintedState)))
+	})
 
 	var nextState map[string]int
 	t.Run("the deprecated helpers merely warn", func(t *testing.T) {
