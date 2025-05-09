@@ -181,7 +181,7 @@ func (e *everythingIsFine) Error() string {
 }
 
 func TestExitOnRenderQueue(t *testing.T) {
-	t.Run("runtime.GoexitOnRenderQueueIsDetectable", func(t *testing.T) {
+	t.Run("calling runtime.Goexit on render thread only stops the render thread", func(t *testing.T) {
 		output := gloptest.CollectOutput(func() {
 			queue := render.MakeQueue(nop)
 			queue.Queue(func(render.RenderQueueState) {
