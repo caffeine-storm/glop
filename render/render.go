@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"reflect"
 	"runtime"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -87,7 +88,10 @@ type renderQueue struct {
 	isRunning      atomic.Bool
 	isPurging      atomic.Bool
 	listener       *JobTimingListener
-	errorCallbacks []func(RenderQueueInterface, error)
+	errorCallbacks struct {
+		fns []func(RenderQueueInterface, error)
+		mut sync.Mutex
+	}
 }
 
 func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener *JobTimingListener) time.Duration {
@@ -109,7 +113,9 @@ func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener 
 }
 
 func (q *renderQueue) onError(e error) {
-	for _, cb := range q.errorCallbacks {
+	q.errorCallbacks.mut.Lock()
+	defer q.errorCallbacks.mut.Unlock()
+	for _, cb := range q.errorCallbacks.fns {
 		cb(q, e)
 	}
 }
@@ -177,12 +183,11 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		queueState: &renderQueueState{
 			shaders: MakeShaderBank(),
 		},
-		workQueue:      make(chan *jobWithTiming, 1000),
-		purge:          make(chan chan bool, 16),
-		isRunning:      atomic.Bool{}, // zero-value is false
-		isPurging:      atomic.Bool{}, // zero-value is false
-		listener:       listener,
-		errorCallbacks: []func(RenderQueueInterface, error){},
+		workQueue: make(chan *jobWithTiming, 1000),
+		purge:     make(chan chan bool, 16),
+		isRunning: atomic.Bool{}, // zero-value is false
+		isPurging: atomic.Bool{}, // zero-value is false
+		listener:  listener,
 	}
 
 	// We're guaranteed that this render job will run first. We can include our
@@ -196,7 +201,9 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 }
 
 func (q *renderQueue) AddErrorCallback(fn func(RenderQueueInterface, error)) {
-	q.errorCallbacks = append(q.errorCallbacks, fn)
+	q.errorCallbacks.mut.Lock()
+	defer q.errorCallbacks.mut.Unlock()
+	q.errorCallbacks.fns = append(q.errorCallbacks.fns, fn)
 }
 
 // TODO(tmckee): inject a GL dependency to given func for testability and to
