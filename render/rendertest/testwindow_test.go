@@ -59,21 +59,23 @@ func TestCrossTalkPrevention(t *testing.T) {
 	var taintedState map[string]int
 	t.Run("GlTest() sends errors if state-change is leaked", func(t *testing.T) {
 		var expectedError error = nil
-		rendertest.GlTest().WithQueue().Run(func(queue render.RenderQueueInterface) {
-			queue.AddErrorCallback(func(_ render.RenderQueueInterface, e error) {
-				expectedError = e
-			})
-			queue.Queue(func(render.RenderQueueState) {
-				// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
-				buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
-				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
-				taintedState = debug.GetBindingsSet()
-			})
-			queue.Purge()
+		assert.Panics(t, func() {
+			rendertest.GlTest().WithQueue().Run(func(queue render.RenderQueueInterface) {
+				queue.AddErrorCallback(func(_ render.RenderQueueInterface, e error) {
+					expectedError = e
+				})
+				queue.Queue(func(render.RenderQueueState) {
+					// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
+					buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
+					buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
+					taintedState = debug.GetBindingsSet()
+				})
+				queue.Purge()
 
-			// We haven't run the "cleanup" phase of this GlTest so state leakage
-			// should not be checked yet.
-			assert.Nil(t, expectedError)
+				// We haven't run the "cleanup" phase of this GlTest so state leakage
+				// should not be checked yet.
+				assert.Nil(t, expectedError)
+			})
 		})
 		assert.NotNil(t, expectedError)
 

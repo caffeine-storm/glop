@@ -5,18 +5,34 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
+// TODO(tmckee:clean): can drop 'checkinvariants' param here; it's always true
+// when calling runTestWithCachedContext.
 func runTestWithCachedContext(width, height int, checkinvariants bool, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	select {
 	case cachedContext := <-glTestContextSource:
-		cachedContext.prep(width, height, checkinvariants)
+		e := cachedContext.prep(width, height, checkinvariants)
+		if e != nil {
+			cachedContext.clean(false)
+			panic(e)
+		}
 		cachedContext.run(fn)
-		cachedContext.clean(checkinvariants)
+		e = cachedContext.clean(checkinvariants)
+		if e != nil {
+			panic(e)
+		}
 		glTestContextSource <- cachedContext
 	default:
 		newContext := newGlContextForTest(width, height)
-		newContext.prep(width, height, checkinvariants)
+		e := newContext.prep(width, height, checkinvariants)
+		if e != nil {
+			newContext.clean(false)
+			panic(e)
+		}
 		newContext.run(fn)
-		newContext.clean(checkinvariants)
+		e = newContext.clean(checkinvariants)
+		if e != nil {
+			panic(e)
+		}
 		glTestContextSource <- newContext
 	}
 }

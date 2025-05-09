@@ -156,12 +156,13 @@ type glContext struct {
 	sys          system.System
 	windowHandle system.NativeWindowHandle
 	render       render.RenderQueueInterface
+	lastFailure  error
 }
 
 const InvariantsCheckNo = false
 const InvariantsCheckYes = true
 
-func (ctx *glContext) prep(width, height int, invariantscheck bool) {
+func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 	if ctx.windowHandle == nil {
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
 	}
@@ -198,10 +199,18 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) {
 		// X-server. Without doing so, things break!
 		ctx.sys.SwapBuffers()
 	})
+
+	var e error
+	ctx.render.Queue(func(render.RenderQueueState) {
+		e = ctx.lastFailure
+		ctx.lastFailure = nil
+	})
 	ctx.render.Purge()
+
+	return e
 }
 
-func (ctx *glContext) clean(invariantscheck bool) {
+func (ctx *glContext) clean(invariantscheck bool) error {
 	ctx.render.Queue(func(render.RenderQueueState) {
 		// Undo matrix mode identity loads
 		gl.MatrixMode(gl.TEXTURE)
@@ -218,7 +227,14 @@ func (ctx *glContext) clean(invariantscheck bool) {
 		}
 		enforceInvariants()
 	})
+	var e error
+	ctx.render.Queue(func(render.RenderQueueState) {
+		e = ctx.lastFailure
+		ctx.lastFailure = nil
+	})
 	ctx.render.Purge()
+
+	return e
 }
 
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
@@ -226,12 +242,19 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 }
 
 func newGlContextForTest(width, height int) *glContext {
-	sys, windowHandle, render := newGlWindowForTest(width, height)
-	return &glContext{
+	sys, windowHandle, renderQueue := newGlWindowForTest(width, height)
+	ctx := &glContext{
 		sys:          sys,
 		windowHandle: windowHandle,
-		render:       render,
+		render:       renderQueue,
+		// Note: lastFailure should be considered local to the render thread;
+		// reading/writing to it must synchronize accordingly.
+		lastFailure: nil,
 	}
+	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
+		ctx.lastFailure = e
+	})
+	return ctx
 }
 
 var glTestContextSource = make(chan *glContext, 24)
