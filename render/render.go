@@ -134,17 +134,35 @@ func (q *renderQueue) loop() {
 		case job := <-q.workQueue:
 			runAndNotify(job, q.queueState, q.listener)
 		case ack := <-q.purge:
-			q.isPurging.Store(true)
-			for {
-				select {
-				case job := <-q.workQueue:
-					runAndNotify(job, q.queueState, q.listener)
-				default:
-					goto purged
+			func() {
+				q.isPurging.Store(true)
+				defer q.isPurging.Store(false)
+
+				defer func() {
+					if e := recover(); e != nil {
+						// put the 'ack' channel back into the sequence-of-purge-requests
+						// so that we can continue draining the queue once loop() gets
+						// called again. We can't just acknowledge the purge request yet
+						// because there could be more work in the workQueue.
+						q.purge <- ack
+
+						// Re-raise the error so that RenderQueueInterface error reporting
+						// can happen.
+						panic(e)
+					}
+				}()
+
+				for {
+					select {
+					case job := <-q.workQueue:
+						runAndNotify(job, q.queueState, q.listener)
+					default:
+						// We've just exhausted the workQueue; we can break out of this
+						// inner func().
+						return
+					}
 				}
-			}
-		purged:
-			q.isPurging.Store(false)
+			}()
 			ack <- true
 		}
 	}
@@ -160,7 +178,7 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 			shaders: MakeShaderBank(),
 		},
 		workQueue:      make(chan *jobWithTiming, 1000),
-		purge:          make(chan chan bool),
+		purge:          make(chan chan bool, 16),
 		isRunning:      atomic.Bool{}, // zero-value is false
 		isPurging:      atomic.Bool{}, // zero-value is false
 		listener:       listener,
