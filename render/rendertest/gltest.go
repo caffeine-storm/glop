@@ -5,31 +5,29 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-// TODO(tmckee:clean): can drop 'checkinvariants' param here; it's always true
-// when calling runTestWithCachedContext.
-func runTestWithCachedContext(width, height int, checkinvariants bool, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+func runTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	select {
 	case cachedContext := <-glTestContextSource:
-		e := cachedContext.prep(width, height, checkinvariants)
+		e := cachedContext.prep(width, height, InvariantsCheckYes)
 		if e != nil {
-			cachedContext.clean(false)
+			cachedContext.clean(InvariantsCheckNo)
 			panic(e)
 		}
 		cachedContext.run(fn)
-		e = cachedContext.clean(checkinvariants)
+		e = cachedContext.clean(InvariantsCheckYes)
 		if e != nil {
 			panic(e)
 		}
 		glTestContextSource <- cachedContext
 	default:
 		newContext := newGlContextForTest(width, height)
-		e := newContext.prep(width, height, checkinvariants)
+		e := newContext.prep(width, height, InvariantsCheckYes)
 		if e != nil {
-			newContext.clean(false)
+			newContext.clean(InvariantsCheckNo)
 			panic(e)
 		}
 		newContext.run(fn)
-		e = newContext.clean(checkinvariants)
+		e = newContext.clean(InvariantsCheckYes)
 		if e != nil {
 			panic(e)
 		}
@@ -77,7 +75,7 @@ func (b *queueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
 		dy = 64
 	}
 
-	runTestWithCachedContext(int(dx), int(dy), InvariantsCheckYes, func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
+	runTestWithCachedContext(int(dx), int(dy), func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		fn(queue)
 	})
 }
