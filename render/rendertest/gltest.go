@@ -1,6 +1,8 @@
 package rendertest
 
 import (
+	"fmt"
+
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/system"
 )
@@ -11,14 +13,14 @@ func RunTestWithCachedContext(width, height int, fn func(system.System, system.N
 		if e != nil {
 			// Even on error cases, we shouldn't leak GL state.
 			ctx.clean(InvariantsCheckNo)
-			panic(e)
+			panic(fmt.Errorf("previous state leakage encountered during prep: %w", e))
 		}
 
 		ctx.run(fn)
 
 		e = ctx.clean(InvariantsCheckYes)
 		if e != nil {
-			panic(e)
+			panic(fmt.Errorf("state leakage during cleanup: %w", e))
 		}
 	}
 
