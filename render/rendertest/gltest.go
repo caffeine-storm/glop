@@ -61,6 +61,19 @@ func (b *GlTestBuilder) Run(fn func()) {
 	})
 }
 
+func (b *GlTestBuilder) RunWithAllTheThings(fn func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface)) {
+	dx, dy := b.Dx, b.Dy
+	if dx == 0 || dy == 0 {
+		// Pick a default of 64x64
+		dx = 64
+		dy = 64
+	}
+
+	runTestWithCachedContext(dx, dy, func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
+		fn(sys, hdl, queue)
+	})
+}
+
 func (b *GlTestBuilder) WithSize(dx, dy int) *GlTestBuilder {
 	b.Dx = dx
 	b.Dy = dy
