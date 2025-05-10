@@ -2,6 +2,7 @@ package rendertest
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/MobRulesGames/mathgl"
 	"github.com/go-gl-legacy/gl"
@@ -12,44 +13,66 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-func matrixStacksMustBeSize1() {
+func getBadMatrixStackSizes() map[string]int {
 	sizes := [3]int{
 		gl.GetInteger(gl.MODELVIEW_STACK_DEPTH),
 		gl.GetInteger(gl.PROJECTION_STACK_DEPTH),
 		gl.GetInteger(gl.TEXTURE_STACK_DEPTH),
 	}
-
-	if sizes[0] != 1 || sizes[1] != 1 || sizes[2] != 1 {
-		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", sizes))
+	modes := [3]string{
+		"modelview",
+		"projection",
+		"texture",
 	}
+
+	ret := map[string]int{}
+
+	for i, sz := range sizes {
+		if sz != 1 {
+			ret[modes[i]] = sz
+		}
+	}
+
+	return ret
 }
 
-func matrixStacksMustBeIdentity() {
+func getBadMatrixValues() map[string]mathgl.Mat4 {
 	var buffer [3]mathgl.Mat4
 
 	gl.GetFloatv(gl.MODELVIEW_MATRIX, buffer[0][:])
 	gl.GetFloatv(gl.PROJECTION_MATRIX, buffer[1][:])
 	gl.GetFloatv(gl.TEXTURE_MATRIX, buffer[2][:])
 
-	if buffer[0].IsIdentity() && buffer[1].IsIdentity() && buffer[2].IsIdentity() {
-		return
-	}
+	ret := map[string]mathgl.Mat4{}
 
-	panic(fmt.Errorf(
-		`matrix stacks needed to be topped with identity matrices:
-modelview:
-%v
-projection:
-%v
-texture:
-%v`, render.Showmat(buffer[0]), render.Showmat(buffer[1]), render.Showmat(buffer[2])))
+	if !buffer[0].IsIdentity() {
+		ret["modelview"] = buffer[0]
+	}
+	if !buffer[1].IsIdentity() {
+		ret["projection"] = buffer[1]
+	}
+	if !buffer[2].IsIdentity() {
+		ret["texture"] = buffer[2]
+	}
+	return ret
+
 }
 
-func checkMatrixInvariants() {
+func mustSatisfyMatrixInvariants() {
 	// If the matrix stacks are size 1 with the identity on top, something is
 	// wrong.
-	matrixStacksMustBeSize1()
-	matrixStacksMustBeIdentity()
+	mp := getBadMatrixStackSizes()
+	if len(mp) > 0 {
+		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", mp))
+	}
+	mpp := getBadMatrixValues()
+	if len(mpp) > 0 {
+		reports := []string{}
+		for key, val := range mpp {
+			reports = append(reports, fmt.Sprintf("%s:\n%v", key, render.Showmat(val)))
+		}
+		panic(fmt.Errorf("matrix stacks needed to be topped with identity matrices:\n%s", strings.Join(reports, "\n")))
+	}
 }
 
 type badBindings struct {
@@ -60,7 +83,7 @@ func (bb *badBindings) Error() string {
 	return fmt.Sprintf("need bindings unset but found bindings for: %v", bb.badvals)
 }
 
-func checkBindingsInvariants() {
+func mustSatisfyBindingsInvariants() {
 	bindings := []gl.GLenum{
 		gl.ARRAY_BUFFER_BINDING,
 		gl.ELEMENT_ARRAY_BUFFER_BINDING,
@@ -82,9 +105,9 @@ func checkBindingsInvariants() {
 	}
 }
 
-func checkInvariants() {
-	checkMatrixInvariants()
-	checkBindingsInvariants()
+func mustSatisfyInvariants() {
+	mustSatisfyMatrixInvariants()
+	mustSatisfyBindingsInvariants()
 }
 
 func enforceMatrixStacksMustBeIdentitySingletons() {
@@ -128,7 +151,7 @@ func enforceClearBindingsSet() {
 				glog.WarningLogger().Warn("rendertest enforcing bindings invariant", "state leakage", binds)
 			}
 		}()
-		checkBindingsInvariants()
+		mustSatisfyBindingsInvariants()
 	}()
 
 	for _, name := range bufferBindings {
@@ -201,7 +224,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 
 	ctx.render.Queue(func(render.RenderQueueState) {
 		if invariantscheck {
-			checkInvariants()
+			mustSatisfyInvariants()
 		}
 		enforceInvariants()
 
@@ -252,7 +275,7 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 		gl.PopMatrix()
 
 		if invariantscheck {
-			checkInvariants()
+			mustSatisfyInvariants()
 		}
 
 		enforceInvariants()
