@@ -10,11 +10,12 @@ import (
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestWithGl(t *testing.T) {
-	rendertest.GlTest().Run(func() {
+	testbuilder.New().Run(func() {
 		versionString := gl.GetString(gl.VERSION)
 		log.Printf("versionString: %q\n", versionString)
 
@@ -41,7 +42,7 @@ func TestCrossTalkPrevention(t *testing.T) {
 	// Before and after a test, there should be certain invariants otherwise
 	// tests are susceptible to cross-talk.
 	var initialState map[string]int
-	rendertest.GlTest().Run(func() {
+	testbuilder.New().Run(func() {
 		initialState = debug.GetBindingsSet()
 	})
 
@@ -60,7 +61,7 @@ func TestCrossTalkPrevention(t *testing.T) {
 	t.Run("GlTest() sends errors if state-change is leaked", func(t *testing.T) {
 		var expectedError error = nil
 		assert.Panics(t, func() {
-			rendertest.GlTest().WithQueue().Run(func(queue render.RenderQueueInterface) {
+			testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
 				queue.AddErrorCallback(func(_ render.RenderQueueInterface, e error) {
 					expectedError = e
 				})

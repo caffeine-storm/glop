@@ -2,12 +2,12 @@ package systemtest
 
 import (
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/runningwild/glop/system"
 )
 
 type testBuilder struct {
-	delegate *rendertest.GlTestBuilder
+	delegate *testbuilder.GlTestBuilder
 }
 
 func (b *testBuilder) Run(fn func(window Window)) {
@@ -20,7 +20,7 @@ func (b *testBuilder) Run(fn func(window Window)) {
 	})
 }
 
-func TestBuilder(delegate *rendertest.GlTestBuilder) *testBuilder {
+func TestBuilder(delegate *testbuilder.GlTestBuilder) *testBuilder {
 	return &testBuilder{
 		delegate: delegate,
 	}

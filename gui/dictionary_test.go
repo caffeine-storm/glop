@@ -15,6 +15,7 @@ import (
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -116,7 +117,7 @@ func TestMakeAndInitializeDictionary(t *testing.T) {
 
 func TestDictionaryRenderString(t *testing.T) {
 	t.Run("has a reasonable API", func(t *testing.T) {
-		rendertest.GlTest().WithQueue().Run(func(queue render.RenderQueueInterface) {
+		testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
 			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 
 			// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
@@ -126,7 +127,7 @@ func TestDictionaryRenderString(t *testing.T) {
 	})
 
 	t.Run("works regardless of whether gl.TEXTURE_2D is enabled or not", func(t *testing.T) {
-		rendertest.GlTest().WithSize(128, 32).WithQueue().Run(func(queue render.RenderQueueInterface) {
+		testbuilder.New().WithSize(128, 32).WithQueue().Run(func(queue render.RenderQueueInterface) {
 
 			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 
