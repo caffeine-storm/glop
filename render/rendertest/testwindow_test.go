@@ -4,10 +4,12 @@ import (
 	"log"
 	"maps"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
@@ -86,14 +88,18 @@ func TestCrossTalkPrevention(t *testing.T) {
 
 	var nextState map[string]int
 	t.Run("the deprecated helpers merely warn", func(t *testing.T) {
-		rendertest.DeprecatedWithGl(func() {
-			// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
-			buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
-			buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
-			nextState = debug.GetBindingsSet()
+		output := gloptest.CollectOutput(func() {
+			rendertest.DeprecatedWithGl(func() {
+				// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
+				buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
+				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
+				nextState = debug.GetBindingsSet()
+			})
 		})
 
 		clearUnsetValues(nextState)
 		assert.NotEqual(t, slices.Sorted(maps.Keys(initialState)), slices.Sorted(maps.Keys(nextState)))
+
+		assert.Contains(t, strings.Join(output, "\n"), "state leakage")
 	})
 }
