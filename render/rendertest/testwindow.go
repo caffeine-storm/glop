@@ -52,6 +52,14 @@ func checkMatrixInvariants() {
 	matrixStacksMustBeIdentity()
 }
 
+type badBindings struct {
+	badvals []gl.GLenum
+}
+
+func (bb *badBindings) Error() string {
+	return fmt.Sprintf("need bindings unset but found bindings for: %v", bb.badvals)
+}
+
 func checkBindingsInvariants() {
 	bindings := []gl.GLenum{
 		gl.ARRAY_BUFFER_BINDING,
@@ -70,7 +78,7 @@ func checkBindingsInvariants() {
 	}
 
 	if len(badvals) != 0 {
-		panic(fmt.Errorf("need bindings unset but found bindings for: %v", badvals))
+		panic(&badBindings{badvals})
 	}
 }
 
@@ -92,6 +100,9 @@ func enforceMatrixStacksMustBeIdentitySingletons() {
 	}
 
 	for i, sizei := range sizes {
+		if sizei != 1 {
+			glog.WarningLogger().Warn("rendertest enforcing matrix invariant", "state leakage", fmt.Sprintf("matrix mode %v", modes[i]))
+		}
 		gl.MatrixMode(gl.GLenum(modes[i]))
 		for j := sizei; j > 1; j-- {
 			gl.PopMatrix()
@@ -107,6 +118,19 @@ func enforceClearBindingsSet() {
 		gl.PIXEL_PACK_BUFFER,
 		gl.PIXEL_UNPACK_BUFFER,
 	}
+	func() {
+		defer func() {
+			if e := recover(); e != nil {
+				binds, ok := e.(*badBindings)
+				if !ok {
+					panic(e)
+				}
+				glog.WarningLogger().Warn("rendertest enforcing bindings invariant", "state leakage", binds)
+			}
+		}()
+		checkBindingsInvariants()
+	}()
+
 	for _, name := range bufferBindings {
 		gl.Buffer(0).Bind(name)
 	}
@@ -230,6 +254,7 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 		if invariantscheck {
 			checkInvariants()
 		}
+
 		enforceInvariants()
 	})
 
