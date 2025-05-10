@@ -13,10 +13,7 @@ type testBuilder struct {
 func (b *testBuilder) Run(fn func(window Window)) {
 	b.delegate.RunWithAllTheThings(func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		window := NewTestWindow(sys, hdl, queue)
-		queue.Queue(func(st render.RenderQueueState) {
-			fn(window)
-		})
-		queue.Purge()
+		fn(window)
 	})
 }
 
