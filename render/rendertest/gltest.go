@@ -16,11 +16,15 @@ func RunTestWithCachedContext(width, height int, fn func(system.System, system.N
 			panic(fmt.Errorf("previous state leakage encountered during prep: %w", e))
 		}
 
-		ctx.run(fn)
+		e = ctx.run(fn)
 
-		e = ctx.clean(InvariantsCheckYes)
-		if e != nil {
+		ee := ctx.clean(InvariantsCheckYes)
+		if ee != nil {
 			panic(fmt.Errorf("state leakage during cleanup: %w", e))
+		}
+
+		if e != nil {
+			panic(fmt.Errorf("error on render-thread: %w", e))
 		}
 	}
 

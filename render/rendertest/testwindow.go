@@ -207,11 +207,13 @@ type glContext struct {
 const InvariantsCheckNo = false
 const InvariantsCheckYes = true
 
-// Helper for getting the last on-render-queue error.
-func (ctx *glContext) getLastError() error {
+// Helper for getting the last on-render-queue error. Clears the state used to
+// track on-render-queue errors.
+func (ctx *glContext) takeLastError() error {
 	var err error
 	ctx.render.Queue(func(render.RenderQueueState) {
 		err = ctx.lastFailure
+		ctx.lastFailure = nil
 	})
 	ctx.render.Purge()
 	return err
@@ -255,7 +257,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 		ctx.sys.SwapBuffers()
 	})
 
-	return ctx.getLastError()
+	return ctx.takeLastError()
 }
 
 func (ctx *glContext) clean(invariantscheck bool) error {
@@ -277,12 +279,12 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 		enforceInvariants()
 	})
 
-	return ctx.getLastError()
+	return ctx.takeLastError()
 }
 
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	fn(ctx.sys, ctx.windowHandle, ctx.render)
-	return ctx.getLastError()
+	return ctx.takeLastError()
 }
 
 func newGlContextForTest(width, height int) *glContext {
