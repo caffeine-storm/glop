@@ -30,17 +30,21 @@ func TestCollectOutputWithConvey(t *testing.T) {
 		})
 		Convey("can take a func that panics", func() {
 			testpass := false
-			defer func() {
-				if v := recover(); v != nil {
-					testpass = true
-				}
+			didrun := false
+			func() {
+				defer func() {
+					if v := recover(); v != nil {
+						testpass = true
+					}
+				}()
+				gloptest.CollectOutput(func() {
+					So(3, ShouldEqual, 3)
+					didrun = true
+					panic("for testing")
+				})
 			}()
-			gloptest.CollectOutput(func() {
-				So(3, ShouldEqual, 3)
-				panic("for testing")
-			})
-
 			So(testpass, ShouldBeTrue)
+			So(didrun, ShouldBeTrue)
 		})
 	})
 }
