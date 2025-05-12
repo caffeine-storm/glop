@@ -207,15 +207,14 @@ type glContext struct {
 const InvariantsCheckNo = false
 const InvariantsCheckYes = true
 
-// Helper for getting the last on-render-queue error; the returned value does
-// need to be run on the render queue.
-// TODO: refactor this as a "getLastError" helper instead; no need to have
-// callers allocate an error and build a func over a pointer-to-it _each_
-// _time_.
-func (ctx *glContext) pollForError(out *error) func(render.RenderQueueState) {
-	return func(render.RenderQueueState) {
-		*out = ctx.lastFailure
-	}
+// Helper for getting the last on-render-queue error.
+func (ctx *glContext) getLastError() error {
+	var err error
+	ctx.render.Queue(func(render.RenderQueueState) {
+		err = ctx.lastFailure
+	})
+	ctx.render.Purge()
+	return err
 }
 
 func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
@@ -256,11 +255,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 		ctx.sys.SwapBuffers()
 	})
 
-	var e error
-	ctx.render.Queue(ctx.pollForError(&e))
-	ctx.render.Purge()
-
-	return e
+	return ctx.getLastError()
 }
 
 func (ctx *glContext) clean(invariantscheck bool) error {
@@ -282,19 +277,12 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 		enforceInvariants()
 	})
 
-	var e error
-	ctx.render.Queue(ctx.pollForError(&e))
-	ctx.render.Purge()
-
-	return e
+	return ctx.getLastError()
 }
 
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	fn(ctx.sys, ctx.windowHandle, ctx.render)
-	var e error
-	ctx.render.Queue(ctx.pollForError(&e))
-	ctx.render.Purge()
-	return e
+	return ctx.getLastError()
 }
 
 func newGlContextForTest(width, height int) *glContext {
