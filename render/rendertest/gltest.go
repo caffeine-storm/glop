@@ -8,19 +8,22 @@ import (
 )
 
 func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	dotest := func(ctx *glContext) {
-		e := ctx.prep(width, height, InvariantsCheckYes)
+	dotest := func(ctx *glContext, checkInvariants bool) {
+		e := ctx.prep(width, height, checkInvariants)
 		if e != nil {
 			// Even on error cases, we shouldn't leak GL state.
-			ctx.clean(InvariantsCheckNo)
-			panic(fmt.Errorf("previous state leakage encountered during prep: %w", e))
+			ee := ctx.clean(InvariantsCheckNo)
+			if ee != nil {
+				panic(fmt.Errorf("after prep-failure: %w, couldn't clean: %w", e, ee))
+			}
+			panic(fmt.Errorf("couldn't prep: %w", e))
 		}
 
 		e = ctx.run(fn)
 
-		ee := ctx.clean(InvariantsCheckYes)
+		ee := ctx.clean(checkInvariants)
 		if ee != nil {
-			panic(fmt.Errorf("state leakage during cleanup: %w", e))
+			panic(fmt.Errorf("couldn't clean: %w, testresult: %w", ee, e))
 		}
 
 		if e != nil {
@@ -36,7 +39,7 @@ func RunTestWithCachedContext(width, height int, fn func(system.System, system.N
 		theContext = newGlContextForTest(width, height)
 	}
 
-	dotest(theContext)
+	dotest(theContext, InvariantsCheckYes)
 
 	glTestContextSource <- theContext
 }
