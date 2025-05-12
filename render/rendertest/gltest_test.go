@@ -1,6 +1,7 @@
 package rendertest_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
@@ -76,6 +77,28 @@ func TestGlStateLeakage(t *testing.T) {
 				buf := rendertest.GivenABufferWithData([]float32{0, 1, 2, 0, 2, 3})
 				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
 			})
+		})
+	})
+}
+
+func TestFailureDoesNotCascade(t *testing.T) {
+	assert.Panics(t, func() {
+		testbuilder.New().Run(func() {
+			panic(fmt.Errorf("yup; that's a panic"))
+		})
+	})
+	testbuilder.New().Run(func() {
+		// must not panic
+	})
+
+	t.Run("even with the deprecated helpers", func(t *testing.T) {
+		assert.Panics(t, func() {
+			rendertest.DeprecatedWithGl(func() {
+				panic(fmt.Errorf("yup; that's a panic"))
+			})
+		})
+		rendertest.DeprecatedWithGl(func() {
+			// must not panic
 		})
 	})
 }
