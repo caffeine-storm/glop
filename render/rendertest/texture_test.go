@@ -69,17 +69,19 @@ func TestDrawTexturedQuad(t *testing.T) {
 	})
 
 	Convey("GivenATexture must panic if there's no image file", t, func(c C) {
+		mustPanic := func() {
+			tex := rendertest.GivenATexture("thisfiledoesnotexist.nope")
+			tex.Delete()
+		}
 		c.So(func() {
 			testbuilder.New().Run(func() {
-				tex := rendertest.GivenATexture("thisfiledoesnotexist.nope")
-				tex.Delete()
+				mustPanic()
 			})
 		}, ShouldPanic)
 		Convey("With the deprecated helpers too", func(c C) {
 			c.So(func() {
 				rendertest.DeprecatedWithGl(func() {
-					tex := rendertest.GivenATexture("thisfiledoesnotexist.nope")
-					tex.Delete()
+					mustPanic()
 				})
 			}, ShouldPanic)
 		})
