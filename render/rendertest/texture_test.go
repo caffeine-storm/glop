@@ -7,6 +7,7 @@ import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -65,5 +66,22 @@ func TestDrawTexturedQuad(t *testing.T) {
 			So(queue, rendertest.ShouldLookLikeFile, "subred")
 		})
 
+	})
+
+	Convey("GivenATexture must panic if there's no image file", t, func(c C) {
+		c.So(func() {
+			testbuilder.New().Run(func() {
+				tex := rendertest.GivenATexture("thisfiledoesnotexist.nope")
+				tex.Delete()
+			})
+		}, ShouldPanic)
+		Convey("With the deprecated helpers too", func(c C) {
+			c.So(func() {
+				rendertest.DeprecatedWithGl(func() {
+					tex := rendertest.GivenATexture("thisfiledoesnotexist.nope")
+					tex.Delete()
+				})
+			}, ShouldPanic)
+		})
 	})
 }
