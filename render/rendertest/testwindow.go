@@ -303,28 +303,9 @@ func newGlContextForTest(width, height int) *glContext {
 	return ctx
 }
 
-var glTestContextSource = make(chan *glContext, 24)
-
 // TODO(#37): prefer GlTest()
 func DeprecatedWithGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	var err error
-	select {
-	case cachedContext := <-glTestContextSource:
-		cachedContext.prep(width, height, InvariantsCheckNo)
-		err = cachedContext.run(fn)
-		cachedContext.clean(InvariantsCheckNo)
-		glTestContextSource <- cachedContext
-	default:
-		newContext := newGlContextForTest(width, height)
-		newContext.prep(width, height, InvariantsCheckNo)
-		err = newContext.run(fn)
-		newContext.clean(InvariantsCheckNo)
-		glTestContextSource <- newContext
-	}
-
-	if err != nil {
-		panic(fmt.Errorf("failure on render thread: %w", err))
-	}
+	RunDeprecatedTestWithCachedContext(width, height, fn)
 }
 
 // TODO(#37): prefer GlTest()

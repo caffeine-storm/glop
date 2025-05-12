@@ -7,8 +7,8 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	dotest := func(ctx *glContext, checkInvariants bool) {
+func makeTestTemplate(checkInvariants bool, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) func(width, height int, ctx *glContext) {
+	return func(width, height int, ctx *glContext) {
 		e := ctx.prep(width, height, checkInvariants)
 		if e != nil {
 			// Even on error cases, we shouldn't leak GL state.
@@ -30,7 +30,11 @@ func RunTestWithCachedContext(width, height int, fn func(system.System, system.N
 			panic(fmt.Errorf("error on render-thread: %w", e))
 		}
 	}
+}
 
+var glTestContextSource = make(chan *glContext, 24)
+
+func runOverCachedContext(width, height int, dotest func(int, int, *glContext)) {
 	var theContext *glContext
 	select {
 	case cachedContext := <-glTestContextSource:
@@ -38,8 +42,19 @@ func RunTestWithCachedContext(width, height int, fn func(system.System, system.N
 	default:
 		theContext = newGlContextForTest(width, height)
 	}
+	defer func() {
+		glTestContextSource <- theContext
+	}()
 
-	dotest(theContext, InvariantsCheckYes)
+	dotest(width, height, theContext)
+}
 
-	glTestContextSource <- theContext
+func RunDeprecatedTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	dotest := makeTestTemplate(InvariantsCheckNo, fn)
+	runOverCachedContext(width, height, dotest)
+}
+
+func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	dotest := makeTestTemplate(InvariantsCheckYes, fn)
+	runOverCachedContext(width, height, dotest)
 }
