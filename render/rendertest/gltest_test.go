@@ -101,4 +101,30 @@ func TestFailureDoesNotCascade(t *testing.T) {
 			// must not panic
 		})
 	})
+
+	t.Run("render thread failures fail-fast", func(t *testing.T) {
+		assert := assert.New(t)
+
+		shouldGetHere := false
+		shouldNotGetHere := false
+		shouldAlsoNotGetHere := false
+
+		assert.Panics(func() {
+			testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
+				shouldGetHere = true
+
+				queue.Queue(func(st render.RenderQueueState) {
+					panic(fmt.Errorf("yup; that's a panic"))
+					shouldNotGetHere = true
+				})
+				queue.Purge()
+
+				shouldAlsoNotGetHere = true
+			})
+		})
+
+		assert.True(shouldGetHere)
+		assert.False(shouldNotGetHere)
+		assert.False(shouldAlsoNotGetHere)
+	})
 }
