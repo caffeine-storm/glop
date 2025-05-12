@@ -209,6 +209,9 @@ const InvariantsCheckYes = true
 
 // Helper for getting the last on-render-queue error; the returned value does
 // need to be run on the render queue.
+// TODO: refactor this as a "getLastError" helper instead; no need to have
+// callers allocate an error and build a func over a pointer-to-it _each_
+// _time_.
 func (ctx *glContext) pollForError(out *error) func(render.RenderQueueState) {
 	return func(render.RenderQueueState) {
 		*out = ctx.lastFailure
@@ -286,8 +289,12 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 	return e
 }
 
-func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	fn(ctx.sys, ctx.windowHandle, ctx.render)
+	var e error
+	ctx.render.Queue(ctx.pollForError(&e))
+	ctx.render.Purge()
+	return e
 }
 
 func newGlContextForTest(width, height int) *glContext {
@@ -310,18 +317,23 @@ var glTestContextSource = make(chan *glContext, 24)
 
 // TODO(#37): prefer GlTest()
 func DeprecatedWithGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	var err error
 	select {
 	case cachedContext := <-glTestContextSource:
 		cachedContext.prep(width, height, InvariantsCheckNo)
-		cachedContext.run(fn)
+		err = cachedContext.run(fn)
 		cachedContext.clean(InvariantsCheckNo)
 		glTestContextSource <- cachedContext
 	default:
 		newContext := newGlContextForTest(width, height)
 		newContext.prep(width, height, InvariantsCheckNo)
-		newContext.run(fn)
+		err = newContext.run(fn)
 		newContext.clean(InvariantsCheckNo)
 		glTestContextSource <- newContext
+	}
+
+	if err != nil {
+		panic(fmt.Errorf("failure on render thread: %w", err))
 	}
 }
 
