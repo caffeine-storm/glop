@@ -3,6 +3,7 @@ package gloptest_test
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/runningwild/glop/gloptest"
@@ -29,22 +30,23 @@ func TestCollectOutputWithConvey(t *testing.T) {
 			})
 		})
 		Convey("can take a func that panics", func() {
-			testpass := false
 			didrun := false
+			var collectedOutput []string
 			func() {
-				defer func() {
-					if v := recover(); v != nil {
-						testpass = true
-					}
-				}()
-				gloptest.CollectOutput(func() {
-					So(3, ShouldEqual, 3)
-					didrun = true
-					panic("for testing")
+				collectedOutput = gloptest.CollectOutput(func() {
+					So(func() {
+						didrun = true
+						fmt.Printf("1: some output")
+						panic("for testing")
+					}, ShouldPanic)
+					fmt.Printf("2: some more output")
 				})
 			}()
-			So(testpass, ShouldBeTrue)
 			So(didrun, ShouldBeTrue)
+
+			singleString := strings.Join(collectedOutput, "\n")
+			So(singleString, ShouldContainSubstring, "1: some output")
+			So(singleString, ShouldContainSubstring, "2: some more output")
 		})
 	})
 }
