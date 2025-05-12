@@ -1,6 +1,7 @@
 package rendertest
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -198,10 +199,10 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 }
 
 type glContext struct {
-	sys          system.System
-	windowHandle system.NativeWindowHandle
-	render       render.RenderQueueInterface
-	lastFailure  error
+	sys              system.System
+	windowHandle     system.NativeWindowHandle
+	render           render.RenderQueueInterface
+	recordedFailures []error
 }
 
 const InvariantsCheckNo = false
@@ -210,13 +211,14 @@ const InvariantsCheckYes = true
 // Helper for getting the last on-render-queue error. Clears the state used to
 // track on-render-queue errors.
 func (ctx *glContext) takeLastError() error {
-	var err error
+	var allErrors []error
 	ctx.render.Queue(func(render.RenderQueueState) {
-		err = ctx.lastFailure
-		ctx.lastFailure = nil
+		allErrors = ctx.recordedFailures
+		ctx.recordedFailures = nil
 	})
 	ctx.render.Purge()
-	return err
+
+	return errors.Join(allErrors...)
 }
 
 func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
@@ -285,22 +287,6 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	fn(ctx.sys, ctx.windowHandle, ctx.render)
 	return ctx.takeLastError()
-}
-
-func newGlContextForTest(width, height int) *glContext {
-	sys, windowHandle, renderQueue := newGlWindowForTest(width, height)
-	ctx := &glContext{
-		sys:          sys,
-		windowHandle: windowHandle,
-		render:       renderQueue,
-		// Note: lastFailure should be considered local to the render thread;
-		// reading/writing to it must synchronize accordingly.
-		lastFailure: nil,
-	}
-	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
-		ctx.lastFailure = e
-	})
-	return ctx
 }
 
 // TODO(#37): prefer GlTest()
