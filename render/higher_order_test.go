@@ -2,12 +2,14 @@ package render_test
 
 import (
 	"fmt"
+	"image/color"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glew"
 	"github.com/runningwild/glop/render"
+	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
@@ -178,5 +180,49 @@ func TestTexture2DHelpers(t *testing.T) {
 		testcase()
 		gl.Enable(gl.TEXTURE_2D)
 		testcase()
+	})
+}
+
+func pickADifferentColour(notThese ...color.RGBA) color.RGBA {
+	ret := color.RGBA{
+		R: 0,
+		G: 0,
+		B: 0,
+		A: 1,
+	}
+	if len(notThese) == 0 {
+		return ret
+	}
+
+	ret = notThese[len(notThese)-1]
+	ret.R += 8
+	ret.G += 8
+	ret.B += 8
+
+	for _, val := range notThese {
+		if ret == val {
+			panic(fmt.Errorf("simplistic choice of 'different' is broken"))
+		}
+	}
+
+	return ret
+}
+
+func TestWithColour(t *testing.T) {
+	assert := assert.New(t)
+	testbuilder.New().Run(func() {
+		oldColour := rendertest.GetCurrentForegroundColour()
+		newColour := pickADifferentColour(oldColour)
+		var chosenColour color.RGBA
+		render.WithColour(newColour.R, newColour.G, newColour.B, newColour.A, func() {
+			chosenColour = rendertest.GetCurrentForegroundColour()
+
+			tempColour := pickADifferentColour(oldColour, newColour, chosenColour)
+			gl.Color4ub(tempColour.R, tempColour.G, tempColour.B, tempColour.A)
+		})
+		afterColour := rendertest.GetCurrentForegroundColour()
+
+		assert.Equal(newColour, chosenColour)
+		assert.Equal(oldColour, afterColour)
 	})
 }

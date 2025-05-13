@@ -27,6 +27,12 @@ func getCurrentBackground() [4]float32 {
 	return oldClear
 }
 
+func getCurrentForeground() [4]float32 {
+	ret := [4]float32{}
+	gl.GetFloatv(gl.CURRENT_COLOR, ret[:])
+	return ret
+}
+
 func normColorToByte(f float32) uint8 {
 	if f < 0 || f > 1.0 {
 		panic("non-normalized float!")
@@ -41,5 +47,15 @@ func GetCurrentBackgroundColor() color.RGBA {
 		G: normColorToByte(oldClear[1]),
 		B: normColorToByte(oldClear[2]),
 		A: normColorToByte(oldClear[3]),
+	}
+}
+
+func GetCurrentForegroundColour() color.RGBA {
+	oldFg := getCurrentForeground()
+	return color.RGBA{
+		R: normColorToByte(oldFg[0]),
+		G: normColorToByte(oldFg[1]),
+		B: normColorToByte(oldFg[2]),
+		A: normColorToByte(oldFg[3]),
 	}
 }
