@@ -8,7 +8,7 @@ import (
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glew"
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
@@ -69,7 +69,7 @@ func assertFreshState(t *testing.T, st *debug.GlState) {
 
 func TestWithMatrixMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
-	rendertest.DeprecatedWithGl(func() {
+	testbuilder.New().Run(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
@@ -88,7 +88,7 @@ func TestWithMatrixInMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
 	var beforeMat, duringMat, targetMat, afterMat render.Matrix
 
-	rendertest.DeprecatedWithGl(func() {
+	testbuilder.New().Run(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
@@ -121,7 +121,7 @@ func TestWithFreshMatrices(t *testing.T) {
 
 	var beforeState, entryState, exitState, afterState *debug.GlState
 
-	rendertest.DeprecatedWithGl(func() {
+	testbuilder.New().Run(func() {
 		// Start out with matrics that are 'not-fresh'.
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.LoadMatrixf((*[16]float32)(&notIdent))
@@ -155,7 +155,7 @@ func TestWithFreshMatrices(t *testing.T) {
 }
 
 func TestTexture2DHelpers(t *testing.T) {
-	rendertest.DeprecatedWithGl(func() {
+	testbuilder.New().Run(func() {
 		testcase := func() {
 			flags := []bool{false, false, false}
 			gl.GetBooleanv(gl.TEXTURE_2D, flags[0:])
