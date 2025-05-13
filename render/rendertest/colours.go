@@ -33,7 +33,7 @@ func getCurrentForeground() [4]float32 {
 	return ret
 }
 
-func normColorToByte(f float32) uint8 {
+func normColourToByte(f float32) uint8 {
 	if f < 0 || f > 1.0 {
 		panic("non-normalized float!")
 	}
@@ -43,19 +43,19 @@ func normColorToByte(f float32) uint8 {
 func GetCurrentBackgroundColor() color.RGBA {
 	oldClear := getCurrentBackground()
 	return color.RGBA{
-		R: normColorToByte(oldClear[0]),
-		G: normColorToByte(oldClear[1]),
-		B: normColorToByte(oldClear[2]),
-		A: normColorToByte(oldClear[3]),
+		R: normColourToByte(oldClear[0]),
+		G: normColourToByte(oldClear[1]),
+		B: normColourToByte(oldClear[2]),
+		A: normColourToByte(oldClear[3]),
 	}
 }
 
 func GetCurrentForegroundColour() color.RGBA {
 	oldFg := getCurrentForeground()
 	return color.RGBA{
-		R: normColorToByte(oldFg[0]),
-		G: normColorToByte(oldFg[1]),
-		B: normColorToByte(oldFg[2]),
-		A: normColorToByte(oldFg[3]),
+		R: normColourToByte(oldFg[0]),
+		G: normColourToByte(oldFg[1]),
+		B: normColourToByte(oldFg[2]),
+		A: normColourToByte(oldFg[3]),
 	}
 }

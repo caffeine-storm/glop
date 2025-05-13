@@ -208,13 +208,22 @@ func pickADifferentColour(notThese ...color.RGBA) color.RGBA {
 	return ret
 }
 
+func byteToNormColour(b uint8) float32 {
+	return float32(b) / 255.0
+}
+
+func asFloats(c color.RGBA) (float32, float32, float32, float32) {
+	return byteToNormColour(c.R), byteToNormColour(c.G), byteToNormColour(c.B), byteToNormColour(c.A)
+}
+
 func TestWithColour(t *testing.T) {
 	assert := assert.New(t)
 	testbuilder.New().Run(func() {
 		oldColour := rendertest.GetCurrentForegroundColour()
 		newColour := pickADifferentColour(oldColour)
 		var chosenColour color.RGBA
-		render.WithColour(newColour.R, newColour.G, newColour.B, newColour.A, func() {
+		r, g, b, a := asFloats(newColour)
+		render.WithColour(r, g, b, a, func() {
 			chosenColour = rendertest.GetCurrentForegroundColour()
 
 			tempColour := pickADifferentColour(oldColour, newColour, chosenColour)
