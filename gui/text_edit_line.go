@@ -3,6 +3,7 @@ package gui
 import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/render"
 )
 
 type cursor struct {
@@ -190,24 +191,25 @@ func (w *TextEditLine) Draw(region Region, ctx DrawingContext) {
 	region.PushClipPlanes()
 	defer region.PopClipPlanes()
 	gl.Disable(gl.TEXTURE_2D)
-	gl.Color4d(0.3, 0.3, 0.3, 0.9)
-	gl.Begin(gl.QUADS)
-	gl.Vertex2i(region.X+1, region.Y+1)
-	gl.Vertex2i(region.X+1, region.Y-1+region.Dy)
-	gl.Vertex2i(region.X-1+region.Dx, region.Y-1+region.Dy)
-	gl.Vertex2i(region.X-1+region.Dx, region.Y+1)
-	gl.End()
-	w.TextLine.preDraw(region, ctx)
-	w.TextLine.coreDraw(region, ctx)
-	gl.Disable(gl.TEXTURE_2D)
-	if w.cursor.on {
-		gl.Color3d(1, 0.3, 0)
-	} else {
-		gl.Color3d(0.5, 0.3, 0)
-	}
-	gl.Begin(gl.LINES)
-	gl.Vertex2i(region.X+int(w.cursor.pos), region.Y)
-	gl.Vertex2i(region.X+int(w.cursor.pos), region.Y+region.Dy)
-	gl.End()
-	w.TextLine.postDraw(region, ctx)
+	render.WithColour(0.3, 0.3, 0.3, 0.9, func() {
+		gl.Begin(gl.QUADS)
+		gl.Vertex2i(region.X+1, region.Y+1)
+		gl.Vertex2i(region.X+1, region.Y-1+region.Dy)
+		gl.Vertex2i(region.X-1+region.Dx, region.Y-1+region.Dy)
+		gl.Vertex2i(region.X-1+region.Dx, region.Y+1)
+		gl.End()
+		w.TextLine.preDraw(region, ctx)
+		w.TextLine.coreDraw(region, ctx)
+		gl.Disable(gl.TEXTURE_2D)
+		if w.cursor.on {
+			gl.Color3d(1, 0.3, 0)
+		} else {
+			gl.Color3d(0.5, 0.3, 0)
+		}
+		gl.Begin(gl.LINES)
+		gl.Vertex2i(region.X+int(w.cursor.pos), region.Y)
+		gl.Vertex2i(region.X+int(w.cursor.pos), region.Y+region.Dy)
+		gl.End()
+		w.TextLine.postDraw(region, ctx)
+	})
 }
