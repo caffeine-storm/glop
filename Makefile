@@ -22,10 +22,10 @@ else
 testrunargs:=
 endif
 
-ifeq "${debugtest}" ""
-testsinglepackageargs:=--set-'debugtest'-to-a-package-dir
+ifeq "${pkg}" ""
+testsinglepackageargs:=--set-'pkg'-to-a-package-dir
 else
-testsinglepackageargs="${debugtest}"
+testsinglepackageargs="${pkg}"
 # Replace each -$elem of 'testrunargs' with '-test.$elem'
 newtestrunargs:=$(subst -,-test.,${testrunargs})
 endif
