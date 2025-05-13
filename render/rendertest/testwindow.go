@@ -274,10 +274,16 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 
 	ctx.render.Queue(func(render.RenderQueueState) {
 		if invariantscheck {
-			mustSatisfyInvariants()
+			func() {
+				defer func() {
+					if e := recover(); e != nil {
+						enforceInvariants()
+						panic(e)
+					}
+				}()
+				mustSatisfyInvariants()
+			}()
 		}
-		// TODO(tmckee): wait... if we run mostly with invariantscheck == true, we
-		// won't reach this if there _is_ taint, so most everything will fail T_T
 		enforceInvariants()
 
 		ctx.sys.SetWindowSize(width, height)
