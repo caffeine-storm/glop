@@ -3,6 +3,7 @@ package rendertest
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"strings"
 
 	"github.com/MobRulesGames/mathgl"
@@ -103,9 +104,33 @@ func mustSatisfyBindingsInvariants() {
 	}
 }
 
+func mustSatisfyColourInvariants() {
+	// default fg/bg is white on black
+	white := color.RGBA{R: 255, G: 255, B: 255, A: 255}
+	black := color.RGBA{R: 0, G: 0, B: 0, A: 255}
+
+	fg := GetCurrentForegroundColour()
+	errs := []error{}
+	if fg != white {
+		errs = append(errs, fmt.Errorf("bad foreground colour: %v expected: %v", fg, white))
+	}
+
+	bg := GetCurrentBackgroundColor()
+	// Alpha doesn't matter for background/clearing
+	bg.A = black.A
+	if bg != black {
+		errs = append(errs, fmt.Errorf("bad background colour: %v expected %v", bg, black))
+	}
+
+	if len(errs) > 0 {
+		panic(errors.Join(errs...))
+	}
+}
+
 func mustSatisfyInvariants() {
 	mustSatisfyMatrixInvariants()
 	mustSatisfyBindingsInvariants()
+	mustSatisfyColourInvariants()
 }
 
 func enforceMatrixStacksMustBeIdentitySingletons() {
@@ -165,9 +190,15 @@ func enforceClearBindingsSet() {
 	}
 }
 
+func enforceColourInvariants() {
+	gl.Color4f(1, 1, 1, 1)
+	gl.ClearColor(0, 0, 0, 1)
+}
+
 func enforceInvariants() {
 	enforceMatrixStacksMustBeIdentitySingletons()
 	enforceClearBindingsSet()
+	enforceColourInvariants()
 }
 
 func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
@@ -245,6 +276,8 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 		if invariantscheck {
 			mustSatisfyInvariants()
 		}
+		// TODO(tmckee): wait... if we run mostly with invariantscheck == true, we
+		// won't reach this if there _is_ taint, so most everything will fail T_T
 		enforceInvariants()
 
 		ctx.sys.SetWindowSize(width, height)
@@ -266,7 +299,6 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 		gl.PushMatrix()
 		gl.LoadIdentity()
 
-		gl.ClearColor(0, 0, 0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		// SwapBuffers should flush the GL command queue and synchronize with the
