@@ -316,7 +316,7 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 				}
 			}
 		}()
-		fn(ctx.sys, ctx.windowHandle, ctx.render)
+		fn(ctx.sys, ctx.windowHandle, Failfastqueue(ctx))
 	}()
 
 	return errors.Join(err, ctx.takeLastError())

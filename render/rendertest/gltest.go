@@ -1,9 +1,7 @@
 package rendertest
 
 import (
-	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/system"
@@ -38,29 +36,16 @@ func makeTestTemplate(checkInvariants bool, fn func(system.System, system.Native
 // subsequent Purge() and Queue() calls will panic.
 type failfast struct {
 	render.RenderQueueInterface
-	// TODO(clean): there's probabaly a way to not store two copies of these
-	// errors; the glContext has them and maybe would let us use them?
-	failuresMut sync.Mutex
-	failures    []error
+	Ctx *glContext
 }
 
 var _ render.RenderQueueInterface = (*failfast)(nil)
 
 func (ff *failfast) checkErrors() {
-	ff.failuresMut.Lock()
-	fails := ff.failures
-	ff.failures = nil
-	ff.failuresMut.Unlock()
-
-	if len(fails) > 0 {
-		panic(fmt.Errorf("failfast queue checkErrors: %w", errors.Join(fails...)))
+	err := ff.Ctx.takeLastError()
+	if err != nil {
+		panic(fmt.Errorf("failfast queue checkErrors: %w", err))
 	}
-}
-
-func (ff *failfast) addError(e error) {
-	ff.failuresMut.Lock()
-	defer ff.failuresMut.Unlock()
-	ff.failures = append(ff.failures, e)
 }
 
 func (ff *failfast) Queue(job render.RenderJob) {
@@ -73,14 +58,11 @@ func (ff *failfast) Purge() {
 	ff.checkErrors()
 }
 
-func Failfastqueue(q render.RenderQueueInterface) render.RenderQueueInterface {
-	ret := &failfast{
-		RenderQueueInterface: q,
+func Failfastqueue(ctx *glContext) render.RenderQueueInterface {
+	return &failfast{
+		RenderQueueInterface: ctx.render,
+		Ctx:                  ctx,
 	}
-	ret.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
-		ret.addError(e)
-	})
-	return ret
 }
 
 func newGlContextForTest(width, height int) *glContext {
@@ -88,7 +70,7 @@ func newGlContextForTest(width, height int) *glContext {
 	ctx := &glContext{
 		sys:          sys,
 		windowHandle: windowHandle,
-		render:       Failfastqueue(renderQueue),
+		render:       renderQueue,
 		// Note: recordedFailures should be considered local to the render thread;
 		// reading/writing to it must synchronize accordingly.
 		recordedFailures: nil,
