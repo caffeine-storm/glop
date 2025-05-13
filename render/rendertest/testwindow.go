@@ -180,7 +180,7 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 	hdl := make(chan system.NativeWindowHandle)
 
 	sys.Startup()
-	render := render.MakeQueue(func(render.RenderQueueState) {
+	renderQueue := render.MakeQueue(func(render.RenderQueueState) {
 		hdl <- sys.CreateWindow(0, 0, width, height)
 
 		sys.EnableVSync(true)
@@ -193,9 +193,15 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 
 		sys.SwapBuffers()
 	})
-	render.StartProcessing()
+	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
+		// TODO(tmckee:#38): we need better attribution here; it's hard right now to
+		// know _which_ test was running the render job that panicked. We ought to
+		// be able to plumb a testing.T instance in here and call its t.Fail/t.Fatalf
+		glog.ErrorLogger().Error("test-render-queue.OnError", "err", e)
+	})
+	renderQueue.StartProcessing()
 
-	return sys, <-hdl, render
+	return sys, <-hdl, renderQueue
 }
 
 type glContext struct {
@@ -221,9 +227,18 @@ func (ctx *glContext) takeLastError() error {
 	return errors.Join(allErrors...)
 }
 
-func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
+func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) {
 	if ctx.windowHandle == nil {
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
+	}
+
+	defer func() {
+		err = errors.Join(err, ctx.takeLastError())
+	}()
+
+	ctx.render.Purge()
+	if e := ctx.takeLastError(); e != nil {
+		return fmt.Errorf("prep preconditions failed: %w", e)
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
@@ -258,11 +273,15 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) error {
 		// X-server. Without doing so, things break!
 		ctx.sys.SwapBuffers()
 	})
+	ctx.render.Purge()
 
-	return ctx.takeLastError()
+	return
 }
 
-func (ctx *glContext) clean(invariantscheck bool) error {
+func (ctx *glContext) clean(invariantscheck bool) (err error) {
+	defer func() {
+		err = ctx.takeLastError()
+	}()
 	ctx.render.Queue(func(render.RenderQueueState) {
 		// Undo matrix mode identity loads
 		gl.MatrixMode(gl.TEXTURE)
@@ -274,19 +293,33 @@ func (ctx *glContext) clean(invariantscheck bool) error {
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.PopMatrix()
 
+		defer enforceInvariants()
+
 		if invariantscheck {
 			mustSatisfyInvariants()
 		}
-
-		enforceInvariants()
 	})
+	ctx.render.Purge()
 
-	return ctx.takeLastError()
+	return
 }
 
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
-	fn(ctx.sys, ctx.windowHandle, ctx.render)
-	return ctx.takeLastError()
+	var err error
+	func() {
+		defer func() {
+			if e := recover(); e != nil {
+				var ok bool
+				err, ok = e.(error)
+				if !ok {
+					panic(fmt.Errorf("recover() returned a non-error: %v", e))
+				}
+			}
+		}()
+		fn(ctx.sys, ctx.windowHandle, ctx.render)
+	}()
+
+	return errors.Join(err, ctx.takeLastError())
 }
 
 // TODO(#37): prefer GlTest()

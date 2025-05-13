@@ -70,6 +70,8 @@ func (b *queueGlTestBuilder) WithSize(dx, dy int) *queueGlTestBuilder {
 	return b
 }
 
+// TODO(tmckee:#38): take a pointer-to-testing.T so that we can properly attribute
+// on-render-thread failures with the test that was running.
 func New() *GlTestBuilder {
 	return &GlTestBuilder{}
 }
