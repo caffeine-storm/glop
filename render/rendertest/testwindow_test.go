@@ -48,7 +48,7 @@ func TestCrossTalkPrevention(t *testing.T) {
 	assert.Empty(t, initialState, "tests should be allowed to expect a clean initial state")
 
 	var taintedState map[string]int
-	t.Run("GlTest() sends errors if state-change is leaked", func(t *testing.T) {
+	t.Run("testbuilder helpers send errors if state-change is leaked", func(t *testing.T) {
 		var expectedError error = nil
 		assert.Panics(t, func() {
 			testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
@@ -63,7 +63,7 @@ func TestCrossTalkPrevention(t *testing.T) {
 				})
 				queue.Purge()
 
-				// We haven't run the "cleanup" phase of this GlTest so state leakage
+				// We haven't run the "cleanup" phase of this testcase so state leakage
 				// should not be checked yet.
 				assert.Nil(t, expectedError)
 			})

@@ -74,7 +74,7 @@ func TestGlTestHelpers(t *testing.T) {
 }
 
 func TestGlStateLeakage(t *testing.T) {
-	t.Run("GlTest should complain upon leakage", func(t *testing.T) {
+	t.Run("testbuilder should complain upon leakage", func(t *testing.T) {
 		assert.Panics(t, func() {
 			testbuilder.New().Run(func() {
 				// An example of tainted state is leaving ELEMENT_ARRAY_BUFFER bound
