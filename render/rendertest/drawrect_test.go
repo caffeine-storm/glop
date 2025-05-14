@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	. "github.com/smartystreets/goconvey/convey"
@@ -33,6 +34,16 @@ func DrawRectSpec() {
 		RunTest(c, false)
 	})
 
+	Convey("DrawRect uses 'incoming' coordinates", func(c C) {
+		testbuilder.New().WithExpectation(c, "subred").Run(func() {
+			modelView := &render.Matrix{}
+			modelView.Identity()
+			modelView.Scaling(0.5, 0.5, 1)
+			render.WithMatrixInMode(modelView, render.MatrixModeModelView, func() {
+				rendertest.DrawRect(-1, -1, 1, 1)
+			})
+		})
+	})
 }
 
 /* DANGER WILL ROBINSON! XXX: this has been crashing windows when running on
