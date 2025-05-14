@@ -40,39 +40,6 @@ func makeTestTemplate(checkInvariants bool, fn func(system.System, system.Native
 	}
 }
 
-// Like a render.renderQueue but, if there were on-render-thread errors,
-// subsequent Purge() and Queue() calls will panic.
-type failfast struct {
-	render.RenderQueueInterface
-	Ctx *glContext
-}
-
-var _ render.RenderQueueInterface = (*failfast)(nil)
-
-func (ff *failfast) checkErrors() {
-	err := ff.Ctx.takeLastError()
-	if err != nil {
-		panic(fmt.Errorf("failfast queue checkErrors: %w", err))
-	}
-}
-
-func (ff *failfast) Queue(job render.RenderJob) {
-	ff.checkErrors()
-	ff.RenderQueueInterface.Queue(job)
-}
-
-func (ff *failfast) Purge() {
-	ff.RenderQueueInterface.Purge()
-	ff.checkErrors()
-}
-
-func Failfastqueue(ctx *glContext) render.RenderQueueInterface {
-	return &failfast{
-		RenderQueueInterface: ctx.render,
-		Ctx:                  ctx,
-	}
-}
-
 var glTestContextSource = make(chan *glContext, 24)
 
 func runOverCachedContext(width, height int, dotest func(int, int, *glContext)) {
