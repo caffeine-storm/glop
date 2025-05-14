@@ -4,15 +4,14 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestRegionClipping(t *testing.T) {
-	Convey("region clipping", t, func() {
-		rendertest.DeprecatedWithGlForTest(64, 64, func(sys system.System, queue render.RenderQueueInterface) {
+	Convey("region clipping", t, func(c C) {
+		testbuilder.New().WithExpectation(c, "red-with-border").Run(func() {
 			// Set a clipping region to block any drawing outside of a square in the
 			// middle.
 			r := gui.Region{
@@ -26,17 +25,11 @@ func TestRegionClipping(t *testing.T) {
 				},
 			}
 
-			queue.Queue(func(render.RenderQueueState) {
-				r.PushClipPlanes()
-				defer r.PopClipPlanes()
+			r.PushClipPlanes()
+			defer r.PopClipPlanes()
 
-				// Draw a red square across the 'whole' viewport.
-				rendertest.DrawRectNdc(-1, -1, 1, 1)
-			})
-			queue.Purge()
-
-			// Check that no pixels outside the region got drawn to.
-			So(queue, rendertest.ShouldLookLikeFile, "red-with-border")
+			// Draw a red square across the 'whole' viewport.
+			rendertest.DrawRectNdc(-1, -1, 1, 1)
 		})
 	})
 }
