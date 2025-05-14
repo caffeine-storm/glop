@@ -17,7 +17,7 @@ func TestDrawRect(t *testing.T) {
 	Convey("rendertest.DrawRect should work", t, DrawRectSpec)
 }
 
-var width, height = 50, 50
+var width, height = 64, 64
 
 func RunTest(withTex2d bool) {
 	testbuilder.New().WithSize(width, height).WithQueue().Run(func(queue render.RenderQueueInterface) {
@@ -38,7 +38,7 @@ func RunTest(withTex2d bool) {
 		}
 
 		Convey("Should see red pixels", func() {
-			So(queue, rendertest.ShouldLookLikeFile, "red")
+			So(queue, rendertest.ShouldLookLikeFile, "red64")
 		})
 	})
 }
@@ -51,6 +51,7 @@ func DrawRectSpec() {
 	Convey("with gl.TEXTURE_2D disabled", func() {
 		RunTest(false)
 	})
+
 }
 
 /* DANGER WILL ROBINSON! XXX: this has been crashing windows when running on
