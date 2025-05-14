@@ -73,22 +73,6 @@ func Failfastqueue(ctx *glContext) render.RenderQueueInterface {
 	}
 }
 
-func newGlContextForTest(width, height int) *glContext {
-	sys, windowHandle, renderQueue := newGlWindowForTest(width, height)
-	ctx := &glContext{
-		sys:          sys,
-		windowHandle: windowHandle,
-		render:       renderQueue,
-		// Note: recordedFailures should be considered local to the render thread;
-		// reading/writing to it must synchronize accordingly.
-		recordedFailures: nil,
-	}
-	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
-		ctx.recordedFailures = append(ctx.recordedFailures, e)
-	})
-	return ctx
-}
-
 var glTestContextSource = make(chan *glContext, 24)
 
 func runOverCachedContext(width, height int, dotest func(int, int, *glContext)) {
