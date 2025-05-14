@@ -9,7 +9,7 @@ import (
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -20,7 +20,7 @@ func TestDrawRect(t *testing.T) {
 var width, height = 50, 50
 
 func RunTest(withTex2d bool) {
-	rendertest.DeprecatedWithGlForTest(width, height, func(sys system.System, queue render.RenderQueueInterface) {
+	testbuilder.New().WithSize(width, height).WithQueue().Run(func(queue render.RenderQueueInterface) {
 		var result *image.RGBA
 		queue.Queue(func(render.RenderQueueState) {
 			if withTex2d {
