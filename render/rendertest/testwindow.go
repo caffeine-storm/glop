@@ -342,16 +342,41 @@ func (ctx *glContext) clean(invariantscheck bool) (err error) {
 	return
 }
 
+type conveyIsHalting struct {
+	s string
+}
+
+func (c *conveyIsHalting) Error() string {
+	return c.s
+}
+
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	var err error
 	func() {
+		// We run this defer to capture any error that a test panics on.
 		defer func() {
 			if e := recover(); e != nil {
-				var ok bool
-				err, ok = e.(error)
-				if !ok {
-					panic(fmt.Errorf("recover() returned a non-error: %v", e))
+				switch v := e.(type) {
+				case string:
+					// It might be that Convey is trying to halt the tests; we need to
+					// preserve the value in that case.
+					if v == "___FAILURE_HALT___" {
+						err = &conveyIsHalting{
+							s: v,
+						}
+						return
+					}
+				case error:
+					// panicking on an error value is the way to signal failure; so
+					// capture it.
+					err = v
+					return
 				}
+				// Otherwise, someone panicked with a non-error which is, in a way,
+				// even worse T_T. This will not be considered a 'test failure' but a
+				// 'test error'. Subtly different but important to distinguish problems
+				// in application code from problems in test code.
+				panic(fmt.Errorf("recover() returned a non-error type: %T value: %v", e, e))
 			}
 		}()
 		fn(ctx.sys, ctx.windowHandle, Failfastqueue(ctx))

@@ -1,17 +1,19 @@
 package rendertest_test
 
 import (
-	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGlTestHelpers(t *testing.T) {
@@ -132,14 +134,18 @@ func TestFailureDoesNotCascade(t *testing.T) {
 }
 
 func TestConveyHalting(t *testing.T) {
-	Convey("if the Convey framework wants to halt, we don't confuse things", t, func() {
-		failureMessage := ShouldNotEqual(1, 1)
-		// expectedError := rendertest.NewTestFailureError(failureMessage)
-		expectedError := errors.New(failureMessage)
-		assert.PanicsWithValue(t, expectedError, func() {
-			testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
-				So(1, ShouldNotEqual, 1)
+	t.Run("if the Convey framework wants to halt, we don't confuse things", func(t *testing.T) {
+		shouldBeFalse := false
+		output := gloptest.CollectOutput(func() {
+			Convey("but detached from a 'real' testing.T so that we don't fail the whole test", &testing.T{}, func() {
+				testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
+					So(1, ShouldNotEqual, 1)
+				})
+				shouldBeFalse = true
 			})
 		})
+
+		require.False(t, shouldBeFalse)
+		assert.NotContains(t, strings.Join(output, "\n"), "___FAILURE_HALT___")
 	})
 }

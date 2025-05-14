@@ -1,6 +1,7 @@
 package rendertest
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/runningwild/glop/render"
@@ -27,6 +28,13 @@ func makeTestTemplate(checkInvariants bool, fn func(system.System, system.Native
 		}
 
 		if e != nil {
+			halting := &conveyIsHalting{}
+			if errors.As(e, &halting) {
+				// It might be that Convey is trying to halt the tests; we need to
+				// preserve their semantics in that case.
+				panic(halting.s)
+			}
+
 			panic(fmt.Errorf("error on render-thread: %w", e))
 		}
 	}
