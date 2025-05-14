@@ -1,8 +1,6 @@
 package rendertest
 
 import (
-	"fmt"
-
 	"github.com/runningwild/glop/render"
 )
 
@@ -15,8 +13,14 @@ var _ render.RenderQueueInterface = (*panicQueue)(nil)
 // Adding error callbacks is a no-op; they'd never get called anyways.
 func (*panicQueue) AddErrorCallback(func(render.RenderQueueInterface, error)) {}
 
+type PanicQueueShouldNotBeCalledError struct{}
+
+func (*PanicQueueShouldNotBeCalledError) Error() string {
+	return "a panic queue must not be Queued()"
+}
+
 func (*panicQueue) Queue(job render.RenderJob) {
-	panic(fmt.Errorf("Queue() called on panicQueue"))
+	panic(&PanicQueueShouldNotBeCalledError{})
 }
 func (*panicQueue) Purge()           {}
 func (*panicQueue) StartProcessing() {}

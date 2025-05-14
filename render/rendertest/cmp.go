@@ -215,7 +215,13 @@ func makeFallbackImage() *image.RGBA {
 	}
 }
 
-func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) string {
+func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) (testResult string) {
+	defer func() {
+		if e := recover(); e != nil {
+			testResult = fmt.Sprintf("panic during image comparison: %v", e)
+		}
+	}()
+
 	// Sometimes, the given queue is a no-op queue so we will have a default
 	// 'actualImage' to avoid passing around a nil image.Image value.
 	var actualImage *image.RGBA = makeFallbackImage()

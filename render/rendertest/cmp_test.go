@@ -365,8 +365,9 @@ func TestImageComparisonHelperArgTypes(t *testing.T) {
 func TestComparisonWithPanickyRenderQueue(t *testing.T) {
 	t.Run("if the queue panics, it should be apparent", func(t *testing.T) {
 		panickyQueue := rendertest.MakePanicingRenderQueue()
+		expectedErrorMessage := (&rendertest.PanicQueueShouldNotBeCalledError{}).Error()
 		testResult := rendertest.ShouldLookLikeFile(panickyQueue, "red")
 		require.NotEqual(t, testResult, "", "the test should have failed")
-		assert.Contains(t, testResult, "sentinel error", "the failure message must include the correct reason")
+		assert.Contains(t, testResult, expectedErrorMessage, "the failure message must include the correct reason")
 	})
 }
