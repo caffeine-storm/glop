@@ -1,13 +1,9 @@
 package rendertest_test
 
 import (
-	"fmt"
-	"image"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
-	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	. "github.com/smartystreets/goconvey/convey"
@@ -17,39 +13,24 @@ func TestDrawRect(t *testing.T) {
 	Convey("rendertest.DrawRect should work", t, DrawRectSpec)
 }
 
-var width, height = 64, 64
-
-func RunTest(withTex2d bool) {
-	testbuilder.New().WithSize(width, height).WithQueue().Run(func(queue render.RenderQueueInterface) {
-		var result *image.RGBA
-		queue.Queue(func(render.RenderQueueState) {
-			if withTex2d {
-				gl.Enable(gl.TEXTURE_2D)
-			} else {
-				gl.Disable(gl.TEXTURE_2D)
-			}
-			rendertest.BlankAndDrawRectNdc(-1, -1, 1, 1)
-			result = debug.ScreenShotRgba(width, height)
-		})
-		queue.Purge()
-
-		if len(result.Pix) != width*height*4 {
-			panic(fmt.Errorf("wrong number of bytes, expected %d got %d", width*height*4, len(result.Pix)))
+func RunTest(c C, withTex2d bool) {
+	testbuilder.New().WithExpectation(c, "red64").Run(func() {
+		if withTex2d {
+			gl.Enable(gl.TEXTURE_2D)
+		} else {
+			gl.Disable(gl.TEXTURE_2D)
 		}
-
-		Convey("Should see red pixels", func() {
-			So(queue, rendertest.ShouldLookLikeFile, "red64")
-		})
+		rendertest.BlankAndDrawRectNdc(-1, -1, 1, 1)
 	})
 }
 
 func DrawRectSpec() {
-	Convey("with gl.TEXTURE_2D enabled", func() {
-		RunTest(true)
+	Convey("with gl.TEXTURE_2D enabled", func(c C) {
+		RunTest(c, true)
 	})
 
-	Convey("with gl.TEXTURE_2D disabled", func() {
-		RunTest(false)
+	Convey("with gl.TEXTURE_2D disabled", func(c C) {
+		RunTest(c, false)
 	})
 
 }
