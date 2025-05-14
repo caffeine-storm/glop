@@ -18,6 +18,7 @@ import (
 	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var transparent = color.RGBA{}
@@ -358,5 +359,14 @@ func TestImageComparisonHelperArgTypes(t *testing.T) {
 				t.Fatalf("unexpected failure: %q", res)
 			}
 		})
+	})
+}
+
+func TestComparisonWithPanickyRenderQueue(t *testing.T) {
+	t.Run("if the queue panics, it should be apparent", func(t *testing.T) {
+		panickyQueue := rendertest.MakePanicingRenderQueue()
+		testResult := rendertest.ShouldLookLikeFile(panickyQueue, "red")
+		require.NotEqual(t, testResult, "", "the test should have failed")
+		assert.Contains(t, testResult, "sentinel error", "the failure message must include the correct reason")
 	})
 }
