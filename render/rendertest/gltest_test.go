@@ -1,6 +1,7 @@
 package rendertest_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -126,5 +128,18 @@ func TestFailureDoesNotCascade(t *testing.T) {
 		assert.True(shouldGetHere)
 		assert.False(shouldNotGetHere)
 		assert.False(shouldAlsoNotGetHere)
+	})
+}
+
+func TestConveyHalting(t *testing.T) {
+	Convey("if the Convey framework wants to halt, we don't confuse things", t, func() {
+		failureMessage := ShouldNotEqual(1, 1)
+		// expectedError := rendertest.NewTestFailureError(failureMessage)
+		expectedError := errors.New(failureMessage)
+		assert.PanicsWithValue(t, expectedError, func() {
+			testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
+				So(1, ShouldNotEqual, 1)
+			})
+		})
 	})
 }
