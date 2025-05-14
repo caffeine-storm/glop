@@ -101,8 +101,10 @@ func TestBuilderFluentApi(t *testing.T) {
 	})
 
 	t.Run("easy expectations checking", func(t *testing.T) {
-		testbuilder.New().WithExpectation("red").Run(func() {
-			rendertest.DrawRectNdc(-1, -1, 1, 1)
+		Convey("expectationy things need convey", t, func(c C) {
+			testbuilder.New().WithExpectation(c, "red").Run(func() {
+				rendertest.DrawRectNdc(-1, -1, 1, 1)
+			})
 		})
 	})
 }

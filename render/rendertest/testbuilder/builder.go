@@ -4,6 +4,7 @@ import (
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 type GlTestBuilder struct {
@@ -17,6 +18,14 @@ type queueGlTestBuilder struct {
 func (b *GlTestBuilder) WithQueue() *queueGlTestBuilder {
 	return &queueGlTestBuilder{
 		ctx: b,
+	}
+}
+
+func (b *GlTestBuilder) WithExpectation(C C, ref rendertest.TestDataReference) *expectationGlTestBuilder {
+	return &expectationGlTestBuilder{
+		ctx:           b,
+		expectation:   ref,
+		conveyContext: C,
 	}
 }
 
@@ -68,6 +77,23 @@ func (b *queueGlTestBuilder) WithSize(dx, dy int) *queueGlTestBuilder {
 	b.ctx.Dx = dx
 	b.ctx.Dy = dy
 	return b
+}
+
+type expectationGlTestBuilder struct {
+	ctx           *GlTestBuilder
+	expectation   rendertest.TestDataReference
+	conveyContext C
+}
+
+func (b *expectationGlTestBuilder) Run(fn func()) {
+	b.ctx.WithQueue().Run(func(queue render.RenderQueueInterface) {
+		queue.Queue(func(st render.RenderQueueState) {
+			fn()
+		})
+		queue.Purge()
+
+		b.conveyContext.So(queue, rendertest.ShouldLookLikeFile, b.expectation)
+	})
 }
 
 // TODO(tmckee:#38): take a pointer-to-testing.T so that we can properly attribute
