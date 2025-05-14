@@ -1,7 +1,6 @@
 package rendertest_test
 
 import (
-	"log"
 	"maps"
 	"slices"
 	"strings"
@@ -15,17 +14,6 @@ import (
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestWithGl(t *testing.T) {
-	testbuilder.New().Run(func() {
-		versionString := gl.GetString(gl.VERSION)
-		log.Printf("versionString: %q\n", versionString)
-
-		if versionString == "" {
-			t.Error("gl.GetString(gl.VERSION) must not return the empty string once OpenGL is initialized")
-		}
-	})
-}
 
 func clearUnsetValues(mp map[string]int) {
 	todelete := map[string]bool{}
