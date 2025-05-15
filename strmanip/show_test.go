@@ -43,3 +43,8 @@ func TestShow(t *testing.T) {
 		})
 	}
 }
+
+func TestShowNonStrings(t *testing.T) {
+	result := strmanip.Show([]float32{3.14, 2.7, -1})
+	assert.Equal(t, result, "[\"3.14\", \"2.7\", \"-1\"]")
+}
