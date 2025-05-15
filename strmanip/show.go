@@ -5,21 +5,27 @@ import (
 	"strings"
 )
 
-func Show(data []string) string {
+func Show[T any](data []T) string {
+	if len(data) == 0 {
+		return "[]"
+	}
 	bldr := strings.Builder{}
 	bldr.WriteString("[")
 	n := len(data)
 
-	switch n {
-	case 0:
-		break
-	case 1:
-		bldr.WriteString(fmt.Sprintf("%q", data[0]))
-	default:
-		for i := 0; i < n-1; i++ {
-			bldr.WriteString(fmt.Sprintf("%q, ", data[i]))
+	showDatum := func(a any) string {
+		switch v := a.(type) {
+		case string:
+			return fmt.Sprintf(`%q`, v)
+		default:
+			return fmt.Sprintf(`%q`, fmt.Sprintf(`%v`, v))
 		}
-		bldr.WriteString(fmt.Sprintf("%q", data[n-1]))
+	}
+
+	bldr.WriteString(showDatum(data[0]))
+	for i := 1; i < n; i++ {
+		bldr.WriteString(", ")
+		bldr.WriteString(showDatum(data[i]))
 	}
 
 	bldr.WriteString("]")
