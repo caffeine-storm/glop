@@ -74,18 +74,18 @@ func mustSatisfyMatrixInvariants() {
 	}
 }
 
-func getImproperlyBoundState() []gl.GLenum {
-	bindings := []gl.GLenum{
-		gl.ARRAY_BUFFER_BINDING,
-		gl.ELEMENT_ARRAY_BUFFER_BINDING,
-		gl.PIXEL_PACK_BUFFER_BINDING,
-		gl.PIXEL_UNPACK_BUFFER_BINDING,
-		gl.TEXTURE_BINDING_2D,
+func getImproperlyBoundState() []string {
+	bindings := map[gl.GLenum]string{
+		gl.ARRAY_BUFFER_BINDING:         "gl.ARRAY_BUFFER_BINDING",
+		gl.ELEMENT_ARRAY_BUFFER_BINDING: "gl.ELEMENT_ARRAY_BUFFER_BINDING",
+		gl.PIXEL_PACK_BUFFER_BINDING:    "gl.PIXEL_PACK_BUFFER_BINDING",
+		gl.PIXEL_UNPACK_BUFFER_BINDING:  "gl.PIXEL_UNPACK_BUFFER_BINDING",
+		gl.TEXTURE_BINDING_2D:           "gl.TEXTURE_BINDING_2D",
 	}
 
-	badvals := []gl.GLenum{}
-	for _, name := range bindings {
-		val := gl.GetInteger(name)
+	badvals := []string{}
+	for code, name := range bindings {
+		val := gl.GetInteger(code)
 		if val != 0 {
 			badvals = append(badvals, name)
 		}
@@ -109,14 +109,14 @@ func mustSatisfyColourInvariants() {
 	fg := GetCurrentForegroundColour()
 	errs := []error{}
 	if fg != white {
-		errs = append(errs, fmt.Errorf("bad foreground colour: %v expected: %v", fg, white))
+		errs = append(errs, fmt.Errorf("bad foreground colour: %v expected: %v (white)", fg, white))
 	}
 
 	bg := GetCurrentBackgroundColor()
 	// Alpha doesn't matter for background/clearing
 	bg.A = black.A
 	if bg != black {
-		errs = append(errs, fmt.Errorf("bad background colour: %v expected %v", bg, black))
+		errs = append(errs, fmt.Errorf("bad background colour: %v expected %v (black)", bg, black))
 	}
 
 	if len(errs) > 0 {
