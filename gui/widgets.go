@@ -170,6 +170,8 @@ func (w *ImageBox) SetImage(path string) {
 		}
 	}
 
+	// TODO(tmckee:clean): reuse texture manager things here instead of
+	// re-rolling our own.
 	w.texture = gl.GenTexture()
 	w.texture.Bind(gl.TEXTURE_2D)
 	gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
@@ -177,7 +179,7 @@ func (w *ImageBox) SetImage(path string) {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, img.Bounds().Dx(), img.Bounds().Dy(), gl.RGBA, gl.INT, canvas.Pix)
+	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, img.Bounds().Dx(), img.Bounds().Dy(), gl.RGBA, gl.UNSIGNED_BYTE, canvas.Pix)
 
 	w.active = true
 }
