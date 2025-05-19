@@ -136,11 +136,9 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
 	// the render thread instead.
 	data := <-pixer
 
-	// TODO(tmckee:#13): ... gl.INT is wrong, I think. We should be getting pixel
-	// data from an image.RGBA which stores each pixel in 32 bits but gl.INT
-	// means each _component_ is 32 bits... a.k.a. each pixel is 128 bits.
-	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.INT, data)
-	// glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.UNSIGNED_BYTE, data)
+	// TODO(tmckee): '4' is a bit magic for my taste; is there a sybmolic value
+	// to use instead?
+	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.UNSIGNED_BYTE, data)
 }
 
 func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {

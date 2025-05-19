@@ -34,10 +34,6 @@ tmckee:#15 refactor: move ShouldContainLog from render/rendertest/cmp_test.go to
 tmckee:#14 imgmanip/scale.go should sample neighbouring points when scaling by
 non-integral amounts
 
-tmckee:#13 sprite/sheet.go calls glu.Build2DMipmaps and passes 'gl.INT' as the
-'type' parameter. But it _should_ be a 'gl.UNSIGNED_BYTE' because the data is
-coming from an image.RGBA which uses one byte per component.
-
 tmckee:#12 gui tests are flaky when not running under xvfb
 
 tmckee:#7 installed multilib support to get the build going; is it necessary?
