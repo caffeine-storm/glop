@@ -131,12 +131,16 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
+	// TODO(tmckee): pulling from 'pixer' here will block the render thread on
+	// disk IO. We should be pulling the pixels first then passing them over to
+	// the render thread instead.
 	data := <-pixer
 
 	// TODO(tmckee:#13): ... gl.INT is wrong, I think. We should be getting pixel
 	// data from an image.RGBA which stores each pixel in 32 bits but gl.INT
 	// means each _component_ is 32 bits... a.k.a. each pixel is 128 bits.
 	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.INT, data)
+	// glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.UNSIGNED_BYTE, data)
 }
 
 func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {

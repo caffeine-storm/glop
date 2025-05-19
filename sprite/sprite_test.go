@@ -21,9 +21,7 @@ func TestSpriteSpecs(t *testing.T) {
 
 func loadSprites(sprite_paths ...string) ([]*sprite.Sprite, error) {
 	discardQueue := rendertest.MakeStubbedRenderQueue()
-	spriteMan := sprite.MakeManager(discardQueue, func(path string) cache.ByteBank {
-		return cache.MakeLockingByteBank(cache.MakeRamByteBank())
-	})
+	spriteMan := givenASpriteManager(discardQueue)
 
 	result := []*sprite.Sprite{}
 
