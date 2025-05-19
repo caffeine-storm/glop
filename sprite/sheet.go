@@ -136,9 +136,7 @@ func (s *sheet) makeTexture(pixer <-chan []byte) {
 	// the render thread instead.
 	data := <-pixer
 
-	// TODO(tmckee): '4' is a bit magic for my taste; is there a sybmolic value
-	// to use instead?
-	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, s.dx, s.dy, gl.RGBA, gl.UNSIGNED_BYTE, data)
+	glu.Build2DMipmaps(gl.TEXTURE_2D, gl.RGBA, s.dx, s.dy, gl.RGBA, gl.UNSIGNED_BYTE, data)
 }
 
 func (s *sheet) loadRoutine(renderQueue render.RenderQueueInterface) {

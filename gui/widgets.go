@@ -179,7 +179,7 @@ func (w *ImageBox) SetImage(path string) {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-	glu.Build2DMipmaps(gl.TEXTURE_2D, 4, img.Bounds().Dx(), img.Bounds().Dy(), gl.RGBA, gl.UNSIGNED_BYTE, canvas.Pix)
+	glu.Build2DMipmaps(gl.TEXTURE_2D, gl.RGBA, img.Bounds().Dx(), img.Bounds().Dy(), gl.RGBA, gl.UNSIGNED_BYTE, canvas.Pix)
 
 	w.active = true
 }
