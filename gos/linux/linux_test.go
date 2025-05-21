@@ -88,6 +88,28 @@ func TestGlopCreateWindowHandle(t *testing.T) {
 			}
 			<-ack
 		})
+		t.Run("Can't gl.Begin with new context", func(t *testing.T) {
+			toRunUnderGLContext <- func() {
+				err := gl.GetError()
+				for err != 0 {
+					t.Logf("found gl error before test: %v", err)
+				}
+
+				gl.Begin(gl.TRIANGLES)
+				gl.Vertex2d(-0.5, -0.5)
+				gl.Vertex2d(+0.5, -0.5)
+				gl.Vertex2d(+0.0, +0.5)
+				gl.End()
+
+				err = gl.GetError()
+				t.Logf("gl.GetError returned %d", err)
+				if err == 0 {
+					t.Logf("expected gl error when using fixed function pipeline")
+					t.Fail()
+				}
+			}
+			<-ack
+		})
 		close(toRunUnderGLContext)
 	})
 }
