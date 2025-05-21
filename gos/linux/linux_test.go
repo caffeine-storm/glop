@@ -1,6 +1,7 @@
 package linux_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/runningwild/glop/gin"
@@ -38,5 +39,21 @@ func TestNativeToGin(t *testing.T) {
 
 	if ginEvent.KeyId.Device.Type != gin.DeviceTypeMouse {
 		t.Fatalf("a click event should be attributed to a mouse")
+	}
+}
+
+func TestGlopCreateWindowHandle(t *testing.T) {
+	success := make(chan bool)
+	go func() {
+		runtime.LockOSThread()
+		sysObj := linux.New()
+
+		hdl := sysObj.CreateWindow(0, 0, 64, 64)
+
+		success <- hdl != nil
+	}()
+
+	if !<-success {
+		t.Fatalf("sysObj.CreateWindow failed!")
 	}
 }
