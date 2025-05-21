@@ -529,11 +529,11 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
 
       struct WMHints
       {
-          unsigned long Flags;
-          unsigned long Functions;
-          unsigned long Decorations;
-          long          InputMode;
-          unsigned long State;
+        unsigned long Flags;
+        unsigned long Functions;
+        unsigned long Decorations;
+        long          InputMode;
+        unsigned long State;
       };
 
       WMHints Hints;
@@ -543,18 +543,18 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
 
       if (true)
       {
-          Hints.Decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE /*| MWM_DECOR_MENU*/;
-          Hints.Functions   |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
+        Hints.Decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE /*| MWM_DECOR_MENU*/;
+        Hints.Functions   |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
       }
       if (false)
       {
-          Hints.Decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
-          Hints.Functions   |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
+        Hints.Decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
+        Hints.Functions   |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
       }
       if (true)
       {
-          Hints.Decorations |= 0;
-          Hints.Functions   |= MWM_FUNC_CLOSE;
+        Hints.Decorations |= 0;
+        Hints.Functions   |= MWM_FUNC_CLOSE;
       }
 
       const unsigned char* HintsPtr = reinterpret_cast<const unsigned char*>(&Hints);
@@ -564,11 +564,11 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
     // This is a hack to force some windows managers to disable resizing
     if(true)
     {
-        XSizeHints XSizeHints;
-        XSizeHints.flags      = PMinSize | PMaxSize;
-        XSizeHints.min_width  = XSizeHints.max_width  = width;
-        XSizeHints.min_height = XSizeHints.max_height = height;
-        XSetWMNormalHints(display, nw->window, &XSizeHints);
+      XSizeHints XSizeHints;
+      XSizeHints.flags      = PMinSize | PMaxSize;
+      XSizeHints.min_width  = XSizeHints.max_width  = width;
+      XSizeHints.min_height = XSizeHints.max_height = height;
+      XSetWMNormalHints(display, nw->window, &XSizeHints);
     }
   }
 
@@ -579,7 +579,7 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
   // I think in here is where we're meant to set window styles and stuff
 
   nw->inputcontext = XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
-//  ASSERT(nw->inputcontext);
+  //  ASSERT(nw->inputcontext);
 
   XMapWindow(display, nw->window);
 
