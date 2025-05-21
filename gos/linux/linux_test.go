@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/gos/linux"
 )
@@ -43,17 +44,48 @@ func TestNativeToGin(t *testing.T) {
 }
 
 func TestGlopCreateWindowHandle(t *testing.T) {
-	success := make(chan bool)
-	go func() {
-		runtime.LockOSThread()
-		sysObj := linux.New()
+	t.Run("can create window", func(t *testing.T) {
+		toRunUnderGLContext := make(chan func())
+		success := make(chan bool)
+		ack := make(chan bool)
+		go func() {
+			runtime.LockOSThread()
+			sysObj := linux.New()
 
-		hdl := sysObj.CreateWindow(0, 0, 64, 64)
+			hdl := sysObj.CreateWindow(0, 0, 64, 64)
 
-		success <- hdl != nil
-	}()
+			success <- hdl != nil
 
-	if !<-success {
-		t.Fatalf("sysObj.CreateWindow failed!")
-	}
+			for fn := range toRunUnderGLContext {
+				fn()
+				ack <- true
+			}
+		}()
+
+		if !<-success {
+			t.Fatalf("sysObj.CreateWindow failed!")
+		}
+
+		t.Run("GL context has the right version", func(t *testing.T) {
+			toRunUnderGLContext <- func() {
+				major := gl.GetInteger(gl.MAJOR_VERSION)
+				minor := gl.GetInteger(gl.MINOR_VERSION)
+				t.Logf("glversion: %d.%d", major, minor)
+				if major != 4 || minor < 5 {
+					t.Logf("bad glversion: %d.%d", major, minor)
+					t.Fail()
+				}
+			}
+			<-ack
+			toRunUnderGLContext <- func() {
+				profile := gl.GetInteger(gl.CONTEXT_PROFILE_MASK)
+				if profile != gl.CONTEXT_CORE_PROFILE_BIT {
+					t.Logf("bad profile mask: %d", profile)
+					t.Fail()
+				}
+			}
+			<-ack
+			close(toRunUnderGLContext)
+		})
+	})
 }
