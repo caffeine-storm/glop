@@ -113,6 +113,13 @@ unsigned long GetNativeHandle(GlopWindowHandle);
 
 int64_t GlopInit();
 // Returns an opaque handle for further window operations.
+GlopWindowHandle GlopCreateWindowHandle(
+    char const* title,
+    int x,
+    int y,
+    int width,
+    int height);
+// Returns an opaque handle for further window operations.
 GlopWindowHandle DeprecatedGlopCreateWindow(
     char const* title,
     int x,

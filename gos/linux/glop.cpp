@@ -544,10 +544,6 @@ GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
 }
 
 GLXFBConfig* pickFbConfig(int* numConfigs) {
-  // TODO(tmckee): 1. FIRST pick an FBConfig
-  // 2. get a visualinfo from the config
-  // 3. make the window from _that_ visualinfo
-  // 4. glXCreateContextAttribARB to get a GLContext
   int fbAttrs[] = {
     GLX_DOUBLEBUFFER, True,
     GLX_RED_SIZE, 8,
@@ -562,11 +558,6 @@ GLXFBConfig* pickFbConfig(int* numConfigs) {
   };
 
   GLXFBConfig *fbConfig = glXChooseFBConfig(display, screen, fbAttrs, numConfigs);
-  LOG_WARN("got numConfigs %d\n", *numConfigs);
-  if(fbConfig == NULL || *numConfigs <= 0) {
-    LOG_FATAL("couldn't choose a framebuffer config\n");
-    abort();
-  }
   char buf[4096] = {0};
   for(int i = 0; i < *numConfigs; ++i) {
     showConfig(fbConfig[i], buf, sizeof(buf));
@@ -574,6 +565,130 @@ GLXFBConfig* pickFbConfig(int* numConfigs) {
   }
 
   return fbConfig;
+}
+
+GlopWindowHandle GlopCreateWindowHandle(char const* title, int x, int y, int width, int height) {
+  OsWindowData *nw = new OsWindowData();
+
+  if(x <= 0 || y <= 0 || width <= 0 || height <= 0) {
+    LOG_FATAL("bad window dims: (x,y): (%d,%d), (dx,dy): (%d,%d)\n", x, y, width, height);
+    abort();
+  }
+
+  int numConfigs;
+  GLXFBConfig *fbConfigs = pickFbConfig(&numConfigs);
+  LOG_WARN("got numConfigs %d\n", numConfigs);
+  if(fbConfigs == NULL || numConfigs <= 0) {
+    LOG_FATAL("couldn't choose a framebuffer config. numConfigs: %d\n", numConfigs);
+    abort();
+  }
+
+  GLXContext shareList = NULL;
+  nw->context = createContextFromConfig(fbConfigs);
+
+  // Grab the VisualInfo associated with the frame buffer config we chose.
+  nw->vinfo = glXGetVisualFromFBConfig(display, fbConfigs[0]);
+
+  XFree(fbConfigs);
+
+  // TODO(tmckee): Use GLFW for window management so that we can do something like
+  // glfwSetFramebufferSizeCallback(glfwWindow, setViewportOnResize)
+  // Shoutout to @Hermie02 for the suggestion!
+
+  // Define the window attributes
+  XSetWindowAttributes attribs;
+  attribs.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask |
+    ButtonReleaseMask | ButtonMotionMask | PointerMotionMask | FocusChangeMask
+    | FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask
+    | PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
+    EnterWindowMask | LeaveWindowMask;
+  attribs.colormap = XCreateColormap( display, RootWindow(display, screen), nw->vinfo->visual, AllocNone);
+
+
+  nw->window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, 0, nw->vinfo->depth, InputOutput, nw->vinfo->visual, CWColormap | CWEventMask, &attribs); // I don't know if I need anything further here
+
+  {
+    Atom WMHintsAtom = XInternAtom(display, "_MOTIF_WM_HINTS", false);
+    if (WMHintsAtom) {
+      static const unsigned long MWM_HINTS_FUNCTIONS   = 1 << 0;
+      static const unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
+
+      //static const unsigned long MWM_DECOR_ALL         = 1 << 0;
+      static const unsigned long MWM_DECOR_BORDER      = 1 << 1;
+      static const unsigned long MWM_DECOR_RESIZEH     = 1 << 2;
+      static const unsigned long MWM_DECOR_TITLE       = 1 << 3;
+      //static const unsigned long MWM_DECOR_MENU        = 1 << 4;
+      static const unsigned long MWM_DECOR_MINIMIZE    = 1 << 5;
+      static const unsigned long MWM_DECOR_MAXIMIZE    = 1 << 6;
+
+      //static const unsigned long MWM_FUNC_ALL          = 1 << 0;
+      static const unsigned long MWM_FUNC_RESIZE       = 1 << 1;
+      static const unsigned long MWM_FUNC_MOVE         = 1 << 2;
+      static const unsigned long MWM_FUNC_MINIMIZE     = 1 << 3;
+      static const unsigned long MWM_FUNC_MAXIMIZE     = 1 << 4;
+      static const unsigned long MWM_FUNC_CLOSE        = 1 << 5;
+
+      struct WMHints
+      {
+        unsigned long Flags;
+        unsigned long Functions;
+        unsigned long Decorations;
+        long          InputMode;
+        unsigned long State;
+      };
+
+      WMHints Hints;
+      Hints.Flags       = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
+      Hints.Decorations = 0;
+      Hints.Functions   = 0;
+
+      if (true)
+      {
+        Hints.Decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE /*| MWM_DECOR_MENU*/;
+        Hints.Functions   |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
+      }
+      if (false)
+      {
+        Hints.Decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
+        Hints.Functions   |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
+      }
+      if (true)
+      {
+        Hints.Decorations |= 0;
+        Hints.Functions   |= MWM_FUNC_CLOSE;
+      }
+
+      const unsigned char* HintsPtr = reinterpret_cast<const unsigned char*>(&Hints);
+      XChangeProperty(display, nw->window, WMHintsAtom, WMHintsAtom, 32, PropModeReplace, HintsPtr, 5);
+    }
+
+    // This is a hack to force some windows managers to disable resizing
+    if(true)
+    {
+      XSizeHints XSizeHints;
+      XSizeHints.flags      = PMinSize | PMaxSize;
+      XSizeHints.min_width  = XSizeHints.max_width  = width;
+      XSizeHints.min_height = XSizeHints.max_height = height;
+      XSetWMNormalHints(display, nw->window, &XSizeHints);
+    }
+  }
+
+  GlopSetTitle(nw, title);
+  free((void *)title);
+
+  XSetWMProtocols(display, nw->window, &close_atom, 1);
+
+  nw->inputcontext = XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
+  if(!nw->inputcontext) {
+    LOG_FATAL("couldn't create inputcontext\n");
+    abort();
+  }
+
+  XMapWindow(display, nw->window);
+
+  glopSetCurrentContext(nw);
+
+  return GlopWindowHandle{nw};
 }
 
 GlopWindowHandle DeprecatedGlopCreateWindow(char const* title, int x, int y, int width, int height) {
