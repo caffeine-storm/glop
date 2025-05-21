@@ -184,6 +184,11 @@ type newSystemObject struct {
 	*SystemObject
 }
 
+func (newlinux *newSystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
+	newlinux.windowHandle = C.GlopCreateWindowHandle(C.CString("(new) linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
+	return fmt.Sprintf("%d", C.GetNativeHandle(newlinux.windowHandle))
+}
+
 func New() *newSystemObject {
 	ret := &newSystemObject{
 		SystemObject: &SystemObject{},

@@ -77,6 +77,8 @@ func TestGlopCreateWindowHandle(t *testing.T) {
 				}
 			}
 			<-ack
+		})
+		t.Run("GL context has the right profile", func(t *testing.T) {
 			toRunUnderGLContext <- func() {
 				profile := gl.GetInteger(gl.CONTEXT_PROFILE_MASK)
 				if profile != gl.CONTEXT_CORE_PROFILE_BIT {
@@ -85,7 +87,7 @@ func TestGlopCreateWindowHandle(t *testing.T) {
 				}
 			}
 			<-ack
-			close(toRunUnderGLContext)
 		})
+		close(toRunUnderGLContext)
 	})
 }

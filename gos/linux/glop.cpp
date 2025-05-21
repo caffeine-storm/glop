@@ -529,7 +529,7 @@ GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
   int context_attribs[] = {
     GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
     GLX_CONTEXT_MINOR_VERSION_ARB, 5,
-    //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+    GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
     None
   };
 
@@ -570,7 +570,7 @@ GLXFBConfig* pickFbConfig(int* numConfigs) {
 GlopWindowHandle GlopCreateWindowHandle(char const* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
 
-  if(x <= 0 || y <= 0 || width <= 0 || height <= 0) {
+  if(x < 0 || y < 0 || width <= 0 || height <= 0) {
     LOG_FATAL("bad window dims: (x,y): (%d,%d), (dx,dy): (%d,%d)\n", x, y, width, height);
     abort();
   }
