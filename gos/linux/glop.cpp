@@ -522,6 +522,10 @@ void showConfig(GLXFBConfig const & cfg, char * out, int out_size) {
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
 GLXContext pickFbConfigAndCreateContext() {
+  // TODO(tmckee): 1. FIRST pick an FBConfig
+  // 2. get a visualinfo from the config
+  // 3. make the window from _that_ visualinfo
+  // 4. glXCreateContextAttribARB to get a GLContext
   int fbAttrs[] = {
     GLX_DOUBLEBUFFER, True,
     GLX_RED_SIZE, 8,
@@ -550,7 +554,7 @@ GLXContext pickFbConfigAndCreateContext() {
 
   glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
   glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)
-           glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
+    glXGetProcAddressARB((const GLubyte *) "glXCreateContextAttribsARB");
 
   int context_attribs[] = {
     GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
