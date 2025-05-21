@@ -570,7 +570,7 @@ GLXContext pickFbConfigAndCreateContext() {
   return ret;
 }
 
-GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, int height) {
+GlopWindowHandle DeprecatedGlopCreateWindow(char const* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
 
   // this is bad
@@ -605,8 +605,6 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
 
 
   nw->window = XCreateWindow(display, RootWindow(display, screen), x, y, width, height, 0, nw->vinfo->depth, InputOutput, nw->vinfo->visual, CWColormap | CWEventMask, &attribs); // I don't know if I need anything further here
-
-
 
   {
     Atom WMHintsAtom = XInternAtom(display, "_MOTIF_WM_HINTS", false);

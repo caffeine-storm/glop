@@ -33,7 +33,7 @@ func (linux *SystemObject) Quit() {
 }
 
 func (linux *SystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
-	linux.windowHandle = C.GlopCreateWindow(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
+	linux.windowHandle = C.DeprecatedGlopCreateWindow(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
 	return fmt.Sprintf("%d", C.GetNativeHandle(linux.windowHandle))
 }
 
