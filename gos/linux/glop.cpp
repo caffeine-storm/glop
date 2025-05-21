@@ -521,7 +521,29 @@ void showConfig(GLXFBConfig const & cfg, char * out, int out_size) {
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
 
-GLXContext pickFbConfigAndCreateContext() {
+GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
+  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
+  glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)
+    glXGetProcAddressARB((const GLubyte *) "glXCreateContextAttribsARB");
+
+  int context_attribs[] = {
+    GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
+    GLX_CONTEXT_MINOR_VERSION_ARB, 5,
+    //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+    None
+  };
+
+  GLXContext noSharedContext = 0;
+  Bool useDirectRendering = True;
+  GLXContext ret = glXCreateContextAttribsARB(display, *fbConfig, noSharedContext, useDirectRendering, context_attribs);
+  if(ret == 0) {
+    LOG_FATAL("couldn't glXCreateContextAttribsARB\n");
+    abort();
+  }
+  return ret;
+}
+
+GLXFBConfig* pickFbConfig(int* numConfigs) {
   // TODO(tmckee): 1. FIRST pick an FBConfig
   // 2. get a visualinfo from the config
   // 3. make the window from _that_ visualinfo
@@ -539,35 +561,19 @@ GLXContext pickFbConfigAndCreateContext() {
     0
   };
 
-  int numConfigs;
-  GLXFBConfig *fbConfig = glXChooseFBConfig(display, screen, fbAttrs, &numConfigs);
-  LOG_WARN("got numConfigs %d\n", numConfigs);
-  if(fbConfig == NULL || numConfigs <= 0) {
+  GLXFBConfig *fbConfig = glXChooseFBConfig(display, screen, fbAttrs, numConfigs);
+  LOG_WARN("got numConfigs %d\n", *numConfigs);
+  if(fbConfig == NULL || *numConfigs <= 0) {
     LOG_FATAL("couldn't choose a framebuffer config\n");
     abort();
   }
   char buf[4096] = {0};
-  for(int i = 0; i < numConfigs; ++i) {
+  for(int i = 0; i < *numConfigs; ++i) {
     showConfig(fbConfig[i], buf, sizeof(buf));
     LOG_WARN("config %d: '%s'\n", i, buf);
   }
 
-  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
-  glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)
-    glXGetProcAddressARB((const GLubyte *) "glXCreateContextAttribsARB");
-
-  int context_attribs[] = {
-    GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
-    GLX_CONTEXT_MINOR_VERSION_ARB, 5,
-    //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-    None
-  };
-  GLXContext noSharedContext = 0;
-  Bool useDirectRendering = True;
-  GLXContext ret = glXCreateContextAttribsARB(display, fbConfig[0], noSharedContext, useDirectRendering, context_attribs);
-
-  XFree(fbConfig);
-  return ret;
+  return fbConfig;
 }
 
 GlopWindowHandle DeprecatedGlopCreateWindow(char const* title, int x, int y, int width, int height) {
