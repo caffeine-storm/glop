@@ -471,6 +471,101 @@ void glopSetCurrentContext(OsWindowData* data) {
   }
 }
 
+void showConfig(GLXFBConfig const & cfg, char * out, int out_size) {
+  auto end = out + out_size;
+  int attribs[31] = {
+    GLX_FBCONFIG_ID,
+    GLX_BUFFER_SIZE,
+    GLX_LEVEL,
+    GLX_DOUBLEBUFFER,
+    GLX_STEREO,
+    GLX_AUX_BUFFERS,
+    GLX_RED_SIZE,
+    GLX_GREEN_SIZE,
+    GLX_BLUE_SIZE,
+    GLX_ALPHA_SIZE,
+    GLX_DEPTH_SIZE,
+    GLX_STENCIL_SIZE,
+    GLX_ACCUM_RED_SIZE,
+    GLX_ACCUM_GREEN_SIZE,
+    GLX_ACCUM_BLUE_SIZE,
+    GLX_ACCUM_ALPHA_SIZE,
+    GLX_RENDER_TYPE,
+    GLX_DRAWABLE_TYPE,
+    GLX_X_RENDERABLE,
+    GLX_VISUAL_ID,
+    GLX_X_VISUAL_TYPE,
+    GLX_CONFIG_CAVEAT,
+    GLX_TRANSPARENT_TYPE,
+    GLX_TRANSPARENT_INDEX_VALUE,
+    GLX_TRANSPARENT_RED_VALUE,
+    GLX_TRANSPARENT_GREEN_VALUE,
+    GLX_TRANSPARENT_BLUE_VALUE,
+    GLX_TRANSPARENT_ALPHA_VALUE,
+    GLX_MAX_PBUFFER_WIDTH,
+    GLX_MAX_PBUFFER_HEIGHT,
+    GLX_MAX_PBUFFER_PIXELS,
+  };
+
+  int val;
+  *out++ = '"';
+  for(int attrib : attribs) {
+    glXGetFBConfigAttrib(display, cfg, attrib, &val);
+    out += sprintf(out, "%d, ", val);
+    if(out >= end) {
+      return;
+    }
+  }
+  *out++ = '"';
+}
+
+typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+
+GLXContext pickFbConfigAndCreateContext() {
+  int fbAttrs[] = {
+    GLX_DOUBLEBUFFER, True,
+    GLX_RED_SIZE, 8,
+    GLX_GREEN_SIZE, 8,
+    GLX_BLUE_SIZE, 8,
+    GLX_ALPHA_SIZE, 8,
+    GLX_X_RENDERABLE, True,
+    GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+    GLX_DEPTH_SIZE, 24,
+    GLX_STENCIL_SIZE, 8,
+    0
+  };
+
+  int numConfigs;
+  GLXFBConfig *fbConfig = glXChooseFBConfig(display, screen, fbAttrs, &numConfigs);
+  LOG_WARN("got numConfigs %d\n", numConfigs);
+  if(fbConfig == NULL || numConfigs <= 0) {
+    LOG_FATAL("couldn't choose a framebuffer config\n");
+    abort();
+  }
+  char buf[4096] = {0};
+  for(int i = 0; i < numConfigs; ++i) {
+    showConfig(fbConfig[i], buf, sizeof(buf));
+    LOG_WARN("config %d: '%s'\n", i, buf);
+  }
+
+  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
+  glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)
+           glXGetProcAddressARB( (const GLubyte *) "glXCreateContextAttribsARB" );
+
+  int context_attribs[] = {
+    GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
+    GLX_CONTEXT_MINOR_VERSION_ARB, 5,
+    //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+    None
+  };
+  GLXContext noSharedContext = 0;
+  Bool useDirectRendering = True;
+  GLXContext ret = glXCreateContextAttribsARB(display, fbConfig[0], noSharedContext, useDirectRendering, context_attribs);
+
+  XFree(fbConfig);
+  return ret;
+}
+
 GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, int height) {
   OsWindowData *nw = new OsWindowData();
 
