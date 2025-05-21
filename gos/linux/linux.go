@@ -179,3 +179,15 @@ func (linux *SystemObject) SetGlContext() {
 	}
 	C.GlopSetGlContext(linux.windowHandle)
 }
+
+type newSystemObject struct {
+	*SystemObject
+}
+
+func New() *newSystemObject {
+	ret := &newSystemObject{
+		SystemObject: &SystemObject{},
+	}
+	ret.Startup()
+	return ret
+}
