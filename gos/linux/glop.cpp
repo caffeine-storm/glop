@@ -490,7 +490,10 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
     None
   };
   nw->vinfo = glXChooseVisual(display, screen, glxcv_params);
-//  ASSERT(nw->vinfo);
+  if(!nw->vinfo) {
+    LOG_FATAL("couldn't glXChooseVisual\n");
+    abort();
+  }
 
   // Define the window attributes
   XSetWindowAttributes attribs;
@@ -579,7 +582,10 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
   // I think in here is where we're meant to set window styles and stuff
 
   nw->inputcontext = XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing, XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
-  //  ASSERT(nw->inputcontext);
+  if(!nw->inputcontext) {
+    LOG_FATAL("couldn't create inputcontext\n");
+    abort();
+  }
 
   XMapWindow(display, nw->window);
 
