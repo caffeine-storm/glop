@@ -583,8 +583,12 @@ GlopWindowHandle GlopCreateWindow(char const* title, int x, int y, int width, in
 
   XMapWindow(display, nw->window);
 
-  nw->context = glXCreateContext(display, nw->vinfo, NULL, True);
-//  ASSERT(nw->context);
+  GLXContext shareList = NULL;
+  nw->context = glXCreateContext(display, nw->vinfo, shareList, True);
+  if(nw->context == NULL) {
+    LOG_FATAL("couldn't create new context\n");
+    abort();
+  }
 
   // TODO(tmckee): Use GLFW for window management so that we can do something like
   // glfwSetFramebufferSizeCallback(glfwWindow, setViewportOnResize)
