@@ -11,7 +11,7 @@ import (
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -59,7 +59,7 @@ func LoadAndInitializeDictionaryForTest(renderQueue render.RenderQueueInterface,
 }
 
 // Renders the given string with pixel units and an origin at the bottom-left.
-func renderStringForTest(toDraw string, x, y, height int, sys system.System, queue render.RenderQueueInterface, just Justification, logger glog.Logger) {
+func renderStringForTest(toDraw string, x, y, height int, queue render.RenderQueueInterface, just Justification, logger glog.Logger) {
 	d := LoadAndInitializeDictionaryForTest(queue, logger)
 
 	queue.Queue(func(st render.RenderQueueState) {
@@ -193,9 +193,9 @@ func DictionaryRenderStringSpec() {
 			just := Left
 			var logger glog.Logger = glog.TraceLogger()
 
-			rendertest.DeprecatedWithGlForTest(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy, func(sys system.System, render render.RenderQueueInterface) {
+			testbuilder.New().WithSize(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy).WithQueue().Run(func(render render.RenderQueueInterface) {
 				doRenderString := func(toDraw string) {
-					renderStringForTest(toDraw, leftPixel, bottomPixel, height, sys, render, just, logger)
+					renderStringForTest(toDraw, leftPixel, bottomPixel, height, render, just, logger)
 				}
 
 				Convey("Can render 'lol'", func() {
