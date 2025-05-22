@@ -138,7 +138,7 @@ func (b *expectationQueueGlTestBuilder) Run(fn func(render.RenderQueueInterface)
 		fn(queue)
 		queue.Purge()
 
-		b.ctx.conveyContext.So(queue, rendertest.ShouldNotLookLikeFile, b.ctx.expectation)
+		b.ctx.conveyContext.So(queue, rendertest.ShouldLookLikeFile, b.ctx.expectation)
 	})
 }
 
@@ -158,13 +158,22 @@ func WithSize(dx, dy int, ffn any) {
 	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
 }
 
-// What about with expectation at a given size???
 func WithExpectation(c C, ref rendertest.TestDataReference, arg0 any, args ...any) {
 	args = append([]any{arg0}, args...)
 	ffn := args[len(args)-1]
 	args = args[:len(args)-1]
 
 	it := New().WithExpectation(c, ref, args...)
+
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
+}
+
+func WithSizeAndExpectation(dx, dy int, c C, ref rendertest.TestDataReference, arg0 any, args ...any) {
+	args = append([]any{arg0}, args...)
+	ffn := args[len(args)-1]
+	args = args[:len(args)-1]
+
+	it := New().WithSize(dx, dy).WithExpectation(c, ref, args...)
 
 	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
 }
