@@ -1,3 +1,9 @@
+tmckee:#39 when multiple tests use the same expecation files (through
+rendertest.ShouldLookLikeFile family of helpers), if they both fail, we get
+only one of the rejection files. The framework detects this right now and
+errors out the test (as opposed to just failing). It would be nicer to be able
+to have tests fail independently and report rejection files independently.
+
 tmckee:#38 improve failure attribution when things blow up on the render
 thread. though, on second look, it seems we do have attribution? going to let
 this bug sit for a while to not lose the context but it might be fixed r.n.
@@ -66,4 +72,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#39 <next>
+<owner>:#40 <next>
