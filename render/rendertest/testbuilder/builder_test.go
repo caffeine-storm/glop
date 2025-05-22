@@ -1,6 +1,7 @@
 package testbuilder_test
 
 import (
+	"image/color"
 	"log"
 	"strings"
 	"testing"
@@ -104,6 +105,13 @@ func TestBuilderFluentApi(t *testing.T) {
 		Convey("expectationy things need convey", t, func(c C) {
 			testbuilder.New().WithExpectation(c, "red").Run(func() {
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
+			})
+
+			purpleBackground := color.RGBA{
+				R: 225, G: 0, B: 255, A: 255,
+			}
+			testbuilder.New().WithExpectation(c, "red-on-purple", purpleBackground).Run(func() {
+				rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
 			})
 		})
 	})
