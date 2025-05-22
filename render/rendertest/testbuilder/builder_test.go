@@ -106,6 +106,13 @@ func TestBuilderFluentApi(t *testing.T) {
 					rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
 				})
 			})
+
+			testbuilder.WithSizeAndExpectation(64, 64, c, "red", func(queue render.RenderQueueInterface) {
+				queue.Queue(func(render.RenderQueueState) {
+					rendertest.DrawRectNdc(-1, -1, 1, 1)
+				})
+				queue.Purge()
+			})
 		})
 	})
 }
