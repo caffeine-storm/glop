@@ -9,6 +9,9 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+// TODO(tmckee): refactor things to use either a consistent interface type or
+// w/e in order to cut down on the combinatoric explosion of API.
+
 type GlTestBuilder struct {
 	Dx, Dy int
 }
@@ -100,9 +103,15 @@ type expectationGlTestBuilder struct {
 }
 
 func (b *expectationGlTestBuilder) Run(fn func()) {
+	b.RunForQueueState(func(render.RenderQueueState) {
+		fn()
+	})
+}
+
+func (b *expectationGlTestBuilder) RunForQueueState(fn func(render.RenderQueueState)) {
 	b.ctx.WithQueue().Run(func(queue render.RenderQueueInterface) {
 		queue.Queue(func(st render.RenderQueueState) {
-			fn()
+			fn(st)
 		})
 		queue.Purge()
 
