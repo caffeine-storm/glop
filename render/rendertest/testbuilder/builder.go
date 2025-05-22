@@ -23,6 +23,13 @@ func (b *GlTestBuilder) WithQueue() *queueGlTestBuilder {
 	}
 }
 
+func (b *GlTestBuilder) RunForQueueState(fn func(render.RenderQueueState)) {
+	b.WithQueue().Run(func(queue render.RenderQueueInterface) {
+		queue.Queue(fn)
+		queue.Purge()
+	})
+}
+
 func (b *GlTestBuilder) WithExpectation(C C, ref rendertest.TestDataReference, args ...any) *expectationGlTestBuilder {
 	bgColour := rendertest.DefaultBackground
 	for _, arg := range args {
@@ -143,43 +150,33 @@ func New() *GlTestBuilder {
 
 func Run(ffn any) {
 	it := New()
-	switch fn := ffn.(type) {
-	case func():
-		it.Run(fn)
-	case func(render.RenderQueueInterface):
-		it.WithQueue().Run(fn)
-	default:
-		panic("T_T")
-	}
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
 }
 
 func WithSize(dx, dy int, ffn any) {
 	it := New().WithSize(dx, dy)
-	switch fn := ffn.(type) {
-	case func():
-		it.Run(fn)
-	case func(render.RenderQueueInterface):
-		it.WithQueue().Run(fn)
-	default:
-		panic("T_T")
-	}
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
 }
 
-func WithExpectation(c C, ref rendertest.TestDataReference, args ...any) {
-	if len(args) < 1 {
-		panic(":3")
-	}
+// What about with expectation at a given size???
+func WithExpectation(c C, ref rendertest.TestDataReference, arg0 any, args ...any) {
+	args = append([]any{arg0}, args...)
 	ffn := args[len(args)-1]
 	args = args[:len(args)-1]
+
 	it := New().WithExpectation(c, ref, args...)
 
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
+}
+
+func dorun(f1 func(func()), f2 func(func(render.RenderQueueInterface)), f3 func(func(render.RenderQueueState)), ffn any) {
 	switch fn := ffn.(type) {
 	case func():
-		it.Run(fn)
+		f1(fn)
 	case func(render.RenderQueueInterface):
-		it.WithQueue().Run(fn)
+		f2(fn)
 	case func(render.RenderQueueState):
-		it.RunForQueueState(fn)
+		f3(fn)
 	default:
 		panic("T_T")
 	}
