@@ -16,8 +16,8 @@ var defaultTestNumber = TestNumber(0)
 var defaultFileExtension = FileExtension("png")
 var defaultThreshold = Threshold(3)
 
-// Default background is an opaque black
-var defaultBackground = color.RGBA{
+// DefaultBackground is an opaque black
+var DefaultBackground BackgroundColour = color.RGBA{
 	R: 0,
 	G: 0,
 	B: 0,
@@ -83,7 +83,7 @@ func getThresholdFromArgs(args []interface{}) Threshold {
 
 func getBackgroundFromArgs(args []interface{}) (BackgroundColour, bool) {
 	var result BackgroundColour
-	found := getFromArgs(args, defaultBackground, &result)
+	found := getFromArgs(args, DefaultBackground, &result)
 	return result, found
 }
 

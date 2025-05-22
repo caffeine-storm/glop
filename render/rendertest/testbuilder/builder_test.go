@@ -107,11 +107,13 @@ func TestBuilderFluentApi(t *testing.T) {
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
 			})
 
-			purpleBackground := color.RGBA{
+			pinkBackground := color.RGBA{
 				R: 225, G: 0, B: 255, A: 255,
 			}
-			testbuilder.New().WithExpectation(c, "red-on-purple", purpleBackground).Run(func() {
-				rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
+			testbuilder.New().WithExpectation(c, "red-on-pink", pinkBackground).Run(func() {
+				rendertest.WithClearColour(gl.GLclampf(pinkBackground.R), gl.GLclampf(pinkBackground.G), gl.GLclampf(pinkBackground.B), gl.GLclampf(pinkBackground.A), func() {
+					rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
+				})
 			})
 		})
 	})

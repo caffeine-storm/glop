@@ -1,6 +1,8 @@
 package testbuilder
 
 import (
+	"fmt"
+
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
@@ -21,10 +23,21 @@ func (b *GlTestBuilder) WithQueue() *queueGlTestBuilder {
 	}
 }
 
-func (b *GlTestBuilder) WithExpectation(C C, ref rendertest.TestDataReference) *expectationGlTestBuilder {
+func (b *GlTestBuilder) WithExpectation(C C, ref rendertest.TestDataReference, args ...any) *expectationGlTestBuilder {
+	bgColour := rendertest.DefaultBackground
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case rendertest.BackgroundColour:
+			bgColour = v
+		default:
+			panic(fmt.Errorf("unexpected trailing arg type: %T", arg))
+		}
+	}
+
 	return &expectationGlTestBuilder{
 		ctx:           b,
 		expectation:   ref,
+		bgColour:      bgColour,
 		conveyContext: C,
 	}
 }
@@ -82,6 +95,7 @@ func (b *queueGlTestBuilder) WithSize(dx, dy int) *queueGlTestBuilder {
 type expectationGlTestBuilder struct {
 	ctx           *GlTestBuilder
 	expectation   rendertest.TestDataReference
+	bgColour      rendertest.BackgroundColour
 	conveyContext C
 }
 
