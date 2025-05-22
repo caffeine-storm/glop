@@ -107,6 +107,10 @@ func TestBuilderFluentApi(t *testing.T) {
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
 			})
 
+			testbuilder.New().WithExpectation(c, "red").RunForQueueState(func(st render.RenderQueueState) {
+				rendertest.DrawRectNdc(-1, -1, 1, 1)
+			})
+
 			pinkBackground := color.RGBA{
 				R: 225, G: 0, B: 255, A: 255,
 			}
@@ -115,6 +119,7 @@ func TestBuilderFluentApi(t *testing.T) {
 					rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
 				})
 			})
+
 		})
 	})
 }
