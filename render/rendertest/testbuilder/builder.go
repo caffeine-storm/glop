@@ -9,9 +9,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-// TODO(tmckee): refactor things to use either a consistent interface type or
-// w/e in order to cut down on the combinatoric explosion of API.
-
 type GlTestBuilder struct {
 	Dx, Dy int
 }
@@ -119,8 +116,71 @@ func (b *expectationGlTestBuilder) RunForQueueState(fn func(render.RenderQueueSt
 	})
 }
 
+type expectationQueueGlTestBuilder struct {
+	ctx *expectationGlTestBuilder
+}
+
+func (b *expectationGlTestBuilder) WithQueue() *expectationQueueGlTestBuilder {
+	return &expectationQueueGlTestBuilder{
+		ctx: b,
+	}
+}
+
+func (b *expectationQueueGlTestBuilder) Run(fn func(render.RenderQueueInterface)) {
+	b.ctx.ctx.WithQueue().Run(func(queue render.RenderQueueInterface) {
+		fn(queue)
+		queue.Purge()
+
+		b.ctx.conveyContext.So(queue, rendertest.ShouldNotLookLikeFile, b.ctx.expectation)
+	})
+}
+
 // TODO(tmckee:#38): take a pointer-to-testing.T so that we can properly attribute
 // on-render-thread failures with the test that was running.
 func New() *GlTestBuilder {
 	return &GlTestBuilder{}
+}
+
+func Run(ffn any) {
+	it := New()
+	switch fn := ffn.(type) {
+	case func():
+		it.Run(fn)
+	case func(render.RenderQueueInterface):
+		it.WithQueue().Run(fn)
+	default:
+		panic("T_T")
+	}
+}
+
+func WithSize(dx, dy int, ffn any) {
+	it := New().WithSize(dx, dy)
+	switch fn := ffn.(type) {
+	case func():
+		it.Run(fn)
+	case func(render.RenderQueueInterface):
+		it.WithQueue().Run(fn)
+	default:
+		panic("T_T")
+	}
+}
+
+func WithExpectation(c C, ref rendertest.TestDataReference, args ...any) {
+	if len(args) < 1 {
+		panic(":3")
+	}
+	ffn := args[len(args)-1]
+	args = args[:len(args)-1]
+	it := New().WithExpectation(c, ref, args...)
+
+	switch fn := ffn.(type) {
+	case func():
+		it.Run(fn)
+	case func(render.RenderQueueInterface):
+		it.WithQueue().Run(fn)
+	case func(render.RenderQueueState):
+		it.RunForQueueState(fn)
+	default:
+		panic("T_T")
+	}
 }

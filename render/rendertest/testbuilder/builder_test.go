@@ -47,13 +47,13 @@ func TestConveyHalting(t *testing.T) {
 
 func TestBuilderFluentApi(t *testing.T) {
 	t.Run("default builder runs on render thread", func(t *testing.T) {
-		testbuilder.New().Run(func() {
+		testbuilder.Run(func() {
 			rendertest.AssertOnRenderThread(t)
 		})
 	})
 
 	t.Run("can run off of render thread", func(t *testing.T) {
-		testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
+		testbuilder.Run(func(queue render.RenderQueueInterface) {
 			rendertest.AssertOffRenderThread(t)
 
 			queue.Queue(func(render.RenderQueueState) {
@@ -66,7 +66,7 @@ func TestBuilderFluentApi(t *testing.T) {
 	t.Run("can specify dimensions", func(t *testing.T) {
 		t.Run("with literal sizes", func(t *testing.T) {
 			assert := assert.New(t)
-			testbuilder.New().WithSize(64, 128).Run(func() {
+			testbuilder.WithSize(64, 128, func() {
 				rendertest.AssertOnRenderThread(t)
 				_, _, dx, dy := debug.GetViewport()
 				assert.Equal(dx, uint32(64))
@@ -74,22 +74,9 @@ func TestBuilderFluentApi(t *testing.T) {
 			})
 		})
 
-		t.Run("and get the queue after", func(t *testing.T) {
+		t.Run("and get the queue", func(t *testing.T) {
 			assert := assert.New(t)
-			testbuilder.New().WithSize(64, 128).WithQueue().Run(func(queue render.RenderQueueInterface) {
-				rendertest.AssertOffRenderThread(t)
-				queue.Queue(func(render.RenderQueueState) {
-					_, _, dx, dy := debug.GetViewport()
-					assert.Equal(dx, uint32(64))
-					assert.Equal(dy, uint32(128))
-				})
-				queue.Purge()
-			})
-		})
-
-		t.Run("and get the queue first", func(t *testing.T) {
-			assert := assert.New(t)
-			testbuilder.New().WithQueue().WithSize(64, 128).Run(func(queue render.RenderQueueInterface) {
+			testbuilder.WithSize(64, 128, func(queue render.RenderQueueInterface) {
 				rendertest.AssertOffRenderThread(t)
 				queue.Queue(func(render.RenderQueueState) {
 					_, _, dx, dy := debug.GetViewport()
@@ -103,23 +90,22 @@ func TestBuilderFluentApi(t *testing.T) {
 
 	t.Run("easy expectations checking", func(t *testing.T) {
 		Convey("expectationy things need convey", t, func(c C) {
-			testbuilder.New().WithExpectation(c, "red").Run(func() {
+			testbuilder.WithExpectation(c, "red", func() {
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
 			})
 
-			testbuilder.New().WithExpectation(c, "red").RunForQueueState(func(st render.RenderQueueState) {
+			testbuilder.WithExpectation(c, "red", func(st render.RenderQueueState) {
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
 			})
 
 			pinkBackground := color.RGBA{
 				R: 225, G: 0, B: 255, A: 255,
 			}
-			testbuilder.New().WithExpectation(c, "red-on-pink", pinkBackground).Run(func() {
+			testbuilder.WithExpectation(c, "red-on-pink", pinkBackground, func() {
 				rendertest.WithClearColour(gl.GLclampf(pinkBackground.R), gl.GLclampf(pinkBackground.G), gl.GLclampf(pinkBackground.B), gl.GLclampf(pinkBackground.A), func() {
 					rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
 				})
 			})
-
 		})
 	})
 }
