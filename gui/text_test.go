@@ -245,7 +245,7 @@ func DictionaryRenderStringSpec() {
 					So(render, rendertest.ShouldLookLikeText, "multiple-lines", testnumber)
 				})
 
-				Convey("Can strings on top of each other", func() {
+				Convey("Can render strings on top of each other", func() {
 					doRenderString("first string")
 					doRenderString("second string")
 
