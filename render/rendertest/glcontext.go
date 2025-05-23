@@ -74,6 +74,8 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
+		// TODO(tmckee:clean): can just defer enforcing the invariants; whether it
+		// panics or not, we'll get the intended behaviour.
 		if invariantscheck {
 			func() {
 				defer func() {
@@ -172,6 +174,10 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 				panic(fmt.Errorf("recover() returned a non-error type: %T value: %v", e, e))
 			}
 		}()
+		// TODO(tmckee:#40): we need to find a way to cleanup even if 'fn' calls
+		// runtime.Goexit(). We could spawn a sacrificial goroutine to do this call
+		// but we'd still need a way to recover if someone calls t.Fatalf on the
+		// render thread.
 		fn(ctx.sys, ctx.windowHandle, Failfastqueue(ctx))
 	}()
 
@@ -204,7 +210,7 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
 		// TODO(tmckee:#38): we need better attribution here; it's hard right now to
 		// know _which_ test was running the render job that panicked. We ought to
-		// be able to plumb a testing.T instance in here and call its t.Fail/t.Fatalf
+		// be able to plumb a testing.T instance in here and call its t.Fail.
 		glog.ErrorLogger().Error("test-render-queue.OnError", "err", e)
 	})
 	renderQueue.StartProcessing()

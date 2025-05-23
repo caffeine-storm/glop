@@ -1,3 +1,12 @@
+tmckee:#40 testing.T.{Fatalf,FailNow} exits the goroutine; defer'd closures run
+but, because there is no panic, 'recover()' returns nil. This means that if
+we're running render tests, we won't detect the failure so we won't get a
+chance to 'enforceInvariants' to clean up gl state. This means if testA fails,
+testB might get a wonky gl state and fail spuriously as a result. Such a
+failure usually manifests as a failure in 'prep'. Also, calling runtime.Goexit
+on the render thread is probably really bad if we're trying to reuse that
+render queue; we can at least fail-fast by defer'ing a non-conditional close()
+of the work channel.
 
 tmckee:#38 improve failure attribution when things blow up on the render
 thread. though, on second look, it seems we do have attribution? going to let
@@ -67,4 +76,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#40 <next>
+<owner>:#41 <next>

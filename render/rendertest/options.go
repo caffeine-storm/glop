@@ -50,6 +50,10 @@ func getFromArgs(args []interface{}, defaultValue interface{}, output interface{
 	return false
 }
 
+// TODO(tmckee:clean): this should just take a single arg so that callsites
+// will have 'getTestDataKey(args[0])' when they go to clobber 'args[0]'.
+// Otherwise, it looks like we're overwriting the first arg with... who knows
+// what.
 func getTestDataKeyFromArgs(args []interface{}) TestDataReference {
 	// The only valid spot to look for a test data reference is at the head of
 	// the slice.

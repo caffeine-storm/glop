@@ -185,6 +185,8 @@ func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) s
 
 	doMakeRejectFiles := getMakeRejectFilesFromArgs(expected)
 	if doMakeRejectFiles == true {
+		// TODO(tmckee:clean): DRY out a helper to write an image.Image to a given
+		// filepath.
 		rejectFileName := MakeRejectName(expectedFileName, ".png")
 		rejectFile, err := os.Create(rejectFileName)
 		if err != nil {

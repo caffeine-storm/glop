@@ -7,6 +7,8 @@ import (
 )
 
 func WithClearColour(r, g, b, a gl.GLclampf, fn func()) {
+	// TODO(tmckee): use gl.PushAttrib(gl.COLOR_BUFFER_BIT) instead of
+	// get->set->defer(reset)
 	oldClear := getCurrentBackground()
 
 	gl.ClearColor(r, g, b, a)
