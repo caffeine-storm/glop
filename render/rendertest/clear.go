@@ -4,7 +4,7 @@ import "github.com/go-gl-legacy/gl"
 
 func ClearScreen() {
 	// Set the default clear values.
-	gl.ClearColor(0, 0, 0, 0)
+	gl.ClearColor(0, 0, 0, 1)
 	gl.ClearDepth(1)
 	gl.ClearStencil(0)
 
