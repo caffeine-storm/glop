@@ -119,7 +119,7 @@ func (b *expectationGlTestBuilder) RunForQueueState(fn func(render.RenderQueueSt
 		})
 		queue.Purge()
 
-		b.conveyContext.So(queue, rendertest.ShouldLookLikeFile, b.expectation)
+		b.conveyContext.So(queue, rendertest.ShouldLookLikeFile, b.expectation, b.bgColour)
 	})
 }
 
