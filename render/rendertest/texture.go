@@ -111,6 +111,8 @@ func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *rend
 		gl.Buffer(0).Bind(gl.ELEMENT_ARRAY_BUFFER)
 
 		// - render geometry
+		gl.Enable(gl.BLEND)
+		gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE)
 		indices := []uint16{0, 1, 2, 3, 4, 5}
 		gl.DrawElements(gl.TRIANGLES, len(indices), gl.UNSIGNED_SHORT, indices)
 	})
