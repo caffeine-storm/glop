@@ -18,6 +18,9 @@ import (
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
+// TODO(tmckee): if we enable depth testing, do we also need to define a 'z'
+// coordinate for the geometry? ought to be able to just assign 0 to the
+// z-component of ... something?
 const font_vertex_shader string = `
   #version 120
   varying vec3 pos;
@@ -399,10 +402,11 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 
 	debug.LogAndClearGlErrors(d.logger)
 
-	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
+	gl.PushAttrib(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	defer gl.PopAttrib()
 	gl.Enable(gl.BLEND)
-	gl.BlendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+	gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ZERO, gl.ONE)
+	gl.Disable(gl.DEPTH_TEST)
 
 	d.texture.Bind(gl.TEXTURE_2D)
 	defer gl.Texture(0).Bind(gl.TEXTURE_2D)
