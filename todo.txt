@@ -1,8 +1,3 @@
-tmckee:#39 when multiple tests use the same expecation files (through
-rendertest.ShouldLookLikeFile family of helpers), if they both fail, we get
-only one of the rejection files. The framework detects this right now and
-errors out the test (as opposed to just failing). It would be nicer to be able
-to have tests fail independently and report rejection files independently.
 
 tmckee:#38 improve failure attribution when things blow up on the render
 thread. though, on second look, it seems we do have attribution? going to let

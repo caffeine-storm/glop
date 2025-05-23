@@ -298,7 +298,7 @@ func TestCmpSpecs(t *testing.T) {
 		})
 		Convey("should dump rejection files", func() {
 			Convey("when sizes mismatch", func() {
-				expectedFile := rendertest.NewTestdataReference("checker")
+				expectedFile := rendertest.NewTestdataReference("checker-fail")
 				rejFileName := rendertest.MakeRejectName(expectedFile.Path(), ".png")
 
 				img := rendertest.MustLoadTestImage(expectedFile)
