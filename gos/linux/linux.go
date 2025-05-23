@@ -18,9 +18,7 @@ type SystemObject struct {
 	windowHandle C.GlopWindowHandle // Handle to native per-window data
 }
 
-// Call after runtime.LockOSThread(), *NOT* in an init function
 func (linux *SystemObject) Startup() int64 {
-
 	return int64(C.GlopInit())
 }
 
@@ -32,6 +30,7 @@ func (linux *SystemObject) Quit() {
 	panic("Not implemented on linux")
 }
 
+// Call after runtime.LockOSThread(), *NOT* in an init function
 func (linux *SystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
 	linux.windowHandle = C.DeprecatedGlopCreateWindow(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
 	return fmt.Sprintf("%d", C.GetNativeHandle(linux.windowHandle))
@@ -184,6 +183,7 @@ type newSystemObject struct {
 	*SystemObject
 }
 
+// Call after runtime.LockOSThread(), *NOT* in an init function
 func (newlinux *newSystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
 	newlinux.windowHandle = C.GlopCreateWindowHandle(C.CString("(new) linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
 	return fmt.Sprintf("%d", C.GetNativeHandle(newlinux.windowHandle))

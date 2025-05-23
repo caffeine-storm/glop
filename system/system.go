@@ -7,12 +7,12 @@ import (
 type NativeWindowHandle interface{}
 
 type System interface {
-	// Call after runtime.LockOSThread(), *NOT* in an init function.
 	Startup()
 
 	// Call System.Think() every frame. Returns the 'horizon'.
 	Think() int64
 
+	// Call after runtime.LockOSThread(), *NOT* in an init function.
 	CreateWindow(x, y, width, height int) NativeWindowHandle
 	// TODO: implement this:
 	// DestroyWindow(NativeWindowHandle)
@@ -45,9 +45,7 @@ type System interface {
 // NewSystemInterface() which takes no parameters and returns an object that
 // implements the system.Os interface.
 type Os interface {
-	// This should be called after runtime.LockOSThread(). So, take care not to
-	// call it in a package init() function. Returns a timestamp like Think() or
-	// GetInputEvents().
+	// Returns a timestamp like Think() or GetInputEvents().
 	Startup() int64
 
 	// Think() is called on a regular basis and always from main thread. Returns
@@ -55,10 +53,8 @@ type Os interface {
 	// GetInputEvent's timestamps.
 	Think() int64
 
-	// Create a window with the appropriate dimensions and bind an OpenGl contxt
-	// to it.  Currently glop only supports a single window, but this function
-	// could be called more than once since a window could be destroyed so it can
-	// be recreated at different dimensions or in full sreen mode.
+	// Create a window with the appropriate dimensions and bind an OpenGl context
+	// to it. Call after runtime.LockOSThread(), *NOT* in an init function.
 	CreateWindow(x, y, width, height int) NativeWindowHandle
 
 	// TODO: implement this:
