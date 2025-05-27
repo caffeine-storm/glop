@@ -108,11 +108,19 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 		gl.PushMatrix()
 		gl.LoadIdentity()
 
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		// TODO(tmckee): we should check and enforce the invariant that depth+blend
+		// are disabled. (or, at least set to what they should be set to by
+		// default).
+		gl.ClearColor(0, 0, 0, 1)
+		gl.ClearDepth(1)
+		gl.Disable(gl.DEPTH_TEST)
+		gl.Disable(gl.BLEND)
 
 		// SwapBuffers should flush the GL command queue and synchronize with the
 		// X-server. Without doing so, things break!
 		ctx.sys.SwapBuffers()
+
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	})
 	ctx.render.Purge()
 
