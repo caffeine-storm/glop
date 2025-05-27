@@ -14,8 +14,8 @@ import (
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/runningwild/glop/strmanip"
-	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -190,7 +190,7 @@ func TestCompareTransparentExpectations(t *testing.T) {
 	t.Run("opaque result vs. transparent expectation", func(t *testing.T) {
 		// rendertest.ShouldLookLikeFile should work out-of-the-box when the
 		// expectation file has transparent pixels.
-		rendertest.DeprecatedWithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
+		testbuilder.WithSize(64, 64, func(queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				// - Convert it to a texture
 				tex := rendertest.GivenATexture("checker/0.png")
@@ -281,21 +281,18 @@ func TestCmpSpecs(t *testing.T) {
 				So(checkersOnBlue, rendertest.ShouldNotLookLikeFile, "checker")
 			})
 
-			Convey("for rendered textures", func() {
-				rendertest.DeprecatedWithGlForTest(64, 64, func(_ system.System, queue render.RenderQueueInterface) {
-					queue.Queue(func(st render.RenderQueueState) {
+			Convey("for rendered textures", func(c C) {
+				testbuilder.WithExpectation(c, "checker", rendertest.BackgroundColour(blue),
+					func(st render.RenderQueueState) {
 						tex := rendertest.GivenATexture("checker/0.png")
 
 						rendertest.WithClearColour(0, 0, 1, 1, func() {
 							rendertest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
 						})
 					})
-					queue.Purge()
-
-					So(queue, rendertest.ShouldLookLikeFile, "checker", rendertest.BackgroundColour(blue))
-				})
 			})
 		})
+
 		Convey("should dump rejection files", func() {
 			Convey("when sizes mismatch", func() {
 				expectedFile := rendertest.NewTestdataReference("checker-fail")

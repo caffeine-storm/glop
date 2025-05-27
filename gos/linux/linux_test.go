@@ -81,14 +81,14 @@ func TestGlopCreateWindowHandle(t *testing.T) {
 		t.Run("GL context has the right profile", func(t *testing.T) {
 			toRunUnderGLContext <- func() {
 				profile := gl.GetInteger(gl.CONTEXT_PROFILE_MASK)
-				if profile != gl.CONTEXT_CORE_PROFILE_BIT {
+				if profile != gl.CONTEXT_COMPATIBILITY_PROFILE_BIT {
 					t.Logf("bad profile mask: %d", profile)
 					t.Fail()
 				}
 			}
 			<-ack
 		})
-		t.Run("Can't gl.Begin with new context", func(t *testing.T) {
+		t.Run("Can gl.Begin with new context", func(t *testing.T) {
 			toRunUnderGLContext <- func() {
 				err := gl.GetError()
 				for err != 0 {
@@ -103,8 +103,8 @@ func TestGlopCreateWindowHandle(t *testing.T) {
 
 				err = gl.GetError()
 				t.Logf("gl.GetError returned %d", err)
-				if err == 0 {
-					t.Logf("expected gl error when using fixed function pipeline")
+				if err != 0 {
+					t.Logf("expected no gl error when using fixed function pipeline")
 					t.Fail()
 				}
 			}

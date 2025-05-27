@@ -6,7 +6,7 @@ import (
 )
 
 type linuxSystemObject struct {
-	linux.SystemObject
+	system.Os
 }
 
 var (
@@ -15,6 +15,6 @@ var (
 
 func NewSystemInterface() *linuxSystemObject {
 	return &linuxSystemObject{
-		SystemObject: linux.SystemObject{},
+		Os: linux.New(),
 	}
 }
