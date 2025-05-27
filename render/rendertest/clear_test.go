@@ -4,25 +4,26 @@ import (
 	"image"
 	"testing"
 
-	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 )
 
 func TestClearScreen(t *testing.T) {
-	rendertest.DeprecatedWithGlForTest(50, 50, func(_ system.System, queue render.RenderQueueInterface) {
+	testbuilder.Run(func(queue render.RenderQueueInterface) {
 		var imgResult *image.RGBA
 		queue.Queue(func(st render.RenderQueueState) {
 			// draw some stuff
-			gl.Color4f(0, 1, 0, 1) // green!
-			rendertest.DrawRectNdc(-0.75, -0.75, 0.75, 0.75)
+			render.WithColour(0, 1, 0, 1, func() {
+				// green!
+				rendertest.DrawRectNdc(-0.75, -0.75, 0.75, 0.75)
 
-			// clear the screen
-			rendertest.ClearScreen()
+				// clear the screen
+				rendertest.ClearScreen()
 
-			imgResult = debug.ScreenShotRgba(50, 50)
+				imgResult = debug.ScreenShotRgba(64, 64)
+			})
 		})
 		queue.Purge()
 
