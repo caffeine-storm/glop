@@ -106,9 +106,9 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (prepError e
 		gl.PushMatrix()
 		gl.LoadIdentity()
 
-		// TODO(tmckee): we should check and enforce the invariant that depth+blend
-		// are disabled. (or, at least set to what they should be set to by
-		// default).
+		// Push 'clear' and 'depth' things on the attribute stack for safe keeping
+		// then set up our expected state.
+		gl.PushAttrib(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.ClearColor(0, 0, 0, 1)
 		gl.ClearDepth(1)
 		gl.Disable(gl.DEPTH_TEST)
@@ -130,7 +130,10 @@ func (ctx *glContext) clean(invariantscheck bool) (cleanError error) {
 		cleanError = errors.Join(cleanError, ctx.takeLastError())
 	}()
 	ctx.render.Queue(func(render.RenderQueueState) {
-		// Undo matrix mode identity loads
+		// Undo server-side attribute push.
+		gl.PopAttrib()
+
+		// Undo matrix mode identity loads.
 		gl.MatrixMode(gl.TEXTURE)
 		gl.PopMatrix()
 
