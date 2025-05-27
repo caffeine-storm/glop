@@ -18,9 +18,6 @@ import (
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
-// TODO(tmckee): if we enable depth testing, do we also need to define a 'z'
-// coordinate for the geometry? ought to be able to just assign 0 to the
-// z-component of ... something?
 const font_vertex_shader string = `
   #version 120
   varying vec3 pos;
