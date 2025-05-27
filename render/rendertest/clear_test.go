@@ -28,8 +28,8 @@ func TestClearScreen(t *testing.T) {
 
 		// expect all black
 		badPixels := []any{}
-		for y := 0; y < 50; y++ {
-			for x := 0; x < 50; x++ {
+		for y := imgResult.Bounds().Min.Y; y < imgResult.Bounds().Max.Y; y++ {
+			for x := imgResult.Bounds().Min.X; x < imgResult.Bounds().Max.X; x++ {
 				r, g, b, a := imgResult.At(x, y).RGBA()
 				if r != 0 || g != 0 || b != 0 || a != 0xffff {
 					t.Fail()
