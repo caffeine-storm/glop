@@ -53,6 +53,8 @@ func TestDrawTexturedQuad(t *testing.T) {
 				mustPanic()
 			})
 		}, ShouldPanic)
+
+		// TODO(#37): won't need this test once deprecated things are removed.
 		Convey("With the deprecated helpers too", func(c C) {
 			c.So(func() {
 				rendertest.DeprecatedWithGl(func() {

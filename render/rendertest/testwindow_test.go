@@ -75,6 +75,8 @@ func TestCrossTalkPrevention(t *testing.T) {
 	})
 
 	var nextState map[string]int
+
+	// TODO(#37): won't need this test once deprecated things are removed.
 	t.Run("the deprecated helpers merely warn", func(t *testing.T) {
 		output := gloptest.CollectOutput(func() {
 			rendertest.DeprecatedWithGl(func() {

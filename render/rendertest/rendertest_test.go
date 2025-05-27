@@ -20,6 +20,7 @@ func TestFailureDoesNotCascade(t *testing.T) {
 		// must not panic
 	})
 
+	// TODO(#37): won't need this test once deprecated things are removed.
 	t.Run("even with the deprecated helpers", func(t *testing.T) {
 		assert.Panics(t, func() {
 			rendertest.DeprecatedWithGl(func() {
