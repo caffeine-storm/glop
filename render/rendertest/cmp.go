@@ -217,6 +217,25 @@ func makeFallbackImage() *image.RGBA {
 	}
 }
 
+func dumpRawImageForDebugging(img *image.RGBA, expected ...any) {
+	path, found := getDebugDumpFilePathFromArgs(expected)
+	if !found {
+		// Only dump if someone passed in a DebugDumpFilePath explicitly.
+		return
+	}
+
+	f, err := os.Create(string(path))
+	if err != nil {
+		panic(fmt.Errorf("couldn't os.Create(%q): %w", path, err))
+	}
+	defer f.Close()
+
+	err = png.Encode(f, img)
+	if err != nil {
+		panic(fmt.Errorf("couldn't png.Encode to %q: %w", path, err))
+	}
+}
+
 func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) (testResult string) {
 	defer func() {
 		if e := recover(); e != nil {
@@ -237,8 +256,6 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 	})
 	queue.Purge()
 
-	// When screen shotting, we only read opaque pixels; there's always going to
-	// be _some_ value for each element of the frame buffer.
 	// If the expectation file has transparent portions, we need to compose it
 	// over a suitable background before comparing pixel values.
 	_, ok := getBackgroundFromArgs(expected)
@@ -248,6 +265,8 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 		// background is (typically black).
 		expected = append(expected, BackgroundColour(backgroundForImageCmp))
 	}
+
+	dumpRawImageForDebugging(actualImage, expected...)
 
 	return imageShouldLookLikeFile(actualImage, expected...)
 }

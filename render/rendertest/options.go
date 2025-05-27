@@ -11,12 +11,12 @@ type FileExtension string
 type Threshold uint8
 type BackgroundColour color.Color
 type MakeRejectFiles bool
-type RawDumpFilePath string
+type DebugDumpFilePath string
 
 var defaultTestNumber = TestNumber(0)
 var defaultFileExtension = FileExtension("png")
 var defaultThreshold = Threshold(3)
-var defaultFilePath = RawDumpFilePath("/dev/null")
+var defaultDebugDumpFilePath = DebugDumpFilePath("/dev/null")
 
 // DefaultBackground is an opaque black
 var DefaultBackground BackgroundColour = color.RGBA{
@@ -105,8 +105,8 @@ func getMakeRejectFilesFromArgs(args []interface{}) MakeRejectFiles {
 	return result
 }
 
-func getDumpRawImageFromArgs(args []interface{}) (RawDumpFilePath, bool) {
-	var result RawDumpFilePath
-	found := getFromArgs(args, defaultFilePath, &result)
+func getDebugDumpFilePathFromArgs(args []interface{}) (DebugDumpFilePath, bool) {
+	var result DebugDumpFilePath
+	found := getFromArgs(args, defaultDebugDumpFilePath, &result)
 	return result, found
 }
