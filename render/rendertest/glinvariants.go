@@ -57,12 +57,12 @@ func getBadMatrixValues() map[string]mathgl.Mat4 {
 
 }
 
-func mustSatisfyMatrixInvariants() {
+func checkMatrixInvariants() error {
 	// If the matrix stacks are size 1 with the identity on top, something is
 	// wrong.
 	mp := getBadMatrixStackSizes()
 	if len(mp) > 0 {
-		panic(fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", mp))
+		return fmt.Errorf("matrix stacks needed to all be size 1: stack sizes: %+v", mp)
 	}
 	mpp := getBadMatrixValues()
 	if len(mpp) > 0 {
@@ -70,8 +70,10 @@ func mustSatisfyMatrixInvariants() {
 		for key, val := range mpp {
 			reports = append(reports, fmt.Sprintf("%s:\n%v", key, render.Showmat(val)))
 		}
-		panic(fmt.Errorf("matrix stacks needed to be topped with identity matrices:\n%s", strings.Join(reports, "\n")))
+		return fmt.Errorf("matrix stacks needed to be topped with identity matrices:\n%s", strings.Join(reports, "\n"))
 	}
+
+	return nil
 }
 
 func getImproperlyBoundState() []string {
@@ -94,14 +96,16 @@ func getImproperlyBoundState() []string {
 	return badvals
 }
 
-func mustSatisfyBindingsInvariants() {
+func checkBindingsInvariants() error {
 	badvals := getImproperlyBoundState()
-	if len(badvals) > 0 {
-		panic(fmt.Errorf("need bindings unset but found bindings for: %v", badvals))
+	if len(badvals) == 0 {
+		return nil
 	}
+
+	return fmt.Errorf("need bindings unset but found bindings for: %v", badvals)
 }
 
-func mustSatisfyColourInvariants() {
+func checkColourInvariants() error {
 	// default fg/bg is white on black
 	white := color.RGBA{R: 255, G: 255, B: 255, A: 255}
 	black := color.RGBA{R: 0, G: 0, B: 0, A: 255}
@@ -119,17 +123,15 @@ func mustSatisfyColourInvariants() {
 		errs = append(errs, fmt.Errorf("bad background colour: %v expected %v (black)", bg, black))
 	}
 
-	if len(errs) > 0 {
-		panic(errors.Join(errs...))
-	}
+	return errors.Join(errs...)
 }
 
-// TODO(tmckee:clean): return an error instead of panicking internally. It'll
-// make calling code's control flow code much cleaner.
-func mustSatisfyInvariants() {
-	mustSatisfyMatrixInvariants()
-	mustSatisfyBindingsInvariants()
-	mustSatisfyColourInvariants()
+func checkInvariants() error {
+	return errors.Join(
+		checkMatrixInvariants(),
+		checkBindingsInvariants(),
+		checkColourInvariants(),
+	)
 }
 
 func enforceMatrixStacksMustBeIdentitySingletons() {

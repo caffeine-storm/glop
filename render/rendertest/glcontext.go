@@ -59,7 +59,7 @@ func (ctx *glContext) takeLastError() error {
 	return errors.Join(allErrors...)
 }
 
-func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) {
+func (ctx *glContext) prep(width, height int, invariantscheck bool) (prepError error) {
 	if ctx.windowHandle == nil {
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
 	}
@@ -67,25 +67,25 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 	// On the way out of this function, check for any errors to include from the
 	// context.
 	defer func() {
-		err = errors.Join(err, ctx.takeLastError())
+		prepError = errors.Join(prepError, ctx.takeLastError())
 	}()
 
 	// On the way into this function, check for any pre-existing errors in the
 	// context.
 	ctx.render.Purge()
 	if e := ctx.takeLastError(); e != nil {
-		err = e
+		prepError = e
 		return fmt.Errorf("prep preconditions failed: %w", e)
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
 		if invariantscheck {
-			func() {
-				defer enforceInvariants()
-				mustSatisfyInvariants()
-			}()
+			prepError = checkInvariants()
 		}
 		enforceInvariants()
+		if prepError != nil {
+			panic(fmt.Errorf("prep: invariants violated: %w", prepError))
+		}
 
 		ctx.sys.SetWindowSize(width, height)
 
@@ -125,9 +125,9 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 	return
 }
 
-func (ctx *glContext) clean(invariantscheck bool) (err error) {
+func (ctx *glContext) clean(invariantscheck bool) (cleanError error) {
 	defer func() {
-		err = ctx.takeLastError()
+		cleanError = errors.Join(cleanError, ctx.takeLastError())
 	}()
 	ctx.render.Queue(func(render.RenderQueueState) {
 		// Undo matrix mode identity loads
@@ -143,7 +143,10 @@ func (ctx *glContext) clean(invariantscheck bool) (err error) {
 		defer enforceInvariants()
 
 		if invariantscheck {
-			mustSatisfyInvariants()
+			cleanError = checkInvariants()
+			if cleanError != nil {
+				panic(fmt.Errorf("clean: invariants violated: %w", cleanError))
+			}
 		}
 	})
 	ctx.render.Purge()
