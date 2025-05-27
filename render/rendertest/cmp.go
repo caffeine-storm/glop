@@ -255,7 +255,7 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 //
 // 'options' is an optional bag of control parameters
 func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
-	expected[0] = getTestDataKeyFromArgs(expected)
+	expected[0] = getTestDataKey(expected[0])
 
 	switch v := actual.(type) {
 	case render.RenderQueueInterface:
@@ -297,7 +297,7 @@ func ShouldNotLookLikeFile(actual interface{}, expected ...interface{}) string {
 }
 
 func ShouldLookLikeText(actual interface{}, expected ...interface{}) string {
-	testDataKey := getTestDataKeyFromArgs(expected)
+	testDataKey := getTestDataKey(expected[0])
 
 	expected[0] = NewTestdataReference("text/" + string(testDataKey))
 	return ShouldLookLikeFile(actual, expected...)
