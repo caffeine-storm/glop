@@ -7,10 +7,10 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
-	"os"
 	"testing"
 
 	"github.com/runningwild/glop/debug"
+	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
@@ -89,18 +89,6 @@ func blitOntoBlue(img image.Image) *image.RGBA {
 	draw.Draw(result, img.Bounds(), img, image.Point{}, draw.Over)
 
 	return result
-}
-
-func mustSaveImage(img image.Image, outputPath string) {
-	f, err := os.Create(outputPath)
-	if err != nil {
-		panic(fmt.Errorf("couldn't os.Create %q: %w", outputPath, err))
-	}
-
-	err = png.Encode(f, img)
-	if err != nil {
-		panic(fmt.Errorf("coudln't png.Encode %q: %w", outputPath, err))
-	}
 }
 
 func TestTextureDebugging(t *testing.T) {
@@ -242,7 +230,7 @@ func TestTextureDebugging(t *testing.T) {
 
 			if result != true {
 				// stash a copy of the broken image we just made
-				mustSaveImage(resultImage, rendertest.MakeRejectName("testdata/checker/0.png", ".png"))
+				imgmanip.MustDumpImage(resultImage, rendertest.MakeRejectName("testdata/checker/0.png", ".png"))
 				t.Fatalf("image mismatch")
 			}
 		})

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/png"
 	"io"
 	"os"
 	"testing"
@@ -185,19 +184,8 @@ func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) s
 
 	doMakeRejectFiles := getMakeRejectFilesFromArgs(expected)
 	if doMakeRejectFiles == true {
-		// TODO(tmckee:clean): DRY out a helper to write an image.Image to a given
-		// filepath.
 		rejectFileName := MakeRejectName(expectedFileName, ".png")
-		rejectFile, err := os.Create(rejectFileName)
-		if err != nil {
-			panic(fmt.Errorf("couldn't open rejectFileName %q: %w", rejectFileName, err))
-		}
-		defer rejectFile.Close()
-
-		err = png.Encode(rejectFile, actualImage)
-		if err != nil {
-			panic(fmt.Errorf("couldn't write rejection file: %s: %w", rejectFileName, err))
-		}
+		imgmanip.MustDumpImage(actualImage, rejectFileName)
 		return fmt.Sprintf("image mismatch; see %s", rejectFileName)
 	} else {
 		return "image mismatch; rejection file creation elided"
@@ -223,17 +211,7 @@ func dumpRawImageForDebugging(img *image.RGBA, expected ...any) {
 		// Only dump if someone passed in a DebugDumpFilePath explicitly.
 		return
 	}
-
-	f, err := os.Create(string(path))
-	if err != nil {
-		panic(fmt.Errorf("couldn't os.Create(%q): %w", path, err))
-	}
-	defer f.Close()
-
-	err = png.Encode(f, img)
-	if err != nil {
-		panic(fmt.Errorf("couldn't png.Encode to %q: %w", path, err))
-	}
+	imgmanip.MustDumpImage(img, string(path))
 }
 
 func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) (testResult string) {
