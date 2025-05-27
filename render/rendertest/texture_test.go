@@ -13,30 +13,18 @@ import (
 )
 
 func TestDrawTexturedQuad(t *testing.T) {
-	Convey("doesn't care about state of gl.TEXTURE_2D", t, func() {
-		screen := image.Rect(0, 0, 64, 64)
+	Convey("doesn't care about state of gl.TEXTURE_2D", t, func(c C) {
 		subscreen := image.Rect(16, 16, 48, 48)
-		rendertest.DeprecatedWithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
-			queue.Queue(func(st render.RenderQueueState) {
-				gl.Disable(gl.TEXTURE_2D)
-				tex := rendertest.GivenATexture("red/0.png")
-				rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
-			})
-			queue.Purge()
-
-			So(queue, rendertest.ShouldLookLikeFile, "subred")
+		testbuilder.WithExpectation(c, "subred", func(st render.RenderQueueState) {
+			gl.Disable(gl.TEXTURE_2D)
+			tex := rendertest.GivenATexture("red/0.png")
+			rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
 		})
-		rendertest.DeprecatedWithGlForTest(screen.Dx(), screen.Dy(), func(sys system.System, queue render.RenderQueueInterface) {
-			queue.Queue(func(st render.RenderQueueState) {
-				gl.Enable(gl.TEXTURE_2D)
-				tex := rendertest.GivenATexture("red/0.png")
-				rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
-			})
-			queue.Purge()
-
-			So(queue, rendertest.ShouldLookLikeFile, "subred")
+		testbuilder.WithExpectation(c, "subred", func(st render.RenderQueueState) {
+			gl.Enable(gl.TEXTURE_2D)
+			tex := rendertest.GivenATexture("red/0.png")
+			rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
 		})
-
 	})
 
 	Convey("doesn't care about state of gl.ELEMENT_ARRAY_BUFFER", t, func() {
