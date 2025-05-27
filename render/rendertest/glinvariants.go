@@ -124,6 +124,8 @@ func mustSatisfyColourInvariants() {
 	}
 }
 
+// TODO(tmckee:clean): return an error instead of panicking internally. It'll
+// make calling code's control flow code much cleaner.
 func mustSatisfyInvariants() {
 	mustSatisfyMatrixInvariants()
 	mustSatisfyBindingsInvariants()

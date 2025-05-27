@@ -64,10 +64,14 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
 	}
 
+	// On the way out of this function, check for any errors to include from the
+	// context.
 	defer func() {
 		err = errors.Join(err, ctx.takeLastError())
 	}()
 
+	// On the way into this function, check for any pre-existing errors in the
+	// context.
 	ctx.render.Purge()
 	if e := ctx.takeLastError(); e != nil {
 		err = e
@@ -75,16 +79,9 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
-		// TODO(tmckee:clean): can just defer enforcing the invariants; whether it
-		// panics or not, we'll get the intended behaviour.
 		if invariantscheck {
 			func() {
-				defer func() {
-					if e := recover(); e != nil {
-						enforceInvariants()
-						panic(e)
-					}
-				}()
+				defer enforceInvariants()
 				mustSatisfyInvariants()
 			}()
 		}
