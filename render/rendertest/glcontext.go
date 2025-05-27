@@ -70,6 +70,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (err error) 
 
 	ctx.render.Purge()
 	if e := ctx.takeLastError(); e != nil {
+		err = e
 		return fmt.Errorf("prep preconditions failed: %w", e)
 	}
 
