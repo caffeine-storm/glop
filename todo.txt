@@ -1,3 +1,8 @@
+#42 generic cleanup
+	- this is a tracking bug for remembering to do random cleanups and things
+		- we're logging all the FBConfigs we encounter in the native code; let's
+		  not
+
 tmckee:#40 testing.T.{Fatalf,FailNow} exits the goroutine; defer'd closures run
 but, because there is no panic, 'recover()' returns nil. This means that if
 we're running render tests, we won't detect the failure so we won't get a
@@ -76,4 +81,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#41 <next>
+<owner>:#43 <next>
