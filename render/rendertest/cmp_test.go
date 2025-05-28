@@ -22,6 +22,7 @@ import (
 )
 
 var transparent = color.RGBA{}
+var black = color.RGBA{A: 255}
 
 func TestPixelComparisonIsFuzzy(t *testing.T) {
 	t.Run("TestShouldLookLike", func(t *testing.T) {
@@ -182,7 +183,6 @@ func TestCompareTransparentExpectations(t *testing.T) {
 		result := rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(0), transparent)
 		assert.Equal(t, result, true)
 
-		black := color.RGBA{R: 0, G: 0, B: 0, A: 255}
 		result = rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(5), black)
 		assert.Equal(t, result, false)
 	})
@@ -209,6 +209,25 @@ func TestCompareTransparentExpectations(t *testing.T) {
 			}
 		})
 	})
+}
+
+func TestStrangeComparisonBehaviour(t *testing.T) {
+	testref := rendertest.NewTestdataReference("tut-regr")
+	lhsImage := rendertest.MustLoadImageRGBA(testref.Path(rendertest.TestNumber(0)))
+	rhsImage := rendertest.MustLoadImageRGBA(testref.Path(rendertest.TestNumber(1)))
+	lhsbytes := lhsImage.Pix
+	rhsbytes := rhsImage.Pix
+	cmpresult := rendertest.CompareWithThreshold(lhsbytes, rhsbytes, rendertest.Threshold(0))
+	if cmpresult == 0 {
+		panic(fmt.Errorf("the input images should be different (even if just in alpha/background) but they compared as the same!"))
+	}
+
+	lhsBlitted := imgmanip.DrawAsRgbaWithBackground(lhsImage, rendertest.BackgroundColour(black))
+	lhsbytes = lhsBlitted.Pix
+	cmpresult = rendertest.CompareWithThreshold(lhsbytes, rhsbytes, rendertest.Threshold(0))
+	if cmpresult != 0 {
+		t.Fatalf("after blitting over a known background, the results should be identical")
+	}
 }
 
 func shouldExistOnDisk(filepathAny interface{}, _ ...interface{}) string {

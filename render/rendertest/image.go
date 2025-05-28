@@ -5,6 +5,8 @@ import (
 	"image"
 	"io"
 	"os"
+
+	"github.com/runningwild/glop/imgmanip"
 )
 
 func MustLoadTestImage(testdataref TestDataReference) image.Image {
@@ -19,6 +21,10 @@ func MustLoadImage(imageFilePath string) image.Image {
 	defer file.Close()
 
 	return MustLoadImageFromReader(file)
+}
+
+func MustLoadImageRGBA(imageFilePath string) *image.RGBA {
+	return imgmanip.ToRGBA(MustLoadImage(imageFilePath))
 }
 
 func MustLoadImageFromReader(file io.Reader) image.Image {
