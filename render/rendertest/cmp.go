@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/imgmanip"
@@ -16,12 +15,6 @@ import (
 )
 
 var transparent = color.RGBA{}
-
-func readPixels(width, height int) ([]byte, error) {
-	ret := make([]byte, width*height*4)
-	gl.ReadPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, ret)
-	return ret, nil
-}
 
 func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, backgroundColour color.Color) bool {
 	// Do a size check first so that we don't read out of bounds.
@@ -31,7 +24,7 @@ func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, ba
 	}
 
 	lhsrgba := imgmanip.DrawAsRgbaWithBackground(expected, backgroundColour)
-	rhsrgba := imgmanip.ToRGBA(actual)
+	rhsrgba := imgmanip.DrawAsRgbaWithBackground(actual, backgroundColour)
 
 	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
 }
@@ -258,6 +251,8 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 		// If nobody specified the background to compose over, we'll use either
 		// OpenGL's 'ClearColor' or, if 'queue' is a no-op, whatever the default
 		// background is (typically black).
+		/// ??? does OpenGL enforce alpha-premultiplied clear colours? I doubt it
+		//but we also probably don't set any that aren't ... 🤔🤔🤔
 		expected = append(expected, BackgroundColour(backgroundForImageCmp))
 	}
 

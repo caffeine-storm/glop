@@ -176,17 +176,6 @@ func TestCompareWithThreshold(t *testing.T) {
 }
 
 func TestCompareTransparentExpectations(t *testing.T) {
-	t.Run("transparent result vs. transparent expecation", func(t *testing.T) {
-		lhs := rendertest.MustLoadTestImage("checker")
-		rhs := rendertest.MustLoadTestImage("checker")
-		// Use a transparent background for the sake of this comparison.
-		result := rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(0), transparent)
-		assert.Equal(t, result, true)
-
-		result = rendertest.ImagesAreWithinThreshold(lhs, rhs, rendertest.Threshold(5), black)
-		assert.Equal(t, result, false)
-	})
-
 	t.Run("opaque result vs. transparent expectation", func(t *testing.T) {
 		// rendertest.ShouldLookLikeFile should work out-of-the-box when the
 		// expectation file has transparent pixels.
@@ -217,6 +206,7 @@ func TestStrangeComparisonBehaviour(t *testing.T) {
 	rhsImage := rendertest.MustLoadImageRGBA(testref.Path(rendertest.TestNumber(1)))
 	lhsbytes := lhsImage.Pix
 	rhsbytes := rhsImage.Pix
+
 	cmpresult := rendertest.CompareWithThreshold(lhsbytes, rhsbytes, rendertest.Threshold(0))
 	if cmpresult == 0 {
 		panic(fmt.Errorf("the input images should be different (even if just a bit) but they compared as the same!"))
@@ -229,6 +219,8 @@ func TestStrangeComparisonBehaviour(t *testing.T) {
 
 	lhsBlitted := imgmanip.DrawAsRgbaWithBackground(lhsImage, rendertest.BackgroundColour(black))
 	lhsbytes = lhsBlitted.Pix
+	rhsBlitted := imgmanip.DrawAsRgbaWithBackground(rhsImage, rendertest.BackgroundColour(black))
+	rhsbytes = rhsBlitted.Pix
 	deltaBytes := rendertest.ComputeImageDifference(lhsbytes, rhsbytes)
 	// We can assume input images are 1024x768
 	for i, v := range deltaBytes {
