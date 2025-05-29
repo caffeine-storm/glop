@@ -61,6 +61,7 @@ func MakeTextLine(fontId, text string, width int, r, g, b, a float64) *TextLine 
 }
 
 func (w *TextLine) SetColor(r, g, b, a float64) {
+	// TODO(tmckee:#43): i can haz pre-multiplied alpha?
 	w.color = color.RGBA{
 		R: uint8(255 * r),
 		G: uint8(255 * g),

@@ -184,6 +184,7 @@ func TestTexture2DHelpers(t *testing.T) {
 }
 
 func pickADifferentColour(notThese ...color.RGBA) color.RGBA {
+	// TODO(tmckee:#43): i can haz pre-multiplied alpha?
 	ret := color.RGBA{
 		R: 0,
 		G: 0,

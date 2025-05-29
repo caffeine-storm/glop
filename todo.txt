@@ -1,3 +1,7 @@
+tmckee:#43 so, turns out that draw.Draw really does need image.RGBA data that
+has pre-multiplied alpha colour values. We need to double-check/audit/verify a
+bunch of stuff.
+
 #42 generic cleanup
 	- this is a tracking bug for remembering to do random cleanups and things
 		- we're logging all the FBConfigs we encounter in the native code; let's
@@ -81,4 +85,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#43 <next>
+<owner>:#44 <next>
