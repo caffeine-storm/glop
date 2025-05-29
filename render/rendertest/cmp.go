@@ -36,6 +36,23 @@ func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, ba
 	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
 }
 
+func ComputeImageDifference(lhs, rhs []byte) []byte {
+	if len(lhs) != len(rhs) {
+		panic(fmt.Errorf("need same-sized slices but got %d and %d", len(lhs), len(rhs)))
+	}
+
+	ret := make([]byte, len(lhs))
+	for i := range lhs {
+		diff := int(lhs[i]) - int(rhs[i])
+		absdiff := diff
+		if absdiff < 0 {
+			absdiff = -absdiff
+		}
+		ret[i] = byte(absdiff)
+	}
+	return ret
+}
+
 func CompareWithThreshold(lhs, rhs []byte, threshold Threshold) int {
 	llen := len(lhs)
 	rlen := len(rhs)

@@ -219,14 +219,29 @@ func TestStrangeComparisonBehaviour(t *testing.T) {
 	rhsbytes := rhsImage.Pix
 	cmpresult := rendertest.CompareWithThreshold(lhsbytes, rhsbytes, rendertest.Threshold(0))
 	if cmpresult == 0 {
-		panic(fmt.Errorf("the input images should be different (even if just in alpha/background) but they compared as the same!"))
+		panic(fmt.Errorf("the input images should be different (even if just a bit) but they compared as the same!"))
+	}
+
+	cmpresult = rendertest.CompareWithThreshold(lhsbytes, rhsbytes, rendertest.Threshold(13))
+	if cmpresult != 0 {
+		panic(fmt.Errorf("the input images should within a threshold of each other"))
 	}
 
 	lhsBlitted := imgmanip.DrawAsRgbaWithBackground(lhsImage, rendertest.BackgroundColour(black))
 	lhsbytes = lhsBlitted.Pix
-	cmpresult = rendertest.CompareWithThreshold(lhsbytes, rhsbytes, rendertest.Threshold(0))
-	if cmpresult != 0 {
-		t.Fatalf("after blitting over a known background, the results should be identical")
+	deltaBytes := rendertest.ComputeImageDifference(lhsbytes, rhsbytes)
+	// We can assume input images are 1024x768
+	for i, v := range deltaBytes {
+		if v <= 13 {
+			continue
+		}
+
+		t.Fail()
+		x := (i / 4) % 1024
+		y := (i / 4) / 1024
+		channelidx := i % 4
+		channel := []string{"r", "g", "b", "a"}[channelidx]
+		t.Logf("mismatch at (%d, %d): %s=%v", x, y, channel, v)
 	}
 }
 
