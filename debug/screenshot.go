@@ -7,13 +7,19 @@ import (
 	"io"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/imgmanip"
 )
+
+var logger = glog.WarningLogger()
 
 // TODO(tmckee): yuck! we ought to be able to do this on the GPU and/or just
 // always upload alpha-premultiplied things.
 func convertToAlphaPremultiplied(bs []byte) {
 	for idx := 0; idx < len(bs); idx += 4 {
+		if max(bs[idx+0], bs[idx+1], bs[idx+2]) > bs[idx+3] {
+			logger.Warn("found non-normalized colour", "idx", idx)
+		}
 		alpha_norm := float64(bs[idx+3]) / 255
 		bs[idx+0] = uint8(float64(bs[idx+0]) * alpha_norm)
 		bs[idx+1] = uint8(float64(bs[idx+1]) * alpha_norm)
