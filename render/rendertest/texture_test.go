@@ -64,3 +64,16 @@ func TestDrawTexturedQuad(t *testing.T) {
 		})
 	})
 }
+
+func TestDrawingRegressionTexture(t *testing.T) {
+	Convey("texture drawing regression", t, func(c C) {
+		dx, dy := 1024, 768
+		testbuilder.New().
+			WithSize(dx, dy).
+			WithExpectation(c, "texture-regr").
+			RunForQueueState(func(st render.RenderQueueState) {
+				imgTexture := rendertest.GivenATexture("texture-regr/0.png")
+				rendertest.DrawTexturedQuad(image.Rect(0, 0, dx, dy), imgTexture, st.Shaders())
+			})
+	})
+}
