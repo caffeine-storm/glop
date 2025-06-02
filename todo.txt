@@ -1,3 +1,11 @@
+tmckee:#45 running our rendering pipeline with a software renderer seems to
+produce 'crisper' results than running against the default renderer (backed by
+hardware through d3d12) on WSL.
+
+tmckee:#44 for some reason™ running 'xvfb-run glxinfo -B' on WSL reports the
+hardware renderer+driver while 'xvfb-run glxinfo -B' on Arch Linux reports a
+software renderer. *confusion intensifies*
+
 tmckee:#43 so, turns out that draw.Draw really does need image.RGBA data that
 has pre-multiplied alpha colour values. We need to double-check/audit/verify a
 bunch of stuff.
@@ -85,4 +93,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#44 <next>
+<owner>:#46 <next>
