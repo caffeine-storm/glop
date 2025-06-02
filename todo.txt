@@ -1,3 +1,7 @@
+tmckee:#46 write a test to make sure that the underlying format/parameters of
+our textures match expectations; will be helpful for detecting wonky
+differences between platforms. (Thanks @knortic!)
+
 tmckee:#45 running our rendering pipeline with a software renderer seems to
 produce 'crisper' results than running against the default renderer (backed by
 hardware through d3d12) on WSL.
@@ -93,4 +97,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#46 <next>
+<owner>:#47 <next>
