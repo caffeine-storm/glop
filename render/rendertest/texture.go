@@ -13,7 +13,7 @@ import (
 	"github.com/runningwild/glop/render"
 )
 
-func uploadTextureFromImage(img *image.RGBA) gl.Texture {
+func uploadTextureFromImage(img *image.NRGBA) gl.Texture {
 	bounds := img.Bounds()
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
@@ -57,16 +57,16 @@ func GivenATexture(imageFilePath string) gl.Texture {
 		panic(fmt.Errorf("couldn't image.Decode: %w", err))
 	}
 
-	rgbaImage := image.NewRGBA(img.Bounds())
-	draw.Draw(rgbaImage, img.Bounds(), img, image.Point{}, draw.Src)
+	nrgbaImage := image.NewNRGBA(img.Bounds())
+	draw.Draw(nrgbaImage, img.Bounds(), img, image.Point{}, draw.Src)
 
 	logger := glog.WarningLogger()
-	for idx := 0; idx < len(rgbaImage.Pix); idx += 4 {
-		if max(rgbaImage.Pix[idx+0], rgbaImage.Pix[idx+1], rgbaImage.Pix[idx+2]) > rgbaImage.Pix[idx+3] {
+	for idx := 0; idx < len(nrgbaImage.Pix); idx += 4 {
+		if max(nrgbaImage.Pix[idx+0], nrgbaImage.Pix[idx+1], nrgbaImage.Pix[idx+2]) > nrgbaImage.Pix[idx+3] {
 			logger.Warn("found non-normalized colour", "idx", idx)
 		}
 	}
-	return uploadTextureFromImage(rgbaImage)
+	return uploadTextureFromImage(nrgbaImage)
 }
 
 func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *render.ShaderBank) {

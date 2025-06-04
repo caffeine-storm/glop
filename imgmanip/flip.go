@@ -6,7 +6,7 @@ import (
 )
 
 // Rewrites the given input image flipping it vertically.
-func FlipVertically(img *image.RGBA) {
+func FlipVertically(img *image.NRGBA) {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 	tmp := make([]byte, width*4)

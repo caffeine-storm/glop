@@ -12,7 +12,7 @@ import (
 
 func TestClearScreen(t *testing.T) {
 	testbuilder.Run(func(queue render.RenderQueueInterface) {
-		var imgResult *image.RGBA
+		var imgResult *image.NRGBA
 		queue.Queue(func(st render.RenderQueueState) {
 			// draw some stuff
 			render.WithColour(0, 1, 0, 1, func() {
@@ -22,7 +22,7 @@ func TestClearScreen(t *testing.T) {
 				// clear the screen
 				rendertest.ClearScreen()
 
-				imgResult = debug.ScreenShotRgba(64, 64)
+				imgResult = debug.ScreenShotNrgba(64, 64)
 			})
 		})
 		queue.Purge()

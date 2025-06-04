@@ -221,7 +221,7 @@ func TestTextureDebugging(t *testing.T) {
 					rendertest.DrawTexturedQuad(bounds, tex, st.Shaders())
 
 					// - Verify a screenshot matches the image.
-					resultImage = debug.ScreenShotRgba(width, height)
+					resultImage = debug.ScreenShotNrgba(width, height)
 
 					result = rendertest.ImagesAreWithinThreshold(expectedImage, resultImage, rendertest.Threshold(3), color.RGBA{R: 0, G: 0, B: 255, A: 255})
 				})

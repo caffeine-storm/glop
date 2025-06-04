@@ -202,20 +202,20 @@ func imageShouldLookLikeFile(actualImage image.Image, expected ...interface{}) s
 	}
 }
 
-func makeFallbackImage() *image.RGBA {
+func makeFallbackImage() *image.NRGBA {
 	r, g, b, a := DefaultBackground.RGBA()
 	fallbackPixel := []uint8{
 		uint8(r), uint8(g), uint8(b), uint8(a),
 	}
 
-	return &image.RGBA{
+	return &image.NRGBA{
 		Pix:    fallbackPixel,
 		Stride: 4,
 		Rect:   image.Rect(0, 0, 1, 1),
 	}
 }
 
-func dumpRawImageForDebugging(img *image.RGBA, expected ...any) {
+func dumpRawImageForDebugging(img *image.NRGBA, expected ...any) {
 	path, found := getDebugDumpFilePathFromArgs(expected)
 	if !found {
 		// Only dump if someone passed in a DebugDumpFilePath explicitly.
@@ -233,13 +233,13 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 
 	// Sometimes, the given queue is a no-op queue so we will have a default
 	// 'actualImage' to avoid passing around a nil image.Image value.
-	var actualImage *image.RGBA = makeFallbackImage()
+	var actualImage *image.NRGBA = makeFallbackImage()
 
 	// Read all the pixels from the framebuffer through OpenGL
 	var backgroundForImageCmp color.Color = DefaultBackground
 	queue.Queue(func(render.RenderQueueState) {
 		_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()
-		actualImage = debug.ScreenShotRgba(int(actualScreenWidth), int(actualScreenHeight))
+		actualImage = debug.ScreenShotNrgba(int(actualScreenWidth), int(actualScreenHeight))
 		backgroundForImageCmp = GetCurrentBackgroundColor()
 	})
 	queue.Purge()
