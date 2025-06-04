@@ -1,3 +1,7 @@
+tmckee:#43 so, turns out that png encoding can be lossy if using pre-multiplied
+alpha colours. image.RGBA uses pre-multiplied alpha colours. We need to
+transition to using image.NRGBA(64) instead.
+
 tmckee:#46 write a test to make sure that the underlying format/parameters of
 our textures match expectations; will be helpful for detecting wonky
 differences between platforms. (Thanks @knortic!)
@@ -9,10 +13,6 @@ hardware through d3d12) on WSL.
 tmckee:#44 for some reason™ running 'xvfb-run glxinfo -B' on WSL reports the
 hardware renderer+driver while 'xvfb-run glxinfo -B' on Arch Linux reports a
 software renderer. *confusion intensifies*
-
-tmckee:#43 so, turns out that draw.Draw really does need image.RGBA data that
-has pre-multiplied alpha colour values. We need to double-check/audit/verify a
-bunch of stuff.
 
 #42 generic cleanup
 	- this is a tracking bug for remembering to do random cleanups and things
