@@ -73,7 +73,7 @@ func summarize(data []byte) string {
 	return fmt.Sprintf("data[0:64 of %d]: %q", datalen, hex)
 }
 
-func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
+func DumpTexture(textureId gl.Texture) (*image.NRGBA, error) {
 	textureId.Bind(gl.TEXTURE_2D)
 
 	textureWidth, textureHeight := getBoundTextureSize()
@@ -101,7 +101,7 @@ func DumpTexture(textureId gl.Texture) (*image.RGBA, error) {
 
 	// We need to flip the image about the horizontal midline because OpenGL
 	// dumps from the bottom-to-top.
-	return imgmanip.ToRGBA(imgmanip.VertFlipped{Image: img}), nil
+	return imgmanip.ToNRGBA(imgmanip.VertFlipped{Image: img}), nil
 }
 
 func DumpTextureAsPngFile(textureId gl.Texture, path string) error {

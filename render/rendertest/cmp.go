@@ -23,8 +23,8 @@ func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, ba
 		return false
 	}
 
-	lhsrgba := imgmanip.DrawAsRgbaWithBackground(expected, backgroundColour)
-	rhsrgba := imgmanip.DrawAsRgbaWithBackground(actual, backgroundColour)
+	lhsrgba := imgmanip.DrawAsNrgbaWithBackground(expected, backgroundColour)
+	rhsrgba := imgmanip.DrawAsNrgbaWithBackground(actual, backgroundColour)
 
 	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
 }

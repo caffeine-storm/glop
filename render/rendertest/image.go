@@ -23,8 +23,8 @@ func MustLoadImage(imageFilePath string) image.Image {
 	return MustLoadImageFromReader(file)
 }
 
-func MustLoadImageRGBA(imageFilePath string) *image.RGBA {
-	return imgmanip.ToRGBA(MustLoadImage(imageFilePath))
+func MustLoadImageNRGBA(imageFilePath string) *image.NRGBA {
+	return imgmanip.ToNRGBA(MustLoadImage(imageFilePath))
 }
 
 func MustLoadImageFromReader(file io.Reader) image.Image {

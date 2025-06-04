@@ -76,14 +76,14 @@ func isBlue(c color.Color) bool {
 	return a == maxuint16
 }
 
-func blitOntoBlue(img image.Image) *image.RGBA {
+func blitOntoBlue(img image.Image) *image.NRGBA {
 	blue := image.NewUniform(color.RGBA{
 		R: 0,
 		G: 0,
 		B: 255,
 		A: 255,
 	})
-	result := image.NewRGBA(img.Bounds())
+	result := image.NewNRGBA(img.Bounds())
 
 	draw.Draw(result, img.Bounds(), blue, image.Point{}, draw.Src)
 	draw.Draw(result, img.Bounds(), img, image.Point{}, draw.Over)
@@ -93,7 +93,7 @@ func blitOntoBlue(img image.Image) *image.RGBA {
 
 func TestTextureDebugging(t *testing.T) {
 	t.Run("can dump texture to image object", func(t *testing.T) {
-		var dumpedImage *image.RGBA
+		var dumpedImage *image.NRGBA
 		var err error
 
 		rendertest.DeprecatedWithGl(func() {

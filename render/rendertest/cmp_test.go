@@ -202,8 +202,8 @@ func TestCompareTransparentExpectations(t *testing.T) {
 
 func TestStrangeComparisonBehaviour(t *testing.T) {
 	testref := rendertest.NewTestdataReference("tut-regr")
-	lhsImage := rendertest.MustLoadImageRGBA(testref.Path(rendertest.TestNumber(0)))
-	rhsImage := rendertest.MustLoadImageRGBA(testref.Path(rendertest.TestNumber(1)))
+	lhsImage := rendertest.MustLoadImageNRGBA(testref.Path(rendertest.TestNumber(0)))
+	rhsImage := rendertest.MustLoadImageNRGBA(testref.Path(rendertest.TestNumber(1)))
 	lhsbytes := lhsImage.Pix
 	rhsbytes := rhsImage.Pix
 
@@ -217,9 +217,9 @@ func TestStrangeComparisonBehaviour(t *testing.T) {
 		panic(fmt.Errorf("the input images should within a threshold of each other"))
 	}
 
-	lhsBlitted := imgmanip.DrawAsRgbaWithBackground(lhsImage, rendertest.BackgroundColour(black))
+	lhsBlitted := imgmanip.DrawAsNrgbaWithBackground(lhsImage, rendertest.BackgroundColour(black))
 	lhsbytes = lhsBlitted.Pix
-	rhsBlitted := imgmanip.DrawAsRgbaWithBackground(rhsImage, rendertest.BackgroundColour(black))
+	rhsBlitted := imgmanip.DrawAsNrgbaWithBackground(rhsImage, rendertest.BackgroundColour(black))
 	rhsbytes = rhsBlitted.Pix
 	deltaBytes := rendertest.ComputeImageDifference(lhsbytes, rhsbytes)
 	// We can assume input images are 1024x768
@@ -303,7 +303,7 @@ func TestCmpSpecs(t *testing.T) {
 				So(checkers, rendertest.ShouldLookLikeFile, "checker")
 
 				// When comparing raw images, the transparency must _match_.
-				checkersOnBlue := imgmanip.DrawAsRgbaWithBackground(checkers, blue)
+				checkersOnBlue := imgmanip.DrawAsNrgbaWithBackground(checkers, blue)
 				So(checkersOnBlue, rendertest.ShouldNotLookLikeFile, "checker")
 			})
 
