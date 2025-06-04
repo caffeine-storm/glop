@@ -282,7 +282,7 @@ func ShouldLookLikeFile(actual interface{}, expected ...interface{}) string {
 		}
 		return imageShouldLookLikeFile(v, expected...)
 	default:
-		panic(fmt.Errorf("ShouldLookLikeFile needs a *image.RGBA or render.RenderQueueInterface but got %T", actual))
+		panic(fmt.Errorf("ShouldLookLikeFile needs a image.Image or render.RenderQueueInterface but got %T", actual))
 	}
 }
 

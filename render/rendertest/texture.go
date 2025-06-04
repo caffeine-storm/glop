@@ -24,7 +24,7 @@ func uploadTextureFromImage(img *image.NRGBA) gl.Texture {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-	// Need to flip the input image vertically because image.RGBA stores the
+	// Need to flip the input image vertically because image.NRGBA stores the
 	// top-left pixel first but gl.TexImage2D expects the bottom-left pixel
 	// first.
 	imgmanip.FlipVertically(img)
