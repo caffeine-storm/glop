@@ -31,14 +31,14 @@ func TestIsTransparent(t *testing.T) {
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			canvas := testcase.canvas
-			rgba := imgmanip.ToNRGBA(canvas)
-			if !imgmanip.IsTransparent(rgba) {
+			nrgba := imgmanip.ToNRGBA(canvas)
+			if !imgmanip.IsTransparent(nrgba) {
 				t.Fatalf("a fresh image should be transparent!")
 			}
 
 			draw.Draw(canvas, canvas.Bounds(), image.NewUniform(color.White), image.Point{}, draw.Src)
-			rgba = imgmanip.ToNRGBA(canvas)
-			if imgmanip.IsTransparent(rgba) {
+			nrgba = imgmanip.ToNRGBA(canvas)
+			if imgmanip.IsTransparent(nrgba) {
 				t.Fatalf("after drawing something, the image should not be fully transparent")
 			}
 		})

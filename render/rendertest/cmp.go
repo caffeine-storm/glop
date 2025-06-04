@@ -23,10 +23,10 @@ func ImagesAreWithinThreshold(actual, expected image.Image, thresh Threshold, ba
 		return false
 	}
 
-	lhsrgba := imgmanip.DrawAsNrgbaWithBackground(expected, backgroundColour)
-	rhsrgba := imgmanip.DrawAsNrgbaWithBackground(actual, backgroundColour)
+	lhsNrgba := imgmanip.DrawAsNrgbaWithBackground(expected, backgroundColour)
+	rhsNrgba := imgmanip.DrawAsNrgbaWithBackground(actual, backgroundColour)
 
-	return CompareWithThreshold(lhsrgba.Pix, rhsrgba.Pix, thresh) == 0
+	return CompareWithThreshold(lhsNrgba.Pix, rhsNrgba.Pix, thresh) == 0
 }
 
 func ComputeImageDifference(lhs, rhs []byte) []byte {
