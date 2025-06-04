@@ -88,7 +88,7 @@ func DumpTexture(textureId gl.Texture) (*image.NRGBA, error) {
 	var img image.Image
 	switch texformat {
 	case TexFormatRGBA:
-		rgba := image.NewRGBA(image.Rect(0, 0, textureWidth, textureHeight))
+		rgba := image.NewNRGBA(image.Rect(0, 0, textureWidth, textureHeight))
 		rgba.Pix = data
 		img = rgba
 	case TexFormatLuminanceAlpha:

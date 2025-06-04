@@ -458,7 +458,7 @@ func RasterizeFont(font *truetype.Font, pointSize int) RasteredFont {
 	rune_mapping := make(map[rune]image.Image)
 	rune_info := make(map[rune]runeInfo)
 	for _, r := range alphabet {
-		canvas := image.NewRGBA(image.Rect(-width/2, -height/2, width/2, height/2))
+		canvas := image.NewNRGBA(image.Rect(-width/2, -height/2, width/2, height/2))
 		context.SetDst(canvas)
 		context.SetClip(canvas.Bounds())
 

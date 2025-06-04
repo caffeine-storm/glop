@@ -14,7 +14,7 @@ func TestInvertedCanvasSpecs(t *testing.T) {
 	checkers := rendertest.MustLoadTestImage("checker")
 	Convey("inverted canvas wrapper", t, func() {
 		canvasSize := checkers.Bounds()
-		wrappedCanvas := image.NewRGBA(canvasSize)
+		wrappedCanvas := image.NewNRGBA(canvasSize)
 		invCanvas := imgmanip.NewInvertedCanvas(wrappedCanvas)
 		So(invCanvas, ShouldNotBeNil)
 		So(invCanvas.Bounds(), ShouldEqual, wrappedCanvas.Bounds())

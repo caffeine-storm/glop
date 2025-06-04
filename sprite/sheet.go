@@ -82,7 +82,7 @@ func (s *sheet) compose(pixer chan<- []byte) {
 	}
 
 	rect := image.Rect(0, 0, s.dx, s.dy)
-	canvas := image.NewRGBA(rect)
+	canvas := image.NewNRGBA(rect)
 	for fid, rect := range s.rects {
 		name := s.anim.Node(fid.node).Line(0) + ".png"
 		file, err := os.Open(filepath.Join(s.spritePath, fmt.Sprintf("%d", fid.facing), name))

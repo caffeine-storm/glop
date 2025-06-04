@@ -103,7 +103,7 @@ func TestPixelComparisonIsFuzzy(t *testing.T) {
 func TestComparingPngsAgainstPngs(t *testing.T) {
 	t.Run("api is ergonomic", func(t *testing.T) {
 		t.Run("can compare golang image to expected file", func(t *testing.T) {
-			someImage := image.NewRGBA(image.Rect(0, 0, 50, 50))
+			someImage := image.NewNRGBA(image.Rect(0, 0, 50, 50))
 			red := color.RGBA{255, 0, 0, 255}
 			draw.Draw(someImage, someImage.Bounds(), image.NewUniform(red), image.Point{}, draw.Src)
 
@@ -124,7 +124,7 @@ func TestComparingPngsAgainstPngs(t *testing.T) {
 				panic(fmt.Errorf("couldn't decode %q: %w", imageFilePath, err))
 			}
 
-			rgbaImage := image.NewRGBA(someImage.Bounds())
+			rgbaImage := image.NewNRGBA(someImage.Bounds())
 			draw.Draw(rgbaImage, someImage.Bounds(), someImage, image.Point{}, draw.Src)
 
 			expectedFile := "checker"

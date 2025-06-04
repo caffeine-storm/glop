@@ -80,7 +80,7 @@ func TestMakeAndInitializeDictionary(t *testing.T) {
 		assert := assert.New(t)
 
 		// Draw something floating above baseline and to the right of (0,0).
-		img := image.NewRGBA(image.Rect(-10, -10, 10, 10))
+		img := image.NewNRGBA(image.Rect(-10, -10, 10, 10))
 		allTheGray := color.Gray{Y: 255}
 		img.Set(3, 4, allTheGray)
 		img.Set(4, 5, allTheGray)

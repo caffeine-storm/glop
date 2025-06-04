@@ -36,7 +36,7 @@ func Scale(img image.Image, xratio, yratio float32) image.Image {
 	}
 
 	newBounds := interpolated.Bounds()
-	result := image.NewRGBA(newBounds)
+	result := image.NewNRGBA(newBounds)
 
 	draw.Draw(result, newBounds, interpolated, image.Point{}, draw.Src)
 

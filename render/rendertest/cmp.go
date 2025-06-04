@@ -99,7 +99,7 @@ func expectPixelReadersMatch(actual, expected io.Reader, thresh Threshold, bg co
 	var actualScreenWidth, actualScreenHeight uint32
 
 	// Read all the pixels from the input source
-	actualImage := image.NewRGBA(image.Rect(0, 0, int(actualScreenWidth), int(actualScreenHeight)))
+	actualImage := image.NewNRGBA(image.Rect(0, 0, int(actualScreenWidth), int(actualScreenHeight)))
 	var err error
 	actualImage.Pix, err = io.ReadAll(actual)
 	if err != nil {
