@@ -20,6 +20,10 @@ func TestIsTransparent(t *testing.T) {
 			image.NewRGBA(sixteenBySixteen),
 		},
 		{
+			"image.NRGBA",
+			image.NewNRGBA(sixteenBySixteen),
+		},
+		{
 			"imgmanip.GrayAlpha",
 			imgmanip.NewGrayAlpha(sixteenBySixteen),
 		},
