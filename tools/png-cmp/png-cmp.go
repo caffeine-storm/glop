@@ -48,17 +48,6 @@ func colourDistance(lhs, rhs color.Color) (dr, dg, db int) {
 	return
 }
 
-func MyMax(a, b, c int) int {
-	ret := a
-	if b > ret {
-		ret = b
-	}
-	if c > ret {
-		ret = c
-	}
-	return ret
-}
-
 func imageCompare(lhs, rhs *image.RGBA) ([]Delta, int, Delta) {
 	bounds := lhs.Bounds()
 	if bounds != rhs.Bounds() {
@@ -82,8 +71,8 @@ func imageCompare(lhs, rhs *image.RGBA) ([]Delta, int, Delta) {
 					},
 				})
 				dr, dg, db := colourDistance(lhs.At(x, y), rhs.At(x, y))
-				if MyMax(dr, dg, db) > maxDist {
-					maxDist = MyMax(dr, dg, db)
+				if max(dr, dg, db) > maxDist {
+					maxDist = max(dr, dg, db)
 					maxDelta = baddies[len(baddies)-1]
 				}
 
