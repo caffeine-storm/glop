@@ -108,10 +108,10 @@ func main() {
 	lhsPng := mustPng(lhs)
 	rhsPng := mustPng(rhs)
 
-	lhsRgba := mustNrgba(lhsPng)
-	rhsRgba := mustNrgba(rhsPng)
+	lhsNrgba := mustNrgba(lhsPng)
+	rhsNrgba := mustNrgba(rhsPng)
 
-	deltas, _, maxdelta := ImageCompare(lhsRgba, rhsRgba)
+	deltas, _, maxdelta := ImageCompare(lhsNrgba, rhsNrgba)
 
 	for _, delta := range deltas {
 		fmt.Printf("%+v\n", delta)
