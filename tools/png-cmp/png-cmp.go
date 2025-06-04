@@ -4,22 +4,11 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"image/draw"
 	"image/png"
 	"os"
+
+	"github.com/runningwild/glop/imgmanip"
 )
-
-func mustNrgba(img image.Image) *image.NRGBA {
-	ret, ok := img.(*image.NRGBA)
-	if ok {
-		return ret
-	}
-
-	ret = image.NewNRGBA(img.Bounds())
-	draw.Draw(ret, img.Bounds(), img, image.Point{}, draw.Src)
-
-	return ret
-}
 
 type Delta struct {
 	lhsColour color.Color
@@ -108,8 +97,8 @@ func main() {
 	lhsPng := mustPng(lhs)
 	rhsPng := mustPng(rhs)
 
-	lhsNrgba := mustNrgba(lhsPng)
-	rhsNrgba := mustNrgba(rhsPng)
+	lhsNrgba := imgmanip.ToNRGBA(lhsPng)
+	rhsNrgba := imgmanip.ToNRGBA(rhsPng)
 
 	deltas, _, maxdelta := ImageCompare(lhsNrgba, rhsNrgba)
 
