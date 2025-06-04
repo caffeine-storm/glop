@@ -53,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	img := image.RGBA{
+	img := image.NRGBA{
 		Pix:    d.Data.Pix,
 		Stride: 4 * d.Data.Dx,
 		Rect:   image.Rect(0, 0, d.Data.Dx, d.Data.Dy),

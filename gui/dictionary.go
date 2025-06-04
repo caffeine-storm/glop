@@ -68,7 +68,7 @@ type Dictionary struct {
 }
 
 type RasteredFont struct {
-	// The Pix data of an image.RGBA of the packed 'grid of glyphs'.
+	// The Pix data of an image.NRGBA of the packed 'grid of glyphs'.
 	Pix []byte
 
 	// Adjustments to apply to the rastering position while rendering strings of
@@ -80,7 +80,7 @@ type RasteredFont struct {
 	// instead of an int... right!?
 	Kerning map[rune]map[rune]int
 
-	// Width and height in pixels of Pix's image.RGBA.
+	// Width and height in pixels of Pix's image.NRGBA.
 	Dx, Dy int
 
 	// Map from rune to that rune's runeInfo.
@@ -486,7 +486,7 @@ func RasterizeFont(font *truetype.Font, pointSize int) RasteredFont {
 		dy = dy << 1
 	}
 
-	pim := image.NewRGBA(image.Rect(0, 0, dx, dy))
+	pim := image.NewNRGBA(image.Rect(0, 0, dx, dy))
 	draw.Draw(pim, pim.Bounds(), packed, image.Point{}, draw.Src)
 
 	var result RasteredFont
