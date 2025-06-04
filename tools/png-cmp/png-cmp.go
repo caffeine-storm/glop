@@ -9,13 +9,13 @@ import (
 	"os"
 )
 
-func mustRgba(img image.Image) *image.RGBA {
-	ret, ok := img.(*image.RGBA)
+func mustNrgba(img image.Image) *image.NRGBA {
+	ret, ok := img.(*image.NRGBA)
 	if ok {
 		return ret
 	}
 
-	ret = image.NewRGBA(img.Bounds())
+	ret = image.NewNRGBA(img.Bounds())
 	draw.Draw(ret, img.Bounds(), img, image.Point{}, draw.Src)
 
 	return ret
@@ -48,7 +48,7 @@ func colourDistance(lhs, rhs color.Color) (dr, dg, db int) {
 	return
 }
 
-func ImageCompare(lhs, rhs *image.RGBA) ([]Delta, int, Delta) {
+func ImageCompare(lhs, rhs *image.NRGBA) ([]Delta, int, Delta) {
 	bounds := lhs.Bounds()
 	if bounds != rhs.Bounds() {
 		return nil, 0, Delta{}
@@ -108,8 +108,8 @@ func main() {
 	lhsPng := mustPng(lhs)
 	rhsPng := mustPng(rhs)
 
-	lhsRgba := mustRgba(lhsPng)
-	rhsRgba := mustRgba(rhsPng)
+	lhsRgba := mustNrgba(lhsPng)
+	rhsRgba := mustNrgba(rhsPng)
 
 	deltas, _, maxdelta := ImageCompare(lhsRgba, rhsRgba)
 
