@@ -970,7 +970,7 @@ type Manager struct {
 
 	renderQueue render.RenderQueueInterface
 
-	// A factory for caches of image.RGBA.Pix data. Each sprite sheet uses one to
+	// A factory for caches of image pixel data. Each sprite sheet uses one to
 	// cache its data in case it is 'unloaded'.
 	pixelDataCacheFactory func(string) cache.ByteBank
 
