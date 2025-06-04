@@ -48,7 +48,7 @@ func colourDistance(lhs, rhs color.Color) (dr, dg, db int) {
 	return
 }
 
-func imageCompare(lhs, rhs *image.RGBA) ([]Delta, int, Delta) {
+func ImageCompare(lhs, rhs *image.RGBA) ([]Delta, int, Delta) {
 	bounds := lhs.Bounds()
 	if bounds != rhs.Bounds() {
 		return nil, 0, Delta{}
@@ -111,7 +111,7 @@ func main() {
 	lhsRgba := mustRgba(lhsPng)
 	rhsRgba := mustRgba(rhsPng)
 
-	deltas, _, maxdelta := imageCompare(lhsRgba, rhsRgba)
+	deltas, _, maxdelta := ImageCompare(lhsRgba, rhsRgba)
 
 	for _, delta := range deltas {
 		fmt.Printf("%+v\n", delta)
