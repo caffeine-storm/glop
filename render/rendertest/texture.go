@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"
 )
@@ -59,6 +60,12 @@ func GivenATexture(imageFilePath string) gl.Texture {
 	rgbaImage := image.NewRGBA(img.Bounds())
 	draw.Draw(rgbaImage, img.Bounds(), img, image.Point{}, draw.Src)
 
+	logger := glog.WarningLogger()
+	for idx := 0; idx < len(rgbaImage.Pix); idx += 4 {
+		if max(rgbaImage.Pix[idx+0], rgbaImage.Pix[idx+1], rgbaImage.Pix[idx+2]) > rgbaImage.Pix[idx+3] {
+			logger.Warn("found non-normalized colour", "idx", idx)
+		}
+	}
 	return uploadTextureFromImage(rgbaImage)
 }
 
