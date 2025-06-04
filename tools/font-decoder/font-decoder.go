@@ -56,16 +56,7 @@ func main() {
 	img := image.RGBA{
 		Pix:    d.Data.Pix,
 		Stride: 4 * d.Data.Dx,
-		Rect: image.Rectangle{
-			Min: image.Point{
-				X: 0,
-				Y: 0,
-			},
-			Max: image.Point{
-				X: d.Data.Dx,
-				Y: d.Data.Dy,
-			},
-		},
+		Rect:   image.Rect(0, 0, d.Data.Dx, d.Data.Dy),
 	}
 
 	err = png.Encode(f, &img)
