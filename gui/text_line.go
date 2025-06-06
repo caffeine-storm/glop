@@ -61,8 +61,7 @@ func MakeTextLine(fontId, text string, width int, r, g, b, a float64) *TextLine 
 }
 
 func (w *TextLine) SetColor(r, g, b, a float64) {
-	// TODO(tmckee:#43): i can haz pre-multiplied alpha?
-	w.color = color.RGBA{
+	w.color = color.NRGBA{
 		R: uint8(255 * r),
 		G: uint8(255 * g),
 		B: uint8(255 * b),
@@ -81,7 +80,7 @@ func (w *TextLine) SetText(str string) {
 func (w *TextLine) DoThink(int64, bool) {
 }
 
-func (w *TextLine) preDraw(region Region, ctx DrawingContext) {
+func (w *TextLine) preDraw(region Region, _ DrawingContext) {
 	// Draw a black rectangle over the region to erase what might be there
 	// already.
 	gl.Color3d(0, 0, 0)
