@@ -183,9 +183,8 @@ func TestTexture2DHelpers(t *testing.T) {
 	})
 }
 
-func pickADifferentColour(notThese ...color.RGBA) color.RGBA {
-	// TODO(tmckee:#43): i can haz pre-multiplied alpha?
-	ret := color.RGBA{
+func pickADifferentColour(notThese ...color.NRGBA) color.NRGBA {
+	ret := color.NRGBA{
 		R: 0,
 		G: 0,
 		B: 0,
@@ -213,7 +212,7 @@ func byteToNormColour(b uint8) float32 {
 	return float32(b) / 255.0
 }
 
-func asFloats(c color.RGBA) (float32, float32, float32, float32) {
+func asFloats(c color.NRGBA) (float32, float32, float32, float32) {
 	return byteToNormColour(c.R), byteToNormColour(c.G), byteToNormColour(c.B), byteToNormColour(c.A)
 }
 
@@ -222,7 +221,7 @@ func TestWithColour(t *testing.T) {
 	testbuilder.New().Run(func() {
 		oldColour := rendertest.GetCurrentForegroundColour()
 		newColour := pickADifferentColour(oldColour)
-		var chosenColour color.RGBA
+		var chosenColour color.NRGBA
 		r, g, b, a := asFloats(newColour)
 		render.WithColour(r, g, b, a, func() {
 			chosenColour = rendertest.GetCurrentForegroundColour()

@@ -34,10 +34,9 @@ func normColourToByte(f float32) uint8 {
 	return uint8(f * 255)
 }
 
-func GetCurrentBackgroundColor() color.RGBA {
+func GetCurrentBackgroundColor() color.NRGBA {
 	oldClear := getCurrentBackground()
-	// TODO(tmckee:#43): i can haz pre-multiplied alpha?
-	return color.RGBA{
+	return color.NRGBA{
 		R: normColourToByte(oldClear[0]),
 		G: normColourToByte(oldClear[1]),
 		B: normColourToByte(oldClear[2]),
@@ -45,10 +44,9 @@ func GetCurrentBackgroundColor() color.RGBA {
 	}
 }
 
-func GetCurrentForegroundColour() color.RGBA {
+func GetCurrentForegroundColour() color.NRGBA {
 	oldFg := getCurrentForeground()
-	// TODO(tmckee:#43): i can haz pre-multiplied alpha?
-	return color.RGBA{
+	return color.NRGBA{
 		R: normColourToByte(oldFg[0]),
 		G: normColourToByte(oldFg[1]),
 		B: normColourToByte(oldFg[2]),

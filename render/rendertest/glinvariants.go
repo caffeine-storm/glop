@@ -107,8 +107,8 @@ func checkBindingsInvariants() error {
 
 func checkColourInvariants() error {
 	// default fg/bg is white on black
-	white := color.RGBA{R: 255, G: 255, B: 255, A: 255}
-	black := color.RGBA{R: 0, G: 0, B: 0, A: 255}
+	white := color.NRGBA{R: 255, G: 255, B: 255, A: 255}
+	black := color.NRGBA{R: 0, G: 0, B: 0, A: 255}
 
 	fg := GetCurrentForegroundColour()
 	errs := []error{}
