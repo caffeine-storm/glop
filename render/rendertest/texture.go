@@ -3,6 +3,7 @@ package rendertest
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"os"
 	"path"
@@ -13,7 +14,7 @@ import (
 	"github.com/runningwild/glop/render"
 )
 
-func uploadTextureFromImage(img *image.NRGBA) gl.Texture {
+func uploadTextureFromImage(img *image.RGBA) gl.Texture {
 	bounds := img.Bounds()
 	texture := gl.GenTexture()
 	texture.Bind(gl.TEXTURE_2D)
@@ -24,10 +25,10 @@ func uploadTextureFromImage(img *image.NRGBA) gl.Texture {
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 
-	// Need to flip the input image vertically because image.NRGBA stores the
+	// Need to flip the input image vertically because image.RGBA stores the
 	// top-left pixel first but gl.TexImage2D expects the bottom-left pixel
 	// first.
-	imgmanip.FlipVertically(img)
+	imgmanip.FlipVertically[*image.RGBA](img, img.Pix)
 
 	gl.ActiveTexture(gl.TEXTURE0 + 0)
 	gl.TexImage2D(
@@ -45,6 +46,29 @@ func uploadTextureFromImage(img *image.NRGBA) gl.Texture {
 	return texture
 }
 
+func stringifyColorModel(m color.Model) string {
+	switch m {
+	case color.RGBAModel:
+		return "color.RGBAModel"
+	case color.RGBA64Model:
+		return "color.RGBA64Model"
+	case color.NRGBAModel:
+		return "color.NRGBAModel"
+	case color.NRGBA64Model:
+		return "color.NRGBA64Model"
+	case color.AlphaModel:
+		return "color.AlphaModel"
+	case color.Alpha16Model:
+		return "color.Alpha16Model"
+	case color.GrayModel:
+		return "color.GrayModel"
+	case color.Gray16Model:
+		return "color.Gray16Model"
+	default:
+		return "dunno lol"
+	}
+}
+
 func GivenATexture(imageFilePath string) gl.Texture {
 	imageFilePath = path.Join("testdata", imageFilePath)
 	file, err := os.Open(imageFilePath)
@@ -52,21 +76,26 @@ func GivenATexture(imageFilePath string) gl.Texture {
 		panic(fmt.Errorf("couldn't open file %q: %w", imageFilePath, err))
 	}
 
-	img, _, err := image.Decode(file)
+	img, imgFmt, err := image.Decode(file)
 	if err != nil {
 		panic(fmt.Errorf("couldn't image.Decode: %w", err))
 	}
+	colourModel := stringifyColorModel(img.ColorModel())
 
-	nrgbaImage := image.NewNRGBA(img.Bounds())
-	draw.Draw(nrgbaImage, img.Bounds(), img, image.Point{}, draw.Src)
+	fmt.Printf("img type: %T, img fmt: %s, colourModel: %s\n", img, imgFmt, colourModel)
+
+	// Note: we use an RGBA image here instead of an NRGBA because we want to be
+	// uploading alpha-premultipled colours to OpenGL.
+	rgbaImage := image.NewRGBA(img.Bounds())
+	draw.Draw(rgbaImage, img.Bounds(), img, image.Point{}, draw.Src)
 
 	logger := glog.WarningLogger()
-	for idx := 0; idx < len(nrgbaImage.Pix); idx += 4 {
-		if max(nrgbaImage.Pix[idx+0], nrgbaImage.Pix[idx+1], nrgbaImage.Pix[idx+2]) > nrgbaImage.Pix[idx+3] {
+	for idx := 0; idx < len(rgbaImage.Pix); idx += 4 {
+		if max(rgbaImage.Pix[idx+0], rgbaImage.Pix[idx+1], rgbaImage.Pix[idx+2]) > rgbaImage.Pix[idx+3] {
 			logger.Warn("found non-normalized colour", "idx", idx)
 		}
 	}
-	return uploadTextureFromImage(nrgbaImage)
+	return uploadTextureFromImage(rgbaImage)
 }
 
 func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *render.ShaderBank) {

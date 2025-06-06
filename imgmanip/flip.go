@@ -5,8 +5,12 @@ import (
 	"image/color"
 )
 
+type Boundser interface {
+	Bounds() image.Rectangle
+}
+
 // Rewrites the given input image flipping it vertically.
-func FlipVertically(img *image.NRGBA) {
+func FlipVertically[T Boundser](img Boundser, data []byte) {
 	bounds := img.Bounds()
 	width, height := bounds.Dx(), bounds.Dy()
 	tmp := make([]byte, width*4)
@@ -15,8 +19,8 @@ func FlipVertically(img *image.NRGBA) {
 		if a >= b {
 			break
 		}
-		arow := img.Pix[a*width*4 : (a+1)*width*4]
-		brow := img.Pix[b*width*4 : (b+1)*width*4]
+		arow := data[a*width*4 : (a+1)*width*4]
+		brow := data[b*width*4 : (b+1)*width*4]
 		copy(tmp, arow)
 		copy(arow, brow)
 		copy(brow, tmp)

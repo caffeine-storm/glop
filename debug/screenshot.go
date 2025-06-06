@@ -31,7 +31,7 @@ func ScreenShotNrgba(width, height int) *image.NRGBA {
 
 	// Flip the rows of pixels vertically so that the leading bytes correspond to
 	// the 'top' row of pixels.
-	imgmanip.FlipVertically(nrgba)
+	imgmanip.FlipVertically[*image.NRGBA](nrgba, nrgba.Pix)
 
 	return nrgba
 }
