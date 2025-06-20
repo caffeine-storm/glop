@@ -1,6 +1,7 @@
 package rendertest_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestFailureMessages(t *testing.T) {
@@ -30,6 +32,20 @@ func TestFailureMessages(t *testing.T) {
 
 		result := strings.Join(<-testoutput, "\n")
 		assert.Contains(t, result, "thisFunctionDereferencesNil", "should include function attribution")
-		assert.Contains(t, result, "glcontext_cache_canary_test", "should include file attribution")
+
+		// Check for pattern '<filename>:<linenumber>\n'
+		filename := "glcontext_cache_canary_test.go"
+		_, result, ok := strings.Cut(result, filename)
+		require.True(t, ok, "should include file attribution")
+
+		_, result, ok = strings.Cut(result, ":")
+		require.True(t, ok, "needs a ':' between file name and line")
+
+		lineNumber, _, ok := strings.Cut(result, "\n")
+		require.True(t, ok, "need a newline after the line number")
+
+		val, err := strconv.Atoi(lineNumber)
+		assert.Positive(t, val)
+		assert.NoError(t, err, "should include line number attribution")
 	})
 }
