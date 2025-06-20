@@ -29,6 +29,7 @@ func TestFailureMessages(t *testing.T) {
 		}()
 
 		result := strings.Join(<-testoutput, "\n")
-		assert.Contains(t, result, "thisFunctionDereferencesNil")
+		assert.Contains(t, result, "thisFunctionDereferencesNil", "should include function attribution")
+		assert.Contains(t, result, "glcontext_cache_canary_test", "should include file attribution")
 	})
 }
