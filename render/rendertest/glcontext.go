@@ -3,6 +3,7 @@ package rendertest
 import (
 	"errors"
 	"fmt"
+	"runtime/debug"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/gin"
@@ -174,9 +175,19 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 						return
 					}
 				case error:
-					// panicking on an error value is the way to signal failure; so
-					// capture it.
-					err = v
+					// Panicking on an error value is a way to signal test failure.
+					// Capture a stacktrace to make it easier to debug test failures.
+					//
+					// Note that we can't just return the error value because it doesn't
+					// hold a stacktrace. Stacktraces are normally printed when a
+					// panicking goroutine hits the last of its defer'd handlers,
+					// critically, while the stack still exists.
+					buffer := debug.Stack()
+
+					// We don't really need a stacktrace that's more than 1MB.
+					buffer = buffer[:min(len(buffer), 1024*1024)]
+
+					err = fmt.Errorf("test failure: %w\n---test-stacktrace:\n%s---end-of-test-stacktrace", v, string(buffer))
 					return
 				}
 				// Otherwise, someone panicked with a non-error which is, in a way,

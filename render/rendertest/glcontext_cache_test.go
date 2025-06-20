@@ -2,13 +2,15 @@ package rendertest_test
 
 import (
 	"fmt"
-	"runtime/debug"
+	"strings"
 	"testing"
 
+	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 )
 
 func thisFunctionDereferencesNil() {
@@ -20,29 +22,22 @@ func thisFunctionDereferencesNil() {
 }
 
 func TestFailureMessages(t *testing.T) {
-	Convey("for null pointer dereferences", t, func() {
-		Convey("include stacktrace with line and file info", func() {
-			var testoutput []byte
-			stackContents := make(chan []byte)
-			go func() {
+	t.Run("for nil pointer dereferences, it includes the func that dereferenced the nil", func(t *testing.T) {
+		testoutput := make(chan []string)
+
+		go func() {
+			testoutput <- gloptest.CollectOutput(func() {
 				canaryTestInstance := &testing.T{}
 				Convey("over bogus testing.T to trick Convey", canaryTestInstance, func() {
-					defer func() {
-						e := recover()
-						if e == nil {
-							panic("umm... wut?")
-						}
-						stackContents <- debug.Stack()
-					}()
-
 					rendertest.RunTestWithCachedContext(64, 64, func(system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
 						thisFunctionDereferencesNil()
+						So("wait", ShouldContainSubstring, "wut?")
 					})
 				})
-			}()
-			testoutput = <-stackContents
+			})
+		}()
 
-			So(string(testoutput), ShouldContainSubstring, "thisFunctionDereferencesNil")
-		})
+		result := strings.Join(<-testoutput, "\n")
+		assert.Contains(t, result, "thisFunctionDereferencesNil")
 	})
 }
