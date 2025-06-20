@@ -125,7 +125,11 @@ func (q *renderQueue) loopWithErrorTracking() {
 		func() {
 			defer func() {
 				if e := recover(); e != nil {
-					q.onError(e.(error))
+					if ee, ok := e.(error); ok {
+						q.onError(ee)
+					} else {
+						q.onError(fmt.Errorf("non-error error: %v", e))
+					}
 				}
 			}()
 
