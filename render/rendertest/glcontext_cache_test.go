@@ -1,7 +1,6 @@
 package rendertest_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -12,14 +11,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 )
-
-func thisFunctionDereferencesNil() {
-	var nilPointer *string = nil
-
-	_ = len(*nilPointer)
-
-	panic(fmt.Errorf("should not get here"))
-}
 
 func TestFailureMessages(t *testing.T) {
 	t.Run("for nil pointer dereferences, it includes the func that dereferenced the nil", func(t *testing.T) {
