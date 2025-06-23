@@ -12,9 +12,19 @@ import (
 	"github.com/runningwild/glop/render/tls"
 )
 
+func IsOnRenderThread() bool {
+	return tls.IsSentinelSet()
+}
+
 func MustBeOnRenderThread() {
-	if !tls.IsSentinelSet() {
-		panic(fmt.Errorf("not on render thread"))
+	if !IsOnRenderThread() {
+		panic(fmt.Errorf("not on render thread but should be"))
+	}
+}
+
+func MustNotBeOnRenderTread() {
+	if IsOnRenderThread() {
+		panic(fmt.Errorf("on render thread but shouldn't be"))
 	}
 }
 
