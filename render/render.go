@@ -22,7 +22,7 @@ func MustBeOnRenderThread() {
 	}
 }
 
-func MustNotBeOnRenderTread() {
+func MustNotBeOnRenderThread() {
 	if IsOnRenderThread() {
 		panic(fmt.Errorf("on render thread but shouldn't be"))
 	}
