@@ -1,5 +1,5 @@
 ---
-Checks:          'bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,google-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-readability-identifier-length'
+Checks:          'bugprone-*,cert-*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,google-*,misc-*,modernize-*,-modernize-use-trailing-return-type,performance-*,portability-*,readability-*,-readability-identifier-length'
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''
