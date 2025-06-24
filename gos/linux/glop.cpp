@@ -53,7 +53,7 @@
   } while (false)
 #endif  // LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
 
-typedef short GlopKey;
+typedef int16_t GlopKey;
 
 static std::mutex initMut;
 Display *display = NULL;
@@ -61,14 +61,14 @@ int screen = 0;
 XIM xim = NULL;
 Atom close_atom;
 
-static long long gtm() {
+static int64_t gtm() {
   struct timeval tv;
   // TODO(tmckee): use clock_gettime with CLOCK_MONOTONIC instead
   gettimeofday(&tv, NULL);
-  // TODO(tmckee:#25) we're overflowing the long long when multiplying; we
+  // TODO(tmckee:#25) we're overflowing the int64_t when multiplying; we
   // should change this entire function. Currently, this is resulting in
   // 'current time' being negative.
-  return (long long)tv.tv_sec * 1000000 + tv.tv_usec;
+  return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
 static int gt() { return gtm() / 1000; }
@@ -194,7 +194,7 @@ struct OsWindowData {
   XIC inputcontext;
 };
 
-unsigned long GetNativeHandle(GlopWindowHandle hdl) { return hdl.data->window; }
+uint64_t GetNativeHandle(GlopWindowHandle hdl) { return hdl.data->window; }
 
 int64_t GlopInit() {
   auto lck = std::unique_lock(initMut);
@@ -304,30 +304,30 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
   {
     Atom WMHintsAtom = XInternAtom(display, "_MOTIF_WM_HINTS", false);
     if (WMHintsAtom) {
-      static const unsigned long MWM_HINTS_FUNCTIONS = 1 << 0;
-      static const unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
+      static const uint64_t MWM_HINTS_FUNCTIONS = 1 << 0;
+      static const uint64_t MWM_HINTS_DECORATIONS = 1 << 1;
 
-      // static const unsigned long MWM_DECOR_ALL         = 1 << 0;
-      static const unsigned long MWM_DECOR_BORDER = 1 << 1;
-      static const unsigned long MWM_DECOR_RESIZEH = 1 << 2;
-      static const unsigned long MWM_DECOR_TITLE = 1 << 3;
-      // static const unsigned long MWM_DECOR_MENU        = 1 << 4;
-      static const unsigned long MWM_DECOR_MINIMIZE = 1 << 5;
-      static const unsigned long MWM_DECOR_MAXIMIZE = 1 << 6;
+      // static const uint64_t MWM_DECOR_ALL         = 1 << 0;
+      static const uint64_t MWM_DECOR_BORDER = 1 << 1;
+      static const uint64_t MWM_DECOR_RESIZEH = 1 << 2;
+      static const uint64_t MWM_DECOR_TITLE = 1 << 3;
+      // static const uint64_t MWM_DECOR_MENU        = 1 << 4;
+      static const uint64_t MWM_DECOR_MINIMIZE = 1 << 5;
+      static const uint64_t MWM_DECOR_MAXIMIZE = 1 << 6;
 
-      // static const unsigned long MWM_FUNC_ALL          = 1 << 0;
-      static const unsigned long MWM_FUNC_RESIZE = 1 << 1;
-      static const unsigned long MWM_FUNC_MOVE = 1 << 2;
-      static const unsigned long MWM_FUNC_MINIMIZE = 1 << 3;
-      static const unsigned long MWM_FUNC_MAXIMIZE = 1 << 4;
-      static const unsigned long MWM_FUNC_CLOSE = 1 << 5;
+      // static const uint64_t MWM_FUNC_ALL          = 1 << 0;
+      static const uint64_t MWM_FUNC_RESIZE = 1 << 1;
+      static const uint64_t MWM_FUNC_MOVE = 1 << 2;
+      static const uint64_t MWM_FUNC_MINIMIZE = 1 << 3;
+      static const uint64_t MWM_FUNC_MAXIMIZE = 1 << 4;
+      static const uint64_t MWM_FUNC_CLOSE = 1 << 5;
 
       struct WMHints {
-        unsigned long Flags;
-        unsigned long Functions;
-        unsigned long Decorations;
-        long InputMode;
-        unsigned long State;
+        uint64_t Flags;
+        uint64_t Functions;
+        uint64_t Decorations;
+        int64_t InputMode;
+        uint64_t State;
       };
 
       WMHints Hints;
@@ -432,30 +432,30 @@ GlopWindowHandle DeprecatedGlopCreateWindow(char const *title, int x, int y,
   {
     Atom WMHintsAtom = XInternAtom(display, "_MOTIF_WM_HINTS", false);
     if (WMHintsAtom) {
-      static const unsigned long MWM_HINTS_FUNCTIONS = 1 << 0;
-      static const unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
+      static const uint64_t MWM_HINTS_FUNCTIONS = 1 << 0;
+      static const uint64_t MWM_HINTS_DECORATIONS = 1 << 1;
 
-      // static const unsigned long MWM_DECOR_ALL         = 1 << 0;
-      static const unsigned long MWM_DECOR_BORDER = 1 << 1;
-      static const unsigned long MWM_DECOR_RESIZEH = 1 << 2;
-      static const unsigned long MWM_DECOR_TITLE = 1 << 3;
-      // static const unsigned long MWM_DECOR_MENU        = 1 << 4;
-      static const unsigned long MWM_DECOR_MINIMIZE = 1 << 5;
-      static const unsigned long MWM_DECOR_MAXIMIZE = 1 << 6;
+      // static const uint64_t MWM_DECOR_ALL         = 1 << 0;
+      static const uint64_t MWM_DECOR_BORDER = 1 << 1;
+      static const uint64_t MWM_DECOR_RESIZEH = 1 << 2;
+      static const uint64_t MWM_DECOR_TITLE = 1 << 3;
+      // static const uint64_t MWM_DECOR_MENU        = 1 << 4;
+      static const uint64_t MWM_DECOR_MINIMIZE = 1 << 5;
+      static const uint64_t MWM_DECOR_MAXIMIZE = 1 << 6;
 
-      // static const unsigned long MWM_FUNC_ALL          = 1 << 0;
-      static const unsigned long MWM_FUNC_RESIZE = 1 << 1;
-      static const unsigned long MWM_FUNC_MOVE = 1 << 2;
-      static const unsigned long MWM_FUNC_MINIMIZE = 1 << 3;
-      static const unsigned long MWM_FUNC_MAXIMIZE = 1 << 4;
-      static const unsigned long MWM_FUNC_CLOSE = 1 << 5;
+      // static const uint64_t MWM_FUNC_ALL          = 1 << 0;
+      static const uint64_t MWM_FUNC_RESIZE = 1 << 1;
+      static const uint64_t MWM_FUNC_MOVE = 1 << 2;
+      static const uint64_t MWM_FUNC_MINIMIZE = 1 << 3;
+      static const uint64_t MWM_FUNC_MAXIMIZE = 1 << 4;
+      static const uint64_t MWM_FUNC_CLOSE = 1 << 5;
 
       struct WMHints {
-        unsigned long Flags;
-        unsigned long Functions;
-        unsigned long Decorations;
-        long InputMode;
-        unsigned long State;
+        uint64_t Flags;
+        uint64_t Functions;
+        uint64_t Decorations;
+        int64_t InputMode;
+        uint64_t State;
       };
 
       WMHints Hints;
@@ -632,7 +632,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         // reasons but the 'close_atom' can be used to detect a "PLEASE GO
         // AWAY" message.
         if (event.xclient.format == 32 &&
-            event.xclient.data.l[0] == static_cast<long>(close_atom)) {
+            event.xclient.data.l[0] == static_cast<int64_t>(close_atom)) {
           LOG_WARN("Window Manager close request received but ignored\n");
           // WindowDashDestroy();
           return gt();
@@ -1134,7 +1134,7 @@ void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent **_events_ret,
 void glopSleep(int t) { usleep(t * 1000); }
 
 int glopGetTime() { return gt(); }
-long long glopGetTimeMicro() { return gtm(); }
+int64_t glopGetTimeMicro() { return gtm(); }
 
 void GlopSwapBuffers(GlopWindowHandle hdl) {
   glXSwapBuffers(display, hdl.data->window);

@@ -89,10 +89,10 @@ extern "C" {
 #define kMouseMButton 306
 
 struct GlopKeyEvent {
-  short index;
-  short device_type;
+  int16_t index;
+  int16_t device_type;
   float press_amt;
-  long long timestamp;
+  uint64_t timestamp;
 
   // X and Y co-ordinates of the mouse at the time the event happened.  In
   // units of pixels with the bottom-most, left-most pixel as the origin.
@@ -109,7 +109,7 @@ struct OsWindowData;
 typedef struct {
   struct OsWindowData* data;
 } GlopWindowHandle;
-unsigned long GetNativeHandle(GlopWindowHandle);
+uint64_t GetNativeHandle(GlopWindowHandle);
 
 int64_t GlopInit();
 // Returns an opaque handle for further window operations.
