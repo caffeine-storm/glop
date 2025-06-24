@@ -6,50 +6,57 @@
 #include <unistd.h>
 
 #include <cstdio>
+#include <iostream>
 #include <mutex>
 #include <string>
 #include <vector>
 
-#define LOGGING_LEVEL_FATAL 4
-#define LOGGING_LEVEL_ERROR 3
-#define LOGGING_LEVEL_WARN 2
-#define LOGGING_LEVEL_DEBUG 1
+typedef int LogLevel;
+
+constexpr LogLevel LOGGING_LEVEL_FATAL = 4;
+constexpr LogLevel LOGGING_LEVEL_ERROR = 3;
+constexpr LogLevel LOGGING_LEVEL_WARN = 2;
+constexpr LogLevel LOGGING_LEVEL_DEBUG = 1;
+constexpr char const *loglevels[]{
+    "nope", "DEBUG", "WARN", "ERROR", "FATAL",
+};
 
 // By default, only DEBUG messages are suppressed
-#define LOGGING_LEVEL LOGGING_LEVEL_WARN
-
-#define DO_LOG(label, fmtstring, ...) \
-  fprintf(stderr, label ": " fmtstring __VA_OPT__(, ) __VA_ARGS__)
+constexpr auto LOGGING_LEVEL = LOGGING_LEVEL_WARN;
 
 #if LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
-#define LOG_FATAL(args...) DO_LOG("FATAL", args)
+#define LOG_FATAL(expr) \
+  std::cerr << "" __FILE__ ":" << __LINE__ << " FATAL: " << expr << std::endl
 #else
-#define LOG_FATAL(fmtstring, args...) \
-  do {                                \
+#define LOG_FATAL(expr) \
+  do {                  \
   } while (false)
 #endif  // LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
 
 #if LOGGING_LEVEL <= LOGGING_LEVEL_ERROR
-#define LOG_ERROR(args...) DO_LOG("ERROR", args)
+#define LOG_ERROR(expr) \
+  std::cerr << "" __FILE__ ":" << __LINE__ << " ERROR: " << expr << std::endl
 #else
-#define LOG_ERROR(fmtstring, args...) \
-  do {                                \
+#define LOG_ERROR(expr) \
+  do {                  \
   } while (false)
 #endif  // LOGGING_LEVEL <= LOGGING_LEVEL_ERROR
 
 #if LOGGING_LEVEL <= LOGGING_LEVEL_WARN
-#define LOG_WARN(args...) DO_LOG("WARN", args)
+#define LOG_WARN(expr) \
+  std::cerr << __FILE__ ":" << __LINE__ << " WARN: " << expr << std::endl
 #else
-#define LOG_WARN(args...) \
-  do {                    \
+#define LOG_WARN(expr) \
+  do {                 \
   } while (false)
 #endif  // LOGGING_LEVEL <= LOGGING_LEVEL_WARN
 
 #if LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
-#define LOG_DEBUG(args...) DO_LOG("DEBUG", args)
+#define LOG_DEBUG(expr) \
+  std::cerr << "" __FILE__ ":" << __LINE__ << " DEBUG: " << expr << std::endl
 #else
-#define LOG_DEBUG(args...) \
-  do {                     \
+#define LOG_DEBUG(expr) \
+  do {                  \
   } while (false)
 #endif  // LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
 
@@ -147,7 +154,7 @@ GLXFBConfig *pickFbConfig(int *numConfigs) {
   char buf[4096] = {0};
   for (int i = 0; i < *numConfigs; ++i) {
     showConfig(fbConfig[i], buf, sizeof(buf));
-    LOG_WARN("config %d: '%s'\n", i, buf);
+    LOG_WARN("config " << i << ": '" << buf << "'");
   }
 
   return fbConfig;
@@ -201,7 +208,7 @@ int64_t GlopInit() {
   if (display == NULL) {
     display = XOpenDisplay(NULL);
     if (display == NULL) {
-      LOG_FATAL("couldn't open X display\n");
+      LOG_FATAL("couldn't open X display");
       abort();
     }
 
@@ -258,17 +265,17 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
   OsWindowData *nw = new OsWindowData();
 
   if (x < 0 || y < 0 || width <= 0 || height <= 0) {
-    LOG_FATAL("bad window dims: (x,y): (%d,%d), (dx,dy): (%d,%d)\n", x, y,
-              width, height);
+    LOG_FATAL("bad window dims: (x,y): (" << x << "," << y << "), (dx,dy): ("
+                                          << width << "," << height << ")");
     abort();
   }
 
   int numConfigs;
   GLXFBConfig *fbConfigs = pickFbConfig(&numConfigs);
-  LOG_WARN("got numConfigs %d\n", numConfigs);
+  LOG_WARN("got numConfigs " << numConfigs);
   if (fbConfigs == NULL || numConfigs <= 0) {
-    LOG_FATAL("couldn't choose a framebuffer config. numConfigs: %d\n",
-              numConfigs);
+    LOG_FATAL(
+        "couldn't choose a framebuffer config. numConfigs: " << numConfigs);
     abort();
   }
 
@@ -374,7 +381,7 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
       XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
                 XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
   if (!nw->inputcontext) {
-    LOG_FATAL("couldn't create inputcontext\n");
+    LOG_FATAL("couldn't create inputcontext");
     abort();
   }
 
@@ -408,7 +415,7 @@ GlopWindowHandle DeprecatedGlopCreateWindow(char const *title, int x, int y,
                         None};
   nw->vinfo = glXChooseVisual(display, screen, glxcv_params);
   if (!nw->vinfo) {
-    LOG_FATAL("couldn't glXChooseVisual\n");
+    LOG_FATAL("couldn't glXChooseVisual");
     abort();
   }
 
@@ -503,7 +510,7 @@ GlopWindowHandle DeprecatedGlopCreateWindow(char const *title, int x, int y,
       XCreateIC(xim, XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
                 XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
   if (!nw->inputcontext) {
-    LOG_FATAL("couldn't create inputcontext\n");
+    LOG_FATAL("couldn't create inputcontext");
     abort();
   }
 
@@ -512,7 +519,7 @@ GlopWindowHandle DeprecatedGlopCreateWindow(char const *title, int x, int y,
   GLXContext shareList = NULL;
   nw->context = glXCreateContext(display, nw->vinfo, shareList, True);
   if (nw->context == NULL) {
-    LOG_FATAL("couldn't create new context\n");
+    LOG_FATAL("couldn't create new context");
     abort();
   }
 
@@ -535,7 +542,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
   XWindowAttributes attrs;
   Status ok = XGetWindowAttributes(display, data->window, &attrs);
   if (!ok) {
-    LOG_FATAL("couldn't XGetWindowAttributes\n");
+    LOG_FATAL("couldn't XGetWindowAttributes");
     abort();
   }
 
@@ -588,8 +595,8 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
 
       case ButtonPress:
       case ButtonRelease:
-        LOG_DEBUG("ButtonPress/Release: event.xbutton: %d event.type: %d\n",
-                  event.xbutton.button, event.type);
+        LOG_DEBUG("ButtonPress/Release: event.xbutton: "
+                  << event.xbutton.button << " event.type: " << event.type);
         if (SynthButton(&attrs, event.type == ButtonPress, event.xbutton,
                         data->window, &ev))
           data->events.push_back(ev);
@@ -1017,7 +1024,7 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed,
       ki = kMouseWheelHorizontal;
       break;
     default:
-      LOG_DEBUG("SynthButton: unknown button: %d\n", event.button);
+      LOG_DEBUG("SynthButton: unknown button: " << event.button);
       return false;
   }
 
@@ -1031,7 +1038,7 @@ static bool SynthButton(XWindowAttributes const *attrs, bool pushed,
 
   std::tie(ev->cursor_x, ev->cursor_y) =
       XCoordToGlopCoord(attrs, event.x, event.y);
-  LOG_DEBUG("SynthButton: cx/cy: %d/%d\n", ev->cursor_x, ev->cursor_y);
+  LOG_DEBUG("SynthButton: cx/cy: " << ev->cursor_x << "/" << ev->cursor_y);
 
   ev->num_lock = event.state & (1 << 4);
   ev->caps_lock = event.state & LockMask;
@@ -1148,7 +1155,7 @@ void GlopSetGlContext(GlopWindowHandle hdl) { glopSetCurrentContext(hdl.data); }
 
 static void glopSetCurrentContext(OsWindowData *data) {
   if (!glXMakeCurrent(display, data->window, data->context)) {
-    LOG_FATAL("glxMakeCurrent failed\n");
+    LOG_FATAL("glxMakeCurrent failed");
     exit(1);
   }
 }
