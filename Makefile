@@ -30,7 +30,7 @@ testsinglepackageargs="${pkg}"
 newtestrunargs:=$(subst -,-test.,${testrunargs})
 endif
 
-all: build-check compile-commands-portable
+all: build-check compile-commands
 
 build-check:
 	go build ./...
@@ -149,7 +149,7 @@ checkfmt:
 	@gofmt -l ./
 
 # Rebuild gos/$PLATFORM/compile_commands.json if any native code changes.
-compile-commands-portable: gos/${PLATFORM}/compile_commands.json
+compile-commands: gos/${PLATFORM}/compile_commands.json
 
 gos/${PLATFORM}/compile_commands.json: ${NATIVE_SRCS}
 	bear --output `pwd -P`/gos/${PLATFORM}/compile_commands.json --force-wrapper -- go build -a ./gos/${PLATFORM}/
@@ -157,7 +157,7 @@ gos/${PLATFORM}/compile_commands.json: ${NATIVE_SRCS}
 clean:
 	rm -f ${TEST_REPORT_TAR}
 
-.PHONY: build-check compile-commands-portable
+.PHONY: build-check compile-commands
 .PHONY: list_rejects view_rejects clean_rejects promote_rejects
 .PHONY: fmt lint depth
 .PHONY: profiling/*.view
