@@ -1,5 +1,5 @@
-#ifndef __GLOP_H__
-#define __GLOP_H__
+#ifndef GLOP_GOS_LINUX_GLOP_H
+#define GLOP_GOS_LINUX_GLOP_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -137,4 +137,4 @@ void GlopSetGlContext(GlopWindowHandle hdl);
 }  // extern "C"
 #endif
 
-#endif
+#endif  // GLOP_GOS_LINUX_GLOP_H
