@@ -135,9 +135,11 @@ ${TEST_REPORT_TAR}:
 
 fmt:
 	go fmt ./...
+	clang-format -i ${NATIVE_SRCS}
 
 lint:
 	go run github.com/mgechev/revive@v1.5.1 ./...
+	clang-tidy ${NATIVE_SRCS}
 
 depth:
 	@go list ./... | while read PKG ; do \
@@ -147,6 +149,7 @@ depth:
 # -l for 'list files'
 checkfmt:
 	@gofmt -l ./
+	@clang-format -n -Werror ${NATIVE_SRCS}
 
 # Rebuild gos/$PLATFORM/compile_commands.json if any native code changes.
 compile-commands: gos/${PLATFORM}/compile_commands.json
