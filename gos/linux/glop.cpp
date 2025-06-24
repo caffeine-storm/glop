@@ -11,54 +11,7 @@
 #include <string>
 #include <vector>
 
-typedef int LogLevel;
-
-constexpr LogLevel LOGGING_LEVEL_FATAL = 4;
-constexpr LogLevel LOGGING_LEVEL_ERROR = 3;
-constexpr LogLevel LOGGING_LEVEL_WARN = 2;
-constexpr LogLevel LOGGING_LEVEL_DEBUG = 1;
-constexpr char const *loglevels[]{
-    "nope", "DEBUG", "WARN", "ERROR", "FATAL",
-};
-
-// By default, only DEBUG messages are suppressed
-constexpr auto LOGGING_LEVEL = LOGGING_LEVEL_WARN;
-
-#if LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
-#define LOG_FATAL(expr) \
-  std::cerr << "" __FILE__ ":" << __LINE__ << " FATAL: " << expr << std::endl
-#else
-#define LOG_FATAL(expr) \
-  do {                  \
-  } while (false)
-#endif  // LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
-
-#if LOGGING_LEVEL <= LOGGING_LEVEL_ERROR
-#define LOG_ERROR(expr) \
-  std::cerr << "" __FILE__ ":" << __LINE__ << " ERROR: " << expr << std::endl
-#else
-#define LOG_ERROR(expr) \
-  do {                  \
-  } while (false)
-#endif  // LOGGING_LEVEL <= LOGGING_LEVEL_ERROR
-
-#if LOGGING_LEVEL <= LOGGING_LEVEL_WARN
-#define LOG_WARN(expr) \
-  std::cerr << __FILE__ ":" << __LINE__ << " WARN: " << expr << std::endl
-#else
-#define LOG_WARN(expr) \
-  do {                 \
-  } while (false)
-#endif  // LOGGING_LEVEL <= LOGGING_LEVEL_WARN
-
-#if LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
-#define LOG_DEBUG(expr) \
-  std::cerr << "" __FILE__ ":" << __LINE__ << " DEBUG: " << expr << std::endl
-#else
-#define LOG_DEBUG(expr) \
-  do {                  \
-  } while (false)
-#endif  // LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
+#include "logging.hpp"
 
 typedef int16_t GlopKey;
 
@@ -216,7 +169,7 @@ int64_t GlopInit() {
 
     xim = XOpenIM(display, NULL, NULL, NULL);
     if (xim == NULL) {
-      LOG_FATAL("couldn't open X input method\n");
+      LOG_FATAL("couldn't open X input method");
       abort();
     }
 
@@ -254,7 +207,7 @@ GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
   GLXContext ret = glXCreateContextAttribsARB(
       display, *fbConfig, noSharedContext, useDirectRendering, context_attribs);
   if (ret == 0) {
-    LOG_FATAL("couldn't glXCreateContextAttribsARB\n");
+    LOG_FATAL("couldn't glXCreateContextAttribsARB");
     abort();
   }
   return ret;
@@ -627,7 +580,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         // LOGF("destroed\n");
         // IIUC, the application gets this _once_ a window is destroyed, so we
         // shouldn't need to do anything special here?
-        LOG_WARN("GlopThink: unhandled event type (DestroyNotify)\n");
+        LOG_WARN("GlopThink: unhandled event type (DestroyNotify)");
         break;
 
       case ClientMessage:
@@ -640,12 +593,12 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         // AWAY" message.
         if (event.xclient.format == 32 &&
             event.xclient.data.l[0] == static_cast<int64_t>(close_atom)) {
-          LOG_WARN("Window Manager close request received but ignored\n");
+          LOG_WARN("Window Manager close request received but ignored");
           // WindowDashDestroy();
           return gt();
         }
 
-        LOG_WARN("GlopThink: unhandled event type (ClientMessage)\n");
+        LOG_WARN("GlopThink: unhandled event type (ClientMessage)");
         break;
     }
   }
@@ -1147,9 +1100,7 @@ void GlopSwapBuffers(GlopWindowHandle hdl) {
   glXSwapBuffers(display, hdl.data->window);
 }
 
-void GlopEnableVSync(int enable) {
-  LOG_WARN("GlopEnableVSync: unimplemented\n");
-}
+void GlopEnableVSync(int enable) { LOG_WARN("GlopEnableVSync: unimplemented"); }
 
 void GlopSetGlContext(GlopWindowHandle hdl) { glopSetCurrentContext(hdl.data); }
 
