@@ -5,11 +5,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <cstdio>
-#include <map>
 #include <mutex>
-#include <set>
 #include <string>
 #include <vector>
 
