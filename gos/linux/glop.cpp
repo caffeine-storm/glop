@@ -6,7 +6,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <stdlib.h>
 
 #include <cctype>
 #include <chrono>
@@ -173,7 +172,7 @@ int64_t GlopInit() {
     display = XOpenDisplay(NULL);
     if (display == NULL) {
       LOG_FATAL("couldn't open X display");
-      abort();
+      std::abort();
     }
 
     screen = DefaultScreen(display);
@@ -181,7 +180,7 @@ int64_t GlopInit() {
     xim = XOpenIM(display, NULL, NULL, NULL);
     if (xim == NULL) {
       LOG_FATAL("couldn't open X input method");
-      abort();
+      std::abort();
     }
 
     close_atom = XInternAtom(display, "WM_DELETE_WINDOW", False);
@@ -219,7 +218,7 @@ GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
       display, *fbConfig, noSharedContext, useDirectRendering, context_attribs);
   if (ret == 0) {
     LOG_FATAL("couldn't glXCreateContextAttribsARB");
-    abort();
+    std::abort();
   }
   return ret;
 }
@@ -231,7 +230,7 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
   if (x < 0 || y < 0 || width <= 0 || height <= 0) {
     LOG_FATAL("bad window dims: (x,y): (" << x << "," << y << "), (dx,dy): ("
                                           << width << "," << height << ")");
-    abort();
+    std::abort();
   }
 
   int numConfigs;
@@ -240,7 +239,7 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
   if (fbConfigs == NULL || numConfigs <= 0) {
     LOG_FATAL(
         "couldn't choose a framebuffer config. numConfigs: " << numConfigs);
-    abort();
+    std::abort();
   }
 
   GLXContext shareList = NULL;
@@ -346,7 +345,7 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
                 XNClientWindow, nw->window, XNFocusWindow, nw->window, NULL);
   if (!nw->inputcontext) {
     LOG_FATAL("couldn't create inputcontext");
-    abort();
+    std::abort();
   }
 
   XMapWindow(display, nw->window);
@@ -367,7 +366,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
   Status ok = XGetWindowAttributes(display, data->window, &attrs);
   if (!ok) {
     LOG_FATAL("couldn't XGetWindowAttributes");
-    abort();
+    std::abort();
   }
 
   // TODO(tmckee): would using XCheck[Typed]WindowEvent be cleaner?
@@ -951,7 +950,7 @@ void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent **events_ret,
   ret.swap(hdl.data->events);
 
   auto const buffersize = sizeof(struct GlopKeyEvent) * ret.size();
-  *events_ret = (struct GlopKeyEvent *)malloc(buffersize);
+  *events_ret = (struct GlopKeyEvent *)std::malloc(buffersize);
   *num_events = ret.size();
   std::memcpy(*events_ret, ret.data(), buffersize);
 }
@@ -968,6 +967,6 @@ void GlopEnableVSync(int enable) { LOG_WARN("GlopEnableVSync: unimplemented"); }
 static void glopSetCurrentContext(OsWindowData *data) {
   if (!glXMakeCurrent(display, data->window, data->context)) {
     LOG_FATAL("glxMakeCurrent failed");
-    abort();
+    std::abort();
   }
 }
