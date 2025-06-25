@@ -27,9 +27,9 @@
 typedef int16_t GlopKey;
 
 static std::mutex initMut;
-Display *display = NULL;
+Display *display = nullptr;
 int screen = 0;
-XIM xim = NULL;
+XIM xim = nullptr;
 Atom close_atom;
 
 // Make sure the steady_clock implementation we're using supports millisecond
@@ -168,17 +168,17 @@ uint64_t GetNativeHandle(GlopWindowHandle hdl) { return hdl.data->window; }
 
 int64_t GlopInit() {
   auto lck = std::unique_lock(initMut);
-  if (display == NULL) {
-    display = XOpenDisplay(NULL);
-    if (display == NULL) {
+  if (display == nullptr) {
+    display = XOpenDisplay(nullptr);
+    if (display == nullptr) {
       LOG_FATAL("couldn't open X display");
       std::abort();
     }
 
     screen = DefaultScreen(display);
 
-    xim = XOpenIM(display, NULL, NULL, NULL);
-    if (xim == NULL) {
+    xim = XOpenIM(display, nullptr, nullptr, nullptr);
+    if (xim == nullptr) {
       LOG_FATAL("couldn't open X input method");
       std::abort();
     }
@@ -199,7 +199,7 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display *, GLXFBConfig,
                                                      const int *);
 
 GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
-  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
+  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = nullptr;
   glXCreateContextAttribsARB =
       (glXCreateContextAttribsARBProc)glXGetProcAddressARB(
           (const GLubyte *)"glXCreateContextAttribsARB");
@@ -212,11 +212,11 @@ GLXContext createContextFromConfig(GLXFBConfig *fbConfig) {
                            GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
                            None};
 
-  GLXContext noSharedContext = 0;
+  GLXContext noSharedContext = nullptr;
   Bool useDirectRendering = True;
   GLXContext ret = glXCreateContextAttribsARB(
       display, *fbConfig, noSharedContext, useDirectRendering, context_attribs);
-  if (ret == 0) {
+  if (ret == nullptr) {
     LOG_FATAL("couldn't glXCreateContextAttribsARB");
     std::abort();
   }
@@ -236,13 +236,13 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
   int numConfigs;
   GLXFBConfig *fbConfigs = pickFbConfig(&numConfigs);
   LOG_DEBUG("got numConfigs " << numConfigs);
-  if (fbConfigs == NULL || numConfigs <= 0) {
+  if (fbConfigs == nullptr || numConfigs <= 0) {
     LOG_FATAL(
         "couldn't choose a framebuffer config. numConfigs: " << numConfigs);
     std::abort();
   }
 
-  GLXContext shareList = NULL;
+  GLXContext shareList = nullptr;
   nw->context = createContextFromConfig(fbConfigs);
 
   // Grab the VisualInfo associated with the frame buffer config we chose.
@@ -408,7 +408,7 @@ int64_t GlopThink(GlopWindowHandle windowHandle) {
         char buf[2];
         KeySym sym;
 
-        XLookupString(&event.xkey, buf, sizeof(buf), &sym, NULL);
+        XLookupString(&event.xkey, buf, sizeof(buf), &sym, nullptr);
 
         if (SynthKey(&attrs, sym, event.type == KeyPress, event.xkey,
                      data->window, &ev))
@@ -492,7 +492,7 @@ XKeyEvent const *toKeyEvent(XEvent const &evt) {
     case KeyRelease:
       return &evt.xkey;
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
@@ -816,7 +816,7 @@ XButtonEvent const *toButtonEvent(XEvent const &evt) {
     case ButtonRelease:
       return &evt.xbutton;
     default:
-      return NULL;
+      return nullptr;
   }
 }
 
