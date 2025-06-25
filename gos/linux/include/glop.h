@@ -123,8 +123,8 @@ void GlopSwapBuffers(GlopWindowHandle);
 void GlopGetWindowDims(GlopWindowHandle, int* x, int* y, int* dx, int* dy);
 void GlopSetWindowSize(GlopWindowHandle, int dx, int dy);
 // The caller is responsible for calling free(*_events_ret)
-void GlopGetInputEvents(GlopWindowHandle, struct GlopKeyEvent** _events_ret,
-                        size_t* _num_events, int64_t* _horizon);
+void GlopGetInputEvents(GlopWindowHandle, struct GlopKeyEvent** events_ret,
+                        size_t* num_events, int64_t* horizon);
 void GlopEnableVSync(int enable);
 
 #ifdef __cplusplus

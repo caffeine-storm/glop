@@ -931,18 +931,18 @@ void GlopSetWindowSize(GlopWindowHandle hdl, int dx, int dy) {
 // Input functions
 // ===============
 
-void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent **_events_ret,
-                        size_t *_num_events, int64_t *_horizon) {
-  *_horizon = gt();
+void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent **events_ret,
+                        size_t *num_events, int64_t *horizon) {
+  *horizon = gt();
   std::vector<struct GlopKeyEvent> ret;  // weeeeeeeeeeee
   ret.swap(hdl.data->events);
 
-  *_events_ret =
+  *events_ret =
       (struct GlopKeyEvent *)malloc(sizeof(struct GlopKeyEvent) * ret.size());
-  *_num_events = ret.size();
+  *num_events = ret.size();
   for (size_t i = 0; i < ret.size(); i++) {
     // TODO(tmckee): memcpy instead?
-    (*_events_ret)[i] = ret[i];
+    (*events_ret)[i] = ret[i];
   }
 }
 
