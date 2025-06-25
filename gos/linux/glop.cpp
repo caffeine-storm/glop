@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <iostream>
 #include <mutex>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -33,8 +34,8 @@ static int64_t gtm() {
 
 static int gt() { return gtm() / 1000; }
 
-void showConfig(GLXFBConfig const &cfg, char *out, int out_size) {
-  auto end = out + out_size;
+std::string showConfig(GLXFBConfig const &cfg) {
+  std::stringstream result;
   int attribs[31] = {
       GLX_FBCONFIG_ID,
       GLX_BUFFER_SIZE,
@@ -70,15 +71,14 @@ void showConfig(GLXFBConfig const &cfg, char *out, int out_size) {
   };
 
   int val;
-  *out++ = '"';
+  result << '"';
   for (int attrib : attribs) {
     glXGetFBConfigAttrib(display, cfg, attrib, &val);
-    out += sprintf(out, "%d, ", val);
-    if (out >= end) {
-      return;
-    }
+    result << val << ", ";
   }
-  *out++ = '"';
+  result << '"';
+
+  return result.str();
 }
 
 GLXFBConfig *pickFbConfig(int *numConfigs) {
@@ -104,10 +104,8 @@ GLXFBConfig *pickFbConfig(int *numConfigs) {
 
   GLXFBConfig *fbConfig =
       glXChooseFBConfig(display, screen, fbAttrs, numConfigs);
-  char buf[4096] = {0};
   for (int i = 0; i < *numConfigs; ++i) {
-    showConfig(fbConfig[i], buf, sizeof(buf));
-    LOG_WARN("config " << i << ": '" << buf << "'");
+    LOG_WARN("config " << i << ": '" << showConfig(fbConfig[i]) << "'");
   }
 
   return fbConfig;
