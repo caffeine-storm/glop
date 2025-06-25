@@ -965,6 +965,6 @@ void GlopSetGlContext(GlopWindowHandle hdl) { glopSetCurrentContext(hdl.data); }
 static void glopSetCurrentContext(OsWindowData *data) {
   if (!glXMakeCurrent(display, data->window, data->context)) {
     LOG_FATAL("glxMakeCurrent failed");
-    exit(1);
+    abort();
   }
 }
