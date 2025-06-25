@@ -949,18 +949,11 @@ void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent **_events_ret,
 // Miscellaneous functions
 // =======================
 
-void glopSleep(int t) { usleep(t * 1000); }
-
-int glopGetTime() { return gt(); }
-int64_t glopGetTimeMicro() { return gtm(); }
-
 void GlopSwapBuffers(GlopWindowHandle hdl) {
   glXSwapBuffers(display, hdl.data->window);
 }
 
 void GlopEnableVSync(int enable) { LOG_WARN("GlopEnableVSync: unimplemented"); }
-
-void GlopSetGlContext(GlopWindowHandle hdl) { glopSetCurrentContext(hdl.data); }
 
 static void glopSetCurrentContext(OsWindowData *data) {
   if (!glXMakeCurrent(display, data->window, data->context)) {

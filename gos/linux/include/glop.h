@@ -127,9 +127,6 @@ void GlopGetInputEvents(GlopWindowHandle, struct GlopKeyEvent** _events_ret,
                         size_t* _num_events, int64_t* _horizon);
 void GlopEnableVSync(int enable);
 
-// Takes a handle returned from GlopCreateWindow.
-void GlopSetGlContext(GlopWindowHandle hdl);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

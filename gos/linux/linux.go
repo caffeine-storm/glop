@@ -170,15 +170,6 @@ func (linux *SystemObject) EnableVSync(enable bool) {
 	C.GlopEnableVSync(_enable)
 }
 
-// TODO(tmckee)(clean): this isn't used; remove it!
-func (linux *SystemObject) SetGlContext() {
-	if linux.windowHandle.data == nil {
-		// We haven't initialized a GL context yet; do nothing
-		return
-	}
-	C.GlopSetGlContext(linux.windowHandle)
-}
-
 func New() *SystemObject {
 	ret := &SystemObject{}
 	ret.Startup()
