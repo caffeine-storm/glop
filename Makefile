@@ -141,6 +141,12 @@ lint:
 	go run github.com/mgechev/revive@v1.5.1 ./...
 	clang-tidy ${NATIVE_SRCS}
 
+native-lints.txt: ${NATIVE_SRCS}
+	clang-tidy $^ &> $@
+
+count-native-lints: ${NATIVE_SRCS}
+	clang-tidy --quiet $^ 2>/dev/null | wc -l
+
 depth:
 	@go list ./... | while read PKG ; do \
 		go run github.com/KyleBanks/depth/cmd/depth@v1.2.1 "$$PKG" ; \
@@ -162,7 +168,7 @@ clean:
 
 .PHONY: build-check compile-commands
 .PHONY: list_rejects view_rejects clean_rejects promote_rejects
-.PHONY: fmt lint depth
+.PHONY: fmt lint depth count-native-lints
 .PHONY: profiling/*.view
 .PHONY: appveyor-test-report-and-fail
 .PHONY: test test-dlv test-fresh test-nocache test-report test-spec test-verbose
