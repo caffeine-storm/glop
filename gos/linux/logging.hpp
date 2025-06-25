@@ -1,6 +1,9 @@
 #ifndef GLOP_GOS_LOGGING_HPP
 #define GLOP_GOS_LOGGING_HPP
 
+// We need to "ab"use the preprocessor here.
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
+
 // We want includers of this file to always have <iostream>
 // NOLINTNEXTLINE(misc-include-cleaner)
 #include <iostream>
@@ -50,5 +53,7 @@
   do {                  \
   } while (false)
 #endif  // LOGGING_LEVEL <= LOGGING_LEVEL_DEBUG
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif  // GLOP_GOS_LOGGING_HPP
