@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <iostream>
@@ -23,17 +24,19 @@ int screen = 0;
 XIM xim = NULL;
 Atom close_atom;
 
-static int64_t gtm() {
-  struct timeval tv;
-  // TODO(tmckee): use clock_gettime with CLOCK_MONOTONIC instead
-  gettimeofday(&tv, NULL);
-  // TODO(tmckee:#25) we're overflowing the int64_t when multiplying; we
-  // should change this entire function. Currently, this is resulting in
-  // 'current time' being negative.
-  return (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
-}
+// Make sure the steady_clock implementation we're using supports millisecond
+// resolution.
+static_assert(std::ratio_less_equal<std::chrono::steady_clock::period,
+                                    std::milli>::value);
+std::chrono::steady_clock monotonic_clock;
 
-static int gt() { return gtm() / 1000; }
+// Return the current time (sampled from a monotonic clock) in milliseconds.
+static int64_t gt() {
+  auto ticks = monotonic_clock.now().time_since_epoch();
+  typedef std::ratio_divide<std::chrono::steady_clock::period, std::milli>
+      millis_per_tick;
+  return (ticks.count() * millis_per_tick::num) / millis_per_tick::den;
+}
 
 std::string showConfig(GLXFBConfig const &cfg) {
   std::stringstream result;
