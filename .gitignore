@@ -14,3 +14,4 @@ _*
 profiling/
 testdata/report.tar.gz
 compile_commands.json
+native-lints.txt

@@ -145,7 +145,10 @@ native-lints.txt: ${NATIVE_SRCS}
 	clang-tidy $^ &> $@
 
 count-native-lints: ${NATIVE_SRCS}
-	clang-tidy --quiet $^ 2>/dev/null | wc -l
+	clang-tidy --quiet $^ 2>/dev/null | wc --lines
+
+count-native-lint-groups: native-lints.txt
+	grep '^[^ ]' native-lints.txt | grep -v 'Processing file' | grep -v 'note:' | sed 's,.*\[,,g' | grep ']' | sed 's,],,' | sort | uniq --count | sort --reverse --numeric
 
 depth:
 	@go list ./... | while read PKG ; do \
