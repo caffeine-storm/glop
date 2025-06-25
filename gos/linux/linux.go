@@ -32,7 +32,7 @@ func (linux *SystemObject) Quit() {
 
 // Call after runtime.LockOSThread(), *NOT* in an init function
 func (linux *SystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
-	linux.windowHandle = C.DeprecatedGlopCreateWindow(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
+	linux.windowHandle = C.GlopCreateWindowHandle(C.CString("linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
 	return fmt.Sprintf("%d", C.GetNativeHandle(linux.windowHandle))
 }
 
@@ -179,20 +179,8 @@ func (linux *SystemObject) SetGlContext() {
 	C.GlopSetGlContext(linux.windowHandle)
 }
 
-type newSystemObject struct {
-	*SystemObject
-}
-
-// Call after runtime.LockOSThread(), *NOT* in an init function
-func (newlinux *newSystemObject) CreateWindow(x, y, width, height int) system.NativeWindowHandle {
-	newlinux.windowHandle = C.GlopCreateWindowHandle(C.CString("(new) linux window"), C.int(x), C.int(y), C.int(width), C.int(height))
-	return fmt.Sprintf("%d", C.GetNativeHandle(newlinux.windowHandle))
-}
-
-func New() *newSystemObject {
-	ret := &newSystemObject{
-		SystemObject: &SystemObject{},
-	}
+func New() *SystemObject {
+	ret := &SystemObject{}
 	ret.Startup()
 	return ret
 }
