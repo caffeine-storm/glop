@@ -105,7 +105,7 @@ GLXFBConfig *pickFbConfig(int *numConfigs) {
   GLXFBConfig *fbConfig =
       glXChooseFBConfig(display, screen, fbAttrs, numConfigs);
   for (int i = 0; i < *numConfigs; ++i) {
-    LOG_WARN("config " << i << ": '" << showConfig(fbConfig[i]) << "'");
+    LOG_DEBUG("config " << i << ": '" << showConfig(fbConfig[i]) << "'");
   }
 
   return fbConfig;
@@ -223,7 +223,7 @@ GlopWindowHandle GlopCreateWindowHandle(char const *title, int x, int y,
 
   int numConfigs;
   GLXFBConfig *fbConfigs = pickFbConfig(&numConfigs);
-  LOG_WARN("got numConfigs " << numConfigs);
+  LOG_DEBUG("got numConfigs " << numConfigs);
   if (fbConfigs == NULL || numConfigs <= 0) {
     LOG_FATAL(
         "couldn't choose a framebuffer config. numConfigs: " << numConfigs);
