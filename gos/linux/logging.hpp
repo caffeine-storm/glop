@@ -1,6 +1,8 @@
 #ifndef GLOP_GOS_LOGGING_HPP
 #define GLOP_GOS_LOGGING_HPP
 
+// We want includers of this file to always have <iostream>
+// NOLINTNEXTLINE(misc-include-cleaner)
 #include <iostream>
 
 #define LOGGING_LEVEL_FATAL 4
@@ -11,8 +13,11 @@
 // By default, only DEBUG messages are suppressed
 #define LOGGING_LEVEL LOGGING_LEVEL_WARN
 
+// We want users to be able to chain std::ostream::operator<< expressions
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define DO_LOG(lvl, expr) \
   std::cerr << __FILE__ ":" << __LINE__ << " " lvl ": " << expr << std::endl
+// NOLINTEND(bugprone-macro-parentheses)
 
 #if LOGGING_LEVEL <= LOGGING_LEVEL_FATAL
 #define LOG_FATAL(expr) DO_LOG("FATAL", expr)

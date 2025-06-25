@@ -1,17 +1,26 @@
 #include "include/glop.h"
 
+#include <GL/gl.h>
 #include <GL/glx.h>
+#include <GL/glxext.h>
+#include <X11/X.h>
 #include <X11/Xlib.h>
-#include <sys/time.h>
-#include <unistd.h>
+#include <X11/Xutil.h>
+#include <stdlib.h>
 
+#include <cctype>
 #include <chrono>
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <mutex>
+#include <ratio>
 #include <sstream>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 #include "logging.hpp"
