@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -934,16 +935,13 @@ void GlopSetWindowSize(GlopWindowHandle hdl, int dx, int dy) {
 void GlopGetInputEvents(GlopWindowHandle hdl, struct GlopKeyEvent **events_ret,
                         size_t *num_events, int64_t *horizon) {
   *horizon = gt();
-  std::vector<struct GlopKeyEvent> ret;  // weeeeeeeeeeee
+  std::vector<struct GlopKeyEvent> ret;
   ret.swap(hdl.data->events);
 
-  *events_ret =
-      (struct GlopKeyEvent *)malloc(sizeof(struct GlopKeyEvent) * ret.size());
+  auto const buffersize = sizeof(struct GlopKeyEvent) * ret.size();
+  *events_ret = (struct GlopKeyEvent *)malloc(buffersize);
   *num_events = ret.size();
-  for (size_t i = 0; i < ret.size(); i++) {
-    // TODO(tmckee): memcpy instead?
-    (*events_ret)[i] = ret[i];
-  }
+  std::memcpy(*events_ret, ret.data(), buffersize);
 }
 
 // Miscellaneous functions
