@@ -30,7 +30,7 @@ thread. though, on second look, it seems we do have attribution? going to let
 this bug sit for a while to not lose the context but it might be fixed r.n.
 
 tmckee:#37 tracking bug for migrating from WithGlForTest to GlTest() family of
-helpers. 
+helpers.
 
 tmckee:#36 running `make testrunargs='-shuffle=on' test-nocache` should work;
 ie. tests should pass regardless of which order they're run in

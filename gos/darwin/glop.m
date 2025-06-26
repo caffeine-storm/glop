@@ -8,7 +8,7 @@
 #include <IOKit/hid/IOHIDLib.h>
 
 // TODO: This requires OSX 10.6 or higher, just for getting uptime.
-// if we bother to fix linking on osx such that 10.5 is acceptable we 
+// if we bother to fix linking on osx such that 10.5 is acceptable we
 // should change this
 #include <Foundation/NSProcessInfo.h>
 
@@ -481,8 +481,8 @@ void CreateWindow(void** _window, void** _context, int x, int y, int width, int 
   NSRect windowRect = NSMakeRect(x, y, width, height);
   NSWindow* window = [NSWindow alloc];
   *((NSWindow**)(_window)) = window;
-  [window initWithContentRect:windowRect 
-  styleMask:( NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask) 
+  [window initWithContentRect:windowRect
+  styleMask:( NSResizableWindowMask | NSClosableWindowMask | NSTitledWindowMask)
   backing:NSBackingStoreBuffered defer:NO];
   [window makeKeyAndOrderFront:nil];
   [window setAcceptsMouseMovedEvents:YES];

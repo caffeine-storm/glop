@@ -20,7 +20,7 @@ It's not entirely clear from a cursory reading exactly what the expected/desired
 						- !!! gui.Gui is a listener
 							- foreach widget in tree
 								- Respond()/DoRespond()
-			
+
 			- foreach key
 				- key.Think() (bool, float) --> need to press me with 'amount'
 					- input.pressKey(key, amt, no-cause, new-event-group)

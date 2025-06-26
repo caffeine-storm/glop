@@ -44,7 +44,7 @@ void GlopDeleteMutex(OsMutex *mutex) {
 }
 
 void GlopAcquireMutex(OsMutex *mutex) {
-  EnterCriticalSection(&mutex->critical_section);   
+  EnterCriticalSection(&mutex->critical_section);
 }
 
 void GlopReleaseMutex(OsMutex *mutex) {
@@ -362,7 +362,7 @@ class InputPollingThread: public Thread {
       DIMOUSESTATE2 mouse_state;
       hr = window_->mouse_device->GetDeviceState(sizeof(mouse_state), &mouse_state);
       if (hr == DIERR_INPUTLOST || hr == DIERR_NOTACQUIRED) {
-        window_->mouse_device->Acquire(); 
+        window_->mouse_device->Acquire();
         hr = window_->mouse_device->GetDeviceState(sizeof(mouse_state), &mouse_state);
       }
       if (!FAILED(hr)) {
@@ -473,7 +473,7 @@ class InputPollingThread: public Thread {
                                      float(-joy_state.lRy) / kJoystickAxisRange,
                                      timestamp, cursor_pos.x, cursor_pos.y, is_num_lock_set,
                                      is_caps_lock_set));
-    
+
         // Read hat data
 //        ASSERT(kNumJoystickHats <= 4);  // Update section if this changes
         for (int j = 0; j < kNumJoystickHats; j++) {
@@ -627,7 +627,7 @@ LRESULT CALLBACK HandleMessage(HWND window_handle, UINT message, WPARAM wparam, 
   }
 
   // Pass on remaining messages to the default handler
-  
+
   return DefWindowProcW(window_handle, message, wparam, lparam);
 }
 
@@ -703,13 +703,13 @@ BOOL CALLBACK GlopJoystickCallback(const DIDEVICEINSTANCE *device_instance, void
   LPDIRECTINPUTDEVICE new_device;
   if (FAILED(window->direct_input->CreateDevice(device_instance->guidInstance, &new_device, 0)))
     return DIENUM_CONTINUE;
-  DIPROPRANGE prop_range; 
-  prop_range.diph.dwSize = sizeof(DIPROPRANGE); 
-  prop_range.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
-  prop_range.diph.dwHow = DIPH_DEVICE; 
+  DIPROPRANGE prop_range;
+  prop_range.diph.dwSize = sizeof(DIPROPRANGE);
+  prop_range.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+  prop_range.diph.dwHow = DIPH_DEVICE;
   prop_range.diph.dwObj = 0;
-  prop_range.lMin = -kJoystickAxisRange; 
-  prop_range.lMax = kJoystickAxisRange; 
+  prop_range.lMin = -kJoystickAxisRange;
+  prop_range.lMax = kJoystickAxisRange;
   DIPROPDWORD prop_buffer_size;
   prop_buffer_size.diph.dwSize = sizeof(DIPROPDWORD);
   prop_buffer_size.diph.dwHeaderSize = sizeof(DIPROPHEADER);
@@ -791,7 +791,7 @@ void* GlopCreateWindow(void* _title, int x, int y,
   const wchar_t *const kClassName = L"GlopWin32";
   static bool is_class_initialized = false;
   OsWindowData *result = new OsWindowData();
-  
+
   // Create a window class. This is essentially used by Windows to group together several windows
   // for various purposes.
   if (!is_class_initialized) {
@@ -847,9 +847,9 @@ void* GlopCreateWindow(void* _title, int x, int y,
                                          kClassName, L"Glop window",
                                          window_style,
                                          x, y,
-                                         window_rectangle.right - window_rectangle.left, 
+                                         window_rectangle.right - window_rectangle.left,
 								                         window_rectangle.bottom - window_rectangle.top,
-                                         NULL, 
+                                         NULL,
                                          NULL,
                                          GetModuleHandle(0),
                                          NULL);
@@ -857,9 +857,9 @@ void* GlopCreateWindow(void* _title, int x, int y,
     GlopDestroyWindow(result);
     return 0;
   }
-  
+
   GlopSetTitle(result, title);
-  
+
   gWindowMap[result->window_handle] = result;
 
   // Set the icon

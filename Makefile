@@ -93,7 +93,7 @@ list_rejects:
 	done
 
 # opens expected and rejected files in 'feh'
-view_rejects: 
+view_rejects:
 	@find . -name testdata -type d | while read testdatadir ; do \
 		find "$$testdatadir" -name '*.rej.*' | while read rejfile ; do \
 			echo -e >&2 "$${rejfile/.rej}\n$$rejfile" ; \

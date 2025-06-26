@@ -832,27 +832,27 @@ typedef LPCDICONFIGUREDEVICESPARAMSA LPCDICONFIGUREDEVICESPARAMS;
 
 typedef struct _DIDEVICEIMAGEINFOA {
     CHAR        tszImagePath[MAX_PATH];
-    DWORD       dwFlags; 
+    DWORD       dwFlags;
     // These are valid if DIDIFT_OVERLAY is present in dwFlags.
-    DWORD       dwViewID;      
-    RECT        rcOverlay;             
+    DWORD       dwViewID;
+    RECT        rcOverlay;
     DWORD       dwObjID;
     DWORD       dwcValidPts;
-    POINT       rgptCalloutLine[5];  
-    RECT        rcCalloutRect;  
-    DWORD       dwTextAlign;     
+    POINT       rgptCalloutLine[5];
+    RECT        rcCalloutRect;
+    DWORD       dwTextAlign;
 } DIDEVICEIMAGEINFOA, *LPDIDEVICEIMAGEINFOA;
 typedef struct _DIDEVICEIMAGEINFOW {
     WCHAR       tszImagePath[MAX_PATH];
-    DWORD       dwFlags; 
+    DWORD       dwFlags;
     // These are valid if DIDIFT_OVERLAY is present in dwFlags.
-    DWORD       dwViewID;      
-    RECT        rcOverlay;             
+    DWORD       dwViewID;
+    RECT        rcOverlay;
     DWORD       dwObjID;
     DWORD       dwcValidPts;
-    POINT       rgptCalloutLine[5];  
-    RECT        rcCalloutRect;  
-    DWORD       dwTextAlign;     
+    POINT       rgptCalloutLine[5];
+    RECT        rcCalloutRect;
+    DWORD       dwTextAlign;
 } DIDEVICEIMAGEINFOW, *LPDIDEVICEIMAGEINFOW;
 #ifdef UNICODE
 typedef DIDEVICEIMAGEINFOW DIDEVICEIMAGEINFO;
@@ -2734,8 +2734,8 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 #define DI_TRUNCATED                    ((HRESULT)0x00000008L)
 
 /*
- *  The settings have been successfully applied but could not be 
- *  persisted. 
+ *  The settings have been successfully applied but could not be
+ *  persisted.
  */
 #define DI_SETTINGSNOTSAVED				((HRESULT)0x0000000BL)
 
@@ -2943,7 +2943,7 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 
 
 /*
- *  A mapper file function failed because reading or writing the user or IHV 
+ *  A mapper file function failed because reading or writing the user or IHV
  *  settings file failed.
  */
 #define DIERR_MAPFILEFAIL               0x8004020BL
@@ -3099,12 +3099,12 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 #define DIKEYBOARD_MYCOMPUTER                   0x810004EB    /* My Computer */
 #define DIKEYBOARD_MAIL                         0x810004EC    /* Mail */
 #define DIKEYBOARD_MEDIASELECT                  0x810004ED    /* Media Select */
-  
+
 
 /*--- MOUSE
       Physical Mouse Device             ---*/
 
-#define DIMOUSE_XAXISAB                         (0x82000200 |DIMOFS_X ) /* X Axis-absolute: Some mice natively report absolute coordinates  */ 
+#define DIMOUSE_XAXISAB                         (0x82000200 |DIMOFS_X ) /* X Axis-absolute: Some mice natively report absolute coordinates  */
 #define DIMOUSE_YAXISAB                         (0x82000200 |DIMOFS_Y ) /* Y Axis-absolute: Some mice natively report absolute coordinates */
 #define DIMOUSE_XAXIS                           (0x82000300 |DIMOFS_X ) /* X Axis */
 #define DIMOUSE_YAXIS                           (0x82000300 |DIMOFS_Y ) /* Y Axis */
@@ -3227,7 +3227,7 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 #define DIBUTTON_DRIVINGT_DEVICE                0x030044FE /* Show input device and controls */
 #define DIBUTTON_DRIVINGT_PAUSE                 0x030044FC /* Start / Pause / Restart game */
 
-/*--- Flight Simulator - Civilian 
+/*--- Flight Simulator - Civilian
       Plane control is the primary objective  ---*/
 #define DIVIRTUAL_FLYING_CIVILIAN               0x04000000
 #define DIAXIS_FLYINGC_BANK                     0x04008A01 /* Roll ship left / right */
@@ -3255,7 +3255,7 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 #define DIBUTTON_FLYINGC_DEVICE                 0x040044FE /* Show input device and controls */
 #define DIBUTTON_FLYINGC_PAUSE                  0x040044FC /* Start / Pause / Restart game */
 
-/*--- Flight Simulator - Military 
+/*--- Flight Simulator - Military
       Aerial combat is the primary objective  ---*/
 #define DIVIRTUAL_FLYING_MILITARY               0x05000000
 #define DIAXIS_FLYINGM_BANK                     0x05008A01 /* Bank - Roll ship left / right */
@@ -3352,7 +3352,7 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 #define DIBUTTON_SPACESIM_DEVICE                0x070044FE /* Show input device and controls */
 #define DIBUTTON_SPACESIM_PAUSE                 0x070044FC /* Start / Pause / Restart game */
 
-/*--- Fighting - First Person 
+/*--- Fighting - First Person
       Hand to Hand combat is primary objective  ---*/
 #define DIVIRTUAL_FIGHTING_HAND2HAND            0x08000000
 #define DIAXIS_FIGHTINGH_LATERAL                0x08008201 /* Sidestep left/right */
@@ -4214,42 +4214,42 @@ extern HRESULT WINAPI DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFI
 #define DIBUTTON_MECHA_PAUSE                    0x290044FC /* Start / Pause / Restart game */
 
 /*
- *  "ANY" semantics can be used as a last resort to get mappings for actions 
- *  that match nothing in the chosen virtual genre.  These semantics will be 
- *  mapped at a lower priority that virtual genre semantics.  Also, hardware 
- *  vendors will not be able to provide sensible mappings for these unless 
+ *  "ANY" semantics can be used as a last resort to get mappings for actions
+ *  that match nothing in the chosen virtual genre.  These semantics will be
+ *  mapped at a lower priority that virtual genre semantics.  Also, hardware
+ *  vendors will not be able to provide sensible mappings for these unless
  *  they provide application specific mappings.
  */
-#define DIAXIS_ANY_X_1                          0xFF00C201 
-#define DIAXIS_ANY_X_2                          0xFF00C202 
-#define DIAXIS_ANY_Y_1                          0xFF014201 
-#define DIAXIS_ANY_Y_2                          0xFF014202 
-#define DIAXIS_ANY_Z_1                          0xFF01C201 
-#define DIAXIS_ANY_Z_2                          0xFF01C202 
-#define DIAXIS_ANY_R_1                          0xFF024201 
-#define DIAXIS_ANY_R_2                          0xFF024202 
-#define DIAXIS_ANY_U_1                          0xFF02C201 
-#define DIAXIS_ANY_U_2                          0xFF02C202 
-#define DIAXIS_ANY_V_1                          0xFF034201 
-#define DIAXIS_ANY_V_2                          0xFF034202 
-#define DIAXIS_ANY_A_1                          0xFF03C201 
-#define DIAXIS_ANY_A_2                          0xFF03C202 
-#define DIAXIS_ANY_B_1                          0xFF044201 
-#define DIAXIS_ANY_B_2                          0xFF044202 
-#define DIAXIS_ANY_C_1                          0xFF04C201 
-#define DIAXIS_ANY_C_2                          0xFF04C202 
-#define DIAXIS_ANY_S_1                          0xFF054201 
-#define DIAXIS_ANY_S_2                          0xFF054202 
+#define DIAXIS_ANY_X_1                          0xFF00C201
+#define DIAXIS_ANY_X_2                          0xFF00C202
+#define DIAXIS_ANY_Y_1                          0xFF014201
+#define DIAXIS_ANY_Y_2                          0xFF014202
+#define DIAXIS_ANY_Z_1                          0xFF01C201
+#define DIAXIS_ANY_Z_2                          0xFF01C202
+#define DIAXIS_ANY_R_1                          0xFF024201
+#define DIAXIS_ANY_R_2                          0xFF024202
+#define DIAXIS_ANY_U_1                          0xFF02C201
+#define DIAXIS_ANY_U_2                          0xFF02C202
+#define DIAXIS_ANY_V_1                          0xFF034201
+#define DIAXIS_ANY_V_2                          0xFF034202
+#define DIAXIS_ANY_A_1                          0xFF03C201
+#define DIAXIS_ANY_A_2                          0xFF03C202
+#define DIAXIS_ANY_B_1                          0xFF044201
+#define DIAXIS_ANY_B_2                          0xFF044202
+#define DIAXIS_ANY_C_1                          0xFF04C201
+#define DIAXIS_ANY_C_2                          0xFF04C202
+#define DIAXIS_ANY_S_1                          0xFF054201
+#define DIAXIS_ANY_S_2                          0xFF054202
 
-#define DIAXIS_ANY_1                            0xFF004201 
-#define DIAXIS_ANY_2                            0xFF004202 
-#define DIAXIS_ANY_3                            0xFF004203 
-#define DIAXIS_ANY_4                            0xFF004204 
+#define DIAXIS_ANY_1                            0xFF004201
+#define DIAXIS_ANY_2                            0xFF004202
+#define DIAXIS_ANY_3                            0xFF004203
+#define DIAXIS_ANY_4                            0xFF004204
 
-#define DIPOV_ANY_1                             0xFF004601 
-#define DIPOV_ANY_2                             0xFF004602 
-#define DIPOV_ANY_3                             0xFF004603 
-#define DIPOV_ANY_4                             0xFF004604 
+#define DIPOV_ANY_1                             0xFF004601
+#define DIPOV_ANY_2                             0xFF004602
+#define DIPOV_ANY_3                             0xFF004603
+#define DIPOV_ANY_4                             0xFF004604
 
 #define DIBUTTON_ANY(instance)                  ( 0xFF004400 | instance )
 
