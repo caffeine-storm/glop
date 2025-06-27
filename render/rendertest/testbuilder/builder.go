@@ -187,6 +187,6 @@ func dorun(f1 func(func()), f2 func(func(render.RenderQueueInterface)), f3 func(
 	case func(render.RenderQueueState):
 		f3(fn)
 	default:
-		panic("T_T")
+		panic(fmt.Errorf("unknown test implmentation type: %T", ffn))
 	}
 }
