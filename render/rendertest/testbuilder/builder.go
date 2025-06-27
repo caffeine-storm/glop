@@ -123,6 +123,13 @@ func (b *expectationGlTestBuilder) RunForQueueState(fn func(render.RenderQueueSt
 	})
 }
 
+func (b *expectationGlTestBuilder) RunWithAllTheThings(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+	b.ctx.RunWithAllTheThings(func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
+		fn(sys, hdl, queue)
+		b.conveyContext.So(queue, rendertest.ShouldLookLikeFile, b.expectation, b.bgColour)
+	})
+}
+
 type expectationQueueGlTestBuilder struct {
 	ctx *expectationGlTestBuilder
 }
@@ -150,12 +157,12 @@ func New() *GlTestBuilder {
 
 func Run(ffn any) {
 	it := New()
-	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, it.RunWithAllTheThings, ffn)
 }
 
 func WithSize(dx, dy int, ffn any) {
 	it := New().WithSize(dx, dy)
-	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, it.RunWithAllTheThings, ffn)
 }
 
 func WithExpectation(c C, ref rendertest.TestDataReference, arg0 any, args ...any) {
@@ -165,7 +172,7 @@ func WithExpectation(c C, ref rendertest.TestDataReference, arg0 any, args ...an
 
 	it := New().WithExpectation(c, ref, args...)
 
-	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, it.RunWithAllTheThings, ffn)
 }
 
 func WithSizeAndExpectation(dx, dy int, c C, ref rendertest.TestDataReference, arg0 any, args ...any) {
@@ -175,10 +182,10 @@ func WithSizeAndExpectation(dx, dy int, c C, ref rendertest.TestDataReference, a
 
 	it := New().WithSize(dx, dy).WithExpectation(c, ref, args...)
 
-	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, ffn)
+	dorun(it.Run, it.WithQueue().Run, it.RunForQueueState, it.RunWithAllTheThings, ffn)
 }
 
-func dorun(f1 func(func()), f2 func(func(render.RenderQueueInterface)), f3 func(func(render.RenderQueueState)), ffn any) {
+func dorun(f1 func(func()), f2 func(func(render.RenderQueueInterface)), f3 func(func(render.RenderQueueState)), f4 func(func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)), ffn any) {
 	switch fn := ffn.(type) {
 	case func():
 		f1(fn)
@@ -186,6 +193,8 @@ func dorun(f1 func(func()), f2 func(func(render.RenderQueueInterface)), f3 func(
 		f2(fn)
 	case func(render.RenderQueueState):
 		f3(fn)
+	case func(system.System, system.NativeWindowHandle, render.RenderQueueInterface):
+		f4(fn)
 	default:
 		panic(fmt.Errorf("unknown test implmentation type: %T", ffn))
 	}
