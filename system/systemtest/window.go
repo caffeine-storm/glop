@@ -3,7 +3,7 @@ package systemtest
 import (
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/runningwild/glop/system"
 )
 
@@ -57,7 +57,7 @@ func NewTestWindow(sys system.System, hdl system.NativeWindowHandle, queue rende
 }
 
 func WithTestWindow(dx, dy int, fn func(window Window)) {
-	rendertest.DeprecatedWithGlAndHandleForTest(dx, dy, func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
+	testbuilder.WithSize(dx, dy, func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		window := NewTestWindow(sys, hdl, queue)
 		queue.Queue(func(st render.RenderQueueState) {
 			fn(window)
