@@ -48,30 +48,6 @@ func requeueUntilPurging(q render.RenderQueueInterface, success chan bool) {
 	})
 }
 
-func runWithDeadline(deadline time.Duration, op func()) error {
-	completed := make(chan bool)
-	errchan := make(chan error)
-	go func() {
-		defer func() {
-			// If 'op' panics, return the error value it paniced on.
-			if err := recover(); err != nil {
-				errchan <- err.(error)
-			}
-		}()
-		op()
-		completed <- true
-	}()
-
-	select {
-	case <-completed:
-		return nil
-	case err := <-errchan:
-		return err
-	case <-time.After(deadline):
-		return fmt.Errorf("deadline (%s) exceeded", deadline)
-	}
-}
-
 func TestRenderQueueStartProcessing(t *testing.T) {
 	t.Run("StartProcessing must be called no more than once", func(t *testing.T) {
 		q := render.MakeQueue(nop)
@@ -163,7 +139,7 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		}
 		q.StartProcessing()
 
-		err := runWithDeadline(5*time.Millisecond, func() {
+		err := gloptest.RunWithDeadline(5*time.Millisecond, func() {
 			q.Purge()
 		})
 		if err != nil {
@@ -190,7 +166,7 @@ func TestExitOnRenderQueue(t *testing.T) {
 			})
 			queue.StartProcessing()
 
-			shouldTimeout := runWithDeadline(5*time.Millisecond, func() {
+			shouldTimeout := gloptest.RunWithDeadline(5*time.Millisecond, func() {
 				defer func() {
 					if err := recover(); err != nil {
 						// re-panic with a specific error for detection
