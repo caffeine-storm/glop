@@ -15,14 +15,6 @@ func DeprecatedWithGlAndHandleForTest(width, height int, fn func(system.System, 
 }
 
 // TODO(#37): prefer testbuilder.New()
-func DeprecatedWithIsolatedGlAndHandleForTest(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	newContext := newGlContextForTest(width, height)
-	newContext.prep(width, height, InvariantsCheckNo)
-	newContext.run(fn)
-	newContext.clean(InvariantsCheckNo)
-}
-
-// TODO(#37): prefer testbuilder.New()
 func DeprecatedWithGlForTest(width, height int, fn func(system.System, render.RenderQueueInterface)) {
 	DeprecatedWithGlAndHandleForTest(width, height, func(sys system.System, _ system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		fn(sys, queue)
