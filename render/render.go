@@ -72,6 +72,9 @@ type RenderQueueInterface interface {
 	// StartProcessing() _is_ called.
 	StartProcessing()
 
+	// TODO(tmckee:#48): add a StopProcessing() so that RenderQueueInterface
+	// instances don't have to live forever.
+
 	// For debugability, polls the queue's current Purging/NotPurging status.
 	IsPurging() bool
 }
