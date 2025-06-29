@@ -1,10 +1,12 @@
 package testbuilder_test
 
 import (
+	"fmt"
 	"image/color"
 	"log"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
@@ -126,5 +128,28 @@ func TestGlStateLeakage(t *testing.T) {
 				buf.Bind(gl.ELEMENT_ARRAY_BUFFER)
 			})
 		})
+	})
+}
+
+// Tests ought to be able to fail without being annoying.
+// Tests should fail if they call panic() or testing.T.Fatalf().
+// These calls could happen on or off of a render thread.
+func TestFailureHandling(t *testing.T) {
+	t.Run("calling testing.T.Fatalf off of the render thread", func(t *testing.T) {
+		timeout, operr := gloptest.RunWithDeadline(200*time.Millisecond, func() {
+			fakeTesting := &testing.T{}
+			testbuilder.Run(func(queue render.RenderQueueInterface) {
+				// Note: we _don't_ use 'queue' because we want to call Fatalf off of the
+				// render thread for this test.
+				fakeTesting.Fatalf("simulated test-failure")
+			})
+		})
+
+		if timeout != nil {
+			t.Fatalf("the test-under-test should have failed before the timeout")
+		}
+		if operr == nil {
+			panic(fmt.Errorf("the test-under-test should have failed"))
+		}
 	})
 }
