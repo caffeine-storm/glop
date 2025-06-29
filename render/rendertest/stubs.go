@@ -27,6 +27,10 @@ func (*stubbedQueue) AddErrorCallback(func(render.RenderQueueInterface, error)) 
 func (*stubbedQueue) Queue(_ render.RenderJob) {}
 func (*stubbedQueue) Purge()                   {}
 func (*stubbedQueue) StartProcessing()         {}
+func (*stubbedQueue) StopProcessing()          {}
+func (*stubbedQueue) IsDefunct() bool {
+	return false
+}
 func (*stubbedQueue) IsPurging() bool {
 	return false
 }

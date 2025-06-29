@@ -24,6 +24,8 @@ func (*panicQueue) Queue(job render.RenderJob) {
 }
 func (*panicQueue) Purge()           {}
 func (*panicQueue) StartProcessing() {}
+func (*panicQueue) StopProcessing()  {}
+func (*panicQueue) IsDefunct() bool  { return false } // Look like a regular queue even though we'll panic
 func (*panicQueue) IsPurging() bool  { return false }
 
 func MakePanicingRenderQueue() render.RenderQueueInterface {

@@ -49,8 +49,9 @@ func (j *RenderJob) GetSourceAttribution() string {
 // Accepts jobs for running on a dedicated, internal thread of control. Helpful
 // for ensuring certain preconditions needed for calling into OpenGL.
 type RenderQueueInterface interface {
-	// Attaches a callback to this render queue. It will get called with errors
-	// that reach the top of the stack for the inner goroutine.
+	// The given callback will be invoked when queued jobs panic over an error
+	// value. Note that such panics do _not_ cause the Queue to enter a 'defunct'
+	// state; other jobs can still be queued and run.
 	AddErrorCallback(func(RenderQueueInterface, error))
 
 	// Eventually runs the given closure on a thread dedicated to OpenGL
@@ -58,11 +59,15 @@ type RenderQueueInterface interface {
 	// passed a reference to data that must only be used on this
 	// RenderQueueInterface's render thread. Callers may assume that the
 	// RenderQueueState instance passed to each RenderJob is the same object
-	// per-queue.
+	// per-queue. Caveat: if the queue is in a 'defunct' state, calls to Queue()
+	// will succeed but the jobs may not run.
 	Queue(f RenderJob)
 
 	// Blocks until all Queue'd jobs have completed. Note that, if other
 	// goroutines are queueing jobs, this will block waiting for them as well!
+	// If the queue enters a 'defunct' state (by calling StopProcessing or if the
+	// underlying goroutine exits), current and subsequent calls to Purge() will
+	// panic with a 'render.QueueShutdownError'.
 	Purge()
 
 	// StartProcessing() needs to be called exactly once per queue in order to
@@ -72,8 +77,16 @@ type RenderQueueInterface interface {
 	// StartProcessing() _is_ called.
 	StartProcessing()
 
-	// TODO(tmckee:#48): add a StopProcessing() so that RenderQueueInterface
-	// instances don't have to live forever.
+	// StopProcessing() can be called to stop processing jobs on the render
+	// queue. It can be called before or after StartProcessing(). It will not
+	// interrupt a running job but will pre-empt any other scheduled work. Any
+	// subsequent or currently blocked calls to Purge() will panic with a
+	// 'render.QueueShutdownError'. Calling StopProcessing() on a defunct queue
+	// is a no-op.
+	StopProcessing()
+
+	// Returns true iff the queue is in a 'defunct' state.
+	IsDefunct() bool
 
 	// For debugability, polls the queue's current Purging/NotPurging status.
 	IsPurging() bool
@@ -100,6 +113,7 @@ type renderQueue struct {
 	purge          chan chan bool
 	isRunning      atomic.Bool
 	isPurging      atomic.Bool
+	isDefunct      atomic.Bool
 	listener       *JobTimingListener
 	errorCallbacks struct {
 		fns []func(RenderQueueInterface, error)
@@ -135,6 +149,16 @@ func (q *renderQueue) onError(e error) {
 
 func (q *renderQueue) loopWithErrorTracking() {
 	for {
+		if q.isDefunct.Load() {
+			// No more work to do but we need to unblock any Purge() callers.
+			for {
+				ackChannel, ok := <-q.purge
+				if !ok {
+					return
+				}
+				close(ackChannel)
+			}
+		}
 		func() {
 			defer func() {
 				if e := recover(); e != nil {
@@ -204,6 +228,7 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		purge:     make(chan chan bool, 16),
 		isRunning: atomic.Bool{}, // zero-value is false
 		isPurging: atomic.Bool{}, // zero-value is false
+		isDefunct: atomic.Bool{}, // zero-value is false
 		listener:  listener,
 	}
 
@@ -217,6 +242,15 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 	return &result
 }
 
+type queueShutdownError struct{}
+
+func (*queueShutdownError) Error() string {
+	return "queue has shutdown"
+}
+
+var _ error = (*queueShutdownError)(nil)
+var QueueShutdownError = &queueShutdownError{}
+
 func (q *renderQueue) AddErrorCallback(fn func(RenderQueueInterface, error)) {
 	q.errorCallbacks.mut.Lock()
 	defer q.errorCallbacks.mut.Unlock()
@@ -226,6 +260,9 @@ func (q *renderQueue) AddErrorCallback(fn func(RenderQueueInterface, error)) {
 // TODO(tmckee): inject a GL dependency to given func for testability and to
 // keep arbitrary code from calling GL off of the render thread.
 func (q *renderQueue) Queue(f RenderJob) {
+	if q.isDefunct.Load() {
+		return
+	}
 	q.workQueue <- &jobWithTiming{
 		Job:      f,
 		QueuedAt: time.Now(),
@@ -234,6 +271,9 @@ func (q *renderQueue) Queue(f RenderJob) {
 
 // Waits until all render thread functions have been run
 func (q *renderQueue) Purge() {
+	if q.isDefunct.Load() {
+		panic(QueueShutdownError)
+	}
 	if !q.isRunning.Load() {
 		slog.Warn("render.RenderQueue.Purge called on non-started queue")
 	}
@@ -241,7 +281,7 @@ func (q *renderQueue) Purge() {
 	q.purge <- ack
 	_, ok := <-ack
 	if !ok {
-		panic("ack channel was closed!")
+		panic(QueueShutdownError)
 	}
 }
 
@@ -250,6 +290,14 @@ func (q *renderQueue) StartProcessing() {
 		panic("must not call 'StartProcessing' twice")
 	}
 	go q.loopWithErrorTracking()
+}
+
+func (q *renderQueue) StopProcessing() {
+	q.isDefunct.Store(true)
+}
+
+func (q *renderQueue) IsDefunct() bool {
+	return q.isDefunct.Load()
 }
 
 func (q *renderQueue) IsPurging() bool {

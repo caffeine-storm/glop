@@ -314,3 +314,89 @@ func TestAssertingOnRenderThread(t *testing.T) {
 		})
 	})
 }
+
+func TestIsDefunct(t *testing.T) {
+	assert := assert.New(t)
+
+	queue := render.MakeQueue(nop)
+	if queue.IsDefunct() {
+		t.Fatalf("a new queue should not be defunct")
+	}
+
+	queue.StopProcessing()
+
+	if !queue.IsDefunct() {
+		t.Fatalf("after StopProcessing(), the queue must be in a defunct state")
+	}
+
+	assert.PanicsWithValue(render.QueueShutdownError, func() {
+		queue.Purge()
+	})
+
+	t.Run("can still call Queue", func(t *testing.T) {
+		queue.Queue(nop)
+	})
+}
+
+func TestStopProcessing(t *testing.T) {
+	// Can call StopProcessing even if a render job is running. That job
+	// finishes. It's purposefuly undefined whether subsequent jobs run or not.
+	queue := render.MakeQueue(nop)
+
+	signal := make(chan bool)
+	workDone := false
+	queue.Queue(func(render.RenderQueueState) {
+		signal <- false
+
+		workDone = true
+		signal <- true
+	})
+
+	select {
+	case <-signal:
+		t.Fatalf("we haven't started the queue so the job should not have started yet")
+	default:
+		// as expected
+	}
+
+	queue.StartProcessing()
+
+	go func() {
+		t.Run("calling Purge() on a queue should panic if it becomes defunct", func(t *testing.T) {
+			defer func() {
+				// We expect the Purge() call to panic but it must not panic until the
+				// job has completed.
+				e := recover()
+				if e == nil {
+					panic(fmt.Errorf("the Purge() call was supposed to panic"))
+				}
+				if e != render.QueueShutdownError {
+					t.Fatalf("expected a render.QueueShutdownError but got: %v", e)
+				}
+
+				if !workDone {
+					t.Fatalf("expected the job to have run to completion but it didn't")
+				}
+			}()
+			queue.Purge()
+			t.Fatalf("this line should not be reachable")
+		})
+	}()
+
+	// Wait for the job to start and synchronize with us.
+	if <-signal {
+		panic(fmt.Errorf("expected first message to be a 'false'"))
+	}
+
+	// Tell our side of the render queue to stop processing; its inner goroutine
+	// should be blocked on its second send to 'signal'.
+	queue.StopProcessing()
+
+	// Unblock the job and ensure it makes progress.
+	if !<-signal {
+		t.Fatalf("the started job must get a chance to complete")
+	}
+
+	// Purge()ing a defunct queue should fail-fast.
+	assert.Panics(t, queue.Purge, "calling Purge() on a now-defunct queue should panic")
+}
