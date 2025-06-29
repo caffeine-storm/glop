@@ -139,11 +139,14 @@ func TestRenderQueueIsPurging(t *testing.T) {
 		}
 		q.StartProcessing()
 
-		err := gloptest.RunWithDeadline(5*time.Millisecond, func() {
+		timeouterr, operr := gloptest.RunWithDeadline(5*time.Millisecond, func() {
 			q.Purge()
 		})
-		if err != nil {
+		if timeouterr != nil {
 			t.Fatalf("deadline exceeded!")
+		}
+		if operr != nil {
+			t.Fatalf("operation failed: %v", operr)
 		}
 
 		<-success
@@ -166,7 +169,7 @@ func TestExitOnRenderQueue(t *testing.T) {
 			})
 			queue.StartProcessing()
 
-			shouldTimeout := gloptest.RunWithDeadline(5*time.Millisecond, func() {
+			shouldTimeout, shouldBeNil := gloptest.RunWithDeadline(5*time.Millisecond, func() {
 				defer func() {
 					if err := recover(); err != nil {
 						// re-panic with a specific error for detection
@@ -177,11 +180,12 @@ func TestExitOnRenderQueue(t *testing.T) {
 				t.Fatalf("queue.Purge() should not have returned; panic is okay")
 			})
 
-			if errors.Is(shouldTimeout, &everythingIsFine{}) {
-				fmt.Printf("Everything is fine!\n")
-			} else {
-				fmt.Printf("timeout presumably! %v\n", shouldTimeout)
-				assert.NotNil(t, shouldTimeout)
+			// TODO(tmckee:#40): we should make it so that 5ms is ample time to
+			// detect the render queue is defunct.
+			if shouldTimeout == nil {
+				// It didn't timeout... wut?
+				t.Logf("other error should be nil: %v", shouldBeNil)
+				t.Fatalf("expected to block on Purge() until we timed out")
 			}
 		})
 

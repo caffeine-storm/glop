@@ -5,7 +5,12 @@ import (
 	"time"
 )
 
-func RunWithDeadline(deadline time.Duration, op func()) error {
+// Returns two error values. If the first error value is non-nil, the operation
+// timedout; the first error value expresses that. If the second error value is
+// non-nil, the operation itself failed; the second error value is the error
+// that ocurred during the operation. If both error values are nil, the
+// operation succeeded within the deadline.
+func RunWithDeadline(deadline time.Duration, op func()) (error, error) {
 	completed := make(chan bool)
 	errchan := make(chan error)
 	go func() {
@@ -21,10 +26,10 @@ func RunWithDeadline(deadline time.Duration, op func()) error {
 
 	select {
 	case <-completed:
-		return nil
+		return nil, nil
 	case err := <-errchan:
-		return err
+		return nil, err
 	case <-time.After(deadline):
-		return fmt.Errorf("deadline (%s) exceeded", deadline)
+		return fmt.Errorf("deadline (%s) exceeded", deadline), nil
 	}
 }
