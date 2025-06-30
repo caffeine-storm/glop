@@ -1,6 +1,3 @@
-tmckee:#48 render.RenderQueueInterface ought to support a StopProcessing so
-that resources can get fully cleaned up without having to exit the process.
-
 tmckee:#46 write a test to make sure that the underlying format/parameters of
 our textures match expectations; will be helpful for detecting wonky
 differences between platforms. (Thanks @knortic!)
@@ -93,4 +90,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#48 <next>
+<owner>:#49 <next>
