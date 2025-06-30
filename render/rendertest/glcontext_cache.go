@@ -51,6 +51,9 @@ func runOverCachedContext(width, height int, dotest func(int, int, *glContext)) 
 		theContext = newGlContextForTest(width, height)
 	}
 	defer func() {
+		if theContext.render.IsDefunct() {
+			return
+		}
 		glTestContextSource <- theContext
 	}()
 
