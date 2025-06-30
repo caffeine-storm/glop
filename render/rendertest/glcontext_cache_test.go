@@ -1,6 +1,7 @@
 package rendertest_test
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/runningwild/glop/system"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
@@ -47,5 +49,22 @@ func TestFailureMessages(t *testing.T) {
 		val, err := strconv.Atoi(lineNumber)
 		assert.Positive(t, val)
 		assert.NoError(t, err, "should include line number attribution")
+	})
+}
+
+func TestStoppingRenderQueue(t *testing.T) {
+	// If a test decides to StopProcessing() on the render queue instance, it
+	// shouldn't break other tests.
+	testbuilder.Run(func(queue render.RenderQueueInterface) {
+		queue.StopProcessing()
+		if !queue.IsDefunct() {
+			panic(fmt.Errorf("StopProcessing() ought to have made the render queue defunct"))
+		}
+	})
+
+	testbuilder.Run(func(queue render.RenderQueueInterface) {
+		if queue.IsDefunct() {
+			t.Fatalf("got a defunct queue but should have gotten a fresh context")
+		}
 	})
 }

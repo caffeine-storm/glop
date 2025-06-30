@@ -51,11 +51,18 @@ const InvariantsCheckYes = true
 // track on-render-queue errors.
 func (ctx *glContext) takeLastError() error {
 	var allErrors []error
-	ctx.render.Queue(func(render.RenderQueueState) {
+	if ctx.render.IsDefunct() {
+		// It's not an error to stop the queue. Since the queue _is_ stopped, we
+		// can safely read ctx.recordedFailures but we can't render.Queue anything.
 		allErrors = ctx.recordedFailures
 		ctx.recordedFailures = nil
-	})
-	ctx.render.Purge()
+	} else {
+		ctx.render.Queue(func(render.RenderQueueState) {
+			allErrors = ctx.recordedFailures
+			ctx.recordedFailures = nil
+		})
+		ctx.render.Purge()
+	}
 
 	return errors.Join(allErrors...)
 }
@@ -130,6 +137,13 @@ func (ctx *glContext) clean(invariantscheck bool) (cleanError error) {
 	defer func() {
 		cleanError = errors.Join(cleanError, ctx.takeLastError())
 	}()
+
+	if ctx.render.IsDefunct() {
+		// If the test decides to stop the queue, we know there will be no state
+		// leakage; any GL state is about to disappear once the queue gets reaped.
+		return
+	}
+
 	ctx.render.Queue(func(render.RenderQueueState) {
 		// Undo server-side attribute push.
 		gl.PopAttrib()
