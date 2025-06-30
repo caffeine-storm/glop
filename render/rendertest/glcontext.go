@@ -270,9 +270,6 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 		sys.SwapBuffers()
 	})
 	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
-		// TODO(tmckee:#38): we need better attribution here; it's hard right now to
-		// know _which_ test was running the render job that panicked. We ought to
-		// be able to plumb a testing.T instance in here and call its t.Fail.
 		glog.ErrorLogger().Error("test-render-queue.OnError", "err", e)
 	})
 	renderQueue.StartProcessing()
