@@ -26,7 +26,11 @@ func doTest(checkInvariants bool, width, height int, fn func(system.System, syst
 
 	ee := ctx.clean(checkInvariants)
 	if ee != nil {
-		panic(fmt.Errorf("couldn't clean: %w, testresult: %w", ee, e))
+		err := fmt.Errorf("couldn't clean: %w", ee)
+		if e != nil {
+			err = errors.Join(err, fmt.Errorf("testerror: %w", e))
+		}
+		panic(err)
 	}
 
 	if e != nil {
@@ -37,7 +41,7 @@ func doTest(checkInvariants bool, width, height int, fn func(system.System, syst
 			panic(halting.s)
 		}
 
-		panic(fmt.Errorf("error on render-thread: %w", e))
+		panic(fmt.Errorf("doTest: %w", e))
 	}
 }
 
