@@ -6,6 +6,7 @@ import (
 
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +25,7 @@ func TestDumpBuffer(t *testing.T) {
 	data := GivenSomeFloats()
 
 	var dumpResult []float32
-	rendertest.DeprecatedWithGl(func() {
+	testbuilder.Run(func() {
 		buf := rendertest.GivenABufferWithData(data)
 		dumpResult = debug.DumpBuffer[float32](buf)
 	})
@@ -36,7 +37,7 @@ func TestDumpBufferBytes(t *testing.T) {
 	data := GivenSomeFloats()
 
 	var dumpResult []byte
-	rendertest.DeprecatedWithGl(func() {
+	testbuilder.Run(func() {
 		buf := rendertest.GivenABufferWithData(data)
 		dumpResult = debug.DumpBuffer[byte](buf)
 	})

@@ -1048,6 +1048,7 @@ func (m *Manager) LoadSprite(path string) (*Sprite, error) {
 		m.renderQueue.Queue((func(render.RenderQueueState) {
 			m.error_texture = gl.GenTexture()
 			m.error_texture.Bind(gl.TEXTURE_2D)
+			defer m.error_texture.Unbind(gl.TEXTURE_2D)
 			gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 			gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)

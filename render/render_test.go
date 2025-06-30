@@ -10,7 +10,7 @@ import (
 
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -309,7 +309,7 @@ func TestAssertingOnRenderThread(t *testing.T) {
 		assert.Panics(t, render.MustBeOnRenderThread)
 	})
 	t.Run("If on a render thread, relax", func(t *testing.T) {
-		rendertest.DeprecatedWithGl(func() {
+		testbuilder.Run(func() {
 			render.MustBeOnRenderThread()
 		})
 	})

@@ -126,6 +126,8 @@ func nextPowerOf2(n uint32) uint32 {
 func (s *sheet) makeTexture(pixer <-chan []byte) {
 	s.texture = gl.GenTexture()
 	s.texture.Bind(gl.TEXTURE_2D)
+	defer s.texture.Unbind(gl.TEXTURE_2D)
+
 	gl.TexEnvf(gl.TEXTURE_ENV, gl.TEXTURE_ENV_MODE, gl.MODULATE)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
 	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)

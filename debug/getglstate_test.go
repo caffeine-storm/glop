@@ -6,14 +6,14 @@ import (
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGlInspect(t *testing.T) {
 	t.Run("GetColorMatrix", func(t *testing.T) {
 		errors := []gl.GLenum{}
-		rendertest.DeprecatedWithGl(func() {
+		testbuilder.Run(func() {
 			debug.GetColorMatrix()
 
 			for err := gl.GetError(); err != 0; err = gl.GetError() {
@@ -30,7 +30,7 @@ func TestGlInspect(t *testing.T) {
 
 	t.Run("GetGlState exposes helpful data", func(t *testing.T) {
 		var glstate *debug.GlState
-		rendertest.DeprecatedWithGl(func() {
+		testbuilder.Run(func() {
 			glstate = debug.GetGlState()
 		})
 

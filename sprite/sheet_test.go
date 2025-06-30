@@ -6,9 +6,8 @@ import (
 
 	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/runningwild/glop/sprite"
-	"github.com/runningwild/glop/system"
 )
 
 func givenASpriteManager(queue render.RenderQueueInterface) *sprite.Manager {
@@ -18,7 +17,7 @@ func givenASpriteManager(queue render.RenderQueueInterface) *sprite.Manager {
 }
 
 func TestManagerLoadSprite(t *testing.T) {
-	rendertest.DeprecatedWithGlForTest(64, 64, func(sys system.System, queue render.RenderQueueInterface) {
+	testbuilder.Run(func(queue render.RenderQueueInterface) {
 		manager := givenASpriteManager(queue)
 		sheet, err := manager.LoadSprite("test_sprite")
 		if err != nil {

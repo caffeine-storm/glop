@@ -96,7 +96,7 @@ func TestTextureDebugging(t *testing.T) {
 		var dumpedImage *image.NRGBA
 		var err error
 
-		rendertest.DeprecatedWithGl(func() {
+		testbuilder.Run(func() {
 			tex := rendertest.GivenATexture("red/0.png")
 
 			dumpedImage, err = debug.DumpTexture(tex)
@@ -117,7 +117,7 @@ func TestTextureDebugging(t *testing.T) {
 	t.Run("can dump to writer", func(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
-		rendertest.DeprecatedWithGl(func() {
+		testbuilder.Run(func() {
 			tex := rendertest.GivenATexture("red/0.png")
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)
@@ -143,7 +143,7 @@ func TestTextureDebugging(t *testing.T) {
 	t.Run("can dump non-uniform texture", func(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
-		rendertest.DeprecatedWithGl(func() {
+		testbuilder.Run(func() {
 			tex := rendertest.GivenATexture("checker/0.png")
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)

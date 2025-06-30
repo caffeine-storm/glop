@@ -75,6 +75,7 @@ func summarize(data []byte) string {
 
 func DumpTexture(textureId gl.Texture) (*image.NRGBA, error) {
 	textureId.Bind(gl.TEXTURE_2D)
+	defer textureId.Unbind(gl.TEXTURE_2D)
 
 	textureWidth, textureHeight := getBoundTextureSize()
 	texformat := getBoundTextureFormat()
