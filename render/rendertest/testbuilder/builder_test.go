@@ -34,9 +34,9 @@ func TestConveyHalting(t *testing.T) {
 	t.Run("if the Convey framework wants to halt, we don't confuse things", func(t *testing.T) {
 		shouldBeFalse := false
 		output := gloptest.CollectOutput(func() {
-			Convey("but detached from a 'real' testing.T so that we don't fail the whole test", &testing.T{}, func() {
+			Convey("but detached from a 'real' testing.T so that we don't fail the whole test", &testing.T{}, func(c C) {
 				testbuilder.New().WithQueue().Run(func(queue render.RenderQueueInterface) {
-					So(1, ShouldNotEqual, 1)
+					c.So(1, ShouldNotEqual, 1)
 				})
 				shouldBeFalse = true
 			})
@@ -44,6 +44,7 @@ func TestConveyHalting(t *testing.T) {
 
 		require.False(t, shouldBeFalse)
 		assert.NotContains(t, strings.Join(output, "\n"), "___FAILURE_HALT___")
+		assert.NotContains(t, strings.Join(output, "\n"), "Convey operation made without context on goroutine stack")
 	})
 }
 
@@ -136,7 +137,7 @@ func TestGlStateLeakage(t *testing.T) {
 // These calls could happen on or off of a render thread.
 func TestFailureHandling(t *testing.T) {
 	t.Run("calling testing.T.Fatalf off of the render thread", func(t *testing.T) {
-		timeout, operr := gloptest.RunWithDeadline(200*time.Millisecond, func() {
+		timeout, operr := gloptest.RunWithDeadline(20*time.Millisecond, func() {
 			fakeTesting := &testing.T{}
 			testbuilder.Run(func(queue render.RenderQueueInterface) {
 				// Note: we _don't_ use 'queue' because we want to call Fatalf off of the

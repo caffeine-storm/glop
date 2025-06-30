@@ -160,49 +160,75 @@ func (ctx *glContext) clean(invariantscheck bool) (cleanError error) {
 
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	var err error
-	func() {
+	fnCompleted := false
+	signal := make(chan bool)
+	go func() {
 		// We run this defer to capture any error that a test panics on.
 		defer func() {
-			if e := recover(); e != nil {
-				switch v := e.(type) {
-				case string:
-					// It might be that Convey is trying to halt the tests; we need to
-					// preserve the value in that case.
-					if v == "___FAILURE_HALT___" {
-						err = &conveyIsHalting{
-							s: v,
-						}
-						return
+			if fnCompleted {
+				// if the flag got set, we know that 'fn' didn't panic nor did it call
+				// runtime.Goexit. This is the 'happy path'. For sanity sake, check
+				// that recover() is returning nil.
+				if e := recover(); e != nil {
+					panic(fmt.Errorf("but... how?: %v", e))
+				}
+				return
+			}
+
+			e := recover()
+			if e == nil {
+				// We know the flag didn't get set and recover() didn't return a value.
+				// This is the case where 'fn' called runtime.Goexit directly (a.k.a.
+				// not on the render thread). Typically, this is a result of
+				// testing.T.Fatalf call.
+				// TODO(tmckee): do we need to do anything else here?
+				// queue.StopProcessing() maybe?
+				err = fmt.Errorf("runtime.Goexit call detected")
+				return
+			}
+
+			// Otherwise, 'fn' panicked.
+			switch v := e.(type) {
+			case string:
+				// It might be that Convey is trying to halt the tests; we need to
+				// preserve the value in that case.
+				if v == "___FAILURE_HALT___" {
+					err = &conveyIsHalting{
+						s: v,
 					}
-				case error:
-					// Panicking on an error value is a way to signal test failure.
-					// Capture a stacktrace to make it easier to debug test failures.
-					//
-					// Note that we can't just return the error value because it doesn't
-					// hold a stacktrace. Stacktraces are normally printed when a
-					// panicking goroutine hits the last of its defer'd handlers,
-					// critically, while the stack still exists.
-					buffer := debug.Stack()
-
-					// We don't really need a stacktrace that's more than 1MB.
-					buffer = buffer[:min(len(buffer), 1024*1024)]
-
-					err = fmt.Errorf("test failure: %w\n---test-stacktrace:\n%s---end-of-test-stacktrace", v, string(buffer))
 					return
 				}
-				// Otherwise, someone panicked with a non-error which is, in a way,
-				// even worse T_T. This will not be considered a 'test failure' but a
-				// 'test error'. Subtly different but important to distinguish problems
-				// in application code from problems in test code.
-				panic(fmt.Errorf("recover() returned a non-error type: %T value: %v", e, e))
+			case error:
+				// Panicking on an error value is a way to signal test failure.
+				// Capture a stacktrace to make it easier to debug test failures.
+				//
+				// Note that we can't just return the error value because it doesn't
+				// hold a stacktrace. Stacktraces are normally printed when a
+				// panicking goroutine hits the last of its defer'd handlers,
+				// critically, while the stack still exists.
+				buffer := debug.Stack()
+
+				// We don't really need a stacktrace that's more than 1MB.
+				buffer = buffer[:min(len(buffer), 1024*1024)]
+
+				err = fmt.Errorf("test failure: %w\n---test-stacktrace:\n%s---end-of-test-stacktrace", v, string(buffer))
+				return
 			}
+
+			// Otherwise, someone panicked with a non-error which is, in a way,
+			// even worse T_T. This will not be considered a 'test failure' but a
+			// 'test error'. Subtly different but important to distinguish problems
+			// in application code from problems in test code.
+			panic(fmt.Errorf("recover() returned a non-error type: %T value: %v", e, e))
 		}()
-		// TODO(tmckee:#40): we need to find a way to cleanup even if 'fn' calls
-		// runtime.Goexit(). We could spawn a sacrificial goroutine to do this call
-		// but we'd still need a way to recover if someone calls t.Fatalf on the
-		// render thread.
+
+		defer func() {
+			signal <- true
+		}()
 		fn(ctx.sys, ctx.windowHandle, Failfastqueue(ctx))
+		fnCompleted = true
 	}()
+	<-signal
 
 	return errors.Join(err, ctx.takeLastError())
 }

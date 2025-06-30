@@ -35,7 +35,7 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 		So(textLine, ShouldNotBeNil)
 	})
 
-	Convey("TextLine draws the given text", func() {
+	Convey("TextLine draws the given text", func(c C) {
 		testbuilder.New().WithSize(screenWidth, screenHeight).WithQueue().Run(func(queue render.RenderQueueInterface) {
 			dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
@@ -59,48 +59,50 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 			})
 			queue.Purge()
 
-			So(queue, rendertest.ShouldLookLikeText, text)
+			c.So(queue, rendertest.ShouldLookLikeText, text)
 		})
 	})
 }
 
 func MultipleTextLineTest(widgetBuilder func(text string) GenericLine) {
-	Convey("drawing more than one line", func() {
+	Convey("drawing more than one line", func(c C) {
 		line1 := widgetBuilder("first line")
 		line2 := widgetBuilder("second line")
 		line3 := widgetBuilder("third line")
 
 		testbuilder.New().WithSize(screenWidth, screenHeight).WithQueue().Run(func(queue render.RenderQueueInterface) {
-			dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
-			g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
+			c.Convey("--stub-context--", func() {
+				dict := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
+				g := guitest.MakeStubbedGui(gui.Dims{screenWidth, screenHeight})
 
-			var shaderBank *render.ShaderBank
-			queue.Queue(func(rqs render.RenderQueueState) {
-				shaderBank = rqs.Shaders()
+				var shaderBank *render.ShaderBank
+				queue.Queue(func(rqs render.RenderQueueState) {
+					shaderBank = rqs.Shaders()
+				})
+				queue.Purge()
+
+				g.SetDictionary("dict_10", dict)
+				g.SetShaders("glop.font", shaderBank)
+
+				lineheight := screenHeight / 5
+				queue.Queue(func(render.RenderQueueState) {
+					line1.Draw(gui.Region{
+						Point: gui.Point{0, 0},
+						Dims:  gui.Dims{screenWidth, lineheight},
+					}, g)
+					line2.Draw(gui.Region{
+						Point: gui.Point{0, lineheight * 2},
+						Dims:  gui.Dims{screenWidth, lineheight},
+					}, g)
+					line3.Draw(gui.Region{
+						Point: gui.Point{0, lineheight * 4},
+						Dims:  gui.Dims{screenWidth, lineheight},
+					}, g)
+				})
+				queue.Purge()
+
+				So(queue, rendertest.ShouldLookLikeText, "multi-line")
 			})
-			queue.Purge()
-
-			g.SetDictionary("dict_10", dict)
-			g.SetShaders("glop.font", shaderBank)
-
-			lineheight := screenHeight / 5
-			queue.Queue(func(render.RenderQueueState) {
-				line1.Draw(gui.Region{
-					Point: gui.Point{0, 0},
-					Dims:  gui.Dims{screenWidth, lineheight},
-				}, g)
-				line2.Draw(gui.Region{
-					Point: gui.Point{0, lineheight * 2},
-					Dims:  gui.Dims{screenWidth, lineheight},
-				}, g)
-				line3.Draw(gui.Region{
-					Point: gui.Point{0, lineheight * 4},
-					Dims:  gui.Dims{screenWidth, lineheight},
-				}, g)
-			})
-			queue.Purge()
-
-			So(queue, rendertest.ShouldLookLikeText, "multi-line")
 		})
 	})
 }

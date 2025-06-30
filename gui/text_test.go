@@ -186,7 +186,7 @@ func DictionaryRenderStringSpec() {
 	}
 	for testIndex, testcase := range screenSizeCases {
 		testnumber := rendertest.TestNumber(testIndex)
-		Convey(fmt.Sprintf("[%s]", testcase.label), func() {
+		Convey(fmt.Sprintf("[%s]", testcase.label), func(c C) {
 			leftPixel := testcase.screenDimensions.Dx / 2
 			bottomPixel := testcase.screenDimensions.Dy / 2
 			height := 22
@@ -194,72 +194,74 @@ func DictionaryRenderStringSpec() {
 			var logger glog.Logger = glog.TraceLogger()
 
 			testbuilder.New().WithSize(testcase.screenDimensions.Dx, testcase.screenDimensions.Dy).WithQueue().Run(func(render render.RenderQueueInterface) {
-				doRenderString := func(toDraw string) {
-					renderStringForTest(toDraw, leftPixel, bottomPixel, height, render, just, logger)
-				}
+				c.Convey("--stub-context--", func() {
+					doRenderString := func(toDraw string) {
+						renderStringForTest(toDraw, leftPixel, bottomPixel, height, render, just, logger)
+					}
 
-				Convey("Can render 'lol'", func() {
-					doRenderString("lol")
+					Convey("Can render 'lol'", func() {
+						doRenderString("lol")
 
-					So(render, rendertest.ShouldLookLikeText, "lol", testnumber)
-				})
-
-				Convey("Can render 'credits' centred", func() {
-					just = Center
-
-					doRenderString("Credits")
-
-					So(render, rendertest.ShouldLookLikeText, "credits", testnumber)
-				})
-
-				Convey("Can render somewhere other than the origin", func() {
-					Convey("can render at the bottom left", func() {
-						leftPixel = 10
-						bottomPixel = 10
-						doRenderString("offset")
-
-						So(render, rendertest.ShouldLookLikeText, "offset", testnumber)
-					})
-				})
-
-				Convey("Can render to a smaller height", func() {
-					height = 5
-					doRenderString("tall-or-small")
-
-					So(render, rendertest.ShouldLookLikeText, "tall-or-small", testnumber)
-				})
-
-				Convey("Respects aspect ratio for taller text", func() {
-					height = testcase.screenDimensions.Dy / 2
-					doRenderString("some-taller-text")
-
-					So(render, rendertest.ShouldLookLikeText, "some-taller-text", testnumber)
-				})
-
-				Convey("Can render multiple strings", func() {
-					bottomPixel = 0
-					doRenderString("first string")
-					bottomPixel = height * 2
-					doRenderString("second string")
-
-					So(render, rendertest.ShouldLookLikeText, "multiple-lines", testnumber)
-				})
-
-				Convey("Can render strings on top of each other", func() {
-					doRenderString("first string")
-					doRenderString("second string")
-
-					So(render, rendertest.ShouldLookLikeText, "overlayed-lines", testnumber)
-				})
-
-				Convey("stdout isn't spammed by RenderString", func() {
-					logger = glog.VoidLogger()
-
-					stdoutLines := gloptest.CollectOutput(func() {
-						doRenderString("spam check")
+						So(render, rendertest.ShouldLookLikeText, "lol", testnumber)
 					})
 
-					So(stdoutLines, ShouldEqual, []string{})
+					Convey("Can render 'credits' centred", func() {
+						just = Center
+
+						doRenderString("Credits")
+
+						So(render, rendertest.ShouldLookLikeText, "credits", testnumber)
+					})
+
+					Convey("Can render somewhere other than the origin", func() {
+						Convey("can render at the bottom left", func() {
+							leftPixel = 10
+							bottomPixel = 10
+							doRenderString("offset")
+
+							So(render, rendertest.ShouldLookLikeText, "offset", testnumber)
+						})
+					})
+
+					Convey("Can render to a smaller height", func() {
+						height = 5
+						doRenderString("tall-or-small")
+
+						So(render, rendertest.ShouldLookLikeText, "tall-or-small", testnumber)
+					})
+
+					Convey("Respects aspect ratio for taller text", func() {
+						height = testcase.screenDimensions.Dy / 2
+						doRenderString("some-taller-text")
+
+						So(render, rendertest.ShouldLookLikeText, "some-taller-text", testnumber)
+					})
+
+					Convey("Can render multiple strings", func() {
+						bottomPixel = 0
+						doRenderString("first string")
+						bottomPixel = height * 2
+						doRenderString("second string")
+
+						So(render, rendertest.ShouldLookLikeText, "multiple-lines", testnumber)
+					})
+
+					Convey("Can render strings on top of each other", func() {
+						doRenderString("first string")
+						doRenderString("second string")
+
+						So(render, rendertest.ShouldLookLikeText, "overlayed-lines", testnumber)
+					})
+
+					Convey("stdout isn't spammed by RenderString", func() {
+						logger = glog.VoidLogger()
+
+						stdoutLines := gloptest.CollectOutput(func() {
+							doRenderString("spam check")
+						})
+
+						So(stdoutLines, ShouldEqual, []string{})
+					})
 				})
 			})
 		})
