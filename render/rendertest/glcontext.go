@@ -195,8 +195,7 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 				// This is the case where 'fn' called runtime.Goexit directly (a.k.a.
 				// not on the render thread). Typically, this is a result of
 				// testing.T.Fatalf call.
-				// TODO(tmckee): do we need to do anything else here?
-				// queue.StopProcessing() maybe?
+				ctx.render.StopProcessing()
 				err = fmt.Errorf("runtime.Goexit call detected")
 				return
 			}
