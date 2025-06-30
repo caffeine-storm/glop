@@ -169,7 +169,7 @@ func TestExitOnRenderQueue(t *testing.T) {
 			})
 			queue.StartProcessing()
 
-			shouldTimeout, shouldBeNil := gloptest.RunWithDeadline(5*time.Millisecond, func() {
+			func() {
 				defer func() {
 					if err := recover(); err != nil {
 						// re-panic with a specific error for detection
@@ -177,16 +177,9 @@ func TestExitOnRenderQueue(t *testing.T) {
 					}
 				}()
 				queue.Purge()
-				t.Fatalf("queue.Purge() should not have returned; panic is okay")
-			})
 
-			// TODO(tmckee:#40): we should make it so that 5ms is ample time to
-			// detect the render queue is defunct.
-			if shouldTimeout == nil {
-				// It didn't timeout... wut?
-				t.Logf("other error should be nil: %v", shouldBeNil)
-				t.Fatalf("expected to block on Purge() until we timed out")
-			}
+				t.Fatalf("queue.Purge() should not have returned; panic is okay")
+			}()
 		})
 
 		allOutput := strings.Join(output, "\n")
