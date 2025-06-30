@@ -121,10 +121,36 @@ type renderQueue struct {
 	}
 }
 
-func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener *JobTimingListener) time.Duration {
+func (q *renderQueue) runAndNotify(request *jobWithTiming, ack chan bool) time.Duration {
 	before := time.Now()
-	request.Job(queueState)
-	after := time.Now()
+	after := time.Time{}
+	defer func() {
+		if !after.IsZero() {
+			// This is the 'happy path'; the job succeeded.
+			return
+		}
+
+		// Let panics panic but, if e is nil, we know we're running
+		// runtime.Goeexit.
+		if e := recover(); e != nil {
+			panic(e)
+		}
+
+		// No matter what we do, the current goroutine is going away. That means no
+		// more jobs will run and any GL state will be lost. Set things up so that
+		// client code won't hang forever.
+		if ack != nil {
+			close(ack)
+		}
+
+		cancelPurgeRequests(q.purge)
+
+		// Set this flag last so that clients either see 'already defunct' or they
+		// try to read/write closed channels.
+		q.isDefunct.Store(true)
+	}()
+	request.Job(q.queueState)
+	after = time.Now()
 	delta := after.Sub(before)
 
 	info := &JobTimingInfo{
@@ -132,8 +158,8 @@ func runAndNotify(request *jobWithTiming, queueState RenderQueueState, listener 
 		QueueTime: before.Sub(request.QueuedAt),
 	}
 	totalTime := info.RunTime + info.QueueTime
-	if listener != nil && totalTime >= listener.Threshold {
-		listener.OnNotify(info, request.Job.GetSourceAttribution())
+	if q.listener != nil && totalTime >= q.listener.Threshold {
+		q.listener.OnNotify(info, request.Job.GetSourceAttribution())
 	}
 
 	return delta
@@ -147,17 +173,23 @@ func (q *renderQueue) onError(e error) {
 	}
 }
 
+func cancelPurgeRequests(reqs chan chan bool) {
+	close(reqs)
+	for {
+		ackChannel, ok := <-reqs
+		if !ok {
+			return
+		}
+		close(ackChannel)
+	}
+}
+
 func (q *renderQueue) loopWithErrorTracking() {
 	for {
 		if q.isDefunct.Load() {
 			// No more work to do but we need to unblock any Purge() callers.
-			for {
-				ackChannel, ok := <-q.purge
-				if !ok {
-					return
-				}
-				close(ackChannel)
-			}
+			cancelPurgeRequests(q.purge)
+			return
 		}
 		func() {
 			defer func() {
@@ -179,7 +211,7 @@ func (q *renderQueue) loop() {
 	for {
 		select {
 		case job := <-q.workQueue:
-			runAndNotify(job, q.queueState, q.listener)
+			q.runAndNotify(job, nil)
 		case ack := <-q.purge:
 			func() {
 				q.isPurging.Store(true)
@@ -202,7 +234,7 @@ func (q *renderQueue) loop() {
 				for {
 					select {
 					case job := <-q.workQueue:
-						runAndNotify(job, q.queueState, q.listener)
+						q.runAndNotify(job, ack)
 					default:
 						// We've just exhausted the workQueue; we can break out of this
 						// inner func().

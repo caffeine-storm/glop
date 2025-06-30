@@ -169,17 +169,9 @@ func TestExitOnRenderQueue(t *testing.T) {
 			})
 			queue.StartProcessing()
 
-			func() {
-				defer func() {
-					if err := recover(); err != nil {
-						// re-panic with a specific error for detection
-						panic(&everythingIsFine{})
-					}
-				}()
+			assert.Panics(t, func() {
 				queue.Purge()
-
-				t.Fatalf("queue.Purge() should not have returned; panic is okay")
-			}()
+			})
 		})
 
 		allOutput := strings.Join(output, "\n")
