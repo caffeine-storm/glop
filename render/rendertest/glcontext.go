@@ -173,8 +173,13 @@ func (ctx *glContext) clean() (cleanError error) {
 func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) error {
 	var err error
 	fnCompleted := false
-	signal := make(chan bool)
+	grFinished := make(chan bool)
 	go func() {
+		// Always signal the controlling goroutine when this goroutine finishes.
+		defer func() {
+			grFinished <- true
+		}()
+
 		// We run this defer to capture any error that a test panics on.
 		defer func() {
 			if fnCompleted {
@@ -189,9 +194,9 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 
 			e := recover()
 			if e == nil {
-				// We know the flag didn't get set and recover() didn't return a value.
-				// This is the case where 'fn' called runtime.Goexit directly (a.k.a.
-				// not on the render thread). Typically, this is a result of
+				// We know fnCompleted didn't get set and recover() didn't return a
+				// value. This is the case where 'fn' called runtime.Goexit directly
+				// (a.k.a. not on the render thread). Typically, this is a result of
 				// testing.T.Fatalf call.
 				ctx.render.StopProcessing()
 				err = fmt.Errorf("runtime.Goexit call detected")
@@ -233,13 +238,10 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 			panic(fmt.Errorf("recover() returned a non-error type: %T value: %v", e, e))
 		}()
 
-		defer func() {
-			signal <- true
-		}()
 		fn(ctx.sys, ctx.windowHandle, Failfastqueue(ctx))
 		fnCompleted = true
 	}()
-	<-signal
+	<-grFinished
 
 	return errors.Join(err, ctx.takeLastError())
 }
