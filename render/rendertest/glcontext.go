@@ -21,6 +21,14 @@ func (c *conveyIsHalting) Error() string {
 	return c.s
 }
 
+func checkAndEnforceInvariants(errorContext string) {
+	err := checkInvariants()
+	enforceInvariants()
+	if err != nil {
+		panic(fmt.Errorf("%s: invariants violated: %w", errorContext, err))
+	}
+}
+
 type glContext struct {
 	sys              system.System
 	windowHandle     system.NativeWindowHandle
@@ -79,16 +87,11 @@ func (ctx *glContext) prep(width, height int) (prepError error) {
 	// context.
 	ctx.render.Purge()
 	if e := ctx.takeLastError(); e != nil {
-		prepError = e
 		return fmt.Errorf("prep preconditions failed: %w", e)
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
-		prepError = checkInvariants()
-		enforceInvariants()
-		if prepError != nil {
-			panic(fmt.Errorf("prep: invariants violated: %w", prepError))
-		}
+		checkAndEnforceInvariants("prep")
 
 		ctx.sys.SetWindowSize(width, height)
 
@@ -139,6 +142,13 @@ func (ctx *glContext) clean() (cleanError error) {
 		return
 	}
 
+	// On the way into this function, check for any pre-existing errors in the
+	// context.
+	ctx.render.Purge()
+	if e := ctx.takeLastError(); e != nil {
+		return fmt.Errorf("clean preconditions failed: %w", e)
+	}
+
 	ctx.render.Queue(func(render.RenderQueueState) {
 		// Undo server-side attribute push.
 		gl.PopAttrib()
@@ -153,12 +163,7 @@ func (ctx *glContext) clean() (cleanError error) {
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.PopMatrix()
 
-		defer enforceInvariants()
-
-		cleanError = checkInvariants()
-		if cleanError != nil {
-			panic(fmt.Errorf("clean: invariants violated: %w", cleanError))
-		}
+		checkAndEnforceInvariants("clean")
 	})
 	ctx.render.Purge()
 
