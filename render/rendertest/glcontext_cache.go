@@ -4,44 +4,42 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/system"
 )
 
 func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	ctx, cleanup := getContextFromCache(width, height)
-	defer cleanup()
+	ctx, returnToCache := getContextFromCache(width, height)
+	defer returnToCache()
 
 	e := ctx.prep(width, height)
 	if e != nil {
 		// Even on error cases, we shouldn't leak GL state.
-		ee := ctx.clean()
-		if ee != nil {
-			panic(fmt.Errorf("after prep-failure: %w, couldn't clean: %w", e, ee))
-		}
-		panic(fmt.Errorf("couldn't prep: %w", e))
+		panic(errors.Join(fmt.Errorf("couldn't prep: %w", e), ctx.clean()))
 	}
 
 	e = ctx.run(fn)
 
+	// Whether the test failed or not, we need to clean()
 	ee := ctx.clean()
-	if ee != nil {
-		err := fmt.Errorf("couldn't clean: %w", ee)
-		if e != nil {
-			err = errors.Join(err, fmt.Errorf("testerror: %w", e))
-		}
-		panic(err)
-	}
+	e = errors.Join(e, ee)
 
 	if e != nil {
 		halting := &conveyIsHalting{}
 		if errors.As(e, &halting) {
 			// It might be that Convey is trying to halt the tests; we need to
 			// preserve their semantics in that case.
+
+			// It may be that ctx.clean() also reported an error. Unless we log it
+			// here, it will not be reported.
+			glog.ErrorLogger().Error("cleaning also failed", "cleanerror", ee)
+
 			panic(halting.s)
 		}
 
-		panic(fmt.Errorf("doTest: %w", e))
+		// Report any test or cleaning errors
+		panic(e)
 	}
 }
 
