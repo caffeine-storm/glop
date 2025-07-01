@@ -25,22 +25,24 @@ func RunTestWithCachedContext(width, height int, fn func(system.System, system.N
 	ee := ctx.clean()
 	e = errors.Join(e, ee)
 
-	if e != nil {
-		halting := &conveyIsHalting{}
-		if errors.As(e, &halting) {
-			// It might be that Convey is trying to halt the tests; we need to
-			// preserve their semantics in that case.
-
-			// It may be that ctx.clean() also reported an error. Unless we log it
-			// here, it will not be reported.
-			glog.ErrorLogger().Error("cleaning also failed", "cleanerror", ee)
-
-			panic(halting.s)
-		}
-
-		// Report any test or cleaning errors
-		panic(e)
+	if e == nil {
+		// Success!
+		return
 	}
+
+	// It might be that Convey is trying to halt the tests; we need to preserve
+	// their semantics in that case.
+	halting := &conveyIsHalting{}
+	if errors.As(e, &halting) {
+		// It may be that ctx.clean() also reported an error. Unless we log it
+		// here, it will not be reported.
+		glog.ErrorLogger().Error("cleaning also failed", "cleanerror", ee)
+
+		panic(halting.s)
+	}
+
+	// Report any test or cleaning errors
+	panic(e)
 }
 
 var glTestContextSource = make(chan *glContext, 24)
