@@ -8,14 +8,14 @@ import (
 	"github.com/runningwild/glop/system"
 )
 
-func doTest(checkInvariants bool, width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
+func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
 	ctx, cleanup := getContextFromCache(width, height)
 	defer cleanup()
 
-	e := ctx.prep(width, height, checkInvariants)
+	e := ctx.prep(width, height)
 	if e != nil {
 		// Even on error cases, we shouldn't leak GL state.
-		ee := ctx.clean(InvariantsCheckNo)
+		ee := ctx.clean()
 		if ee != nil {
 			panic(fmt.Errorf("after prep-failure: %w, couldn't clean: %w", e, ee))
 		}
@@ -24,7 +24,7 @@ func doTest(checkInvariants bool, width, height int, fn func(system.System, syst
 
 	e = ctx.run(fn)
 
-	ee := ctx.clean(checkInvariants)
+	ee := ctx.clean()
 	if ee != nil {
 		err := fmt.Errorf("couldn't clean: %w", ee)
 		if e != nil {
@@ -62,12 +62,4 @@ func getContextFromCache(width, height int) (*glContext, func()) {
 		}
 		glTestContextSource <- theContext
 	}
-}
-
-func RunDeprecatedTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	doTest(InvariantsCheckNo, width, height, fn)
-}
-
-func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {
-	doTest(InvariantsCheckYes, width, height, fn)
 }

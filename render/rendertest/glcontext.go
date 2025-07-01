@@ -44,9 +44,6 @@ func newGlContextForTest(width, height int) *glContext {
 	return ctx
 }
 
-const InvariantsCheckNo = false
-const InvariantsCheckYes = true
-
 // Helper for getting the last on-render-queue error. Clears the state used to
 // track on-render-queue errors.
 func (ctx *glContext) takeLastError() error {
@@ -67,7 +64,7 @@ func (ctx *glContext) takeLastError() error {
 	return errors.Join(allErrors...)
 }
 
-func (ctx *glContext) prep(width, height int, invariantscheck bool) (prepError error) {
+func (ctx *glContext) prep(width, height int) (prepError error) {
 	if ctx.windowHandle == nil {
 		panic(fmt.Errorf("logic error: a glContext should hang onto a single NativeWindowHandle for its lifetime"))
 	}
@@ -87,9 +84,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (prepError e
 	}
 
 	ctx.render.Queue(func(render.RenderQueueState) {
-		if invariantscheck {
-			prepError = checkInvariants()
-		}
+		prepError = checkInvariants()
 		enforceInvariants()
 		if prepError != nil {
 			panic(fmt.Errorf("prep: invariants violated: %w", prepError))
@@ -133,7 +128,7 @@ func (ctx *glContext) prep(width, height int, invariantscheck bool) (prepError e
 	return
 }
 
-func (ctx *glContext) clean(invariantscheck bool) (cleanError error) {
+func (ctx *glContext) clean() (cleanError error) {
 	defer func() {
 		cleanError = errors.Join(cleanError, ctx.takeLastError())
 	}()
@@ -160,11 +155,9 @@ func (ctx *glContext) clean(invariantscheck bool) (cleanError error) {
 
 		defer enforceInvariants()
 
-		if invariantscheck {
-			cleanError = checkInvariants()
-			if cleanError != nil {
-				panic(fmt.Errorf("clean: invariants violated: %w", cleanError))
-			}
+		cleanError = checkInvariants()
+		if cleanError != nil {
+			panic(fmt.Errorf("clean: invariants violated: %w", cleanError))
 		}
 	})
 	ctx.render.Purge()
