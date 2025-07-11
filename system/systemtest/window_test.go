@@ -19,3 +19,11 @@ func TestWindowExposesDimensions(t *testing.T) {
 		var _ gui.Dims = window.GetDims()
 	})
 }
+
+func TestWithTestWindow(t *testing.T) {
+	t.Run("runs testcase off of the render thread", func(t *testing.T) {
+		systemtest.WithTestWindow(64, 64, func(window systemtest.Window) {
+			render.MustNotBeOnRenderThread()
+		})
+	})
+}
