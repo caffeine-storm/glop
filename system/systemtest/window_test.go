@@ -8,21 +8,17 @@ import (
 	"github.com/runningwild/glop/system/systemtest"
 )
 
-func TestWindowExposesAQueue(t *testing.T) {
+func TestTestWindow(t *testing.T) {
 	systemtest.WithTestWindow(64, 64, func(window systemtest.Window) {
-		var _ render.RenderQueueInterface = window.GetQueue()
-	})
-}
+		t.Run("exposes a queue", func(t *testing.T) {
+			var _ render.RenderQueueInterface = window.GetQueue()
+		})
 
-func TestWindowExposesDimensions(t *testing.T) {
-	systemtest.WithTestWindow(64, 64, func(window systemtest.Window) {
-		var _ gui.Dims = window.GetDims()
-	})
-}
+		t.Run("exposes window dimensions", func(t *testing.T) {
+			var _ gui.Dims = window.GetDims()
+		})
 
-func TestWithTestWindow(t *testing.T) {
-	t.Run("runs testcase off of the render thread", func(t *testing.T) {
-		systemtest.WithTestWindow(64, 64, func(window systemtest.Window) {
+		t.Run("runs testcase off of the render thread", func(t *testing.T) {
 			render.MustNotBeOnRenderThread()
 		})
 	})
