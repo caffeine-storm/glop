@@ -44,14 +44,8 @@ func TestDrawTexturedQuad(t *testing.T) {
 	})
 
 	Convey("GivenATexture must panic if there's no image file", t, func(c C) {
-		mustPanic := func() {
-			tex := rendertest.GivenATexture("thisfiledoesnotexist.nope")
-			tex.Delete()
-		}
 		c.So(func() {
-			testbuilder.New().Run(func() {
-				mustPanic()
-			})
+			rendertest.GivenATexture("thisfiledoesnotexist.nope")
 		}, ShouldPanic)
 	})
 }
