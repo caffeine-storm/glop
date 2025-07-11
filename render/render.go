@@ -1,10 +1,12 @@
 package render
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"reflect"
 	"runtime"
+	"runtime/pprof"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -30,6 +32,7 @@ func MustNotBeOnRenderThread() {
 
 // TODO(tmckee): clean: is there a better name for this? RenderContext?
 type RenderQueueState interface {
+	Context() context.Context
 	Shaders() *ShaderBank
 }
 
@@ -93,10 +96,15 @@ type RenderQueueInterface interface {
 }
 
 type renderQueueState struct {
+	ctx     context.Context
 	shaders *ShaderBank
 }
 
 var _ RenderQueueState = (*renderQueueState)(nil)
+
+func (state *renderQueueState) Context() context.Context {
+	return state.ctx
+}
 
 func (state *renderQueueState) Shaders() *ShaderBank {
 	return state.shaders
@@ -254,6 +262,7 @@ func MakeQueue(initialization RenderJob) RenderQueueInterface {
 func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) RenderQueueInterface {
 	result := renderQueue{
 		queueState: &renderQueueState{
+			ctx:     context.Background(),
 			shaders: MakeShaderBank(),
 		},
 		workQueue: make(chan *jobWithTiming, 1000),
@@ -321,7 +330,12 @@ func (q *renderQueue) StartProcessing() {
 	if !q.isRunning.CompareAndSwap(false, true) {
 		panic("must not call 'StartProcessing' twice")
 	}
-	go q.loopWithErrorTracking()
+	go func() {
+		pprof.Do(context.Background(), pprof.Labels("glop-threadid", "render-thread"), func(ctx context.Context) {
+			q.queueState.ctx = ctx
+			q.loopWithErrorTracking()
+		})
+	}()
 }
 
 func (q *renderQueue) StopProcessing() {

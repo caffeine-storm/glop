@@ -1,7 +1,6 @@
 package render_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"runtime"
@@ -395,16 +394,14 @@ func TestStopProcessing(t *testing.T) {
 	assert.Panics(t, queue.Purge, "calling Purge() on a now-defunct queue should panic")
 }
 
-func TestDebuggableLabelsOnQueueRoutine(t *testing.T) {
-	t.Run("default label", func(t *testing.T) {
+func TestRenderQueueStateContext(t *testing.T) {
+	t.Run("has pprof debug labels", func(t *testing.T) {
 		q := render.MakeQueue(nop)
 		q.StartProcessing()
 
 		lbls := []string{}
-		q.Queue(func(render.RenderQueueState) {
-			// TODO(tmckee): the render queue needs to expose a context.Context to
-			// jobs for this approach to work. when it does, use that here.
-			pprof.ForLabels(context.TODO(), func(key, value string) bool {
+		q.Queue(func(st render.RenderQueueState) {
+			pprof.ForLabels(st.Context(), func(key, value string) bool {
 				lbls = append(lbls, key, value)
 				return true
 			})
