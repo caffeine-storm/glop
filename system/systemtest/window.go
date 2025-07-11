@@ -59,9 +59,6 @@ func NewTestWindow(sys system.System, hdl system.NativeWindowHandle, queue rende
 func WithTestWindow(dx, dy int, fn func(window Window)) {
 	testbuilder.WithSize(dx, dy, func(sys system.System, hdl system.NativeWindowHandle, queue render.RenderQueueInterface) {
 		window := NewTestWindow(sys, hdl, queue)
-		queue.Queue(func(st render.RenderQueueState) {
-			fn(window)
-		})
-		queue.Purge()
+		fn(window)
 	})
 }
