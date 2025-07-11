@@ -61,6 +61,7 @@ func (d *testDriver) Scroll(dy float64) {
 		btn = 5 // 'scroll down' is button5 in X parlance
 	}
 	xDoToolRun("click", "--window", d.window.hdl, btn)
+	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", x, y-1)
 }
 
 func (d *testDriver) RawTool(fn func(system.NativeWindowHandle) []any) {
