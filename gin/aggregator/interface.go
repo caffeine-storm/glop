@@ -11,6 +11,8 @@ type SubAggregator interface {
 	FramePressCount() int
 	FrameReleaseCount() int
 	FramePressAmt() float64
+
+	// TODO(#49): FramePressSum is really FramePressIntegral
 	FramePressSum() float64
 	FramePressAvg() float64
 	CurPressCount() int
