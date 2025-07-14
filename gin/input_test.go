@@ -22,12 +22,24 @@ func TestGinSpecs(t *testing.T) {
 	})
 }
 
+var dontCare = struct {
+	Amount    float64
+	Timestamp int64
+	X, Y      int
+}{
+	Amount:    1337,
+	Timestamp: 1337,
+	X:         6,
+	Y:         7,
+}
+
 type testEvent struct {
 	keyIndex    gin.KeyIndex
 	devIndex    gin.DeviceIndex
 	devType     gin.DeviceType
 	pressAmount float64
 	timestamp   int64
+	x, y        int
 }
 
 func newKeyEvent(keyIndex gin.KeyIndex) *testEvent {
@@ -35,8 +47,10 @@ func newKeyEvent(keyIndex gin.KeyIndex) *testEvent {
 		keyIndex:    keyIndex,
 		devIndex:    1,
 		devType:     gin.DeviceTypeKeyboard,
-		pressAmount: 1,
-		timestamp:   42,
+		pressAmount: dontCare.Amount,
+		timestamp:   dontCare.Timestamp,
+		x:           dontCare.X,
+		y:           dontCare.Y,
 	}
 }
 
@@ -60,6 +74,27 @@ func (evt *testEvent) At(newTime int64) *testEvent {
 	return evt
 }
 
+func newMouseXAxisEvent() *testEvent {
+	evt := newKeyEvent(gin.MouseXAxis)
+	evt.devType = gin.DeviceTypeMouse
+
+	return evt
+}
+
+func (evt *testEvent) Move(newPos float64) *testEvent {
+	evt.pressAmount = newPos
+	return evt
+}
+
+func newMouseClickEvent(loc gui.Point) *testEvent {
+	evt := newKeyEvent(gin.MouseLButton)
+	evt.devType = gin.DeviceTypeMouse
+	evt.x = loc.X
+	evt.y = loc.Y
+
+	return evt
+}
+
 func appendTestEvent(events *[]gin.OsEvent, ev *testEvent) {
 	*events = append(*events, gin.OsEvent{
 		KeyId: gin.KeyId{
@@ -69,50 +104,11 @@ func appendTestEvent(events *[]gin.OsEvent, ev *testEvent) {
 				Type:  ev.devType,
 			},
 		},
+		X:         ev.x,
+		Y:         ev.y,
 		Press_amt: ev.pressAmount,
 		Timestamp: ev.timestamp,
 	})
-}
-
-func injectEvent(events *[]gin.OsEvent, key_index gin.KeyIndex, device_index gin.DeviceIndex, device_type gin.DeviceType, amt float64, timestamp int64) {
-	*events = append(*events,
-		gin.OsEvent{
-			KeyId: gin.KeyId{
-				Index: key_index,
-				Device: gin.DeviceId{
-					Index: device_index,
-					Type:  device_type,
-				},
-			},
-			Press_amt: amt,
-			Timestamp: timestamp,
-		},
-	)
-}
-
-var dontCare = struct {
-	Amount    float64
-	Timestamp int64
-}{
-	Amount:    1337,
-	Timestamp: 1337,
-}
-
-func injectMouseClick(events *[]gin.OsEvent, target gui.Point) {
-	clickEvent := gin.OsEvent{
-		KeyId: gin.KeyId{
-			Index: gin.MouseLButton,
-			Device: gin.DeviceId{
-				Index: 0, // First mouse
-				Type:  gin.DeviceTypeMouse,
-			},
-		},
-		X:         target.X,
-		Y:         target.Y,
-		Press_amt: dontCare.Amount,
-		Timestamp: dontCare.Timestamp,
-	}
-	*events = append(*events, clickEvent)
 }
 
 type testMouseListener struct {
@@ -675,9 +671,9 @@ func AxisSpec() {
 	events := make([]gin.OsEvent, 0)
 
 	Convey("Axes aggregate press amts and report IsDown() properly", func() {
-		injectEvent(&events, x.Id().Index, 1, gin.DeviceTypeMouse, 1, 5)
-		injectEvent(&events, x.Id().Index, 1, gin.DeviceTypeMouse, 10, 6)
-		injectEvent(&events, x.Id().Index, 1, gin.DeviceTypeMouse, -3, 7)
+		appendTestEvent(&events, newMouseXAxisEvent().Move(1).At(5))
+		appendTestEvent(&events, newMouseXAxisEvent().Move(10).At(6))
+		appendTestEvent(&events, newMouseXAxisEvent().Move(-3).At(7))
 		input.Think(10, events)
 		So(x.FramePressAmt(), ShouldEqual, -3.0)
 		So(x.FramePressSum(), ShouldEqual, 8.0)
@@ -689,8 +685,8 @@ func AxisSpec() {
 		So(x.FramePressSum(), ShouldEqual, 0.0)
 		So(x.IsDown(), ShouldEqual, false)
 
-		injectEvent(&events, x.Id().Index, 1, gin.DeviceTypeMouse, 5, 5)
-		injectEvent(&events, x.Id().Index, 1, gin.DeviceTypeMouse, -5, 6)
+		appendTestEvent(&events, newMouseXAxisEvent().Move(5).At(5))
+		appendTestEvent(&events, newMouseXAxisEvent().Move(-5).At(6))
 		input.Think(10, events)
 		events = events[0:0]
 		So(x.FramePressSum(), ShouldEqual, 0.0)
@@ -795,7 +791,7 @@ func EventListenerSpec() {
 		}
 
 		events := events[0:0]
-		injectMouseClick(&events, clickPoint)
+		appendTestEvent(&events, newMouseClickEvent(clickPoint))
 
 		// No clicks yet because we haven't input.Think'd
 		l.ExpectClicks([]gui.Point{})
