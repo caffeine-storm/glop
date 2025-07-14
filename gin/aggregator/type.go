@@ -170,7 +170,6 @@ func (aa *axisAggregator) AggregatorThink(ms int64) (bool, float64) {
 // event
 type wheelAggregator struct {
 	standardAggregator
-	event_received bool
 }
 
 func (wa *wheelAggregator) SendAllNonZero() bool {
@@ -178,7 +177,6 @@ func (wa *wheelAggregator) SendAllNonZero() bool {
 }
 
 func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
-	wa.event_received = wa.last_press < wa.last_think
 	wa.standardAggregator.AggregatorSetPressAmt(amt, ms, event_type)
 }
 
@@ -190,12 +188,7 @@ func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {
 	// Note: 'CurPressAmt' here should be read as "press amount as-of end of last
 	// frame" because we called standardAggregator.AggregatorThink above.
 	if wa.CurPressAmt() != 0 {
-		if wa.event_received {
-			wa.event_received = false
-			return true, wa.CurPressAmt()
-		} else {
-			return true, 0
-		}
+		return true, 0
 	}
 	return false, 0
 }
