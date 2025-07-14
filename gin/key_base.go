@@ -130,7 +130,7 @@ func (ks *keyState) Id() KeyId {
 	return ks.id
 }
 
-// Tells this key that how much it was pressed at a particular time. Times must
+// Tells this key that it was pressed, by how much and at what time. Times must
 // be monotonically increasing. If this press was caused by another event (as
 // is the case with derived keys), then cause is the event that made this
 // happen.

@@ -9,9 +9,17 @@ import (
 
 func TestWheelAggregator(t *testing.T) {
 	t.Run("can handle scroll-start and scroll-end in single frame", func(t *testing.T) {
-		agg := aggregator.AggregatorForType(aggregator.AggregatorTypeWheel)
+		aggBaseType := aggregator.AggregatorForType(aggregator.AggregatorTypeWheel)
+		agg, ok := aggBaseType.(aggregator.TotalingAggregator)
+		if !ok {
+			panic(fmt.Errorf("a wheel aggregator should implement TotalingAggregator"))
+		}
+
+		// Start scrolling up
 		agg.AggregatorSetPressAmt(1, 42, aggregator.Press)
+		// Stop scrolling up
 		agg.AggregatorSetPressAmt(0, 42, aggregator.Release)
+
 		doSynthEvent, synthAmount := agg.AggregatorThink(42)
 
 		if doSynthEvent {
@@ -21,7 +29,7 @@ func TestWheelAggregator(t *testing.T) {
 			panic(fmt.Errorf("there should be no synthetic event press amount"))
 		}
 
-		if agg.CurPressSum() == 0 {
+		if agg.FramePressTotal() == 0 {
 			t.Fatalf("a zero sum is incorrect because we pressed it")
 		}
 	})

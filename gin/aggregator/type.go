@@ -39,7 +39,7 @@ type keyStats struct {
 	press_count   int
 	release_count int
 	press_amt     float64
-	press_sum     float64
+	press_sum     float64 // TODO(#49): this is really a 'press_integral_w.r.t_time'
 	press_avg     float64
 }
 
@@ -164,12 +164,15 @@ func (aa *axisAggregator) AggregatorThink(ms int64) (bool, float64) {
 	return false, 0
 }
 
-// A wheelAggregator is just like a standardAggregator except for two things:
+// A wheelAggregator is just like a standardAggregator except:
 // - It sends Adjust events for *all* non-zero press amounts
-// - If a frame goes by without it receiving any input it creates a Release
+// - If a frame goes by without it receiving any input it creates a Release //
 // event
+// - It implements TotalingAggregator so we can expose the raw sum instead of
+// the integral that Aggregator.FramePressSum() returns
 type wheelAggregator struct {
 	standardAggregator
+	this_total, cur_total float64
 }
 
 func (wa *wheelAggregator) SendAllNonZero() bool {
@@ -178,12 +181,20 @@ func (wa *wheelAggregator) SendAllNonZero() bool {
 
 func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
 	wa.standardAggregator.AggregatorSetPressAmt(amt, ms, event_type)
+	wa.cur_total += amt
+}
+
+func (wa *wheelAggregator) FramePressTotal() float64 {
+	return wa.this_total
 }
 
 func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {
 	if b, _ := wa.standardAggregator.AggregatorThink(ms); b {
 		panic("standardAggregator should not generate an event on AggregatorThink()")
 	}
+
+	wa.this_total = wa.cur_total
+	wa.cur_total = 0
 
 	// Note: 'CurPressAmt' here should be read as "press amount as-of end of last
 	// frame" because we called standardAggregator.AggregatorThink above.

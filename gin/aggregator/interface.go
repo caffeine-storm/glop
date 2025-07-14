@@ -54,3 +54,11 @@ type Aggregator interface {
 	// mouse pointers, etc...
 	SendAllNonZero() bool
 }
+
+type TotalingAggregator interface {
+	Aggregator
+
+	// TODO(#49): Maybe this should be 'sum' once we don't use 'sum' to mean
+	// 'integral'?
+	FramePressTotal() float64
+}
