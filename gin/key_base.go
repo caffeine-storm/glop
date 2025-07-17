@@ -29,6 +29,15 @@ type Key interface {
 }
 
 type KeyIndex int
+
+func (ki KeyIndex) Matches(other KeyIndex) bool {
+	if ki == AnyKey || other == AnyKey {
+		return true
+	}
+
+	return ki == other
+}
+
 type KeyId struct {
 	Device DeviceId
 	Index  KeyIndex
@@ -48,11 +57,22 @@ type DeviceId struct {
 	Index DeviceIndex
 }
 
+func (di DeviceId) Matches(other DeviceId) bool {
+	return di.Type.Matches(other.Type) && di.Index.Matches(other.Index)
+}
+
 type DeviceIndex int
 
 const (
 	DeviceIndexAny DeviceIndex = -1
 )
+
+func (di DeviceIndex) Matches(other DeviceIndex) bool {
+	if di == DeviceIndexAny || other == DeviceIndexAny {
+		return true
+	}
+	return di == other
+}
 
 type DeviceType int
 
@@ -84,6 +104,13 @@ func (dt DeviceType) String() string {
 	panic(fmt.Errorf("bad DeviceType: %d", int(dt)))
 }
 
+func (dt DeviceType) Matches(other DeviceType) bool {
+	if dt == DeviceTypeAny || other == DeviceTypeAny {
+		return true
+	}
+	return dt == other
+}
+
 func (kid KeyId) String() string {
 	// Unfortunately, KeyId values are overloaded to also support 'querying';
 	// sometimes things have a sentinel value in order to control lookups.
@@ -109,26 +136,7 @@ func (kid KeyId) String() string {
 // family of keys. Matches returns true iff the set of Keys identified by each
 // KeyId has a non-empty intersection.
 func (lhs KeyId) Matches(rhs KeyId) bool {
-	if lhs.Index != AnyKey && rhs.Index != AnyKey {
-		// If neither key represents 'any-key-index', the indices have to match
-		if lhs.Index != rhs.Index {
-			return false
-		}
-	}
-
-	if lhs.Device.Type != DeviceTypeAny && rhs.Device.Type != DeviceTypeAny {
-		if lhs.Device.Type != rhs.Device.Type {
-			return false
-		}
-	}
-
-	if lhs.Device.Index != DeviceIndexAny && rhs.Device.Index != DeviceIndexAny {
-		if lhs.Device.Index != rhs.Device.Index {
-			return false
-		}
-	}
-
-	return true
+	return lhs.Index.Matches(rhs.Index) && lhs.Device.Matches(rhs.Device)
 }
 
 // natural keys and derived keys all embed a keyState
