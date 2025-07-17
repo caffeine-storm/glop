@@ -61,7 +61,7 @@ func (eg EventGroup) String() string {
 // event.
 func (eg *EventGroup) FindEvent(id KeyId) (Event, bool) {
 	for i := range eg.Events {
-		if eg.Events[i].Key.Id() == id {
+		if eg.Events[i].Key.Id().Matches(id) {
 			return eg.Events[i], true
 		}
 	}

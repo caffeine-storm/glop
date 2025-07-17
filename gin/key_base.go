@@ -2,6 +2,7 @@ package gin
 
 import (
 	"fmt"
+
 	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/glog"
 )
@@ -102,6 +103,32 @@ func (kid KeyId) String() string {
 	}
 
 	return fmt.Sprintf("{device: %s, devicetype: %s, index: %s}", device, devicetype, index)
+}
+
+// KeyIds support a quasi-wildcard form where a single ID can represent a
+// family of keys. Matches returns true iff the set of Keys identified by each
+// KeyId has a non-empty intersection.
+func (lhs KeyId) Matches(rhs KeyId) bool {
+	if lhs.Index != AnyKey && rhs.Index != AnyKey {
+		// If neither key represents 'any-key-index', the indices have to match
+		if lhs.Index != rhs.Index {
+			return false
+		}
+	}
+
+	if lhs.Device.Type != DeviceTypeAny && rhs.Device.Type != DeviceTypeAny {
+		if lhs.Device.Type != rhs.Device.Type {
+			return false
+		}
+	}
+
+	if lhs.Device.Index != DeviceIndexAny && rhs.Device.Index != DeviceIndexAny {
+		if lhs.Device.Index != rhs.Device.Index {
+			return false
+		}
+	}
+
+	return true
 }
 
 // natural keys and derived keys all embed a keyState
