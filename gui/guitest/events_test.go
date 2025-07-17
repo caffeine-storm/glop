@@ -17,5 +17,6 @@ func TestSynthesize(t *testing.T) {
 		mouseWheelKeyId.Device.Index = 0
 
 		assert.True(synthesized.IsPressed(mouseWheelKeyId))
+		assert.Equal(float64(42), synthesized.PrimaryEvent().Key.FramePressTotal())
 	})
 }
