@@ -67,6 +67,10 @@ func (a *baseAggregator) FramePressAvg() float64 {
 	return a.prev.press_avg
 }
 
+func (a *baseAggregator) FramePressTotal() float64 {
+	panic(fmt.Errorf("should not happen"))
+}
+
 func (a *baseAggregator) CurPressCount() int {
 	return a.this.press_count
 }

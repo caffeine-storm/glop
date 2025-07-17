@@ -114,6 +114,10 @@ type keyState struct {
 
 var _ Key = (*keyState)(nil)
 
+func (ks *keyState) GetAggregator() *aggregator.Aggregator {
+	return &ks.Aggregator
+}
+
 func (ks *keyState) KeyThink(ms int64) (bool, float64) {
 	return ks.Aggregator.AggregatorThink(ms)
 }

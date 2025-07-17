@@ -804,9 +804,61 @@ func EventListenerSpec() {
 	})
 }
 
+type trackingListener struct {
+	events []gin.EventGroup
+}
+
+func (t *trackingListener) HandleEventGroup(g gin.EventGroup) {
+	t.events = append(t.events, g)
+}
+
+func (t *trackingListener) Think(int64) {}
+
 func InputRegressionSpec() {
 	Convey("MouseWheelTilt is registered", func() {
 		inputObj := gin.Make()
 		So(inputObj.GetKeyByParts(gin.MouseWheelHorizontal, gin.DeviceTypeMouse, 0), ShouldNotBeNil)
+	})
+
+	Convey("Can listen for ScrollDown events through the listener API", func() {
+		inputObj := gin.Make()
+
+		listener := &trackingListener{}
+		inputObj.RegisterEventListener(listener)
+
+		wheel := inputObj.GetKeyByParts(gin.MouseWheelVertical, gin.DeviceTypeMouse, 0)
+		So(wheel, ShouldNotBeNil)
+		// totals should start out zeroed
+		So(wheel.FramePressTotal(), ShouldEqual, 0)
+
+		inputObj.Think(42, []gin.OsEvent{
+			{
+				KeyId:     wheel.Id(),
+				Press_amt: -1,
+				Timestamp: 30,
+				X:         20,
+				Y:         40,
+			},
+			{
+				KeyId:     wheel.Id(),
+				Press_amt: 0,
+				Timestamp: 40,
+				X:         20,
+				Y:         40,
+			},
+		})
+
+		So(wheel.FramePressTotal(), ShouldEqual, -1)
+
+		So(len(listener.events), ShouldBeGreaterThan, 0)
+
+		success := false
+		for _, evt := range listener.events {
+			if evt.IsPressed(wheel.Id()) {
+				success = true
+				break
+			}
+		}
+		So(success, ShouldBeTrue)
 	})
 }
