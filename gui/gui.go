@@ -25,11 +25,6 @@ type Zone interface {
 	Rendered() Region
 }
 
-type EventGroup struct {
-	gin.EventGroup
-	DispatchedToFocussedWidget bool
-}
-
 type WidgetParent interface {
 	AddChild(w Widget)
 	RemoveChild(w Widget)
@@ -46,13 +41,6 @@ type UpdateableDrawingContext interface {
 	DrawingContext
 	SetDictionary(fontname string, d *Dictionary)
 	SetShaders(fontname string, b *render.ShaderBank)
-}
-
-type EventHandlingContext interface {
-	UseMousePosition(grp EventGroup) (Point, bool)
-	LeftButton(grp EventGroup) bool
-	MiddleButton(grp EventGroup) bool
-	RightButton(grp EventGroup) bool
 }
 
 type Widget interface {
@@ -104,6 +92,7 @@ func (w *BasicWidget) Think(gui *Gui, t int64) {
 	}
 	w.DoThink(t, w == gui.FocusWidget())
 }
+
 func (w *BasicWidget) Respond(gui *Gui, event_group EventGroup) bool {
 	if mpos, ok := gui.UseMousePosition(event_group); ok {
 		if !mpos.Inside(w.Rendered()) {
