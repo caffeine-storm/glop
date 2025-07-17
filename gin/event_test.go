@@ -6,7 +6,29 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func getKeyXForKeyboard0(in *gin.Input) gin.Key {
+	specificId := gin.KeyId{
+		Index: gin.KeyX,
+		Device: gin.DeviceId{
+			Index: 0,
+			Type:  gin.DeviceTypeKeyboard,
+		},
+	}
+
+	return in.GetKeyById(specificId)
+}
+
+func getCorrespondingAnyDeviceKey(in *gin.Input, referenceKey gin.Key) gin.Key {
+	genericId := referenceKey.Id()
+	genericId.Device.Index = gin.DeviceIndexAny
+
+	return in.GetKeyById(genericId)
+}
 
 func TestEventGroup(t *testing.T) {
 	t.Run("event groups have optional x-y co-ordinates", func(t *testing.T) {
@@ -50,5 +72,36 @@ func TestEventGroup(t *testing.T) {
 		if stringified != pointerStringified {
 			t.Fatalf("format difference when showing value vs pointer-to-value: %q %q", stringified, pointerStringified)
 		}
+	})
+
+	t.Run("IsPressed(some-key)", func(t *testing.T) {
+		assert := assert.New(t)
+		require := require.New(t)
+
+		inputObj := gin.Make()
+
+		specificKeyX := getKeyXForKeyboard0(inputObj)
+		require.NotNil(specificKeyX)
+
+		genericKeyX := getCorrespondingAnyDeviceKey(inputObj, specificKeyX)
+		require.NotNil(genericKeyX)
+
+		require.NotEqual(specificKeyX, genericKeyX)
+
+		t.Run("supports 'any-device'", func(t *testing.T) {
+			// A specific key gets pressed.
+			eg := gin.EventGroup{
+				Events: []gin.Event{
+					{
+						Key:  specificKeyX,
+						Type: aggregator.Press,
+					},
+				},
+				Timestamp: 32,
+			}
+
+			// Checking if the generic key is pressed should return true.
+			assert.True(eg.IsPressed(genericKeyX.Id()))
+		})
 	})
 }
