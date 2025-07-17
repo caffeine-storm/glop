@@ -34,6 +34,7 @@ func (s *synth) WheelDown(amt float64) gui.EventGroup {
 
 	wheelDownKey := in.GetKeyById(keyId)
 	wheelDownKey.KeySetPressAmt(amt, 42, gin.Event{})
+	wheelDownKey.KeyThink(42)
 	return gui.EventGroup{
 		DispatchedToFocussedWidget: false,
 		EventGroup: gin.EventGroup{
