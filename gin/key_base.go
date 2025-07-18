@@ -30,12 +30,32 @@ type Key interface {
 
 type KeyIndex int
 
-func (ki KeyIndex) Matches(other KeyIndex) bool {
-	if ki == AnyKey || other == AnyKey {
+func (ki KeyIndex) Contains(other KeyIndex) bool {
+	if ki == AnyKey {
 		return true
 	}
 
-	return ki == other
+	// If ki is a 'normal' key, it Contains exactly one KeyIndex; itself!
+	if ki < DerivedKeysRangeStart {
+		return ki == other
+	}
+
+	switch ki {
+	case EitherShift:
+		return other == LeftShift || other == RightShift
+	case EitherControl:
+		return other == LeftControl || other == RightControl
+	case EitherAlt:
+		return other == LeftAlt || other == RightAlt
+	case EitherGui:
+		return other == LeftGui || other == RightGui
+	case ShiftTab:
+		return other == LeftShift || other == RightShift
+	case DeleteOrBackspace:
+		return other == KeyDelete || other == Backspace
+	}
+
+	panic(fmt.Errorf("KeyIndex.Contains: unknown KeyIndex: %d", int(ki)))
 }
 
 type KeyId struct {
@@ -57,8 +77,8 @@ type DeviceId struct {
 	Index DeviceIndex
 }
 
-func (di DeviceId) Matches(other DeviceId) bool {
-	return di.Type.Matches(other.Type) && di.Index.Matches(other.Index)
+func (di DeviceId) Contains(other DeviceId) bool {
+	return di.Index.Contains(other.Index) && di.Type.Contains(other.Type)
 }
 
 type DeviceIndex int
@@ -67,8 +87,8 @@ const (
 	DeviceIndexAny DeviceIndex = -1
 )
 
-func (di DeviceIndex) Matches(other DeviceIndex) bool {
-	if di == DeviceIndexAny || other == DeviceIndexAny {
+func (di DeviceIndex) Contains(other DeviceIndex) bool {
+	if di == DeviceIndexAny {
 		return true
 	}
 	return di == other
@@ -104,8 +124,8 @@ func (dt DeviceType) String() string {
 	panic(fmt.Errorf("bad DeviceType: %d", int(dt)))
 }
 
-func (dt DeviceType) Matches(other DeviceType) bool {
-	if dt == DeviceTypeAny || other == DeviceTypeAny {
+func (dt DeviceType) Contains(other DeviceType) bool {
+	if dt == DeviceTypeAny {
 		return true
 	}
 	return dt == other
@@ -132,11 +152,11 @@ func (kid KeyId) String() string {
 	return fmt.Sprintf("{device: %s, devicetype: %s, index: %s}", device, devicetype, index)
 }
 
-// KeyIds support a quasi-wildcard form where a single ID can represent a
-// family of keys. Matches returns true iff the set of Keys identified by each
-// KeyId has a non-empty intersection.
-func (lhs KeyId) Matches(rhs KeyId) bool {
-	return lhs.Index.Matches(rhs.Index) && lhs.Device.Matches(rhs.Device)
+// KeyIds support a quasi-wildcard form where an event for a single ID can
+// 'cascade' over a set of other keys. Contains returns true iff the set of
+// Keys covered by the 'cascade' includes the given KeyId.
+func (lhs KeyId) Contains(rhs KeyId) bool {
+	return lhs.Index.Contains(rhs.Index) && lhs.Device.Contains(rhs.Device)
 }
 
 // natural keys and derived keys all embed a keyState

@@ -195,12 +195,14 @@ const (
 	MouseMButton                  = 306
 
 	// standard derived keys start here
-	EitherShift = 1000 + iota
+	DerivedKeysRangeStart = 1000
+	EitherShift           = 1000 + iota
 	EitherControl
 	EitherAlt
 	EitherGui
 	ShiftTab
 	DeleteOrBackspace
+	DerivedKeysRangeEnd // non-inclusive!
 )
 
 // Everything 'global' is put inside a struct so that tests can be run without

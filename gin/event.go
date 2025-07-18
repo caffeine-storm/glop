@@ -60,9 +60,9 @@ func (eg EventGroup) String() string {
 // is present in the EventGroup, and if so the Event returned is a copy of that
 // event.
 func (eg *EventGroup) FindEvent(id KeyId) (Event, bool) {
-	for i := range eg.Events {
-		if eg.Events[i].Key.Id().Matches(id) {
-			return eg.Events[i], true
+	for _, evt := range eg.Events {
+		if id.Contains(evt.Key.Id()) {
+			return evt, true
 		}
 	}
 	return Event{}, false
