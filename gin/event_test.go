@@ -104,4 +104,44 @@ func TestEventGroup(t *testing.T) {
 			assert.True(eg.IsPressed(genericKeyX.Id()))
 		})
 	})
+
+	t.Run("IsPressed interactions with the 'any key'", func(t *testing.T) {
+		assert := assert.New(t)
+		require := require.New(t)
+
+		inputObj := gin.Make()
+
+		anyKey := inputObj.GetKeyById(gin.AnyAnyKey)
+		require.NotNil(anyKey)
+
+		specificKeyX := getKeyXForKeyboard0(inputObj)
+		require.NotNil(specificKeyX)
+
+		keyYId := specificKeyX.Id()
+		keyYId.Index = gin.KeyY
+		specificKeyY := inputObj.GetKeyById(keyYId)
+		require.NotNil(specificKeyY)
+
+		t.Run("an EventGroup denoting a key press should say 'the any has been pressed'", func(t *testing.T) {
+			// A specific key gets pressed and an 'any' key is included as a
+			// secondary event.
+			eg := gin.EventGroup{
+				Events: []gin.Event{
+					{
+						Key:  specificKeyX,
+						Type: aggregator.Press,
+					},
+					{
+						Key:  anyKey,
+						Type: aggregator.Press,
+					},
+				},
+				Timestamp: 32,
+			}
+
+			assert.True(eg.IsPressed(anyKey.Id()), "The 'any' key should look like it's pressed")
+
+			assert.False(eg.IsPressed(specificKeyY.Id()), "A different key should look like it's not pressed")
+		})
+	})
 }
