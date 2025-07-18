@@ -35,14 +35,11 @@ func (ki KeyIndex) Contains(other KeyIndex) bool {
 		return true
 	}
 
-	// If ki is a 'normal' key, it Contains exactly one KeyIndex; itself!
-	if ki < DerivedKeysRangeStart {
+	// If ki is a 'normal' key, it Contains exactly one KeyIndex: itself
+	if ki < DerivedKeysRangeStart || ki >= DerivedKeysRangeEnd {
 		return ki == other
 	}
 
-	// Note that, if KeyIndex values ever become not compile-time-constants,
-	// we'll want to change this to be smarter and actually respect the causal
-	// links encoded in a gin.Input object.
 	switch ki {
 	case EitherShift:
 		return other == LeftShift || other == RightShift
