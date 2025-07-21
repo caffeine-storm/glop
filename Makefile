@@ -1,7 +1,5 @@
 SHELL:=/bin/bash
 
-TEST_REPORT_TAR:=test-report.tar.gz
-
 UNAME:=$(shell uname)
 ifeq (${UNAME},Linux)
 PLATFORM:=linux
@@ -87,51 +85,8 @@ ${profile_dir}/%.view: ${profile_dir}/%.test ${profile_dir}/%.${cpu_profile_file
 test-fresh: |clean_rejects
 test-fresh: test-nocache
 
-list_rejects:
-	@find . -name testdata -type d | while read testdatadir ; do \
-		find "$$testdatadir" -name '*.rej.*' ; \
-	done
-
-# opens expected and rejected files in 'feh'
-view_rejects:
-	@find . -name testdata -type d | while read testdatadir ; do \
-		find "$$testdatadir" -name '*.rej.*' | while read rejfile ; do \
-			echo -e >&2 "$${rejfile/.rej}\n$$rejfile" ; \
-			echo "$${rejfile/.rej}" "$$rejfile" ; \
-		done ; \
-	done | xargs -r feh
-
-clean_rejects:
-	find . -name testdata -type d | while read testdatadir ; do \
-		find "$$testdatadir" -name '*.rej.*' -exec rm "{}" + ; \
-	done
-
-promote_rejects:
-	@find . -name testdata -type d | while read testdatadir ; do \
-		find "$$testdatadir" -name '*.rej.*' | while read rejfile ; do \
-			echo mv "$$rejfile" "$${rejfile/.rej}" ; \
-			mv "$$rejfile" "$${rejfile/.rej}" ; \
-		done \
-	done
-
-# Deliberately signal failure from this recipe so that CI notices failing tests
-# are red.
-appveyor-test-report-and-fail: test-report
-	appveyor PushArtifact ${TEST_REPORT_TAR} -DeploymentName "test report tarball"
-	false
-
-test-report: ${TEST_REPORT_TAR}
-
-${TEST_REPORT_TAR}:
-	tar \
-		--auto-compress \
-		--create \
-		--file $@ \
-		--files-from <(find  . -name '*.rej.*' | while read fname ; do \
-				echo "$$fname" ; \
-				echo "$${fname/.rej}" ; \
-			done \
-		)
+include build/rejectfiles.mk
+include build/test-report.mk
 
 fmt:
 	go fmt ./...
@@ -167,12 +122,8 @@ gos/${PLATFORM}/compile_commands.json: ${NATIVE_SRCS}
 	bear --output `pwd -P`/gos/${PLATFORM}/compile_commands.json --force-wrapper -- go build -a ./gos/${PLATFORM}/
 
 clean:
-	rm -f ${TEST_REPORT_TAR}
 
 .PHONY: build-check compile-commands
-.PHONY: list_rejects view_rejects clean_rejects promote_rejects
 .PHONY: fmt lint depth count-native-lints
 .PHONY: profiling/*.view
-.PHONY: appveyor-test-report-and-fail
-.PHONY: test test-dlv test-fresh test-nocache test-report test-spec test-verbose
-.PHONY: ${TEST_REPORT_TAR}
+.PHONY: test test-dlv test-fresh test-nocache test-spec test-verbose
