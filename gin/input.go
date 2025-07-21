@@ -102,7 +102,7 @@ var (
 )
 
 const (
-	AnyKey               KeyIndex = 0
+	AnyKey               KeyIndex = 1
 	Space                         = 32
 	Backspace                     = 8
 	Tab                           = 9
