@@ -861,4 +861,17 @@ func InputRegressionSpec() {
 		}
 		So(success, ShouldBeTrue)
 	})
+
+	Convey("the 'any' keys have reasonable names", func() {
+		inputObj := gin.Make()
+		anyKey := inputObj.GetKeyById(gin.KeyId{
+			Index: gin.AnyKey,
+			Device: gin.DeviceId{
+				Index: gin.DeviceIndexAny,
+				Type:  gin.DeviceTypeAny,
+			},
+		})
+
+		So(anyKey.Name(), ShouldContainSubstring, "any")
+	})
 }
