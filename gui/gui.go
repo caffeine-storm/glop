@@ -412,7 +412,7 @@ func (g *Gui) UseMousePosition(grp EventGroup) (Point, bool) {
 	var p Point
 	found := false
 	if grp.HasMousePosition() {
-		p.X, p.Y = grp.GetMousePosition()
+		p = grp.GetMousePosition()
 		found = true
 	}
 	return p, found

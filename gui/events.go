@@ -13,3 +13,11 @@ type EventHandlingContext interface {
 	MiddleButton(grp EventGroup) bool
 	RightButton(grp EventGroup) bool
 }
+
+func (grp EventGroup) GetMousePosition() Point {
+	x, y := grp.EventGroup.GetMousePosition()
+	return Point{
+		X: x,
+		Y: y,
+	}
+}
