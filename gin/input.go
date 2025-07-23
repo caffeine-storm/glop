@@ -2,6 +2,7 @@ package gin
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/glog"
@@ -375,6 +376,22 @@ func (input *Input) GetKeyByParts(key_index KeyIndex, device_type DeviceType, de
 	})
 }
 
+func nameForKeyPattern(input *Input, id KeyId) string {
+	parts := []string{}
+
+	parts = append(parts, input.index_to_name[id.Index])
+
+	if id.Device.Index == DeviceIndexAny {
+		parts = append(parts, "anyDev")
+	} else {
+		parts = append(parts, fmt.Sprintf("dev%d", id.Device.Index))
+	}
+
+	parts = append(parts, id.Device.Type.String())
+
+	return strings.Join(parts, "-")
+}
+
 func (input *Input) GetKeyById(id KeyId) Key {
 	id.MustValidate()
 	key, ok := input.key_map[id]
@@ -384,7 +401,7 @@ func (input *Input) GetKeyById(id KeyId) Key {
 			input.key_map[id] = &generalDerivedKey{
 				keyState: keyState{
 					id:         id,
-					name:       "Name me?",
+					name:       nameForKeyPattern(input, id),
 					Aggregator: aggregator.AggregatorForType(aggregator.AggregatorTypeStandard),
 				},
 				input: input,
