@@ -115,6 +115,18 @@ func (eg *EventGroup) SetMousePosition(x, y int) {
 	}
 }
 
+func (eg *EventGroup) IsMouseMove() bool {
+	if !eg.HasMousePosition() {
+		return false
+	}
+
+	if eg.PrimaryEvent().Key.Id().Device.Type != DeviceTypeMouse {
+		return false
+	}
+
+	return eg.PrimaryEvent().Type == aggregator.Adjust
+}
+
 // During HandleEventGroup a Listener can query keys as to their current state
 // (i.e.  with Cur*() methods) and these will accurately report their state.
 //
