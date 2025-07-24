@@ -71,6 +71,8 @@ func (s *synth) MouseMove(target gui.Point) []gui.EventGroup {
 
 	wheelXAxis.KeySetPressAmt(-3, 42, gin.Event{})
 	wheelYAxis.KeySetPressAmt(+4, 42, gin.Event{})
+	wheelXAxis.KeyThink(42)
+	wheelYAxis.KeyThink(42)
 
 	xMove := gui.EventGroup{
 		EventGroup: gin.EventGroup{
@@ -101,6 +103,7 @@ func (s *synth) MouseMove(target gui.Point) []gui.EventGroup {
 func (s *synth) KeyDown(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
 	key := s.input.GetKeyById(keyid)
 	key.KeySetPressAmt(1, 42, gin.Event{})
+	key.KeyThink(42)
 
 	keyDown := gui.EventGroup{
 		EventGroup: gin.EventGroup{
@@ -122,6 +125,7 @@ func (s *synth) KeyDown(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
 func (s *synth) KeyUp(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
 	key := s.input.GetKeyById(keyid)
 	key.KeySetPressAmt(0, 42, gin.Event{})
+	key.KeyThink(42)
 
 	keyUp := gui.EventGroup{
 		EventGroup: gin.EventGroup{
