@@ -30,6 +30,12 @@ func getCorrespondingAnyDeviceKey(in *gin.Input, referenceKey gin.Key) gin.Key {
 	return in.GetKeyById(genericId)
 }
 
+type testcasedata struct {
+	name          string
+	eventType     aggregator.EventType
+	funcUnderTest func(gin.EventGroup, gin.KeyId) bool
+}
+
 func TestEventGroup(t *testing.T) {
 	t.Run("event groups have optional x-y co-ordinates", func(t *testing.T) {
 		eg := gin.EventGroup{}
@@ -74,105 +80,82 @@ func TestEventGroup(t *testing.T) {
 		}
 	})
 
-	t.Run("IsPressed(some-key)", func(t *testing.T) {
-		assert := assert.New(t)
-		require := require.New(t)
+	testtable := []testcasedata{
+		{
+			name:      "IsPressed",
+			eventType: aggregator.Press,
+			funcUnderTest: func(grp gin.EventGroup, kid gin.KeyId) bool {
+				return grp.IsPressed(kid)
+			},
+		},
+		{
+			name:      "IsReleased",
+			eventType: aggregator.Release,
+			funcUnderTest: func(grp gin.EventGroup, kid gin.KeyId) bool {
+				return grp.IsReleased(kid)
+			},
+		},
+	}
 
-		inputObj := gin.Make()
+	for _, testcase := range testtable {
+		t.Run(testcase.name, func(t *testing.T) {
+			t.Run("some-key", func(t *testing.T) {
+				assert := assert.New(t)
+				require := require.New(t)
 
-		specificKeyX := getKeyXForKeyboard0(inputObj)
-		require.NotNil(specificKeyX)
+				inputObj := gin.Make()
 
-		genericKeyX := getCorrespondingAnyDeviceKey(inputObj, specificKeyX)
-		require.NotNil(genericKeyX)
+				anyKey := inputObj.GetKeyById(gin.AnyAnyKey)
+				require.NotNil(anyKey)
 
-		require.NotEqual(specificKeyX, genericKeyX)
+				specificKeyX := getKeyXForKeyboard0(inputObj)
+				require.NotNil(specificKeyX)
 
-		t.Run("supports 'any-device'", func(t *testing.T) {
-			// A specific key gets pressed.
-			eg := gin.EventGroup{
-				Events: []gin.Event{
-					{
-						Key:  specificKeyX,
-						Type: aggregator.Press,
-					},
-				},
-				Timestamp: 32,
-			}
+				xkeyId := specificKeyX.Id()
+				specificKeyY := inputObj.GetKeyByParts(gin.KeyY, xkeyId.Device.Type, xkeyId.Device.Index)
+				require.NotNil(specificKeyX)
 
-			// Checking if the generic key is pressed should return true.
-			assert.True(eg.IsPressed(genericKeyX.Id()))
+				genericKeyX := getCorrespondingAnyDeviceKey(inputObj, specificKeyX)
+				require.NotNil(genericKeyX)
+
+				require.NotEqual(specificKeyX, genericKeyX)
+
+				t.Run("supports 'any-device'", func(t *testing.T) {
+					// A specific key gets used.
+					eg := gin.EventGroup{
+						Events: []gin.Event{
+							{
+								Key:  specificKeyX,
+								Type: testcase.eventType,
+							},
+						},
+						Timestamp: 32,
+					}
+
+					// Check that the generic key is in the right state.
+					assert.True(testcase.funcUnderTest(eg, genericKeyX.Id()))
+				})
+				t.Run("an EventGroup denoting a key event should say 'the any has that event'", func(t *testing.T) {
+					// If a specific key gets toggled, an 'any' key is included as a
+					// secondary event.
+					eg := gin.EventGroup{
+						Events: []gin.Event{
+							{
+								Key:  specificKeyX,
+								Type: testcase.eventType,
+							},
+							{
+								Key:  anyKey,
+								Type: testcase.eventType,
+							},
+						},
+						Timestamp: 32,
+					}
+
+					assert.True(testcase.funcUnderTest(eg, anyKey.Id()), "The 'any' key should look like it's been toggled")
+					assert.False(testcase.funcUnderTest(eg, specificKeyY.Id()), "A different key should look like it's not involved")
+				})
+			})
 		})
-	})
-
-	t.Run("IsPressed interactions with the 'any key'", func(t *testing.T) {
-		assert := assert.New(t)
-		require := require.New(t)
-
-		inputObj := gin.Make()
-
-		anyKey := inputObj.GetKeyById(gin.AnyAnyKey)
-		require.NotNil(anyKey)
-
-		specificKeyX := getKeyXForKeyboard0(inputObj)
-		require.NotNil(specificKeyX)
-
-		keyYId := specificKeyX.Id()
-		keyYId.Index = gin.KeyY
-		specificKeyY := inputObj.GetKeyById(keyYId)
-		require.NotNil(specificKeyY)
-
-		t.Run("an EventGroup denoting a key press should say 'the any has been pressed'", func(t *testing.T) {
-			// A specific key gets pressed and an 'any' key is included as a
-			// secondary event.
-			eg := gin.EventGroup{
-				Events: []gin.Event{
-					{
-						Key:  specificKeyX,
-						Type: aggregator.Press,
-					},
-					{
-						Key:  anyKey,
-						Type: aggregator.Press,
-					},
-				},
-				Timestamp: 32,
-			}
-
-			assert.True(eg.IsPressed(anyKey.Id()), "The 'any' key should look like it's pressed")
-
-			assert.False(eg.IsPressed(specificKeyY.Id()), "A different key should look like it's not pressed")
-		})
-	})
-
-	t.Run("IsReleased(some-key)", func(t *testing.T) {
-		assert := assert.New(t)
-		require := require.New(t)
-
-		inputObj := gin.Make()
-
-		specificKeyX := getKeyXForKeyboard0(inputObj)
-		require.NotNil(specificKeyX)
-
-		genericKeyX := getCorrespondingAnyDeviceKey(inputObj, specificKeyX)
-		require.NotNil(genericKeyX)
-
-		require.NotEqual(specificKeyX, genericKeyX)
-
-		t.Run("supports 'any-device'", func(t *testing.T) {
-			// A specific key gets pressed.
-			eg := gin.EventGroup{
-				Events: []gin.Event{
-					{
-						Key:  specificKeyX,
-						Type: aggregator.Release,
-					},
-				},
-				Timestamp: 32,
-			}
-
-			// Checking if the generic key is released should return true.
-			assert.True(eg.IsReleased(genericKeyX.Id()))
-		})
-	})
+	}
 }
