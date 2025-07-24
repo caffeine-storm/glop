@@ -6,20 +6,84 @@ import (
 	"github.com/runningwild/glop/gui"
 )
 
+var xaxis = gin.KeyId{
+	Index: gin.MouseXAxis,
+	Device: gin.DeviceId{
+		Index: 0,
+		Type:  gin.DeviceTypeMouse,
+	},
+}
+
+var yaxis = gin.KeyId{
+	Index: gin.MouseYAxis,
+	Device: gin.DeviceId{
+		Index: 0,
+		Type:  gin.DeviceTypeMouse,
+	},
+}
+
+var wheel = gin.KeyId{
+	Index: gin.MouseWheelVertical,
+	Device: gin.DeviceId{
+		Index: 0,
+		Type:  gin.DeviceTypeMouse,
+	},
+}
+
 type synth struct {
 	input *gin.Input
 }
 
 type dontCareType struct {
-	MousePos  *gin.MousePosition
-	Timestamp int64
+	MousePos   *gin.MousePosition
+	MousePoint gui.Point
+	Timestamp  int64
+	NoEvent    gin.Event
 }
 
 var dontCare = dontCareType{
 	MousePos: &gin.MousePosition{
 		X: 24, Y: 42,
 	},
+	MousePoint: gui.Point{
+		X: 48, Y: 84,
+	},
 	Timestamp: 1337,
+	NoEvent:   gin.Event{},
+}
+
+func (s *synth) makeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) gui.EventGroup {
+	key := s.input.GetKeyById(keyid)
+	key.KeySetPressAmt(pressAmt, dontCare.Timestamp, dontCare.NoEvent)
+
+	eventType := aggregator.Press
+	if pressAmt == 0 {
+		eventType = aggregator.Release
+	}
+	ret := gui.EventGroup{
+		EventGroup: gin.EventGroup{
+			Events: []gin.Event{
+				{
+					Key:  key,
+					Type: eventType,
+				},
+			},
+		},
+	}
+	ret.SetMousePosition(at.X, at.Y)
+	return ret
+}
+
+func (s *synth) press(keyid gin.KeyId, at gui.Point) gui.EventGroup {
+	ret := s.makeEventGroup(keyid, at, 1)
+	ret.Events[0].Key.KeyThink(dontCare.Timestamp)
+	return ret
+}
+
+func (s *synth) release(keyid gin.KeyId, at gui.Point) gui.EventGroup {
+	ret := s.makeEventGroup(keyid, at, 0)
+	ret.Events[0].Key.KeyThink(dontCare.Timestamp)
+	return ret
 }
 
 func SynthesizeEvents() *synth {
@@ -29,118 +93,42 @@ func SynthesizeEvents() *synth {
 }
 
 func (s *synth) WheelDown(amt float64) gui.EventGroup {
-	keyId := gin.AnyMouseWheelVertical
-	// Don't pick "any" mouse wheel; pick the first.
-	keyId.Device.Index = 0
+	start := s.makeEventGroup(wheel, dontCare.MousePoint, amt)
+	end := s.makeEventGroup(wheel, dontCare.MousePoint, 0)
 
-	wheelDownKey := s.input.GetKeyById(keyId)
-	wheelDownKey.KeySetPressAmt(amt, 42, gin.Event{})
-	wheelDownKey.KeyThink(42)
-	return gui.EventGroup{
+	events := []gin.Event{}
+	events = append(events, start.Events...)
+	events = append(events, end.Events...)
+
+	eg := gui.EventGroup{
 		EventGroup: gin.EventGroup{
-			Events: []gin.Event{
-				{
-					Key:  wheelDownKey,
-					Type: aggregator.Press,
-				},
-				{
-					Key:  wheelDownKey,
-					Type: aggregator.Release,
-				},
-			},
+			Events:    events,
 			Timestamp: dontCare.Timestamp,
 		},
 	}
+	eg.SetMousePosition(dontCare.MousePoint.X, dontCare.MousePoint.Y)
+
+	eg.Events[0].Key.KeyThink(dontCare.Timestamp)
+
+	return eg
 }
 
 func (s *synth) MouseMove(target gui.Point) []gui.EventGroup {
-	wheelXAxis := s.input.GetKeyById(gin.KeyId{
-		Index: gin.MouseXAxis,
-		Device: gin.DeviceId{
-			Index: 0,
-			Type:  gin.DeviceTypeMouse,
-		},
-	})
-	wheelYAxis := s.input.GetKeyById(gin.KeyId{
-		Index: gin.MouseYAxis,
-		Device: gin.DeviceId{
-			Index: 0,
-			Type:  gin.DeviceTypeMouse,
-		},
-	})
-
-	wheelXAxis.KeySetPressAmt(-3, 42, gin.Event{})
-	wheelYAxis.KeySetPressAmt(+4, 42, gin.Event{})
-	wheelXAxis.KeyThink(42)
-	wheelYAxis.KeyThink(42)
-
-	xMove := gui.EventGroup{
-		EventGroup: gin.EventGroup{
-			Events: []gin.Event{
-				{
-					Key:  wheelXAxis,
-					Type: aggregator.Press,
-				},
-			},
-		},
+	return []gui.EventGroup{
+		s.press(xaxis, target),
+		s.press(yaxis, target),
 	}
-	yMove := gui.EventGroup{
-		EventGroup: gin.EventGroup{
-			Events: []gin.Event{
-				{
-					Key:  wheelYAxis,
-					Type: aggregator.Press,
-				},
-			},
-		},
-	}
-	xMove.SetMousePosition(target.X, target.Y)
-	yMove.SetMousePosition(target.X, target.Y)
-
-	return []gui.EventGroup{xMove, yMove}
 }
 
 func (s *synth) KeyDown(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
-	key := s.input.GetKeyById(keyid)
-	key.KeySetPressAmt(1, 42, gin.Event{})
-	key.KeyThink(42)
-
-	keyDown := gui.EventGroup{
-		EventGroup: gin.EventGroup{
-			Events: []gin.Event{
-				{
-					Key:  key,
-					Type: aggregator.Press,
-				},
-			},
-		},
-	}
-	keyDown.SetMousePosition(at.X, at.Y)
-
 	return []gui.EventGroup{
-		keyDown,
+		s.press(keyid, at),
 	}
 }
 
 func (s *synth) KeyUp(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
-	key := s.input.GetKeyById(keyid)
-	key.KeySetPressAmt(0, 42, gin.Event{})
-	key.KeyThink(42)
-
-	keyUp := gui.EventGroup{
-		EventGroup: gin.EventGroup{
-			Events: []gin.Event{
-				{
-					Key:  key,
-					Type: aggregator.Release,
-				},
-			},
-		},
-	}
-	keyUp.SetMousePosition(at.X, at.Y)
-
 	return []gui.EventGroup{
-		keyUp,
+		s.release(keyid, at),
 	}
 }
 
