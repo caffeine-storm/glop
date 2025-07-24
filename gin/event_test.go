@@ -144,4 +144,35 @@ func TestEventGroup(t *testing.T) {
 			assert.False(eg.IsPressed(specificKeyY.Id()), "A different key should look like it's not pressed")
 		})
 	})
+
+	t.Run("IsReleased(some-key)", func(t *testing.T) {
+		assert := assert.New(t)
+		require := require.New(t)
+
+		inputObj := gin.Make()
+
+		specificKeyX := getKeyXForKeyboard0(inputObj)
+		require.NotNil(specificKeyX)
+
+		genericKeyX := getCorrespondingAnyDeviceKey(inputObj, specificKeyX)
+		require.NotNil(genericKeyX)
+
+		require.NotEqual(specificKeyX, genericKeyX)
+
+		t.Run("supports 'any-device'", func(t *testing.T) {
+			// A specific key gets pressed.
+			eg := gin.EventGroup{
+				Events: []gin.Event{
+					{
+						Key:  specificKeyX,
+						Type: aggregator.Release,
+					},
+				},
+				Timestamp: 32,
+			}
+
+			// Checking if the generic key is released should return true.
+			assert.True(eg.IsReleased(genericKeyX.Id()))
+		})
+	})
 }
