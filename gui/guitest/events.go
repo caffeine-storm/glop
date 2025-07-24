@@ -99,74 +99,62 @@ func (s *synth) MouseMove(target gui.Point) []gui.EventGroup {
 	return []gui.EventGroup{xMove, yMove}
 }
 
-func (s *synth) MouseDown(at gui.Point) []gui.EventGroup {
-	leftMouseButton := s.input.GetKeyById(gin.KeyId{
-		Index: gin.MouseLButton,
-		Device: gin.DeviceId{
-			Index: 0,
-			Type:  gin.DeviceTypeMouse,
-		},
-	})
-	leftMouseButton.KeySetPressAmt(1, 42, gin.Event{})
+func (s *synth) KeyDown(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
+	key := s.input.GetKeyById(keyid)
+	key.KeySetPressAmt(1, 42, gin.Event{})
 
-	mouseDown := gui.EventGroup{
+	keyDown := gui.EventGroup{
 		EventGroup: gin.EventGroup{
 			Events: []gin.Event{
 				{
-					Key:  leftMouseButton,
+					Key:  key,
 					Type: aggregator.Press,
 				},
 			},
 		},
 	}
-	mouseDown.SetMousePosition(at.X, at.Y)
+	keyDown.SetMousePosition(at.X, at.Y)
 
 	return []gui.EventGroup{
-		mouseDown,
+		keyDown,
 	}
 }
 
-func (s *synth) MouseUp(at gui.Point) []gui.EventGroup {
-	leftMouseButton := s.input.GetKeyById(gin.KeyId{
-		Index: gin.MouseLButton,
-		Device: gin.DeviceId{
-			Index: 0,
-			Type:  gin.DeviceTypeMouse,
-		},
-	})
-	leftMouseButton.KeySetPressAmt(0, 42, gin.Event{})
+func (s *synth) KeyUp(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
+	key := s.input.GetKeyById(keyid)
+	key.KeySetPressAmt(0, 42, gin.Event{})
 
-	mouseUp := gui.EventGroup{
+	keyUp := gui.EventGroup{
 		EventGroup: gin.EventGroup{
 			Events: []gin.Event{
 				{
-					Key:  leftMouseButton,
+					Key:  key,
 					Type: aggregator.Release,
 				},
 			},
 		},
 	}
-	mouseUp.SetMousePosition(at.X, at.Y)
+	keyUp.SetMousePosition(at.X, at.Y)
 
 	return []gui.EventGroup{
-		mouseUp,
+		keyUp,
 	}
 }
 
-func (s *synth) MouseDrag(fromPoint, toPoint gui.Point) []gui.EventGroup {
+func (s *synth) KeyDrag(buttonId gin.KeyId, fromPoint, toPoint gui.Point) []gui.EventGroup {
 	totalGesture := []gui.EventGroup{}
 
 	// Move to start
 	totalGesture = append(totalGesture, s.MouseMove(fromPoint)...)
 
 	// Mouse down
-	totalGesture = append(totalGesture, s.MouseDown(fromPoint)...)
+	totalGesture = append(totalGesture, s.KeyDown(buttonId, fromPoint)...)
 
 	// Move to end
 	totalGesture = append(totalGesture, s.MouseMove(toPoint)...)
 
 	// Mouse up
-	totalGesture = append(totalGesture, s.MouseUp(toPoint)...)
+	totalGesture = append(totalGesture, s.KeyUp(buttonId, toPoint)...)
 
 	return totalGesture
 }

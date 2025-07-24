@@ -52,7 +52,15 @@ func TestSynthesize(t *testing.T) {
 			X: 7, Y: 42,
 		}
 
-		synthesized := guitest.SynthesizeEvents().MouseDrag(fromPos, toPos)
+		leftMouseButtonKeyId := gin.KeyId{
+			Index: gin.MouseLButton,
+			Device: gin.DeviceId{
+				Index: 0,
+				Type:  gin.DeviceTypeMouse,
+			},
+		}
+
+		synthesized := guitest.SynthesizeEvents().KeyDrag(leftMouseButtonKeyId, fromPos, toPos)
 
 		numEvents := len(synthesized)
 		assert.Greater(numEvents, 0, "there should be some events")
@@ -61,14 +69,14 @@ func TestSynthesize(t *testing.T) {
 			if !ev.PrimaryEvent().IsPress() {
 				return false
 			}
-			return ev.PrimaryEvent().Key.Id().Index == gin.MouseLButton
+			return ev.PrimaryEvent().Key.Id() == leftMouseButtonKeyId
 		})
 		assert.Equal(mouseDown.GetMousePosition(), fromPos)
 		mouseUp := findEvent(synthesized, func(ev gui.EventGroup) bool {
 			if !ev.PrimaryEvent().IsRelease() {
 				return false
 			}
-			return ev.PrimaryEvent().Key.Id().Index == gin.MouseLButton
+			return ev.PrimaryEvent().Key.Id() == leftMouseButtonKeyId
 		})
 		assert.Equal(mouseUp.GetMousePosition(), toPos)
 	})
