@@ -78,6 +78,16 @@ func (eg *EventGroup) IsPressed(id KeyId) bool {
 	return ev.Type == aggregator.Press
 }
 
+// Returns true if the given KeyId is considered 'Released' within this event
+// group.
+func (eg *EventGroup) IsReleased(id KeyId) bool {
+	ev, found := eg.FindEvent(id)
+	if !found {
+		return false
+	}
+	return ev.Type == aggregator.Release
+}
+
 // Returns the root-cause event of the EventGroup. Useful for classifying the
 // group as a whole.
 func (eg *EventGroup) PrimaryEvent() Event {
