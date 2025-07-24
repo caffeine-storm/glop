@@ -160,22 +160,33 @@ func TestEventGroup(t *testing.T) {
 	}
 
 	t.Run("IsMouseMove", func(t *testing.T) {
-		t.Run("returns true for a mouse move", func(t *testing.T) {
-			input := gin.Make()
-			xAxis := input.GetKeyByParts(gin.MouseXAxis, gin.DeviceTypeMouse, 0)
-			require.NotNil(t, xAxis)
+		input := gin.Make()
+		xAxis := input.GetKeyByParts(gin.MouseXAxis, gin.DeviceTypeMouse, 0)
+		require.NotNil(t, xAxis)
 
-			eg := gin.EventGroup{
-				Events: []gin.Event{
-					{
-						Key:  xAxis,
-						Type: aggregator.Adjust,
-					},
+		eg := gin.EventGroup{
+			Events: []gin.Event{
+				{
+					Key:  xAxis,
+					Type: aggregator.Adjust,
 				},
-			}
-			eg.SetMousePosition(13, 42)
-
+			},
+		}
+		eg.SetMousePosition(13, 42)
+		t.Run("returns true for a mouse move", func(t *testing.T) {
 			assert.True(t, eg.IsMouseMove())
+		})
+
+		t.Run("returns false for a press", func(t *testing.T) {
+			eg := eg
+			eg.Events[0].Type = aggregator.Press
+			assert.False(t, eg.IsMouseMove())
+		})
+
+		t.Run("returns false for a release", func(t *testing.T) {
+			eg := eg
+			eg.Events[0].Type = aggregator.Release
+			assert.False(t, eg.IsMouseMove())
 		})
 	})
 }
