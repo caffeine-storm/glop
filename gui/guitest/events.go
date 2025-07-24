@@ -144,19 +144,19 @@ func (s *synth) KeyUp(keyid gin.KeyId, at gui.Point) []gui.EventGroup {
 	}
 }
 
-func (s *synth) KeyDrag(buttonId gin.KeyId, fromPoint, toPoint gui.Point) []gui.EventGroup {
+func (s *synth) DragGesture(buttonId gin.KeyId, fromPoint, toPoint gui.Point) []gui.EventGroup {
 	totalGesture := []gui.EventGroup{}
 
 	// Move to start
 	totalGesture = append(totalGesture, s.MouseMove(fromPoint)...)
 
-	// Mouse down
+	// Key down
 	totalGesture = append(totalGesture, s.KeyDown(buttonId, fromPoint)...)
 
 	// Move to end
 	totalGesture = append(totalGesture, s.MouseMove(toPoint)...)
 
-	// Mouse up
+	// Key up
 	totalGesture = append(totalGesture, s.KeyUp(buttonId, toPoint)...)
 
 	return totalGesture

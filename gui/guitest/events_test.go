@@ -60,7 +60,7 @@ func TestSynthesize(t *testing.T) {
 			},
 		}
 
-		synthesized := guitest.SynthesizeEvents().KeyDrag(leftMouseButtonKeyId, fromPos, toPos)
+		synthesized := guitest.SynthesizeEvents().DragGesture(leftMouseButtonKeyId, fromPos, toPos)
 
 		numEvents := len(synthesized)
 		assert.Greater(numEvents, 0, "there should be some events")
