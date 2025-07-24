@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/gui/guitest"
 	"github.com/stretchr/testify/assert"
@@ -59,11 +58,17 @@ func TestSynthesize(t *testing.T) {
 		assert.Greater(numEvents, 0, "there should be some events")
 
 		mouseDown := findEvent(synthesized, func(ev gui.EventGroup) bool {
-			return ev.PrimaryEvent().Type == aggregator.Press
+			if !ev.PrimaryEvent().IsPress() {
+				return false
+			}
+			return ev.PrimaryEvent().Key.Id().Index == gin.MouseLButton
 		})
 		assert.Equal(mouseDown.GetMousePosition(), fromPos)
 		mouseUp := findEvent(synthesized, func(ev gui.EventGroup) bool {
-			return ev.PrimaryEvent().IsRelease()
+			if !ev.PrimaryEvent().IsRelease() {
+				return false
+			}
+			return ev.PrimaryEvent().Key.Id().Index == gin.MouseLButton
 		})
 		assert.Equal(mouseUp.GetMousePosition(), toPos)
 	})
