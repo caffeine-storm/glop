@@ -158,4 +158,24 @@ func TestEventGroup(t *testing.T) {
 			})
 		})
 	}
+
+	t.Run("IsMouseMove", func(t *testing.T) {
+		t.Run("returns true for a mouse move", func(t *testing.T) {
+			input := gin.Make()
+			xAxis := input.GetKeyByParts(gin.MouseXAxis, gin.DeviceTypeMouse, 0)
+			require.NotNil(t, xAxis)
+
+			eg := gin.EventGroup{
+				Events: []gin.Event{
+					{
+						Key:  xAxis,
+						Type: aggregator.Adjust,
+					},
+				},
+			}
+			eg.SetMousePosition(13, 42)
+
+			assert.True(t, eg.IsMouseMove())
+		})
+	})
 }
