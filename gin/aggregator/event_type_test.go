@@ -13,6 +13,16 @@ func TestDecideEventType(t *testing.T) {
 		evt_type := aggregator.DecideEventType(0, 0, aggregator.AggregatorForType(aggregator.AggregatorTypeAxis))
 
 		assert.Equal(aggregator.Adjust, evt_type)
+
+		t.Run("won't emit release/press when moving to position 0", func(t *testing.T) {
+			agg := aggregator.AggregatorForType(aggregator.AggregatorTypeAxis)
+
+			evt_type := aggregator.DecideEventType(0, 42, agg)
+			assert.Equal(aggregator.Adjust, evt_type)
+
+			evt_type = aggregator.DecideEventType(42, 0, agg)
+			assert.Equal(aggregator.Adjust, evt_type)
+		})
 	})
 
 	t.Run("standardAggregator", func(t *testing.T) {
