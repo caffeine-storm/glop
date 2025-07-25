@@ -108,6 +108,32 @@ func (aa *axisAggregator) IsDown() bool {
 	return aa.is_down
 }
 
+func (*axisAggregator) DecideEventType(fromPress, toPress float64) EventType {
+	// axisAggregators only ever emit Adjust events
+	return Adjust
+}
+
+func (sa *standardAggregator) DecideEventType(curPressAmount, newPressAmount float64) EventType {
+	if curPressAmount == newPressAmount {
+		// Nothing's really changing so report "nothing to see here!"
+		return NoEvent
+	}
+
+	if curPressAmount == 0 {
+		// We should only return 'Press' if we're transitioning from 0 to not-0.
+		return Press
+	}
+
+	if newPressAmount == 0 {
+		// We should only return 'Release' if we're transitioning from not-0 to 0.
+		return Release
+	}
+
+	// The key is pressed before and after but at different amounts; sounds like
+	// an adjustment to me!
+	return Adjust
+}
+
 func (aa *axisAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {
 	aa.this.press_sum += amt
 	aa.this.press_amt = amt
@@ -133,17 +159,13 @@ func (aa *axisAggregator) AggregatorThink(ms int64) (bool, float64) {
 
 // A wheelAggregator is just like a standardAggregator except:
 // - It sends Adjust events for *all* non-zero press amounts
-// - If a frame goes by without it receiving any input it creates a Release //
+// - If a frame goes by without it receiving any input it creates a Release
 // event
 // - It implements TotalingAggregator so we can expose the raw sum instead of
 // the integral that Aggregator.FramePressSum() returns
 type wheelAggregator struct {
 	standardAggregator
 	this_total, cur_total float64
-}
-
-func (wa *wheelAggregator) SendAllNonZero() bool {
-	return true
 }
 
 func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_type EventType) {

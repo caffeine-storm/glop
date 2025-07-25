@@ -25,10 +25,8 @@ type Aggregator interface {
 	AggregatorThink(ms int64) (bool, float64)
 	AggregatorSetPressAmt(amt float64, ms int64, event_type EventType)
 
-	// A very select set of keys should always send events when their press amt
-	// is non-zero. These are typically not your ordinary keys, mouse wheels,
-	// mouse pointers, etc...
-	SendAllNonZero() bool
+	// Give each Key a way to customize/hook into which type of event to emit.
+	DecideEventType(fromAmount, toAmount float64) EventType
 }
 
 type TotalingAggregator interface {
