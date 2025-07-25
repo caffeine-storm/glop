@@ -15,7 +15,15 @@ func AggregatorForType(tp AggregatorType) Aggregator {
 	case AggregatorTypeStandard:
 		return &standardAggregator{}
 	case AggregatorTypeAxis:
-		return &axisAggregator{}
+		return &axisAggregator{
+			// 'Press' and 'Release' don't make sense for these types of keys so
+			// set the original PressAmount to non-zero
+			baseAggregator: baseAggregator{
+				this: keyStats{
+					press_amt: -1,
+				},
+			},
+		}
 	case AggregatorTypeWheel:
 		return &wheelAggregator{}
 	}
@@ -139,6 +147,10 @@ func (sa *standardAggregator) AggregatorThink(ms int64) (bool, float64) {
 type axisAggregator struct {
 	baseAggregator
 	is_down bool
+}
+
+func (*axisAggregator) SendAllNonZero() bool {
+	return true
 }
 
 func (aa *axisAggregator) IsDown() bool {
