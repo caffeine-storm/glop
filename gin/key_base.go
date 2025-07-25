@@ -189,27 +189,41 @@ func (ks *keyState) Id() KeyId {
 	return ks.id
 }
 
+func decideEventType(curPressAmount, newPressAmount float64, agg aggregator.Aggregator) aggregator.EventType {
+	if curPressAmount == newPressAmount {
+		// Nothing's really changing but some keys need to report an 'adjust' here
+		// anyways.
+		if agg.SendAllNonZero() {
+			return aggregator.Adjust
+		}
+		return aggregator.NoEvent
+	}
+
+	if curPressAmount == 0 {
+		// We should only return 'Press' if we're transitioning from 0 to not-0.
+		return aggregator.Press
+	}
+
+	if newPressAmount == 0 {
+		// We should only return 'Release' if we're transitioning from not-0 to 0.
+		return aggregator.Release
+	}
+
+	// The key is pressed before and after but at different amounts; sounds like
+	// an adjustment to me!
+	return aggregator.Adjust
+}
+
 // Tells this key that it was pressed, by how much and at what time. Times must
 // be monotonically increasing. If this press was caused by another event (as
 // is the case with derived keys), then cause is the event that made this
 // happen.
 func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Event) {
 	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.Aggregator)
-	event.Type = aggregator.NoEvent
+
 	event.Key = ks
-	if (ks.CurPressAmt() == 0) != (amt == 0) {
-		if amt == 0 {
-			event.Type = aggregator.Release
-		} else {
-			event.Type = aggregator.Press
-		}
-	} else {
-		if ks.CurPressAmt() != 0 && ks.CurPressAmt() != amt {
-			event.Type = aggregator.Adjust
-		} else if ks.SendAllNonZero() {
-			event.Type = aggregator.Adjust
-		}
-	}
+	event.Type = decideEventType(ks.CurPressAmt(), amt, ks.Aggregator)
+
 	ks.Aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
 	return
 }
