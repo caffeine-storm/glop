@@ -1,7 +1,5 @@
 package aggregator
 
-import "fmt"
-
 // A SubAggregator is the intersection (blech!) between the Key interface and
 // the aggregator interface. It's really two APIs in one; the "Frame*"
 // functions for consumption external to the gin package and the "Cur*"
@@ -20,29 +18,6 @@ type SubAggregator interface {
 	CurReleaseCount() int
 	CurPressAmt() float64
 	CurPressSum() float64
-}
-
-type EventType int
-
-const (
-	NoEvent EventType = iota
-	Press
-	Release
-	Adjust // The key was and is down, but the value of it has changed
-)
-
-func (event EventType) String() string {
-	switch event {
-	case Press:
-		return "press"
-	case Release:
-		return "release"
-	case NoEvent:
-		return "noevent"
-	case Adjust:
-		return "adjust"
-	}
-	panic(fmt.Errorf("%d is not a valid EventType", event))
 }
 
 type Aggregator interface {
