@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/aggregator"
-	"github.com/stretchr/testify/assert"
 )
 
 // Stub implementation of aggregator.SubAggregator
@@ -52,23 +50,5 @@ func (*stubKey) KeyThink(ms int64) (bool, float64) {
 func TestKeyInterface(t *testing.T) {
 	t.Run("Key doesn't include Cursor", func(t *testing.T) {
 		var _ gin.Key = (*stubKey)(nil)
-	})
-}
-
-func TestDecideEventType(t *testing.T) {
-	t.Run("axis aggregator", func(t *testing.T) {
-		assert := assert.New(t)
-
-		evt_type := gin.DecideEventType(0, 0, aggregator.AggregatorForType(aggregator.AggregatorTypeAxis))
-
-		assert.Equal(aggregator.Adjust, evt_type)
-	})
-
-	t.Run("standardAggregator", func(t *testing.T) {
-		assert := assert.New(t)
-		// TODO: move DecideEventType to the aggregator package.
-		evt_type := gin.DecideEventType(0, 0, aggregator.AggregatorForType(aggregator.AggregatorTypeStandard))
-
-		assert.Equal(aggregator.NoEvent, evt_type)
 	})
 }
