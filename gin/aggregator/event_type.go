@@ -24,7 +24,3 @@ func (event EventType) String() string {
 	}
 	panic(fmt.Errorf("%d is not a valid EventType", event))
 }
-
-func DecideEventType(curPressAmount, newPressAmount float64, agg Aggregator) EventType {
-	return agg.DecideEventType(curPressAmount, newPressAmount)
-}

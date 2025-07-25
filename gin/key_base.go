@@ -197,7 +197,7 @@ func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Ev
 	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.Aggregator)
 
 	event.Key = ks
-	event.Type = aggregator.DecideEventType(ks.CurPressAmt(), amt, ks.Aggregator)
+	event.Type = ks.Aggregator.DecideEventType(ks.CurPressAmt(), amt)
 
 	ks.Aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
 	return
