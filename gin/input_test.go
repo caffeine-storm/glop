@@ -26,11 +26,13 @@ var dontCare = struct {
 	Amount    float64
 	Timestamp int64
 	X, Y      int
+	NoEvent   gin.Event
 }{
 	Amount:    1337,
 	Timestamp: 1337,
 	X:         6,
 	Y:         7,
+	NoEvent:   gin.Event{},
 }
 
 type testEvent struct {

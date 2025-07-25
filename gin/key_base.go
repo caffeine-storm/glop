@@ -189,7 +189,7 @@ func (ks *keyState) Id() KeyId {
 	return ks.id
 }
 
-func decideEventType(curPressAmount, newPressAmount float64, agg aggregator.Aggregator) aggregator.EventType {
+func DecideEventType(curPressAmount, newPressAmount float64, agg aggregator.Aggregator) aggregator.EventType {
 	if curPressAmount == newPressAmount {
 		// Nothing's really changing but some keys need to report an 'adjust' here
 		// anyways.
@@ -222,7 +222,7 @@ func (ks *keyState) KeySetPressAmt(amt float64, ms int64, cause Event) (event Ev
 	glog.TraceLogger().Trace("KeySetPressAmt", "keyid", ks.id, "amt", amt, "ks.agg", ks.Aggregator)
 
 	event.Key = ks
-	event.Type = decideEventType(ks.CurPressAmt(), amt, ks.Aggregator)
+	event.Type = DecideEventType(ks.CurPressAmt(), amt, ks.Aggregator)
 
 	ks.Aggregator.AggregatorSetPressAmt(amt, ms, event.Type)
 	return

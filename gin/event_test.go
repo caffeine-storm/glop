@@ -188,5 +188,10 @@ func TestEventGroup(t *testing.T) {
 			eg.Events[0].Type = aggregator.Release
 			assert.False(t, eg.IsMouseMove())
 		})
+
+		t.Run("calling KeySetPressAmt on an axis key will return a mouse move", func(t *testing.T) {
+			result := xAxis.KeySetPressAmt(42, dontCare.Timestamp, dontCare.NoEvent)
+			assert.Equal(t, aggregator.Adjust, result.Type)
+		})
 	})
 }
