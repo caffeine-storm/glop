@@ -395,36 +395,39 @@ func nameForKeyPattern(input *Input, id KeyId) string {
 func (input *Input) GetKeyById(id KeyId) Key {
 	id.MustValidate()
 	key, ok := input.key_map[id]
-	if !ok {
-		if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
-			// If we're looking for a general key we know how to create those
-			input.key_map[id] = &generalDerivedKey{
-				keyState: keyState{
-					id:         id,
-					name:       nameForKeyPattern(input, id),
-					Aggregator: aggregator.AggregatorForType(aggregator.AggregatorTypeStandard),
-				},
-				input: input,
-			}
-			key = input.key_map[id]
-			input.all_keys = append(input.all_keys, key)
-		} else {
-			// Check if the index is valid, if it is then we can just create a new
-			// key the appropriate device.
-			agg_type, ok := input.index_to_agg_type[id.Index]
-			if !ok {
-				panic(fmt.Errorf("no key registered with id == %v", id))
-			}
-			input.key_map[id] = &keyState{
-				id:         id,
-				name:       input.index_to_name[id.Index],
-				Aggregator: aggregator.AggregatorForType(agg_type),
-			}
-			key = input.key_map[id]
-			input.all_keys = append(input.all_keys, key)
-		}
+	if ok {
+		return key
 	}
-	return key
+
+	if id.Index == AnyKey || id.Device.Type == DeviceTypeAny || id.Device.Index == DeviceIndexAny {
+		// If we're looking for a general key we know how to create those
+		input.key_map[id] = &generalDerivedKey{
+			keyState: keyState{
+				id:         id,
+				name:       nameForKeyPattern(input, id),
+				Aggregator: aggregator.AggregatorForType(aggregator.AggregatorTypeStandard),
+			},
+			input: input,
+		}
+		key = input.key_map[id]
+		input.all_keys = append(input.all_keys, key)
+		return key
+	}
+
+	// Check if the index is valid, if it is then we can just create a new
+	// key the appropriate device.
+	agg_type, ok := input.index_to_agg_type[id.Index]
+	if !ok {
+		panic(fmt.Errorf("no key registered with id == %v", id))
+	}
+	ks := &keyState{
+		id:         id,
+		name:       input.index_to_name[id.Index],
+		Aggregator: aggregator.AggregatorForType(agg_type),
+	}
+	input.key_map[id] = ks
+	input.all_keys = append(input.all_keys, ks)
+	return ks
 }
 
 // The Input object can have multiple Listener instances registered with it.
