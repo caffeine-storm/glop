@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/gui/guitest"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,6 @@ func TestSynthesize(t *testing.T) {
 	})
 
 	t.Run("dragging", func(t *testing.T) {
-		assert := assert.New(t)
 		fromPos := gui.Point{
 			X: 4, Y: 4,
 		}
@@ -63,7 +63,7 @@ func TestSynthesize(t *testing.T) {
 		synthesized := guitest.SynthesizeEvents().DragGesture(leftMouseButtonKeyId, fromPos, toPos)
 
 		numEvents := len(synthesized)
-		assert.Greater(numEvents, 0, "there should be some events")
+		assert.Greater(t, numEvents, 0, "there should be some events")
 
 		mouseDown := findEvent(synthesized, func(ev gui.EventGroup) bool {
 			if !ev.PrimaryEvent().IsPress() {
@@ -71,13 +71,23 @@ func TestSynthesize(t *testing.T) {
 			}
 			return ev.PrimaryEvent().Key.Id() == leftMouseButtonKeyId
 		})
-		assert.Equal(mouseDown.GetMousePosition(), fromPos)
+		assert.Equal(t, mouseDown.GetMousePosition(), fromPos)
 		mouseUp := findEvent(synthesized, func(ev gui.EventGroup) bool {
 			if !ev.PrimaryEvent().IsRelease() {
 				return false
 			}
 			return ev.PrimaryEvent().Key.Id() == leftMouseButtonKeyId
 		})
-		assert.Equal(mouseUp.GetMousePosition(), toPos)
+		assert.Equal(t, mouseUp.GetMousePosition(), toPos)
+
+		t.Run("'Adjust' events are used for mouse movement", func(t *testing.T) {
+			mouseMoveXToStart := findEvent(synthesized, func(ev gui.EventGroup) bool {
+				if ev.PrimaryEvent().Key.Id().Index != gin.MouseXAxis {
+					return false
+				}
+				return ev.GetMousePosition() == fromPos
+			})
+			assert.Equal(t, aggregator.Adjust, mouseMoveXToStart.PrimaryEvent().Type)
+		})
 	})
 }
