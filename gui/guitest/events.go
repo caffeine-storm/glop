@@ -2,7 +2,6 @@ package guitest
 
 import (
 	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/aggregator"
 	"github.com/runningwild/glop/gui"
 )
 
@@ -54,19 +53,12 @@ var dontCare = dontCareType{
 
 func (s *synth) makeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) gui.EventGroup {
 	key := s.input.GetKeyById(keyid)
-	key.KeySetPressAmt(pressAmt, dontCare.Timestamp, dontCare.NoEvent)
+	evt := key.KeySetPressAmt(pressAmt, dontCare.Timestamp, dontCare.NoEvent)
 
-	eventType := aggregator.Press
-	if pressAmt == 0 {
-		eventType = aggregator.Release
-	}
 	ret := gui.EventGroup{
 		EventGroup: gin.EventGroup{
 			Events: []gin.Event{
-				{
-					Key:  key,
-					Type: eventType,
-				},
+				evt,
 			},
 		},
 	}
