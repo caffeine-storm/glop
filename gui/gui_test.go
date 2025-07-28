@@ -6,9 +6,10 @@ import (
 	"github.com/runningwild/glop/glog/glogtest"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/gui/guitest"
+	"github.com/stretchr/testify/assert"
 )
 
-var dims = gui.Dims{13, 42}
+var dims = gui.Dims{13, 43}
 
 type loggingWidget struct{}
 
@@ -45,5 +46,14 @@ func TestGui(t *testing.T) {
 				t.Fatalf("the testWidget should have logged 'Draw got called' buffer: %v", bufferedLogger.String())
 			}
 		})
+	})
+
+	t.Run("can transform screen space to 'gui space' (a.k.a. normalized device coordinates", func(t *testing.T) {
+		assert := assert.New(t)
+		g := guitest.MakeStubbedGui(dims)
+		ndc_x, ndc_y := g.ScreenToNDC(6, 21)
+
+		assert.Equal(float32(0), ndc_x)
+		assert.Equal(float32(0), ndc_y)
 	})
 }
