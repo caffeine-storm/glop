@@ -73,7 +73,22 @@ func TestGui(t *testing.T) {
 			{
 				name:   "bottom-left quadrant",
 				expect: [2]float32{-0.8, -0.9},
-				input:  [2]int{dims.Dx / 10, dims.Dy / 20},
+				input:  [2]int{2 * dims.Dx / 20, dims.Dy / 20},
+			},
+			{
+				name:   "bottom-right quadrant",
+				expect: [2]float32{+0.4, -0.7},
+				input:  [2]int{14 * dims.Dx / 20, 3 * dims.Dy / 20},
+			},
+			{
+				name:   "top-left quadrant",
+				expect: [2]float32{-0.6, +0.2},
+				input:  [2]int{4 * dims.Dx / 20, 12 * dims.Dy / 20},
+			},
+			{
+				name:   "top-right quadrant",
+				expect: [2]float32{+0.5, +0.8},
+				input:  [2]int{15 * dims.Dx / 20, 18 * dims.Dy / 20},
 			},
 		}
 		for _, testcase := range testcases {
