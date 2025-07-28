@@ -21,6 +21,12 @@ func givenAWidgetThatLogs() *loggingWidget {
 	return &loggingWidget{}
 }
 
+type testcase struct {
+	name   string
+	expect [2]float32
+	input  [2]int
+}
+
 func TestGui(t *testing.T) {
 	t.Run("Make", func(t *testing.T) {
 		_ = guitest.MakeStubbedGui(dims)
@@ -58,26 +64,25 @@ func TestGui(t *testing.T) {
 
 		g := guitest.MakeStubbedGui(dims)
 
-		t.Run("centre of screen", func(t *testing.T) {
-			assert := assert.New(t)
-			ndc_x, ndc_y := g.ScreenToNDC(dims.Dx/2, dims.Dy/2)
-
-			assert.InDelta(float64(0), float64(ndc_x), epsilon_x)
-			assert.InDelta(float64(0), float64(ndc_y), epsilon_y)
-		})
-
-		t.Run("bottom-left quadrant", func(t *testing.T) {
-			assert := assert.New(t)
-
-			// One tenth to the right, one twentieth above the (0,0) point at the
-			// bottom-left.
-			screen_x := dims.Dx / 10
-			screen_y := dims.Dy / 20
-
-			ndc_x, ndc_y := g.ScreenToNDC(screen_x, screen_y)
-
-			assert.InDelta(float64(-0.8), float64(ndc_x), epsilon_x)
-			assert.InDelta(float64(-0.9), float64(ndc_y), epsilon_y)
-		})
+		testcases := []testcase{
+			{
+				name:   "centre",
+				expect: [2]float32{0, 0},
+				input:  [2]int{dims.Dx / 2, dims.Dy / 2},
+			},
+			{
+				name:   "bottom-left quadrant",
+				expect: [2]float32{-0.8, -0.9},
+				input:  [2]int{dims.Dx / 10, dims.Dy / 20},
+			},
+		}
+		for _, testcase := range testcases {
+			t.Run(testcase.name, func(t *testing.T) {
+				assert := assert.New(t)
+				ndc_x, ndc_y := g.ScreenToNDC(testcase.input[0], testcase.input[1])
+				assert.InDelta(float64(testcase.expect[0]), float64(ndc_x), epsilon_x)
+				assert.InDelta(float64(testcase.expect[1]), float64(ndc_y), epsilon_y)
+			})
+		}
 	})
 }
