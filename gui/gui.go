@@ -340,6 +340,13 @@ func (g *Gui) GetWindowDimensions() Dims {
 	return g.root.Request_dims
 }
 
+func (g *Gui) ScreenToNDC(x_pixels, y_pixels int) (float32, float32) {
+	scaleAndShift := func(step int, domain int) float32 {
+		return (2 * float32(step) / float32(domain)) - 1.0
+	}
+	return scaleAndShift(x_pixels, g.root.Render_region.Dx), scaleAndShift(y_pixels, g.root.Render_region.Dy)
+}
+
 func (g *Gui) Draw() {
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
