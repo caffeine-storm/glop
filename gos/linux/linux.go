@@ -149,6 +149,8 @@ func (linux *SystemObject) HideCursor(hide bool) {
 }
 
 func (linux *SystemObject) RawCursorToWindowCoords(x, y int) (int, int) {
+	// Although X11 uses an origin at the top left, our native code translates
+	// those co-ordinates into space with the origin at the bottom left.
 	return x, y
 }
 
