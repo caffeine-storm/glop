@@ -1,3 +1,6 @@
+tmckee:#50 debug.DumpTexture* helpers defer an 'unbind the texture'; this means
+we wipe out current state when trying to sprinkle debug logging around T_T
+
 tmckee:#49 in the gin key/aggregator interfaces, we call things FramePressSum
 when, really, it's an integral; when input events have the same timestamp, we'd
 expect no contribution to an integral but some contriution to a sum.
@@ -80,4 +83,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#50 <next>
+<owner>:#51 <next>
