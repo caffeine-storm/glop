@@ -12,7 +12,6 @@ import (
 	"code.google.com/p/freetype-go/freetype/raster"
 	"code.google.com/p/freetype-go/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
-	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )
@@ -397,7 +396,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	// We want to use the 0'th texture unit.
 	shaders.SetUniformI("glop.font", "tex", 0)
 
-	debug.LogAndClearGlErrors(d.logger)
+	render.LogAndClearGlErrors(d.logger)
 
 	gl.PushAttrib(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	defer gl.PopAttrib()
@@ -422,7 +421,7 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 
 	gl.DrawElements(gl.TRIANGLES, len(blittingData.indicesData), gl.UNSIGNED_SHORT, nil)
 
-	debug.LogAndClearGlErrors(d.logger)
+	render.LogAndClearGlErrors(d.logger)
 }
 
 func fix24_8_to_float64(n raster.Fix32) float64 {

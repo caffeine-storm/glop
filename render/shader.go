@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/go-gl-legacy/gl"
-	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 )
 
@@ -42,7 +41,7 @@ func (bank *ShaderBank) EnableShader(name string) error {
 		return shaderError(fmt.Sprintf("Tried to use unknown shader '%s'", name))
 	}
 	prog.Use()
-	debug.LogAndClearGlErrors(glog.DebugLogger())
+	LogAndClearGlErrors(glog.DebugLogger())
 	return nil
 }
 
@@ -99,6 +98,6 @@ func (bank *ShaderBank) RegisterShader(name string, vertex, fragment string) err
 
 	bank.ShaderProgs[name] = program
 
-	debug.LogAndClearGlErrors(glog.InfoLogger())
+	LogAndClearGlErrors(glog.InfoLogger())
 	return nil
 }

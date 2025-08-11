@@ -348,6 +348,7 @@ func (g *Gui) ScreenToNDC(x_pixels, y_pixels int) (float32, float32) {
 }
 
 func (g *Gui) Draw() {
+	render.LogAndClearGlErrors(glog.InfoLogger())
 	gl.MatrixMode(gl.MODELVIEW)
 	gl.LoadIdentity()
 	region := g.root.Render_region
@@ -358,6 +359,7 @@ func (g *Gui) Draw() {
 	if g.FocusWidget() != nil {
 		g.FocusWidget().DrawFocused(region, g)
 	}
+	render.LogAndClearGlErrors(glog.InfoLogger())
 }
 
 func (g *Gui) Think(t int64) {

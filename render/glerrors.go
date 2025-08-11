@@ -1,4 +1,4 @@
-package debug
+package render
 
 import (
 	"fmt"

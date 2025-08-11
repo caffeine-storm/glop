@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
-	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
@@ -44,7 +43,7 @@ func TestBlending(t *testing.T) {
 				gl.End()
 			})
 
-			debug.LogAndClearGlErrors(glog.ErrorLogger())
+			render.LogAndClearGlErrors(glog.ErrorLogger())
 		})
 	})
 }

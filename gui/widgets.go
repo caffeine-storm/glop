@@ -1,13 +1,16 @@
 package gui
 
 import (
-	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 	"os"
 	"runtime"
+
+	"github.com/go-gl-legacy/gl"
+	"github.com/go-gl-legacy/glu"
+	"github.com/runningwild/glop/glog"
+	"github.com/runningwild/glop/render"
 )
 
 // An Anchor specifies where a widget should be positioned withing an AnchorBox
@@ -59,6 +62,7 @@ func (w *AnchorBox) GetChildren() []Widget {
 }
 func (w *AnchorBox) Draw(region Region, ctx DrawingContext) {
 	w.Render_region = region
+	render.LogAndClearGlErrors(glog.InfoLogger())
 	for i := range w.children {
 		widget := w.children[i]
 		anchor := w.anchors[i]
@@ -91,7 +95,9 @@ func (w *AnchorBox) Draw(region Region, ctx DrawingContext) {
 			child_region.Y = region.Y
 			child_region.Dy = region.Dy
 		}
+		render.LogAndClearGlErrors(glog.InfoLogger())
 		widget.Draw(child_region, ctx)
+		render.LogAndClearGlErrors(glog.InfoLogger())
 	}
 }
 
