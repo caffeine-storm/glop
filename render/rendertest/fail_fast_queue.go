@@ -3,6 +3,7 @@ package rendertest
 import (
 	"fmt"
 
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )
 
@@ -37,4 +38,8 @@ func Failfastqueue(ctx *glContext) render.RenderQueueInterface {
 		RenderQueueInterface: ctx.render,
 		Ctx:                  ctx,
 	}
+}
+
+func (ff *failfast) SetLogger(logger glog.Logger) {
+	ff.RenderQueueInterface.(render.RenderQueueWithLoggerInterface).SetLogger(logger)
 }

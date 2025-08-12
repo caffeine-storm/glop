@@ -420,19 +420,27 @@ func TestRenderQueueStateContext(t *testing.T) {
 	})
 }
 
+type SetLoggerer interface {
+	SetLogger(glog.Logger)
+}
+
 func TestRenderQueueLogsGlErrors(t *testing.T) {
-	buf := &bytes.Buffer{}
-	logToBufOptions := &glog.Opts{
-		Output: buf,
-	}
+	testbuilder.Run(func(queue render.RenderQueueInterface) {
+		buf := &bytes.Buffer{}
+		logToBufOptions := &glog.Opts{
+			Output: buf,
+		}
+		logger := glog.New(logToBufOptions)
 
-	queue := render.MakeQueueWithLogger(JobThatCausesAGlError, glog.New(logToBufOptions))
-	queue.StartProcessing()
-	queue.Purge()
+		queue.(render.RenderQueueWithLoggerInterface).SetLogger(logger)
+		queue.Queue(JobThatCausesAGlError)
+		queue.Purge()
 
-	// Make sure 'buf' mentions the expected GL error with the right attribution.
-	logContents := string(buf.Bytes())
-	if !ContainsExampleError(logContents) {
-		t.Fatalf("didn't detect error attribution in log contents: %q", logContents)
-	}
+		// Make sure 'buf' mentions the expected GL error with the right attribution.
+		logContents := string(buf.Bytes())
+		if !ContainsExampleError(logContents) {
+			t.Fatalf("didn't detect error attribution in log contents: %q", logContents)
+		}
+	})
+
 }

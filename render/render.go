@@ -11,6 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render/tls"
 )
 
@@ -95,6 +96,11 @@ type RenderQueueInterface interface {
 	IsPurging() bool
 }
 
+type RenderQueueWithLoggerInterface interface {
+	RenderQueueInterface
+	SetLogger(glog.Logger)
+}
+
 type renderQueueState struct {
 	ctx     context.Context
 	shaders *ShaderBank
@@ -127,6 +133,7 @@ type renderQueue struct {
 		fns []func(RenderQueueInterface, error)
 		mut sync.Mutex
 	}
+	logger glog.Logger
 }
 
 func (q *renderQueue) runAndNotify(request *jobWithTiming, ack chan bool) time.Duration {
@@ -157,7 +164,11 @@ func (q *renderQueue) runAndNotify(request *jobWithTiming, ack chan bool) time.D
 		// try to read/write closed channels.
 		q.isDefunct.Store(true)
 	}()
+
+	LogAndClearGlErrors(q.logger)
 	request.Job(q.queueState)
+	LogAndClearGlErrorsWithAttribution(q.logger, request.Job)
+
 	after = time.Now()
 	delta := after.Sub(before)
 
@@ -256,10 +267,22 @@ func (q *renderQueue) loop() {
 }
 
 func MakeQueue(initialization RenderJob) RenderQueueInterface {
-	return MakeQueueWithTiming(initialization, nil)
+	return MakeQueueWithTimingAndLogger(initialization, nil, nil)
+}
+
+func MakeQueueWithLogger(initialization RenderJob, logger glog.Logger) RenderQueueInterface {
+	return MakeQueueWithTimingAndLogger(initialization, nil, logger)
 }
 
 func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) RenderQueueInterface {
+	return MakeQueueWithTimingAndLogger(initialization, listener, nil)
+}
+
+func MakeQueueWithTimingAndLogger(initialization RenderJob, listener *JobTimingListener, logger glog.Logger) RenderQueueInterface {
+	if logger == nil {
+		logger = glog.VoidLogger()
+	}
+
 	result := renderQueue{
 		queueState: &renderQueueState{
 			ctx:     context.Background(),
@@ -271,6 +294,7 @@ func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) 
 		isPurging: atomic.Bool{}, // zero-value is false
 		isDefunct: atomic.Bool{}, // zero-value is false
 		listener:  listener,
+		logger:    logger,
 	}
 
 	// We're guaranteed that this render job will run first. We can include our
@@ -348,4 +372,8 @@ func (q *renderQueue) IsDefunct() bool {
 
 func (q *renderQueue) IsPurging() bool {
 	return q.isPurging.Load()
+}
+
+func (q *renderQueue) SetLogger(logger glog.Logger) {
+	q.logger = logger
 }
