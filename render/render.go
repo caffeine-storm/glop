@@ -267,7 +267,7 @@ func (q *renderQueue) loop() {
 }
 
 func MakeQueue(initialization RenderJob) RenderQueueInterface {
-	return MakeQueueWithTimingAndLogger(initialization, nil, nil)
+	return MakeQueueWithTimingAndLogger(initialization, nil, glog.WarningLogger())
 }
 
 func MakeQueueWithLogger(initialization RenderJob, logger glog.Logger) RenderQueueInterface {
@@ -275,7 +275,7 @@ func MakeQueueWithLogger(initialization RenderJob, logger glog.Logger) RenderQue
 }
 
 func MakeQueueWithTiming(initialization RenderJob, listener *JobTimingListener) RenderQueueInterface {
-	return MakeQueueWithTimingAndLogger(initialization, listener, nil)
+	return MakeQueueWithTimingAndLogger(initialization, listener, glog.WarningLogger())
 }
 
 func MakeQueueWithTimingAndLogger(initialization RenderJob, listener *JobTimingListener, logger glog.Logger) RenderQueueInterface {
