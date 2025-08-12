@@ -1,6 +1,7 @@
 package render_test
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"runtime"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
@@ -416,4 +418,21 @@ func TestRenderQueueStateContext(t *testing.T) {
 			t.Fatalf("didn't find any goroutine-local labels")
 		}
 	})
+}
+
+func TestRenderQueueLogsGlErrors(t *testing.T) {
+	buf := &bytes.Buffer{}
+	logToBufOptions := &glog.Opts{
+		Output: buf,
+	}
+
+	queue := render.MakeQueueWithLogger(JobThatCausesAGlError, glog.New(logToBufOptions))
+	queue.StartProcessing()
+	queue.Purge()
+
+	// Make sure 'buf' mentions the expected GL error with the right attribution.
+	logContents := string(buf.Bytes())
+	if !ContainsExampleError(logContents) {
+		t.Fatalf("didn't detect error attribution in log contents: %q", logContents)
+	}
 }
