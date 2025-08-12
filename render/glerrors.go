@@ -2,12 +2,12 @@ package render
 
 import (
 	"fmt"
-	"reflect"
 	"runtime"
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
+	"github.com/runningwild/glop/gloptest"
 )
 
 func logErrorsWithAttribution(logger glog.Logger, file string, line int) {
@@ -35,9 +35,6 @@ func LogAndClearGlErrors(logger glog.Logger) {
 }
 
 func LogAndClearGlErrorsWithAttribution(logger glog.Logger, fn any) {
-	reflected := reflect.ValueOf(fn)
-	up := uintptr(reflected.UnsafePointer())
-	funky := runtime.FuncForPC(up)
-	file, line := funky.FileLine(up)
+	file, line := gloptest.FileLineForClosure(fn)
 	logErrorsWithAttribution(logger, file, line)
 }

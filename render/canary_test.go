@@ -2,26 +2,17 @@ package render_test
 
 import (
 	"fmt"
-	"reflect"
-	"runtime"
 	"strings"
 	"testing"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/runningwild/glop/gloptest"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 )
 
 var JobThatCausesAGlErrorFileName = "canary_test.go"
-var JobThatCausesAGlErrorLineNumber = computeClosureLineNumber(JobThatCausesAGlError)
-
-func computeClosureLineNumber(fn any) int {
-	reflected := reflect.ValueOf(fn)
-	up := uintptr(reflected.UnsafePointer())
-	funky := runtime.FuncForPC(up)
-	_, line := funky.FileLine(up)
-	return line
-}
+var _, JobThatCausesAGlErrorLineNumber = gloptest.FileLineForClosure(JobThatCausesAGlError)
 
 func JobThatCausesAGlError(render.RenderQueueState) {
 	// do a thing that will cause a GL error
