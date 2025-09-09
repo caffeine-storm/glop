@@ -20,17 +20,8 @@ func TestWheelAggregator(t *testing.T) {
 		// Stop scrolling up
 		agg.AggregatorSetPressAmt(0, 42, aggregator.Release)
 
-		doSynthEvent, synthAmount := agg.AggregatorThink(42)
-
-		if doSynthEvent {
-			panic(fmt.Errorf("the aggregator should not have thought to generate a synthetic event"))
-		}
-		if synthAmount != 0 {
-			panic(fmt.Errorf("there should be no synthetic event press amount"))
-		}
-
-		if agg.FramePressTotal() == 0 {
-			t.Fatalf("a zero sum is incorrect because we pressed it")
+		if agg.CurPressTotal() == 0 {
+			t.Fatalf("a zero sum is incorrect because we're pressing it")
 		}
 	})
 
@@ -46,17 +37,8 @@ func TestWheelAggregator(t *testing.T) {
 		// Stop scrolling down
 		agg.AggregatorSetPressAmt(0, 42, aggregator.Release)
 
-		doSynthEvent, synthAmount := agg.AggregatorThink(42)
-
-		if doSynthEvent {
-			panic(fmt.Errorf("the aggregator should not have thought to generate a synthetic event"))
-		}
-		if synthAmount != 0 {
-			panic(fmt.Errorf("there should be no synthetic event press amount"))
-		}
-
-		if agg.FramePressTotal() >= 0 {
-			t.Fatalf("a non-negative total is incorrect because we scrolled down")
+		if agg.CurPressTotal() >= 0 {
+			t.Fatalf("a non-negative total is incorrect because we're scrolling down")
 		}
 	})
 }

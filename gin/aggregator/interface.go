@@ -13,11 +13,11 @@ type SubAggregator interface {
 	// TODO(#49): FramePressSum is really FramePressIntegral
 	FramePressSum() float64
 	FramePressAvg() float64
-	FramePressTotal() float64
 	CurPressCount() int
 	CurReleaseCount() int
 	CurPressAmt() float64
 	CurPressSum() float64
+	CurPressTotal() float64
 }
 
 type Aggregator interface {
@@ -34,5 +34,5 @@ type TotalingAggregator interface {
 
 	// TODO(#49): Maybe this should be 'sum' once we don't use 'sum' to mean
 	// 'integral'?
-	FramePressTotal() float64
+	CurPressTotal() float64
 }

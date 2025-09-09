@@ -26,7 +26,7 @@ func (a *baseAggregator) FramePressAvg() float64 {
 	return a.prev.press_avg
 }
 
-func (a *baseAggregator) FramePressTotal() float64 {
+func (a *baseAggregator) CurPressTotal() float64 {
 	panic(fmt.Errorf("should not happen"))
 }
 
@@ -181,8 +181,8 @@ func (wa *wheelAggregator) AggregatorSetPressAmt(amt float64, ms int64, event_ty
 	wa.cur_total += amt
 }
 
-func (wa *wheelAggregator) FramePressTotal() float64 {
-	return wa.this_total
+func (wa *wheelAggregator) CurPressTotal() float64 {
+	return wa.cur_total
 }
 
 func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {

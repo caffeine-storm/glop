@@ -41,7 +41,10 @@ func TestSynthesize(t *testing.T) {
 		mouseWheelKeyId.Device.Index = 0
 
 		assert.True(synthesized.IsPressed(mouseWheelKeyId))
-		assert.Equal(float64(-42), synthesized.PrimaryEvent().Key.FramePressTotal())
+		// The 'current press total' is just the running sum while we process a
+		// frame. In between calls to "process the whole frame", the counter should
+		// be 0.
+		assert.Equal(float64(0), synthesized.PrimaryEvent().Key.CurPressTotal())
 	})
 
 	t.Run("dragging", func(t *testing.T) {

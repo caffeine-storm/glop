@@ -831,7 +831,7 @@ func InputRegressionSpec() {
 		wheel := inputObj.GetKeyByParts(gin.MouseWheelVertical, gin.DeviceTypeMouse, 0)
 		So(wheel, ShouldNotBeNil)
 		// totals should start out zeroed
-		So(wheel.FramePressTotal(), ShouldEqual, 0)
+		So(wheel.CurPressTotal(), ShouldEqual, 0)
 
 		inputObj.Think(42, []gin.OsEvent{
 			{
@@ -850,7 +850,10 @@ func InputRegressionSpec() {
 			},
 		})
 
-		So(wheel.FramePressTotal(), ShouldEqual, -1)
+		// So, the 'current press total' should be 0 at the beginning of each
+		// frame. We just called 'inputObj.Think' which pumps an entire frame.
+		// Hence, we should not see any accumulation in 'CurPressTotal'.
+		So(wheel.CurPressTotal(), ShouldEqual, 0)
 
 		So(len(listener.events), ShouldBeGreaterThan, 0)
 

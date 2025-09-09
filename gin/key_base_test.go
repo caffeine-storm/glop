@@ -10,17 +10,17 @@ import (
 // Stub implementation of aggregator.SubAggregator
 type stubAggregator struct{}
 
-func (*stubAggregator) IsDown() bool             { return false }
-func (*stubAggregator) FramePressCount() int     { return 0 }
-func (*stubAggregator) FrameReleaseCount() int   { return 0 }
-func (*stubAggregator) FramePressAmt() float64   { return 0 }
-func (*stubAggregator) FramePressSum() float64   { return 0 }
-func (*stubAggregator) FramePressAvg() float64   { return 0 }
-func (*stubAggregator) FramePressTotal() float64 { return 0 }
-func (*stubAggregator) CurPressCount() int       { return 0 }
-func (*stubAggregator) CurReleaseCount() int     { return 0 }
-func (*stubAggregator) CurPressAmt() float64     { return 0 }
-func (*stubAggregator) CurPressSum() float64     { return 0 }
+func (*stubAggregator) IsDown() bool           { return false }
+func (*stubAggregator) FramePressCount() int   { return 0 }
+func (*stubAggregator) FrameReleaseCount() int { return 0 }
+func (*stubAggregator) FramePressAmt() float64 { return 0 }
+func (*stubAggregator) FramePressSum() float64 { return 0 }
+func (*stubAggregator) FramePressAvg() float64 { return 0 }
+func (*stubAggregator) CurPressCount() int     { return 0 }
+func (*stubAggregator) CurReleaseCount() int   { return 0 }
+func (*stubAggregator) CurPressAmt() float64   { return 0 }
+func (*stubAggregator) CurPressSum() float64   { return 0 }
+func (*stubAggregator) CurPressTotal() float64 { return 0 }
 
 // Stub implementation of gin.Key
 type stubKey struct {
