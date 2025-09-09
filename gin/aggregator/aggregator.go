@@ -59,6 +59,10 @@ func (a *baseAggregator) SendAllNonZero() bool {
 	return false
 }
 
+func (a *baseAggregator) String() string {
+	return fmt.Sprintf("%T{this: %v, prev: %v}", a, &a.this, &a.prev)
+}
+
 // The standardAggregator's sum is an integral of the press_amt over time
 type standardAggregator struct {
 	baseAggregator
@@ -91,6 +95,10 @@ func (sa *standardAggregator) AggregatorThink(ms int64) (bool, float64) {
 	sa.last_press = ms
 	sa.last_think = ms
 	return false, 0
+}
+
+func (sa *standardAggregator) String() string {
+	return fmt.Sprintf("%T{base: %v, last_press: %v, last_think: %v}", sa, &sa.baseAggregator, sa.last_press, sa.last_think)
 }
 
 // The axisAggregator's sum is the sum of all press amounts specified by
@@ -191,4 +199,8 @@ func (wa *wheelAggregator) AggregatorThink(ms int64) (bool, float64) {
 		return true, 0
 	}
 	return false, 0
+}
+
+func (wa *wheelAggregator) String() string {
+	return fmt.Sprintf("%T{sub: %v, this_total: %v, cur_total: %v}", wa, &wa.standardAggregator, wa.this_total, wa.cur_total)
 }
