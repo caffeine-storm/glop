@@ -69,7 +69,7 @@ func stringifyColorModel(m color.Model) string {
 	}
 }
 
-func GivenATexture(imageFilePath string) gl.Texture {
+func GivenATexture(imageFilePath string) (gl.Texture, func()) {
 	imageFilePath = path.Join("testdata", imageFilePath)
 	file, err := os.Open(imageFilePath)
 	if err != nil {
@@ -95,7 +95,9 @@ func GivenATexture(imageFilePath string) gl.Texture {
 			logger.Warn("found non-normalized colour", "idx", idx)
 		}
 	}
-	return uploadTextureFromImage(rgbaImage)
+	return uploadTextureFromImage(rgbaImage), func() {
+		gl.Texture(0).Bind(gl.TEXTURE_2D)
+	}
 }
 
 func DrawTexturedQuad(pixelBounds image.Rectangle, tex gl.Texture, shaders *render.ShaderBank) {

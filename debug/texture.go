@@ -31,6 +31,10 @@ func getBoundTextureFormat() gl.GLenum {
 	return gl.GLenum(buffer[0])
 }
 
+func getBoundTexture() gl.Texture {
+	return gl.Texture(gl.GetInteger(gl.TEXTURE_BINDING_2D))
+}
+
 func getBytesPerPixel(textureFormat gl.GLenum) int {
 	ret, ok := map[gl.GLenum]int{
 		gl.RGBA:            4,
@@ -74,8 +78,9 @@ func summarize(data []byte) string {
 }
 
 func DumpTexture(textureId gl.Texture) (*image.NRGBA, error) {
+	oldTexture := getBoundTexture()
 	textureId.Bind(gl.TEXTURE_2D)
-	defer textureId.Unbind(gl.TEXTURE_2D)
+	defer oldTexture.Bind(gl.TEXTURE_2D)
 
 	textureWidth, textureHeight := getBoundTextureSize()
 	texformat := getBoundTextureFormat()

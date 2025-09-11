@@ -182,7 +182,8 @@ func TestCompareTransparentExpectations(t *testing.T) {
 		testbuilder.WithSize(64, 64, func(queue render.RenderQueueInterface) {
 			queue.Queue(func(st render.RenderQueueState) {
 				// - Convert it to a texture
-				tex := rendertest.GivenATexture("checker/0.png")
+				tex, cleanup := rendertest.GivenATexture("checker/0.png")
+				defer cleanup()
 
 				rendertest.WithClearColour(0, 0, 1, 1, func() {
 					// - Blit the texture accross the entire viewport
@@ -310,7 +311,8 @@ func TestCmpSpecs(t *testing.T) {
 			Convey("for rendered textures", func(c C) {
 				testbuilder.WithExpectation(c, "checker", rendertest.BackgroundColour(blue),
 					func(st render.RenderQueueState) {
-						tex := rendertest.GivenATexture("checker/0.png")
+						tex, cleanup := rendertest.GivenATexture("checker/0.png")
+						defer cleanup()
 
 						rendertest.WithClearColour(0, 0, 1, 1, func() {
 							rendertest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())

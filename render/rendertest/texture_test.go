@@ -16,12 +16,14 @@ func TestDrawTexturedQuad(t *testing.T) {
 		subscreen := image.Rect(16, 16, 48, 48)
 		testbuilder.WithExpectation(c, "subred", func(st render.RenderQueueState) {
 			gl.Disable(gl.TEXTURE_2D)
-			tex := rendertest.GivenATexture("red/0.png")
+			tex, cleanup := rendertest.GivenATexture("red/0.png")
+			defer cleanup()
 			rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
 		})
 		testbuilder.WithExpectation(c, "subred", func(st render.RenderQueueState) {
 			gl.Enable(gl.TEXTURE_2D)
-			tex := rendertest.GivenATexture("red/0.png")
+			tex, cleanup := rendertest.GivenATexture("red/0.png")
+			defer cleanup()
 			rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
 		})
 	})
@@ -30,7 +32,8 @@ func TestDrawTexturedQuad(t *testing.T) {
 		subscreen := image.Rect(16, 16, 48, 48)
 		testbuilder.WithExpectation(c, "subred", func(st render.RenderQueueState) {
 			gl.Buffer(0).Bind(gl.ELEMENT_ARRAY_BUFFER)
-			tex := rendertest.GivenATexture("red/0.png")
+			tex, cleanup := rendertest.GivenATexture("red/0.png")
+			defer cleanup()
 			rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
 		})
 		testbuilder.WithExpectation(c, "subred", func(st render.RenderQueueState) {
@@ -38,14 +41,16 @@ func TestDrawTexturedQuad(t *testing.T) {
 				77, 55, 44, 33, 22, 11,
 			})
 			someStaleBuffer.Bind(gl.ELEMENT_ARRAY_BUFFER)
-			tex := rendertest.GivenATexture("red/0.png")
+			tex, cleanup := rendertest.GivenATexture("red/0.png")
+			defer cleanup()
 			rendertest.DrawTexturedQuad(subscreen, tex, st.Shaders())
 		})
 	})
 
 	Convey("GivenATexture must panic if there's no image file", t, func(c C) {
 		c.So(func() {
-			rendertest.GivenATexture("thisfiledoesnotexist.nope")
+			_, cleanup := rendertest.GivenATexture("thisfiledoesnotexist.nope")
+			defer cleanup()
 		}, ShouldPanic)
 	})
 }

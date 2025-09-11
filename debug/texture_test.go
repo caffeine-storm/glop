@@ -97,7 +97,8 @@ func TestTextureDebugging(t *testing.T) {
 		var err error
 
 		testbuilder.Run(func() {
-			tex := rendertest.GivenATexture("red/0.png")
+			tex, cleanup := rendertest.GivenATexture("red/0.png")
+			defer cleanup()
 
 			dumpedImage, err = debug.DumpTexture(tex)
 			if err != nil {
@@ -118,7 +119,8 @@ func TestTextureDebugging(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
 		testbuilder.Run(func() {
-			tex := rendertest.GivenATexture("red/0.png")
+			tex, cleanup := rendertest.GivenATexture("red/0.png")
+			defer cleanup()
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)
 			if err != nil {
@@ -144,7 +146,8 @@ func TestTextureDebugging(t *testing.T) {
 		pngBuffer := &bytes.Buffer{}
 
 		testbuilder.Run(func() {
-			tex := rendertest.GivenATexture("checker/0.png")
+			tex, cleanup := rendertest.GivenATexture("checker/0.png")
+			defer cleanup()
 
 			err := debug.DumpTextureAsPng(tex, pngBuffer)
 			if err != nil {
@@ -214,7 +217,8 @@ func TestTextureDebugging(t *testing.T) {
 			var resultImage image.Image
 			queue.Queue(func(st render.RenderQueueState) {
 				// - Convert it to a texture
-				tex := rendertest.GivenATexture("checker/0.png")
+				tex, cleanup := rendertest.GivenATexture("checker/0.png")
+				defer cleanup()
 
 				rendertest.WithClearColour(0, 0, 1, 1, func() {
 					// - Blit the texture accross the entire viewport
