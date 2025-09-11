@@ -86,7 +86,7 @@ func GetFlagSet() map[string]gl.GLenum {
 	}
 	ret := map[string]gl.GLenum{}
 
-	ret["ACTIVE_TEXTURE"] = GetActiveTextureUnit()
+	ret["ACTIVE_TEXTURE_UNIT"] = GetActiveTextureUnit()
 	ret["GL_BLEND"] = intbools[gl.IsEnabled(gl.BLEND)]
 	ret["GL_CLIP_PLANE0"] = intbools[gl.IsEnabled(gl.CLIP_PLANE0)]
 	ret["GL_CLIP_PLANE1"] = intbools[gl.IsEnabled(gl.CLIP_PLANE1)]
