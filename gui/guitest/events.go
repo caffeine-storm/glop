@@ -30,7 +30,9 @@ var wheel = gin.KeyId{
 }
 
 type synth struct {
-	input *gin.Input
+	input   *gin.Input
+	rootGui *gui.Gui
+	spies   []RespondSpy
 }
 
 type dontCareType struct {
@@ -51,6 +53,13 @@ var dontCare = dontCareType{
 	NoEvent:   gin.Event{},
 }
 
+func (s *synth) emulateRespondPhase(eg gui.EventGroup) {
+	for _, spy := range s.spies {
+		spy.Respond(s.rootGui, eg)
+	}
+}
+
+// TODO(tmckee:#42): rename? we call 'Respond' now too...
 func (s *synth) makeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) gui.EventGroup {
 	key := s.input.GetKeyById(keyid)
 	evt := key.KeySetPressAmt(pressAmt, dontCare.Timestamp, dontCare.NoEvent)
@@ -63,6 +72,9 @@ func (s *synth) makeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) 
 		},
 	}
 	ret.SetMousePosition(at.X, at.Y)
+
+	s.emulateRespondPhase(ret)
+
 	return ret
 }
 
@@ -78,9 +90,11 @@ func (s *synth) release(keyid gin.KeyId, at gui.Point) gui.EventGroup {
 	return ret
 }
 
-func SynthesizeEvents() *synth {
+func SynthesizeEvents(listeners ...RespondSpy) *synth {
 	return &synth{
-		input: gin.Make(),
+		input:   gin.Make(),
+		rootGui: MakeStubbedGui(gui.Dims{Dx: 16, Dy: 16}),
+		spies:   listeners,
 	}
 }
 
