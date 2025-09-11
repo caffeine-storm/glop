@@ -177,15 +177,13 @@ func TestEventGroup(t *testing.T) {
 			assert.True(t, eg.IsMouseMove())
 		})
 
+		eg.Events[0].Type = aggregator.Press
 		t.Run("returns false for a press", func(t *testing.T) {
-			eg := eg
-			eg.Events[0].Type = aggregator.Press
 			assert.False(t, eg.IsMouseMove())
 		})
 
+		eg.Events[0].Type = aggregator.Release
 		t.Run("returns false for a release", func(t *testing.T) {
-			eg := eg
-			eg.Events[0].Type = aggregator.Release
 			assert.False(t, eg.IsMouseMove())
 		})
 
