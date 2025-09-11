@@ -59,7 +59,6 @@ func (s *synth) emulateRespondPhase(eg gui.EventGroup) {
 	}
 }
 
-// TODO(tmckee:#42): rename? we call 'Respond' now too...
 func (s *synth) makeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) gui.EventGroup {
 	key := s.input.GetKeyById(keyid)
 	evt := key.KeySetPressAmt(pressAmt, dontCare.Timestamp, dontCare.NoEvent)
@@ -73,19 +72,23 @@ func (s *synth) makeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) 
 	}
 	ret.SetMousePosition(at.X, at.Y)
 
-	s.emulateRespondPhase(ret)
+	return ret
+}
 
+func (s *synth) synthesizeEventGroup(keyid gin.KeyId, at gui.Point, pressAmt float64) gui.EventGroup {
+	ret := s.makeEventGroup(keyid, at, pressAmt)
+	s.emulateRespondPhase(ret)
 	return ret
 }
 
 func (s *synth) press(keyid gin.KeyId, at gui.Point) gui.EventGroup {
-	ret := s.makeEventGroup(keyid, at, 1)
+	ret := s.synthesizeEventGroup(keyid, at, 1)
 	ret.Events[0].Key.KeyThink(dontCare.Timestamp)
 	return ret
 }
 
 func (s *synth) release(keyid gin.KeyId, at gui.Point) gui.EventGroup {
-	ret := s.makeEventGroup(keyid, at, 0)
+	ret := s.synthesizeEventGroup(keyid, at, 0)
 	ret.Events[0].Key.KeyThink(dontCare.Timestamp)
 	return ret
 }
@@ -99,8 +102,8 @@ func SynthesizeEvents(listeners ...RespondSpy) *synth {
 }
 
 func (s *synth) WheelDown(amt float64) gui.EventGroup {
-	start := s.makeEventGroup(wheel, dontCare.MousePoint, amt)
-	end := s.makeEventGroup(wheel, dontCare.MousePoint, 0)
+	start := s.synthesizeEventGroup(wheel, dontCare.MousePoint, amt)
+	end := s.synthesizeEventGroup(wheel, dontCare.MousePoint, 0)
 
 	events := []gin.Event{}
 	events = append(events, start.Events...)
