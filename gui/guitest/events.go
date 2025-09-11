@@ -30,9 +30,9 @@ var wheel = gin.KeyId{
 }
 
 type synth struct {
-	input   *gin.Input
-	rootGui *gui.Gui
-	spies   []RespondSpy
+	input      *gin.Input
+	rootGui    *gui.Gui
+	responders []Responder
 }
 
 type dontCareType struct {
@@ -54,7 +54,7 @@ var dontCare = dontCareType{
 }
 
 func (s *synth) emulateRespondPhase(eg gui.EventGroup) {
-	for _, spy := range s.spies {
+	for _, spy := range s.responders {
 		spy.Respond(s.rootGui, eg)
 	}
 }
@@ -93,11 +93,11 @@ func (s *synth) release(keyid gin.KeyId, at gui.Point) gui.EventGroup {
 	return ret
 }
 
-func SynthesizeEvents(listeners ...RespondSpy) *synth {
+func SynthesizeEvents(listeners ...Responder) *synth {
 	return &synth{
-		input:   gin.Make(),
-		rootGui: MakeStubbedGui(gui.Dims{Dx: 16, Dy: 16}),
-		spies:   listeners,
+		input:      gin.Make(),
+		rootGui:    MakeStubbedGui(gui.Dims{Dx: 16, Dy: 16}),
+		responders: listeners,
 	}
 }
 
