@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/gintesting"
+	"github.com/runningwild/glop/gin/gintest"
 	"github.com/runningwild/glop/gui"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -21,7 +21,7 @@ func ClickAButton(btn *gui.Button) {
 	input := gin.Make()
 
 	eventGroup := gui.EventGroup{
-		EventGroup:                 gintesting.ClickEventGroup(input),
+		EventGroup:                 gintest.ClickEventGroup(input),
 		DispatchedToFocussedWidget: true,
 	}
 

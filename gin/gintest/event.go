@@ -1,4 +1,4 @@
-package gintesting
+package gintest
 
 import (
 	"github.com/runningwild/glop/gin"
