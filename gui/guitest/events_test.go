@@ -33,12 +33,12 @@ func findEvent(events []gui.EventGroup, pred func(gui.EventGroup) bool) gui.Even
 }
 
 func TestSynthesize(t *testing.T) {
+	mouseWheelKeyId := gin.AnyMouseWheelVertical
+	mouseWheelKeyId.Device.Index = 0
+
 	t.Run("WheelDown", func(t *testing.T) {
 		assert := assert.New(t)
 		synthesized := guitest.SynthesizeEvents().WheelDown(-42)
-
-		mouseWheelKeyId := gin.AnyMouseWheelVertical
-		mouseWheelKeyId.Device.Index = 0
 
 		assert.True(synthesized.IsPressed(mouseWheelKeyId))
 		// The 'current press total' is just the running sum while we process a
@@ -92,5 +92,20 @@ func TestSynthesize(t *testing.T) {
 			})
 			assert.Equal(t, aggregator.Adjust, mouseMoveXToStart.PrimaryEvent().Type)
 		})
+	})
+
+	t.Run("can hook into 'Respond' phase", func(t *testing.T) {
+		listener := guitest.NewRespondSpy()
+		guitest.SynthesizeEvents(listener).WheelDown(5)
+
+		events := listener.GetEvents()
+		for _, evt := range events {
+			if evt.PrimaryEvent().Key.Id() == mouseWheelKeyId {
+				// Want more checks; make sure there's a Press and a Release(?)
+				return
+			}
+		}
+
+		t.Fatalf("didn't see events from the mouse wheel during the 'Respond' phase; saw %v", events)
 	})
 }
