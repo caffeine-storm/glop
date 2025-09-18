@@ -9,28 +9,6 @@ import (
 	"github.com/runningwild/glop/render"
 )
 
-type Zone interface {
-	// Returns the dimensions that this Widget would like available to
-	// render itself.  A Widget should only update the value it returns from
-	// this method when its Think() method is called.
-	Requested() Dims
-
-	// Returns ex,ey, where ex and ey indicate whether this Widget is
-	// capable of expanding along the X and Y axes, respectively.
-	Expandable() (bool, bool)
-
-	// Returns the region that this Widget used to render itself the last
-	// time it was rendered.  Should be completely contained within the
-	// region that was passed to it on its last call to Draw.
-	Rendered() Region
-}
-
-type WidgetParent interface {
-	AddChild(w Widget)
-	RemoveChild(w Widget)
-	GetChildren() []Widget
-}
-
 type DrawingContext interface {
 	GetDictionary(fontname string) *Dictionary
 	GetShaders(fontname string) *render.ShaderBank
@@ -41,141 +19,6 @@ type UpdateableDrawingContext interface {
 	DrawingContext
 	SetDictionary(fontname string, d *Dictionary)
 	SetShaders(fontname string, b *render.ShaderBank)
-}
-
-type Widget interface {
-	Zone
-
-	// Called regularly with a timestamp and a reference to the root widget.
-	Think(*Gui, int64)
-
-	// Returns true if this widget or any of its children consumed the
-	// event group
-	Respond(*Gui, EventGroup) bool
-
-	Draw(Region, DrawingContext)
-	DrawFocused(Region, DrawingContext)
-	String() string
-}
-
-type CoreWidget interface {
-	Zone
-
-	DoThink(dt int64, isFocused bool)
-
-	// If change_focus is true, then the EventGroup will be consumed,
-	// regardless of the value of consume
-	DoRespond(EventHandlingContext, EventGroup) (consume, change_focus bool)
-
-	Draw(Region, DrawingContext)
-	DrawFocused(Region, DrawingContext)
-
-	GetChildren() []Widget
-	String() string
-}
-
-type EmbeddedWidget interface {
-	Think(*Gui, int64)
-	Respond(*Gui, EventGroup) (consume bool)
-}
-
-// TODO(tmckee): is a BasicWidget just a way to implement 'Widget' for a
-// CoreWidget?
-type BasicWidget struct {
-	CoreWidget
-}
-
-func (w *BasicWidget) Think(gui *Gui, t int64) {
-	kids := w.GetChildren()
-	for i := range kids {
-		kids[i].Think(gui, t)
-	}
-	w.DoThink(t, w == gui.FocusWidget())
-}
-
-func (w *BasicWidget) Respond(gui *Gui, event_group EventGroup) bool {
-	if mpos, ok := gui.UseMousePosition(event_group); ok {
-		if !mpos.Inside(w.Rendered()) {
-			return false
-		}
-	}
-	consume, change_focus := w.DoRespond(gui, event_group)
-
-	if change_focus {
-		if event_group.DispatchedToFocussedWidget {
-			gui.DropFocus()
-		} else {
-			gui.TakeFocus(w)
-		}
-		return true
-	}
-	if consume {
-		return true
-	}
-
-	kids := w.GetChildren()
-	for i := len(kids) - 1; i >= 0; i-- {
-		if kids[i].Respond(gui, event_group) {
-			return true
-		}
-	}
-	return false
-}
-
-type BasicZone struct {
-	Request_dims  Dims
-	Render_region Region
-	Ex, Ey        bool
-}
-
-func (bz BasicZone) Requested() Dims {
-	return bz.Request_dims
-}
-func (bz BasicZone) Rendered() Region {
-	return bz.Render_region
-}
-func (bz BasicZone) Expandable() (bool, bool) {
-	return bz.Ex, bz.Ey
-}
-
-type CollapsableZone struct {
-	Collapsed     bool
-	Request_dims  Dims
-	Render_region Region
-	Ex, Ey        bool
-}
-
-func (cz CollapsableZone) Requested() Dims {
-	if cz.Collapsed {
-		return Dims{}
-	}
-	return cz.Request_dims
-}
-func (cz CollapsableZone) Rendered() Region {
-	if cz.Collapsed {
-		return Region{Point: cz.Render_region.Point}
-	}
-	return cz.Render_region
-}
-func (cz *CollapsableZone) Expandable() (bool, bool) {
-	if cz.Collapsed {
-		return false, false
-	}
-	return cz.Ex, cz.Ey
-}
-
-// Embed a Clickable object to run a specified function when the widget
-// is clicked and run a specified function.
-type Clickable struct {
-	on_click func(EventHandlingContext, int64)
-}
-
-func (c Clickable) DoRespond(ctx EventHandlingContext, event_group EventGroup) (bool, bool) {
-	if event_group.IsPressed(gin.AnyMouseLButton) {
-		c.on_click(ctx, event_group.Timestamp)
-		return true, false
-	}
-	return false, false
 }
 
 type StubDrawFocuseder struct{}
@@ -240,35 +83,6 @@ func (s *StandardParent) RemoveAllChildren() {
 	s.Children = s.Children[0:0]
 }
 
-type rootWidget struct {
-	EmbeddedWidget
-	StandardParent
-	BasicZone
-	StubDoResponder
-	StubDoThinker
-	StubDrawFocuseder
-}
-
-func (r *rootWidget) String() string {
-	return "root"
-}
-
-func (r *rootWidget) Draw(region Region, ctx DrawingContext) {
-	r.Render_region = region
-	for i := range r.Children {
-		r.Children[i].Draw(region, ctx)
-	}
-}
-
-type ButtonPressType int
-
-const (
-	ButtonPressTypeUp = iota
-	ButtonPressTypeDown
-	ButtonPressTypeStart
-	ButtonPressTypeEnd
-)
-
 type Gui struct {
 	root rootWidget
 
@@ -315,25 +129,6 @@ func (g *Gui) SetDictionary(fontname string, d *Dictionary) {
 
 func (g *Gui) SetShaders(fontname string, b *render.ShaderBank) {
 	g.shaders[fontname] = b
-}
-
-func Make(dims Dims, dispatcher gin.EventDispatcher) (*Gui, error) {
-	return MakeLogged(dims, dispatcher, glog.VoidLogger())
-}
-
-func MakeLogged(dims Dims, dispatcher gin.EventDispatcher, logger glog.Logger) (*Gui, error) {
-	// Note that, since each Gui should only be used in once RenderQueue, we
-	// don't have to worry about font name collisions here.
-	g := Gui{
-		dictionaries: map[string]*Dictionary{},
-		shaders:      map[string]*render.ShaderBank{},
-		logger:       logger,
-	}
-	g.root.EmbeddedWidget = &BasicWidget{CoreWidget: &g.root}
-	g.root.Request_dims = dims
-	g.root.Render_region.Dims = dims
-	dispatcher.RegisterEventListener(&g)
-	return &g, nil
 }
 
 func (g *Gui) GetWindowDimensions() Dims {
@@ -417,18 +212,11 @@ func (g *Gui) FocusWidget() Widget {
 // Returns (point, ok) describing where the mouse was during the given event
 // group. If the event group doesn't track mouse position, the 'ok' flag will
 // be false.
-func (g *Gui) UseMousePosition(grp EventGroup) (Point, bool) {
-	var p Point
-	found := false
-	if grp.HasMousePosition() {
-		p = grp.GetMousePosition()
-		found = true
+func (g *Gui) UseMousePosition(grp EventGroup) (pt Point, found bool) {
+	if found = grp.HasMousePosition(); found {
+		pt = grp.GetMousePosition()
 	}
-	return p, found
-}
-
-func stateToButtonFlag(tp ButtonPressType) bool {
-	return tp == ButtonPressTypeDown || tp == ButtonPressTypeStart
+	return
 }
 
 func (g *Gui) LeftButton(grp EventGroup) bool {
@@ -441,4 +229,23 @@ func (g *Gui) MiddleButton(grp EventGroup) bool {
 
 func (g *Gui) RightButton(grp EventGroup) bool {
 	return grp.PrimaryEvent().Key.Id().Index == gin.MouseRButton
+}
+
+func Make(dims Dims, dispatcher gin.EventDispatcher) (*Gui, error) {
+	return MakeLogged(dims, dispatcher, glog.VoidLogger())
+}
+
+func MakeLogged(dims Dims, dispatcher gin.EventDispatcher, logger glog.Logger) (*Gui, error) {
+	// Note that, since each Gui should only be used in one RenderQueue, we don't
+	// have to worry about font name collisions here.
+	g := Gui{
+		dictionaries: map[string]*Dictionary{},
+		shaders:      map[string]*render.ShaderBank{},
+		logger:       logger,
+	}
+	g.root.EmbeddedWidget = &BasicWidget{CoreWidget: &g.root}
+	g.root.Request_dims = dims
+	g.root.Render_region.Dims = dims
+	dispatcher.RegisterEventListener(&g)
+	return &g, nil
 }
