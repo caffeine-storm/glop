@@ -240,7 +240,7 @@ func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...int
 	queue.Queue(func(render.RenderQueueState) {
 		_, _, actualScreenWidth, actualScreenHeight := debug.GetViewport()
 		actualImage = debug.ScreenShotNrgba(int(actualScreenWidth), int(actualScreenHeight))
-		backgroundForImageCmp = GetCurrentBackgroundColor()
+		backgroundForImageCmp = render.GetCurrentBackgroundColor()
 	})
 	queue.Purge()
 

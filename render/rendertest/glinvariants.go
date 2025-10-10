@@ -110,13 +110,13 @@ func checkColourInvariants() error {
 	white := color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 	black := color.NRGBA{R: 0, G: 0, B: 0, A: 255}
 
-	fg := GetCurrentForegroundColour()
+	fg := render.GetCurrentForegroundColour()
 	errs := []error{}
 	if fg != white {
 		errs = append(errs, fmt.Errorf("bad foreground colour: %v expected: %v (white)", fg, white))
 	}
 
-	bg := GetCurrentBackgroundColor()
+	bg := render.GetCurrentBackgroundColor()
 	// Alpha doesn't matter for background/clearing
 	bg.A = black.A
 	if bg != black {

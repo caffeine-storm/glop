@@ -1,4 +1,4 @@
-package rendertest
+package render
 
 import (
 	"image/color"

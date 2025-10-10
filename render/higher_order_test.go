@@ -9,7 +9,6 @@ import (
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glew"
 	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
@@ -219,17 +218,17 @@ func asFloats(c color.NRGBA) (float32, float32, float32, float32) {
 func TestWithColour(t *testing.T) {
 	assert := assert.New(t)
 	testbuilder.New().Run(func() {
-		oldColour := rendertest.GetCurrentForegroundColour()
+		oldColour := render.GetCurrentForegroundColour()
 		newColour := pickADifferentColour(oldColour)
 		var chosenColour color.NRGBA
 		r, g, b, a := asFloats(newColour)
 		render.WithColour(r, g, b, a, func() {
-			chosenColour = rendertest.GetCurrentForegroundColour()
+			chosenColour = render.GetCurrentForegroundColour()
 
 			tempColour := pickADifferentColour(oldColour, newColour, chosenColour)
 			gl.Color4ub(tempColour.R, tempColour.G, tempColour.B, tempColour.A)
 		})
-		afterColour := rendertest.GetCurrentForegroundColour()
+		afterColour := render.GetCurrentForegroundColour()
 
 		assert.Equal(newColour, chosenColour)
 		assert.Equal(oldColour, afterColour)
