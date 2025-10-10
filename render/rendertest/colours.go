@@ -6,7 +6,7 @@ import (
 	"github.com/go-gl-legacy/gl"
 )
 
-func WithClearColour(r, g, b, a gl.GLclampf, fn func()) {
+func WithBlankScreen(r, g, b, a gl.GLclampf, fn func()) {
 	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
 	defer gl.PopAttrib()
 

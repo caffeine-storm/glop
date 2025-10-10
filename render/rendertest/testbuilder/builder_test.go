@@ -107,7 +107,7 @@ func TestBuilderFluentApi(t *testing.T) {
 				R: 225, G: 0, B: 255, A: 255,
 			}
 			testbuilder.WithExpectation(c, "red-on-pink", pinkBackground, func() {
-				rendertest.WithClearColour(gl.GLclampf(pinkBackground.R), gl.GLclampf(pinkBackground.G), gl.GLclampf(pinkBackground.B), gl.GLclampf(pinkBackground.A), func() {
+				rendertest.WithBlankScreen(gl.GLclampf(pinkBackground.R), gl.GLclampf(pinkBackground.G), gl.GLclampf(pinkBackground.B), gl.GLclampf(pinkBackground.A), func() {
 					rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
 				})
 			})
