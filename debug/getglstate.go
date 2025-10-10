@@ -75,8 +75,19 @@ type GlState struct {
 	ProjectionMatrix []float64
 	ColorMatrix      []float64
 	TextureMatrix    []float64
-	Bindings         map[string]int
-	FlagSet          map[string]gl.GLenum
+
+	Colours  map[string]string
+	Bindings map[string]int
+	FlagSet  map[string]gl.GLenum
+}
+
+func getColour(colourName gl.GLenum) (byte, byte, byte, byte) {
+	r, g, b, a := gl.GetDouble4(colourName)
+	return byte(r * 256), byte(g * 256), byte(b * 256), byte(a * 256)
+}
+
+func colourString(r, g, b, a byte) string {
+	return fmt.Sprintf("(0x%x,0x%x,0x%x,0x%x)", r, g, b, a)
 }
 
 func GetFlagSet() map[string]gl.GLenum {
@@ -92,8 +103,8 @@ func GetFlagSet() map[string]gl.GLenum {
 	ret["GL_CLIP_PLANE1"] = intbools[gl.IsEnabled(gl.CLIP_PLANE1)]
 	ret["GL_CLIP_PLANE2"] = intbools[gl.IsEnabled(gl.CLIP_PLANE2)]
 	ret["GL_CLIP_PLANE3"] = intbools[gl.IsEnabled(gl.CLIP_PLANE3)]
-	ret["GL_CULL_FACE"] = intbools[gl.IsEnabled(gl.CULL_FACE)]
 
+	ret["GL_CULL_FACE"] = intbools[gl.IsEnabled(gl.CULL_FACE)]
 	ret["GL_DEPTH_TEST"] = intbools[gl.IsEnabled(gl.DEPTH_TEST)]
 	ret["GL_DITHER"] = intbools[gl.IsEnabled(gl.DITHER)]
 	ret["GL_INDEX_ARRAY"] = intbools[gl.IsEnabled(gl.INDEX_ARRAY)]
@@ -125,6 +136,15 @@ func GetBindingsSet() map[string]int {
 	return ret
 }
 
+func GetColours() map[string]string {
+	ret := map[string]string{}
+
+	ret["gl.CURRENT_COLOR"] = colourString(getColour(gl.CURRENT_COLOR))
+	ret["gl.COLOR_CLEAR_VALUE"] = colourString(getColour(gl.COLOR_CLEAR_VALUE))
+
+	return ret
+}
+
 func (st *GlState) String() string {
 	return fmt.Sprintf("%+v", *st)
 }
@@ -139,6 +159,7 @@ func GetGlState() *GlState {
 		TextureMatrix:    GetTextureMatrix(),
 
 		Bindings: GetBindingsSet(),
+		Colours:  GetColours(),
 		FlagSet:  GetFlagSet(),
 	}
 }
