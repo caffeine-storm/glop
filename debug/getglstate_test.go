@@ -48,5 +48,10 @@ func TestGlInspect(t *testing.T) {
 			assert.Contains(t, stringified, "TEXTURE_COORD_ARRAY_BUFFER_BINDING")
 			assert.Contains(t, stringified, "VERTEX_ARRAY_BUFFER_BINDING")
 		})
+
+		t.Run("colours", func(t *testing.T) {
+			assert.Contains(t, stringified, "gl.CURRENT_COLOR")
+			assert.Contains(t, stringified, "gl.COLOR_CLEAR_VALUE")
+		})
 	})
 }
