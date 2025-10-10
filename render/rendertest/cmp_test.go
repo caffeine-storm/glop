@@ -185,7 +185,7 @@ func TestCompareTransparentExpectations(t *testing.T) {
 				tex, cleanup := rendertest.GivenATexture("checker/0.png")
 				defer cleanup()
 
-				rendertest.WithBlankScreen(0, 0, 1, 1, func() {
+				render.WithBlankScreen(0, 0, 1, 1, func() {
 					// - Blit the texture accross the entire viewport
 					rendertest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
 				})
@@ -314,7 +314,7 @@ func TestCmpSpecs(t *testing.T) {
 						tex, cleanup := rendertest.GivenATexture("checker/0.png")
 						defer cleanup()
 
-						rendertest.WithBlankScreen(0, 0, 1, 1, func() {
+						render.WithBlankScreen(0, 0, 1, 1, func() {
 							rendertest.DrawTexturedQuad(image.Rect(0, 0, 64, 64), tex, st.Shaders())
 						})
 					})

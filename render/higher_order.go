@@ -142,3 +142,12 @@ func WithColour(r, g, b, a float32, fn func()) {
 	gl.Color4f(r, g, b, a)
 	fn()
 }
+
+func WithBlankScreen(r, g, b, a gl.GLclampf, fn func()) {
+	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
+	defer gl.PopAttrib()
+
+	gl.ClearColor(r, g, b, a)
+	gl.Clear(gl.COLOR_BUFFER_BIT)
+	fn()
+}

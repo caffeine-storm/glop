@@ -12,7 +12,7 @@ func BlankAndDrawRectNdc(x1, y1, x2, y2 float64) {
 }
 
 func BlankAndDrawRect(x1, y1, x2, y2 float64) {
-	WithBlankScreen(0, 0, 0, 1, func() {
+	render.WithBlankScreen(0, 0, 0, 1, func() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 		DrawRect(x1, y1, x2, y2)
 	})

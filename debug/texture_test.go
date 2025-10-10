@@ -220,7 +220,7 @@ func TestTextureDebugging(t *testing.T) {
 				tex, cleanup := rendertest.GivenATexture("checker/0.png")
 				defer cleanup()
 
-				rendertest.WithBlankScreen(0, 0, 1, 1, func() {
+				render.WithBlankScreen(0, 0, 1, 1, func() {
 					// - Blit the texture accross the entire viewport
 					rendertest.DrawTexturedQuad(bounds, tex, st.Shaders())
 

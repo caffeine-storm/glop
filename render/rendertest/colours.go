@@ -6,15 +6,6 @@ import (
 	"github.com/go-gl-legacy/gl"
 )
 
-func WithBlankScreen(r, g, b, a gl.GLclampf, fn func()) {
-	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
-	defer gl.PopAttrib()
-
-	gl.ClearColor(r, g, b, a)
-	gl.Clear(gl.COLOR_BUFFER_BIT)
-	fn()
-}
-
 func getCurrentBackground() [4]float32 {
 	oldClear := [4]float32{0, 0, 0, 0}
 	gl.GetFloatv(gl.COLOR_CLEAR_VALUE, oldClear[:])
