@@ -18,7 +18,6 @@ func TestGlInspect(t *testing.T) {
 
 			for err := gl.GetError(); err != 0; err = gl.GetError() {
 				errors = append(errors, err)
-				err = gl.GetError()
 			}
 		})
 
