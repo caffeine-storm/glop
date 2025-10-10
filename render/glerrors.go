@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-gl-legacy/gl"
+	"github.com/go-gl-legacy/glu"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gloptest"
 )
@@ -18,7 +19,12 @@ func logErrorsWithAttribution(logger glog.Logger, file string, line int) {
 		}
 
 		glErrHex := fmt.Sprintf("0x%04x", glErr)
-		logger.Warn("GlError", "file", file, "line", line, "code", glErrHex)
+		glErrMsg, err := glu.ErrorString(glErr)
+		if err != nil {
+			// Report the make-an-error string error!
+			glErrMsg = fmt.Sprintf("couldn't glu.ErrorString(%d): %s", glErr, err.Error())
+		}
+		logger.Warn("GlError", "file", file, "line", line, "code", glErrHex, "msg", glErrMsg)
 	}
 }
 
