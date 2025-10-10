@@ -7,7 +7,7 @@ import (
 )
 
 func WithClearColour(r, g, b, a gl.GLclampf, fn func()) {
-	gl.PushAttrib(gl.COLOR_BUFFER_BIT)
+	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
 	defer gl.PopAttrib()
 
 	gl.ClearColor(r, g, b, a)

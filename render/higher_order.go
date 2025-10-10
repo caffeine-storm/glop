@@ -136,10 +136,9 @@ func WithoutTexturing(fn func()) {
 }
 
 func WithColour(r, g, b, a float32, fn func()) {
-	oldColour := [4]float32{}
-	gl.GetFloatv(gl.CURRENT_COLOR, oldColour[:])
+	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
+	defer gl.PopAttrib()
 
 	gl.Color4f(r, g, b, a)
 	fn()
-	gl.Color4f(oldColour[0], oldColour[1], oldColour[2], oldColour[2])
 }
