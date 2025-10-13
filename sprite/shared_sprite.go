@@ -1,10 +1,6 @@
 package sprite
 
 import (
-	"fmt"
-	"image"
-	_ "image/png"
-	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -13,7 +9,7 @@ import (
 	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/util/algorithm"
-	"github.com/runningwild/yedparse"
+	yed "github.com/runningwild/yedparse"
 )
 
 type sharedSprite struct {
@@ -56,7 +52,7 @@ func loadSharedSprite(path string, byteBankFactory func(string) cache.ByteBank, 
 	// TODO: Verify both graphs at the same time - they both need to respond to
 	// the same commands in the same way.
 
-	num_facings, filenames, err := verifyDirectoryStructure(path, &anim.Graph)
+	num_facings, _, err := verifyDirectoryStructure(path, &anim.Graph)
 	if err != nil {
 		return nil, err
 	}
@@ -67,32 +63,6 @@ func loadSharedSprite(path string, byteBankFactory func(string) cache.ByteBank, 
 	ss.path = path
 	ss.anim = &anim.Graph
 	ss.state = &state.Graph
-
-	// Read through all of the files and figure out how much space we'll need
-	// to arrange them all into one sprite sheet
-	width := 0
-	height := 0
-	for facing := 0; facing < num_facings; facing++ {
-		for _, filename := range filenames {
-			file, err := os.Open(filepath.Join(path, fmt.Sprintf("%d", facing), filename))
-			// if a file isn't there that's ok
-			if err != nil {
-				continue
-			}
-
-			config, _, err := image.DecodeConfig(file)
-			file.Close()
-			// if a file can't be read that is *not* ok
-			if err != nil {
-				return nil, err
-			}
-
-			if config.Height > height {
-				height = config.Height
-			}
-			width += config.Width
-		}
-	}
 
 	// Connectors are all frames that can be reached within a certain number of
 	// milliseconds of any change in facing

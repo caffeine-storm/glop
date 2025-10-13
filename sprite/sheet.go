@@ -211,10 +211,10 @@ func makeSheet(path string, anim *yed.Graph, fids []frameId, byteBank cache.Byte
 		pixelDataCache: byteBank,
 	}
 	s.rects = make(map[frameId]FrameRect)
-	cy := 0
-	cx := 0
-	cdy := 0
-	tdx := 0
+	cy := 0  // current vertical position to attempt to pack the next image
+	cx := 0  // current horizontal position to attempt to pack the next image
+	cdy := 0 // vertical extent of 'current row'
+	tdx := 0 // horizontal extent required
 	max_width := 2048
 	for _, fid := range fids {
 		name := anim.Node(fid.node).Line(0) + ".png"
@@ -231,14 +231,15 @@ func makeSheet(path string, anim *yed.Graph, fids []frameId, byteBank cache.Byte
 			return nil, err
 		}
 
+		if config.Width > max_width {
+			panic(fmt.Errorf("max sprite width exceeded for %q, fid: %v, width: %d", name, fid, config.Width))
+		}
 		if cx+config.Width > max_width {
 			cx = 0
 			cy += cdy
 			cdy = 0
 		}
-		if config.Height > cdy {
-			cdy = config.Height
-		}
+		cdy = max(cdy, config.Height)
 		s.rects[fid] = FrameRect{X: cx, X2: cx + config.Width, Y: cy, Y2: cy + config.Height}
 		cx += config.Width
 		if cx > tdx {
