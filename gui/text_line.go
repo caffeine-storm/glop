@@ -28,19 +28,6 @@ func (w *TextLine) String() string {
 	return "text line"
 }
 
-func nextPowerOf2(n uint32) uint32 {
-	if n == 0 {
-		return 1
-	}
-	for i := uint(0); i < 32; i++ {
-		p := uint32(1) << i
-		if n <= p {
-			return p
-		}
-	}
-	return 0
-}
-
 // TODO(tmckee): we should take a font by reference instead of by
 // stringified-name. That way, the compiler can check for us that the font is
 // loaded.

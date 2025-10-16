@@ -108,19 +108,21 @@ func (s *sheet) compose(pixer chan<- []byte) {
 	pixer <- canvas.Pix
 }
 
-// TODO: This was copied from the gui package, probably should just have some basic
-// texture loading utils that do this common stuff
 func nextPowerOf2(n uint32) uint32 {
+	// Source: https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
 	if n == 0 {
 		return 1
 	}
-	for i := uint(0); i < 32; i++ {
-		p := uint32(1) << i
-		if n <= p {
-			return p
-		}
-	}
-	return 0
+
+	n--
+	n |= n >> 1
+	n |= n >> 2
+	n |= n >> 4
+	n |= n >> 8
+	n |= n >> 16
+	n++
+
+	return n
 }
 
 func (s *sheet) makeTexture(pixer <-chan []byte) {
