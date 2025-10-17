@@ -6,11 +6,13 @@ import (
 	"image"
 	"image/draw"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/go-gl-legacy/gl"
 	"github.com/go-gl-legacy/glu"
 	"github.com/runningwild/glop/cache"
+	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 	yed "github.com/runningwild/yedparse"
@@ -128,6 +130,21 @@ func nextPowerOf2(n uint32) uint32 {
 	n++
 
 	return n
+}
+
+func (s *sheet) dumpDebugInfo(queue render.RenderQueueInterface, distinguish int) {
+	makeFileName := func(s string) string {
+		base := path.Base(s)
+		return fmt.Sprintf("./%s.tex.%d.png", base, distinguish)
+	}
+
+	texFileName := makeFileName(s.spritePath)
+	queue.Queue(func(render.RenderQueueState) {
+		err := debug.DumpTextureAsPngFile(s.texture, texFileName)
+		if err != nil {
+			panic(fmt.Errorf("couldn't DumpTextureAsPngFile(%q): %w", texFileName, err))
+		}
+	})
 }
 
 func (s *sheet) makeTexture(pixer <-chan []byte) {

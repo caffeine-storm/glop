@@ -16,6 +16,7 @@ import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/go-gl-legacy/glu"
 	"github.com/runningwild/glop/cache"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/util/algorithm"
 	yed "github.com/runningwild/yedparse"
@@ -973,7 +974,8 @@ type TriggerFunc func(*Sprite, string)
 type Manager struct {
 	// A cache of sharedSprite objects keyed by the filesystem path that we
 	// loaded it from.
-	shared map[string]*sharedSprite
+	shared     map[string]*sharedSprite
+	debugPaths map[string]bool
 
 	renderQueue render.RenderQueueInterface
 
@@ -992,6 +994,16 @@ func MakeManager(rq render.RenderQueueInterface, pixelDataCacheFactory func(stri
 		renderQueue:           rq,
 		pixelDataCacheFactory: pixelDataCacheFactory,
 	}
+}
+
+func (m *Manager) AddDebugPath(path string) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	if _, alreadyLoaded := m.shared[path]; alreadyLoaded {
+		panic(fmt.Errorf("path %q was already loaded! need to AddDebugPath before trying to loadSharedSprite", path))
+	}
+	m.debugPaths[path] = true
 }
 
 func (m *Manager) spriteForPath(path string, byteBankFactory func(string) cache.ByteBank) (*Sprite, error) {
@@ -1013,6 +1025,12 @@ func (m *Manager) spriteForPath(path string, byteBankFactory func(string) cache.
 
 		if err != nil {
 			return nil, err
+		}
+
+		// Check to see if we need to debug-dump the shared-spite.
+		if m.debugPaths[path] {
+			cachedSharedSprite.dumpDebugInfo()
+			delete(m.debugPaths, path)
 		}
 
 		// Try the lookup again; some other thread may have raced ahead for the

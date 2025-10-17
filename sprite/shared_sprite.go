@@ -28,6 +28,23 @@ type sharedSprite struct {
 	manager *Manager
 }
 
+func (ss *sharedSprite) dumpDebugInfo() {
+	renderQueue := ss.manager.renderQueue
+	go func() {
+		// Need to load before trying to dump ... T_T
+		ss.connector.Load()
+		renderQueue.Purge()
+		ss.connector.dumpDebugInfo(renderQueue, 0)
+		ss.connector.Unload()
+		for idx, sheet := range ss.facings {
+			sheet.Load()
+			renderQueue.Purge()
+			sheet.dumpDebugInfo(renderQueue, idx+1)
+			sheet.Unload()
+		}
+	}()
+}
+
 func loadSharedSprite(path string, byteBankFactory func(string) cache.ByteBank, renderQueue render.RenderQueueInterface) (*sharedSprite, error) {
 	state, err := yed.ParseFromFile(filepath.Join(path, "state.xgml"))
 	if err != nil {
