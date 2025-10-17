@@ -994,16 +994,16 @@ func (m *Manager) spriteForPath(path string, byteBankFactory func(string) cache.
 	cachedSharedSprite, cacheHit := m.shared[path]
 	if !cacheHit {
 		var err error
-		{
-			// Release the mutex while we do a potentially expensive load.
-			m.mutex.Unlock()
 
-			// Acquire the mutex again while we potentially read/write from the
-			// protected map.
-			defer m.mutex.Lock()
+		// Release the mutex while we do a potentially expensive load.
+		m.mutex.Unlock()
 
-			cachedSharedSprite, err = loadSharedSprite(path, byteBankFactory, m.renderQueue)
-		}
+		cachedSharedSprite, err = loadSharedSprite(path, byteBankFactory, m.renderQueue)
+
+		// Acquire the mutex again while we potentially read/write from the
+		// protected map.
+		m.mutex.Lock()
+
 		if err != nil {
 			return nil, err
 		}
