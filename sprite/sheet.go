@@ -11,6 +11,7 @@ import (
 	"github.com/go-gl-legacy/gl"
 	"github.com/go-gl-legacy/glu"
 	"github.com/runningwild/glop/cache"
+	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 	yed "github.com/runningwild/yedparse"
 )
@@ -97,7 +98,11 @@ func (s *sheet) compose(pixer chan<- []byte) {
 		if err != nil {
 			continue
 		}
-		draw.Draw(canvas, image.Rect(rect.X, s.dy-rect.Y, rect.X2, s.dy-rect.Y2), im, image.Point{}, draw.Src)
+
+		imagePos := image.Rect(rect.X, s.dy-rect.Y, rect.X2, s.dy-rect.Y2)
+		draw.Draw(canvas, imagePos, im, image.Point{}, draw.Src)
+
+		glog.InfoLogger().Debug("sprite sheet sub-image", "spritePath", s.spritePath, "imagePos", imagePos, "frameId", fid)
 	}
 
 	// Cache the bytes for later use.

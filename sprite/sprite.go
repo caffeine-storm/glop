@@ -346,17 +346,18 @@ type waiter struct {
 	// Any state mentioned here is acceptable to signal the waiter
 	states []string
 
-	c chan struct{}
+	onStateReached chan struct{}
 }
 
 func (s *Sprite) Wait(states []string) {
 	s.waiter_mutex.Lock()
-	var w waiter
-	w.states = states
-	w.c = make(chan struct{}, 1)
+	w := waiter{
+		states:         states,
+		onStateReached: make(chan struct{}, 1),
+	}
 	s.waiters = append(s.waiters, &w)
 	s.waiter_mutex.Unlock()
-	<-w.c
+	<-w.onStateReached
 }
 
 type Sprite struct {
@@ -740,8 +741,10 @@ func (s *Sprite) Bind() (x, y, x2, y2 float64) {
 	var ok bool
 	fid := frameId{facing: s.facing, node: s.anim_node.Id()}
 	var dx, dy float64
+	isConnectorSheet := false
 	if rect, ok = s.shared.connector.rects[fid]; ok {
 		sh = s.shared.connector
+		isConnectorSheet = true
 	} else if rect, ok = s.shared.facings[s.facing].rects[fid]; ok {
 		sh = s.shared.facings[s.facing]
 	} else {
@@ -752,6 +755,7 @@ func (s *Sprite) Bind() (x, y, x2, y2 float64) {
 		s.shared.manager.error_texture.Bind(gl.TEXTURE_2D)
 		return
 	}
+	glog.InfoLogger().Info("going to bind sprite sub-texture", "fid", fid, "rect", rect, "connectorSheet?", isConnectorSheet, "spritePath", s.shared.connector.spritePath, "spritelabel", s.anim_node.Label())
 	sh.texture.Bind(gl.TEXTURE_2D)
 	dx = float64(sh.dx)
 	dy = float64(sh.dy)
@@ -768,10 +772,14 @@ func (s *Sprite) StateFacing() int {
 	return s.state_facing
 }
 func (s *Sprite) doTrigger() {
-	if s.trigger != nil &&
-		s.anim_node.Tag("func") != "" {
-		s.trigger(s, s.anim_node.Tag("func"))
+	if s.trigger == nil {
+		return
 	}
+	if s.anim_node.Tag("func") == "" {
+		return
+	}
+
+	s.trigger(s, s.anim_node.Tag("func"))
 }
 
 type spriteStateInternal struct {
@@ -842,7 +850,6 @@ func (s *Sprite) Think(dt int64) {
 	s.thinks++
 	if dt < 0 {
 		return
-		// panic("Can't have dt < 0")
 	}
 
 	// Check for waiters
@@ -853,7 +860,7 @@ func (s *Sprite) Think(dt int64) {
 		for i := range s.waiters {
 			for _, state := range s.waiters[i].states {
 				if state == s.AnimState() {
-					s.waiters[i].c <- struct{}{}
+					s.waiters[i].onStateReached <- struct{}{}
 					s.waiters[i].states = nil
 				}
 			}
