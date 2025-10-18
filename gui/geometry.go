@@ -41,6 +41,19 @@ type Region struct {
 	Dims
 }
 
+func MakeRegion(x, y, dx, dy int) Region {
+	return Region{
+		Point: Point{
+			X: x,
+			Y: y,
+		},
+		Dims: Dims{
+			Dx: dx,
+			Dy: dy,
+		},
+	}
+}
+
 func (r Region) Add(p Point) Region {
 	return Region{
 		r.Point.Add(p),
