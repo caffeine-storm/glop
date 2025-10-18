@@ -66,5 +66,8 @@ func (w *ScrollFrame) Draw(region Region, ctx DrawingContext) {
 	if w.amt > w.max {
 		w.amt = w.max
 	}
-	w.Children[0].Draw(Region{region.Point, w.Children[0].Requested()}.Add(Point{0, -int(w.amt)}), ctx)
+	region = region.Add(Point{0, -int(w.amt)})
+	region.Dims = w.Children[0].Requested()
+
+	w.Children[0].Draw(region, ctx)
 }

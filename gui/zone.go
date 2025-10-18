@@ -47,10 +47,11 @@ func (cz CollapsableZone) Requested() Dims {
 }
 
 func (cz CollapsableZone) Rendered() Region {
+	ret := cz.Render_region
 	if cz.Collapsed {
-		return Region{Point: cz.Render_region.Point}
+		ret.Dims = Dims{}
 	}
-	return cz.Render_region
+	return ret
 }
 
 func (cz *CollapsableZone) Expandable() (bool, bool) {

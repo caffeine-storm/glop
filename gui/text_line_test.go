@@ -52,10 +52,7 @@ func GenericTextLineTest(text string, widgetBuilder func(text string) GenericLin
 			textLine := widgetBuilder(text)
 
 			queue.Queue(func(render.RenderQueueState) {
-				textLine.Draw(gui.Region{
-					Point: gui.Point{},
-					Dims:  gui.Dims{screenWidth, screenHeight},
-				}, g)
+				textLine.Draw(gui.MakeRegion(0, 0, screenWidth, screenHeight), g)
 			})
 			queue.Purge()
 
@@ -86,18 +83,9 @@ func MultipleTextLineTest(widgetBuilder func(text string) GenericLine) {
 
 				lineheight := screenHeight / 5
 				queue.Queue(func(render.RenderQueueState) {
-					line1.Draw(gui.Region{
-						Point: gui.Point{0, 0},
-						Dims:  gui.Dims{screenWidth, lineheight},
-					}, g)
-					line2.Draw(gui.Region{
-						Point: gui.Point{0, lineheight * 2},
-						Dims:  gui.Dims{screenWidth, lineheight},
-					}, g)
-					line3.Draw(gui.Region{
-						Point: gui.Point{0, lineheight * 4},
-						Dims:  gui.Dims{screenWidth, lineheight},
-					}, g)
+					line1.Draw(gui.MakeRegion(0, 0, screenWidth, lineheight), g)
+					line2.Draw(gui.MakeRegion(0, lineheight*2, screenWidth, lineheight), g)
+					line3.Draw(gui.MakeRegion(0, lineheight*4, screenWidth, lineheight), g)
 				})
 				queue.Purge()
 

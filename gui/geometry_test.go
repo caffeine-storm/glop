@@ -16,16 +16,7 @@ func TestRegion(t *testing.T) {
 			testbuilder.New().WithExpectation(c, "red-with-border").Run(func() {
 				// Set a clipping region to block any drawing outside of a square in the
 				// middle.
-				r := gui.Region{
-					Point: gui.Point{
-						X: 4,
-						Y: 4,
-					},
-					Dims: gui.Dims{
-						Dx: 56,
-						Dy: 56,
-					},
-				}
+				r := gui.MakeRegion(4, 4, 56, 56)
 
 				r.PushClipPlanes()
 				defer r.PopClipPlanes()
