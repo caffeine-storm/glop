@@ -55,10 +55,8 @@ func MakeRegion(x, y, dx, dy int) Region {
 }
 
 func (r Region) Add(p Point) Region {
-	return Region{
-		r.Point.Add(p),
-		r.Dims,
-	}
+	r.Point = r.Point.Add(p)
+	return r
 }
 
 // Returns a region that is no larger than r that fits inside t.  The region
