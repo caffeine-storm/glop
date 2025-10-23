@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"io"
 	"os"
+	rtdebug "runtime/debug"
 	"testing"
 
 	"github.com/runningwild/glop/debug"
@@ -227,7 +228,8 @@ func dumpRawImageForDebugging(img *image.NRGBA, expected ...any) {
 func backBufferShouldLookLike(queue render.RenderQueueInterface, expected ...interface{}) (testResult string) {
 	defer func() {
 		if e := recover(); e != nil {
-			testResult = fmt.Sprintf("panic during image comparison: %v", e)
+			st := rtdebug.Stack()
+			testResult = fmt.Sprintf("panic during image comparison: stack: %v, error: %v", string(st), e)
 		}
 	}()
 
