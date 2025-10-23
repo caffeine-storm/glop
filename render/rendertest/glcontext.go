@@ -33,7 +33,16 @@ type glContext struct {
 	sys              system.System
 	windowHandle     system.NativeWindowHandle
 	render           render.RenderQueueInterface
-	recordedFailures []error
+	recordedFailures []queueError
+}
+
+type queueError struct {
+	err   error
+	stack []byte
+}
+
+func (qe queueError) Error() string {
+	return fmt.Sprintf("stack: %s\nerror: %v", string(qe.stack), qe.err)
 }
 
 func newGlContextForTest(width, height int) *glContext {
@@ -47,7 +56,10 @@ func newGlContextForTest(width, height int) *glContext {
 		recordedFailures: nil,
 	}
 	renderQueue.AddErrorCallback(func(q render.RenderQueueInterface, e error) {
-		ctx.recordedFailures = append(ctx.recordedFailures, e)
+		ctx.recordedFailures = append(ctx.recordedFailures, queueError{
+			err:   e,
+			stack: debug.Stack(),
+		})
 	})
 	return ctx
 }
@@ -55,21 +67,25 @@ func newGlContextForTest(width, height int) *glContext {
 // Helper for getting the last on-render-queue error. Clears the state used to
 // track on-render-queue errors.
 func (ctx *glContext) takeLastError() error {
-	var allErrors []error
+	var allQueueErrors []queueError
 	if ctx.render.IsDefunct() {
 		// It's not an error to stop the queue. Since the queue _is_ stopped, we
 		// can safely read ctx.recordedFailures but we can't render.Queue anything.
-		allErrors = ctx.recordedFailures
+		allQueueErrors = ctx.recordedFailures
 		ctx.recordedFailures = nil
 	} else {
 		ctx.render.Queue(func(render.RenderQueueState) {
-			allErrors = ctx.recordedFailures
+			allQueueErrors = ctx.recordedFailures
 			ctx.recordedFailures = nil
 		})
 		ctx.render.Purge()
 	}
 
-	return errors.Join(allErrors...)
+	asErrors := make([]error, len(allQueueErrors))
+	for idx := range allQueueErrors {
+		asErrors[idx] = allQueueErrors[idx]
+	}
+	return errors.Join(asErrors...)
 }
 
 func (ctx *glContext) prep(width, height int) (prepError error) {
