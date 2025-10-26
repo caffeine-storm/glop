@@ -1,6 +1,7 @@
 package systemtest
 
 import (
+	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
@@ -8,6 +9,7 @@ import (
 )
 
 type Window interface {
+	AddInputListener(gin.Listener)
 	NewDriver() Driver
 	GetQueue() render.RenderQueueInterface
 	GetDims() gui.Dims
@@ -17,6 +19,10 @@ type testWindow struct {
 	sys   system.System
 	hdl   system.NativeWindowHandle
 	queue render.RenderQueueInterface
+}
+
+func (self *testWindow) AddInputListener(lst gin.Listener) {
+	self.sys.AddInputListener(lst)
 }
 
 func (self *testWindow) NewDriver() Driver {
