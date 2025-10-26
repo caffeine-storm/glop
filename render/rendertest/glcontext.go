@@ -263,8 +263,7 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 
 func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
 	linuxSystemObject := gos.NewSystemInterface()
-	mockedOsObject := system.MakeMockedOs(linuxSystemObject)
-	sys := system.MakeMocked(mockedOsObject)
+	sys := system.MakeMocked(linuxSystemObject)
 
 	// Use a channel to wait for a NativeWindowHandle to show up; we want to let
 	// initialization happen off-thread but the glContext needs to know the

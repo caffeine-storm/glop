@@ -37,14 +37,14 @@ func (mos *mockOs) GetInputEvents() ([]gin.OsEvent, int64) {
 	return events, mos.currentTime
 }
 
-func MakeMockedOs(realOs Os) *mockOs {
+func makeMockedOs(realOs Os) *mockOs {
 	return &mockOs{
 		Os: realOs,
 	}
 }
 
 func MakeMocked(realOs Os) *MockSystem {
-	mockOs := MakeMockedOs(realOs)
+	mockOs := makeMockedOs(realOs)
 	mockInput := gin.MakeLogged(glog.VoidLogger())
 	return &MockSystem{
 		System: Make(mockOs, mockInput),
