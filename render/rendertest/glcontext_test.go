@@ -19,11 +19,11 @@ func TestGlContext(t *testing.T) {
 			t2 := sys.Think()
 			assert.Equal(t1, t2, "time should only advance if we tell it to")
 
-			fiveMinutesInMilliseconds := int64(5 * 60 * 1000)
+			fiveMinutesInMilliseconds := uint64(5 * 60 * 1000)
 			rendertest.AdvanceTime(sys, fiveMinutesInMilliseconds)
 
 			t3 := sys.Think()
-			assert.Equal(t2+fiveMinutesInMilliseconds, t3, "'time' should have advanced by the given step")
+			assert.Equal(t2+int64(fiveMinutesInMilliseconds), t3, "'time' should have advanced by the given step")
 		})
 	})
 }
