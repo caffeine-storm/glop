@@ -296,5 +296,5 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 // TODO(clean): don't take a signed value; we don't want to imply we can rewind
 // time!
 func AdvanceTime(sys system.System, delta int64) {
-	sys.(system.MockSystem).AdvanceTime(uint64(delta))
+	sys.(*system.MockSystem).AdvanceTime(uint64(delta))
 }

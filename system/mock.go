@@ -5,16 +5,7 @@ import (
 	"github.com/runningwild/glop/glog"
 )
 
-type MockSystem interface {
-	System
-	AdvanceTime(delta uint64)
-}
-
-type MockOs interface {
-	Os
-}
-
-type mockSystem struct {
+type MockSystem struct {
 	System
 	mockOs *mockOs
 }
@@ -52,17 +43,15 @@ func MakeMockedOs(realOs Os) *mockOs {
 	}
 }
 
-func MakeMocked(realOs Os) *mockSystem {
+func MakeMocked(realOs Os) *MockSystem {
 	mockOs := MakeMockedOs(realOs)
 	mockInput := gin.MakeLogged(glog.VoidLogger())
-	return &mockSystem{
+	return &MockSystem{
 		System: Make(mockOs, mockInput),
 		mockOs: mockOs,
 	}
 }
 
-func (ms *mockSystem) AdvanceTime(delta uint64) {
+func (ms *MockSystem) AdvanceTime(delta uint64) {
 	ms.mockOs.currentTime += int64(delta)
 }
-
-var _ MockSystem = (*mockSystem)(nil)
