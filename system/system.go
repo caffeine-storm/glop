@@ -110,8 +110,7 @@ func (sys *sysObj) Think() int64 {
 		events[i].Timestamp -= sys.start_ms
 	}
 	sys.events = sys.input.Think(horizon-sys.start_ms, events)
-	// TODO(#29): shouldn't we be subtracting 'sys.start_ms' here?
-	return horizon
+	return horizon - sys.start_ms
 }
 
 func (sys *sysObj) CreateWindow(x, y, width, height int) NativeWindowHandle {
