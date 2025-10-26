@@ -6,7 +6,6 @@ import (
 	"runtime/debug"
 
 	"github.com/go-gl-legacy/gl"
-	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"
 	"github.com/runningwild/glop/render"
@@ -264,7 +263,8 @@ func (ctx *glContext) run(fn func(system.System, system.NativeWindowHandle, rend
 
 func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHandle, render.RenderQueueInterface) {
 	linuxSystemObject := gos.NewSystemInterface()
-	sys := system.Make(linuxSystemObject, gin.MakeLogged(glog.DebugLogger()))
+	mockedOsObject := system.MakeMockedOs(linuxSystemObject)
+	sys := system.MakeMocked(mockedOsObject)
 
 	// Use a channel to wait for a NativeWindowHandle to show up; we want to let
 	// initialization happen off-thread but the glContext needs to know the
@@ -291,4 +291,10 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 	renderQueue.StartProcessing()
 
 	return sys, <-hdl, renderQueue
+}
+
+// TODO(clean): don't take a signed value; we don't want to imply we can rewind
+// time!
+func AdvanceTime(sys system.System, delta int64) {
+	sys.(system.MockSystem).AdvanceTime(uint64(delta))
 }
