@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"image/color"
 
 	"github.com/go-gl-legacy/gl"
@@ -20,9 +21,13 @@ func getCurrentForeground() [4]float32 {
 
 func normColourToByte(f float32) uint8 {
 	if f < 0 || f > 1.0 {
-		panic("non-normalized float!")
+		panic(fmt.Errorf("non-normalized float: %v is not in range [0.0, 1.0]", f))
 	}
-	return uint8(f * 255)
+	ret := int(f * 256)
+	if ret >= 256 {
+		ret = 255
+	}
+	return uint8(ret)
 }
 
 func GetCurrentBackgroundColor() color.NRGBA {
