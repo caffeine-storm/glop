@@ -12,18 +12,18 @@ type MockSystem struct {
 
 type mockOs struct {
 	Os
-	currentTime int64
+	currentTimeMs int64
 }
 
 func (mos *mockOs) Startup() int64 {
 	mos.Os.Startup()
-	mos.currentTime = 42
+	mos.currentTimeMs = 42
 	return 42
 }
 
 func (mos *mockOs) Think() int64 {
 	mos.Os.Think()
-	return mos.currentTime
+	return mos.currentTimeMs
 }
 
 func (mos *mockOs) GetInputEvents() ([]gin.OsEvent, int64) {
@@ -31,10 +31,10 @@ func (mos *mockOs) GetInputEvents() ([]gin.OsEvent, int64) {
 	// rewrite event timestamps to all be 'current time' or else they'll get real
 	// timestamps.
 	for idx := range events {
-		events[idx].TimestampMs = mos.currentTime
+		events[idx].TimestampMs = mos.currentTimeMs
 	}
 
-	return events, mos.currentTime
+	return events, mos.currentTimeMs
 }
 
 func makeMockedOs(realOs Os) *mockOs {
@@ -52,6 +52,6 @@ func MakeMocked(realOs Os) *MockSystem {
 	}
 }
 
-func (ms *MockSystem) AdvanceTime(delta uint64) {
-	ms.mockOs.currentTime += int64(delta)
+func (ms *MockSystem) AdvanceTimeMillis(delta uint64) {
+	ms.mockOs.currentTimeMs += int64(delta)
 }
