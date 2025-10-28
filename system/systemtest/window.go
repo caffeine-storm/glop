@@ -13,6 +13,7 @@ type Window interface {
 	NewDriver() Driver
 	GetQueue() render.RenderQueueInterface
 	GetDims() gui.Dims
+	GetSystemInterface() system.System
 }
 
 type testWindow struct {
@@ -45,6 +46,10 @@ func (self *testWindow) GetDims() gui.Dims {
 		Dx: dx,
 		Dy: dy,
 	}
+}
+
+func (self *testWindow) GetSystemInterface() system.System {
+	return self.sys
 }
 
 var _ Window = (*testWindow)(nil)
