@@ -291,7 +291,3 @@ func newGlWindowForTest(width, height int) (system.System, system.NativeWindowHa
 
 	return sys, <-hdl, renderQueue
 }
-
-func AdvanceTime(sys system.System, delta uint64) {
-	sys.(*system.MockSystem).AdvanceTime(delta)
-}
