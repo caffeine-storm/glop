@@ -85,11 +85,11 @@ func NativeToGin(linux RawCursorToWindowCoordser, nativeEvent *NativeKeyEvent) g
 		Index: gin.KeyIndex(nativeEvent.index),
 	}
 	ret := gin.OsEvent{
-		KeyId:     keyId,
-		Press_amt: float64(nativeEvent.press_amt),
-		Timestamp: int64(nativeEvent.timestamp),
-		X:         wx,
-		Y:         wy,
+		KeyId:       keyId,
+		Press_amt:   float64(nativeEvent.press_amt),
+		TimestampMs: int64(nativeEvent.timestamp),
+		X:           wx,
+		Y:           wy,
 	}
 
 	glog.TraceLogger().Trace("native to gin", "native", *nativeEvent, "ret", ret)

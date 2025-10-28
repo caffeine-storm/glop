@@ -19,11 +19,11 @@ var verticalWheelKeyId = gin.KeyId{
 func scrollUpSequence() (int64, []gin.OsEvent) {
 	events := []gin.OsEvent{
 		{
-			KeyId:     verticalWheelKeyId,
-			Press_amt: 17,
-			Timestamp: 13,
-			X:         5,
-			Y:         7,
+			KeyId:       verticalWheelKeyId,
+			Press_amt:   17,
+			TimestampMs: 13,
+			X:           5,
+			Y:           7,
 		},
 	}
 	return 42, events

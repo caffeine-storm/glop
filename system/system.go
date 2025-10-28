@@ -107,7 +107,7 @@ func (sys *sysObj) Think() int64 {
 	sys.os.Think()
 	events, horizon := sys.os.GetInputEvents()
 	for i := range events {
-		events[i].Timestamp -= sys.start_ms
+		events[i].TimestampMs -= sys.start_ms
 	}
 	sys.events = sys.input.Think(horizon-sys.start_ms, events)
 	return horizon - sys.start_ms

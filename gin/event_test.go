@@ -129,7 +129,7 @@ func TestEventGroup(t *testing.T) {
 								Type: testcase.eventType,
 							},
 						},
-						Timestamp: 32,
+						TimestampMs: 32,
 					}
 
 					// Check that the generic key is in the right state.
@@ -149,7 +149,7 @@ func TestEventGroup(t *testing.T) {
 								Type: testcase.eventType,
 							},
 						},
-						Timestamp: 32,
+						TimestampMs: 32,
 					}
 
 					assert.True(testcase.funcUnderTest(eg, anyKey.Id()), "The 'any' key should look like it's been toggled")

@@ -111,8 +111,8 @@ func (s *synth) WheelDown(amt float64) gui.EventGroup {
 
 	eg := gui.EventGroup{
 		EventGroup: gin.EventGroup{
-			Events:    events,
-			Timestamp: dontCare.Timestamp,
+			Events:      events,
+			TimestampMs: dontCare.Timestamp,
 		},
 	}
 	eg.SetMousePosition(dontCare.MousePoint.X, dontCare.MousePoint.Y)

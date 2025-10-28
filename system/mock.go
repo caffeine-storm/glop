@@ -31,7 +31,7 @@ func (mos *mockOs) GetInputEvents() ([]gin.OsEvent, int64) {
 	// rewrite event timestamps to all be 'current time' or else they'll get real
 	// timestamps.
 	for idx := range events {
-		events[idx].Timestamp = mos.currentTime
+		events[idx].TimestampMs = mos.currentTime
 	}
 
 	return events, mos.currentTime

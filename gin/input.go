@@ -547,7 +547,7 @@ func (input *Input) findKeyIdObservers(id KeyId) []Key {
 }
 
 func (input *Input) pressKey(k Key, amt float64, cause Event, group *EventGroup) {
-	event := k.KeySetPressAmt(amt, group.Timestamp, cause)
+	event := k.KeySetPressAmt(amt, group.TimestampMs, cause)
 	keysToPress := input.findKeyIdObservers(event.Key.Id())
 	if event.Type != aggregator.NoEvent {
 		group.Events = append(group.Events, event)
@@ -580,7 +580,7 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 		glog.TraceLogger().Trace("Input.Think", "os_event", os_event)
 
 		group := EventGroup{
-			Timestamp: os_event.Timestamp,
+			TimestampMs: os_event.TimestampMs,
 		}
 
 		// Whether this was a keyboard keystroke or actually a mouse thing, still
@@ -614,7 +614,7 @@ func (input *Input) Think(t int64, os_events []OsEvent) []EventGroup {
 		// Here, we don't set a mouse position because it wouldn't make sense for
 		// synthetic keys.
 		group := EventGroup{
-			Timestamp: t,
+			TimestampMs: t,
 		}
 		input.pressKey(key, amt, Event{}, &group)
 		if len(group.Events) > 0 {

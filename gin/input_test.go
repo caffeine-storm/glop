@@ -106,10 +106,10 @@ func appendTestEvent(events *[]gin.OsEvent, ev *testEvent) {
 				Type:  ev.devType,
 			},
 		},
-		X:         ev.x,
-		Y:         ev.y,
-		Press_amt: ev.pressAmount,
-		Timestamp: ev.timestamp,
+		X:           ev.x,
+		Y:           ev.y,
+		Press_amt:   ev.pressAmount,
+		TimestampMs: ev.timestamp,
 	})
 }
 
@@ -835,18 +835,18 @@ func InputRegressionSpec() {
 
 		inputObj.Think(42, []gin.OsEvent{
 			{
-				KeyId:     wheel.Id(),
-				Press_amt: -1,
-				Timestamp: 30,
-				X:         20,
-				Y:         40,
+				KeyId:       wheel.Id(),
+				Press_amt:   -1,
+				TimestampMs: 30,
+				X:           20,
+				Y:           40,
 			},
 			{
-				KeyId:     wheel.Id(),
-				Press_amt: 0,
-				Timestamp: 40,
-				X:         20,
-				Y:         40,
+				KeyId:       wheel.Id(),
+				Press_amt:   0,
+				TimestampMs: 40,
+				X:           20,
+				Y:           40,
 			},
 		})
 

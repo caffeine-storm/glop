@@ -14,7 +14,7 @@ func TestPressKeyWorksForControlKey(t *testing.T) {
 	inputObj := Make()
 	require.NotNil(inputObj)
 
-	group := EventGroup{Timestamp: 10}
+	group := EventGroup{TimestampMs: 10}
 	keyId := AnyLeftControl
 	keyId.Device.Index = 1
 	key := &keyState{

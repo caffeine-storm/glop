@@ -10,7 +10,7 @@ type Clickable struct {
 
 func (c Clickable) DoRespond(ctx EventHandlingContext, event_group EventGroup) (bool, bool) {
 	if event_group.IsPressed(gin.AnyMouseLButton) {
-		c.on_click(ctx, event_group.Timestamp)
+		c.on_click(ctx, event_group.TimestampMs)
 		return true, false
 	}
 	return false, false

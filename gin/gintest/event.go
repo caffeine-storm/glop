@@ -13,7 +13,7 @@ func ClickEventGroup(input *gin.Input) gin.EventGroup {
 		Type: aggregator.Press,
 	}
 	return gin.EventGroup{
-		Events:    []gin.Event{leftButtonEvent},
-		Timestamp: 17,
+		Events:      []gin.Event{leftButtonEvent},
+		TimestampMs: 17,
 	}
 }

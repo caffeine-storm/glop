@@ -8,10 +8,10 @@ import (
 
 // A view over the data that comes back from native code.
 type OsEvent struct {
-	KeyId     KeyId
-	Press_amt float64
-	Timestamp int64
-	X, Y      int
+	KeyId       KeyId
+	Press_amt   float64
+	TimestampMs int64
+	X, Y        int
 }
 
 type Event struct {
@@ -41,9 +41,9 @@ type MousePosition struct {
 // An EventGroup is a series of events that were all created by a single
 // OsEvent.
 type EventGroup struct {
-	Events    []Event
-	mousePos  *MousePosition
-	Timestamp int64
+	Events      []Event
+	mousePos    *MousePosition
+	TimestampMs int64
 }
 
 func (eg EventGroup) String() string {
@@ -53,7 +53,7 @@ func (eg EventGroup) String() string {
 		mouseInfo = fmt.Sprintf("{%d %d}", x, y)
 	}
 
-	return fmt.Sprintf("{%v %s %v}", eg.Events, mouseInfo, eg.Timestamp)
+	return fmt.Sprintf("{%v %s %v}", eg.Events, mouseInfo, eg.TimestampMs)
 }
 
 // Returns a bool indicating whether an event corresponding to the given KeyId
