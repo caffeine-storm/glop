@@ -32,6 +32,10 @@ func (p Point) Inside(r Region) bool {
 	return true
 }
 
+func (p Point) XY() (int, int) {
+	return p.X, p.Y
+}
+
 type Dims struct {
 	Dx, Dy int
 }

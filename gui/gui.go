@@ -92,6 +92,10 @@ type Gui struct {
 	// Stack of widgets that have focus
 	focus []Widget
 
+	// Last known mouse position; useful during 'Think' phase as the underlying
+	// mouse event will be gone but the cursor is still _somewhere_.
+	lastMousePosition Point
+
 	logger glog.Logger
 }
 
@@ -164,6 +168,10 @@ func (g *Gui) Think(t int64) {
 func (g *Gui) HandleEventGroup(gin_group gin.EventGroup) {
 	event_group := EventGroup{gin_group, false}
 
+	if mousePos, ok := g.UseMousePosition(event_group); ok {
+		g.lastMousePosition = mousePos
+	}
+
 	// If there is one or more focused widgets, tell the top-of the focus-stack
 	// to 'Respond' first.
 	if len(g.focus) > 0 {
@@ -229,6 +237,10 @@ func (g *Gui) MiddleButton(grp EventGroup) bool {
 
 func (g *Gui) RightButton(grp EventGroup) bool {
 	return grp.PrimaryEvent().Key.Id().Index == gin.MouseRButton
+}
+
+func (g *Gui) GetLastMousePosition() Point {
+	return g.lastMousePosition
 }
 
 func Make(dims Dims, dispatcher gin.EventDispatcher) (*Gui, error) {
