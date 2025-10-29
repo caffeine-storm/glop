@@ -756,7 +756,7 @@ func (s *Sprite) Bind() (x, y, x2, y2 float64) {
 		s.shared.manager.error_texture.Bind(gl.TEXTURE_2D)
 		return
 	}
-	glog.InfoLogger().Info("going to bind sprite sub-texture", "fid", fid, "rect", rect, "connectorSheet?", isConnectorSheet, "spritePath", s.shared.connector.spritePath, "spritelabel", s.anim_node.Label())
+	glog.InfoLogger().Debug("going to bind sprite sub-texture", "fid", fid, "rect", rect, "connectorSheet?", isConnectorSheet, "spritePath", s.shared.connector.spritePath, "spritelabel", s.anim_node.Label())
 	sh.texture.Bind(gl.TEXTURE_2D)
 	dx = float64(sh.dx)
 	dy = float64(sh.dy)
