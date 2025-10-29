@@ -126,6 +126,7 @@ type Logger interface {
 	Slogger
 	Trace(msg string, args ...interface{})
 	GetOpts() slog.HandlerOptions
+	WithAttrs(args ...any) Logger
 }
 
 type traceLogger struct {
@@ -152,6 +153,24 @@ func (log *traceLogger) Trace(msg string, args ...interface{}) {
 
 func (log *traceLogger) GetOpts() slog.HandlerOptions {
 	return log.handlerOptions
+}
+
+func (log *traceLogger) WithAttrs(args ...any) Logger {
+	slogOptions := log.GetOpts()
+
+	attrs := []slog.Attr{}
+	for i := 0; i < len(args); i += 2 {
+		attrs = append(attrs, slog.Attr{
+			Key:   args[i].(string),
+			Value: slog.AnyValue(args[i+1]),
+		})
+	}
+	handler := log.Handler().WithAttrs(attrs)
+
+	return &traceLogger{
+		Logger:         slog.New(handler),
+		handlerOptions: slogOptions,
+	}
 }
 
 // Note: Trace calls will be ignored unless the caller re-levels

@@ -149,3 +149,16 @@ func TestTraceLoggerDisabledByDefault(t *testing.T) {
 
 	assert.Empty(t, outputLines, "there should not be any output")
 }
+
+func TestGlogWithAttrs(t *testing.T) {
+	outputLines := gloptest.CollectOutput(func() {
+		rawLog := glog.InfoLogger()
+		logWithContext := rawLog.WithAttrs("foo", "bar")
+
+		rawLog.Info("but why?", "because", "nature")
+		logWithContext.Info("some stuff", "and", "things")
+	})
+
+	catted := strings.Join(outputLines, "\n")
+	assert.Contains(t, catted, "foo=bar")
+}
