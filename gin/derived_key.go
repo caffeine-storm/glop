@@ -7,9 +7,7 @@ import (
 	"github.com/runningwild/glop/glog"
 )
 
-var (
-	next_derived_key_index KeyIndex
-)
+var next_derived_key_index KeyIndex
 
 func init() {
 	next_derived_key_index = 10000

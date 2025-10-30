@@ -56,6 +56,7 @@ func (cb *ComboBox) DrawFocused(region Region, ctx DrawingContext) {
 	cb.scroll.Draw(r.Fit(region), ctx)
 	cb.Render_region = cb.scroll.Rendered()
 }
+
 func (cb *ComboBox) Respond(gui *Gui, group EventGroup) bool {
 	if cb.open {
 		if group.IsPressed(gin.AnyEscape) {

@@ -54,7 +54,6 @@ func getBadMatrixValues() map[string]mathgl.Mat4 {
 		ret["texture"] = buffer[2]
 	}
 	return ret
-
 }
 
 func checkMatrixInvariants() error {

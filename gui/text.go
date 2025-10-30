@@ -15,12 +15,15 @@ type transparent struct{}
 func (t transparent) RGBA() (r, g, b, a uint32) {
 	return 0, 0, 0, 0
 }
+
 func (si *subImage) ColorModel() color.Model {
 	return si.im.ColorModel()
 }
+
 func (si *subImage) Bounds() image.Rectangle {
 	return si.bounds
 }
+
 func (si *subImage) At(x, y int) color.Color {
 	b := si.bounds
 	if (image.Point{x, y}).In(b) {
@@ -89,11 +92,13 @@ type packedImageSortByArea struct {
 func (p *packedImageSortByArea) Len() int {
 	return len(p.ims)
 }
+
 func (p *packedImageSortByArea) Less(i, j int) bool {
 	ai := p.ims[i].Bounds().Dx() * p.ims[i].Bounds().Dy()
 	aj := p.ims[j].Bounds().Dx() * p.ims[j].Bounds().Dy()
 	return ai > aj
 }
+
 func (p *packedImageSortByArea) Swap(i, j int) {
 	p.ims[i], p.ims[j] = p.ims[j], p.ims[i]
 	p.off[i], p.off[j] = p.off[j], p.off[i]
@@ -108,13 +113,16 @@ type packedImage struct {
 func (p *packedImage) Len() int {
 	return len(p.ims)
 }
+
 func (p *packedImage) Less(i, j int) bool {
 	return p.ims[i].Bounds().Dy() < p.ims[j].Bounds().Dy()
 }
+
 func (p *packedImage) Swap(i, j int) {
 	p.ims[i], p.ims[j] = p.ims[j], p.ims[i]
 	p.off[i], p.off[j] = p.off[j], p.off[i]
 }
+
 func (p *packedImage) GetPackedLocation(im image.Image) image.Rectangle {
 	for i := range p.ims {
 		if im == p.ims[i] {
@@ -123,12 +131,15 @@ func (p *packedImage) GetPackedLocation(im image.Image) image.Rectangle {
 	}
 	return image.Rectangle{}
 }
+
 func (p *packedImage) ColorModel() color.Model {
 	return p.ims[0].ColorModel()
 }
+
 func (p *packedImage) Bounds() image.Rectangle {
 	return p.bounds
 }
+
 func (p *packedImage) At(x, y int) color.Color {
 	point := image.Point{x, y}
 	for i := range p.ims {

@@ -32,7 +32,6 @@ func findFilesInDir(path string) map[string]bool {
 		}
 		return err
 	})
-
 	if err != nil {
 		panic(fmt.Errorf("filepath.Walk returned an error: %w", err))
 	}

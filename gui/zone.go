@@ -25,9 +25,11 @@ type BasicZone struct {
 func (bz BasicZone) Requested() Dims {
 	return bz.Request_dims
 }
+
 func (bz BasicZone) Rendered() Region {
 	return bz.Render_region
 }
+
 func (bz BasicZone) Expandable() (bool, bool) {
 	return bz.Ex, bz.Ey
 }

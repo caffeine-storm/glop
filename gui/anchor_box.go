@@ -31,13 +31,16 @@ func MakeAnchorBox(dims Dims) *AnchorBox {
 	box.Request_dims = dims
 	return &box
 }
+
 func (w *AnchorBox) String() string {
 	return "anchor box"
 }
+
 func (w *AnchorBox) AddChild(widget Widget, anchor Anchor) {
 	w.children = append(w.children, widget)
 	w.anchors = append(w.anchors, anchor)
 }
+
 func (w *AnchorBox) RemoveChild(widget Widget) {
 	for i := range w.children {
 		if w.children[i] == widget {
@@ -49,9 +52,11 @@ func (w *AnchorBox) RemoveChild(widget Widget) {
 		}
 	}
 }
+
 func (w *AnchorBox) GetChildren() []Widget {
 	return w.children
 }
+
 func (w *AnchorBox) Draw(region Region, ctx DrawingContext) {
 	w.Render_region = region
 	render.LogAndClearGlErrors(glog.InfoLogger())

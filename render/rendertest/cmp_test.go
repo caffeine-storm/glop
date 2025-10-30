@@ -21,8 +21,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var transparent = color.RGBA{}
-var black = color.RGBA{A: 255}
+var (
+	transparent = color.RGBA{}
+	black       = color.RGBA{A: 255}
+)
 
 func TestPixelComparisonIsFuzzy(t *testing.T) {
 	t.Run("TestShouldLookLike", func(t *testing.T) {

@@ -5,9 +5,10 @@ package gos
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system"
-	"unsafe"
 )
 
 type win32SystemObject struct {
@@ -15,9 +16,7 @@ type win32SystemObject struct {
 	window  uintptr
 }
 
-var (
-	win32_system_object win32SystemObject
-)
+var win32_system_object win32SystemObject
 
 // Call after runtime.LockOSThread(), *NOT* in an init function
 func (win32 *win32SystemObject) Startup() {

@@ -19,6 +19,7 @@ type board [][]int
 func (b board) NumVertex() int {
 	return len(b) * len(b[0])
 }
+
 func (b board) Adjacent(n int) ([]int, []float64) {
 	x := n % len(b[0])
 	y := n / len(b[0])
@@ -112,15 +113,18 @@ type adag [][]int
 func (a adag) NumVertex() int {
 	return len(a)
 }
+
 func (a adag) Successors(n int) []int {
 	return a[n]
 }
+
 func (a adag) allSuccessorsHelper(n int, m map[int]bool) {
 	for _, s := range a[n] {
 		m[s] = true
 		a.allSuccessorsHelper(s, m)
 	}
 }
+
 func (a adag) AllSuccessors(n int) map[int]bool {
 	if len(a[n]) == 0 {
 		return nil
@@ -129,6 +133,7 @@ func (a adag) AllSuccessors(n int) map[int]bool {
 	a.allSuccessorsHelper(n, m)
 	return m
 }
+
 func checkOrder(a adag, order []int) {
 	So(len(a), ShouldEqual, len(order))
 	Convey("Ordering contains all vertices exactly once", func() {
@@ -158,6 +163,7 @@ func checkOrder(a adag, order []int) {
 		}
 	})
 }
+
 func TopoSpec() {
 	Convey("Check toposort on linked list", func() {
 		a := adag{

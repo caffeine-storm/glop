@@ -442,5 +442,4 @@ func TestRenderQueueLogsGlErrors(t *testing.T) {
 			t.Fatalf("didn't detect error attribution in log contents: %q", logContents)
 		}
 	})
-
 }

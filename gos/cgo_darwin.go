@@ -5,9 +5,10 @@ package gos
 import "C"
 
 import (
+	"unsafe"
+
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/system"
-	"unsafe"
 )
 
 type osxSystemObject struct {
@@ -16,9 +17,7 @@ type osxSystemObject struct {
 	horizon int64
 }
 
-var (
-	osx_system_object osxSystemObject
-)
+var osx_system_object osxSystemObject
 
 // Call after runtime.LockOSThread(), *NOT* in an init function
 func (osx *osxSystemObject) Startup() {

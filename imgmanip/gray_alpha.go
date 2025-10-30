@@ -25,6 +25,7 @@ func (gam grayAlphaModel) Convert(c color.Color) color.Color {
 	r, _, _, a := c.RGBA()
 	return gam.baseConvert(r, a)
 }
+
 func (gam grayAlphaModel) baseConvert(l, a uint32) color.Color {
 	return grayAlpha((l & 0xff00) | ((a & 0xff00) >> 8))
 }

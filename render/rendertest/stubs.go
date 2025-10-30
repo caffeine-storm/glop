@@ -31,6 +31,7 @@ func (*stubbedQueue) StopProcessing()          {}
 func (*stubbedQueue) IsDefunct() bool {
 	return false
 }
+
 func (*stubbedQueue) IsPurging() bool {
 	return false
 }

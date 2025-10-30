@@ -4,6 +4,7 @@ package linux
 // #include "include/glop.h"
 // #include "stdlib.h"
 import "C"
+
 import (
 	"fmt"
 	"unsafe"

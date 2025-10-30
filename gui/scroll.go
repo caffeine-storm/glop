@@ -1,8 +1,9 @@
 package gui
 
 import (
-	"github.com/runningwild/glop/gin"
 	"math"
+
+	"github.com/runningwild/glop/gin"
 )
 
 type ScrollFrame struct {
@@ -47,6 +48,7 @@ func (w *ScrollFrame) DoRespond(ctx EventHandlingContext, group EventGroup) (con
 	}
 	return
 }
+
 func (w *ScrollFrame) Draw(region Region, ctx DrawingContext) {
 	if region.Dx > w.Request_dims.Dx {
 		region.Dx = w.Request_dims.Dx

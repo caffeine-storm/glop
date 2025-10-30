@@ -39,8 +39,8 @@ ${profile_dir}/%.view: ${profile_dir}/%.test ${profile_dir}/%.${cpu_profile_file
 include build/testing-env.mk
 include build/test-report.mk
 
-fmt:
-	go fmt ./...
+include build/gofumpt.mk
+fmt: gofmt
 	clang-format -i ${NATIVE_SRCS}
 
 lint:
@@ -61,9 +61,7 @@ depth:
 		go run github.com/KyleBanks/depth/cmd/depth@v1.2.1 "$$PKG" ; \
 	done
 
-# -l for 'list files'
-checkfmt:
-	@gofmt -l ./
+checkfmt: checkgofmt
 	@clang-format -n -Werror ${NATIVE_SRCS}
 
 # Rebuild gos/$PLATFORM/compile_commands.json if any native code changes.

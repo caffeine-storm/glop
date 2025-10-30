@@ -23,14 +23,17 @@ type FileWidget struct {
 func (fw *FileWidget) GetPath() string {
 	return fw.path
 }
+
 func (fw *FileWidget) SetPath(path string) {
 	fw.path = path
 	fw.Button.SetText(filepath.Base(fw.path))
 }
+
 func (fw *FileWidget) Think(ui *Gui, t int64) {
 	fw.ui = ui
 	fw.Button.Think(ui, t)
 }
+
 func (fw *FileWidget) Respond(ui *Gui, group EventGroup) bool {
 	if group.IsPressed(gin.AnyEscape) {
 		if fw.popup != nil {

@@ -11,8 +11,10 @@ import (
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
 )
 
-var JobThatCausesAGlErrorFileName = "canary_test.go"
-var _, JobThatCausesAGlErrorLineNumber = gloptest.FileLineForClosure(JobThatCausesAGlError)
+var (
+	JobThatCausesAGlErrorFileName      = "canary_test.go"
+	_, JobThatCausesAGlErrorLineNumber = gloptest.FileLineForClosure(JobThatCausesAGlError)
+)
 
 func JobThatCausesAGlError(render.RenderQueueState) {
 	// do a thing that will cause a GL error

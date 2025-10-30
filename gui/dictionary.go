@@ -571,7 +571,6 @@ func (d *Dictionary) compileShaders(shaderName string, renderQueue render.Render
 }
 
 func (d *Dictionary) uploadGlyphTexture(renderQueue render.RenderQueueInterface) {
-
 	renderQueue.Queue(func(render.RenderQueueState) {
 		d.texture = gl.GenTexture()
 		d.texture.Bind(gl.TEXTURE_2D)

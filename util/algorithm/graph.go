@@ -25,18 +25,22 @@ type dArray []dNode
 func (da *dArray) Len() int {
 	return len(*da)
 }
+
 func (da *dArray) Swap(i, j int) {
 	(*da)[i], (*da)[j] = (*da)[j], (*da)[i]
 }
+
 func (da *dArray) Less(i, j int) bool {
 	if (*da)[i].weight != (*da)[j].weight {
 		return (*da)[i].weight < (*da)[j].weight
 	}
 	return (*da)[i].count < (*da)[j].count
 }
+
 func (da *dArray) Push(x interface{}) {
 	*da = append(*da, x.(dNode))
 }
+
 func (da *dArray) Pop() interface{} {
 	val := (*da)[len(*da)-1]
 	*da = (*da)[0 : len(*da)-1]

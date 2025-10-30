@@ -313,8 +313,10 @@ func (*queueShutdownError) Error() string {
 	return "queue has shutdown"
 }
 
-var _ error = (*queueShutdownError)(nil)
-var QueueShutdownError = &queueShutdownError{}
+var (
+	_                  error = (*queueShutdownError)(nil)
+	QueueShutdownError       = &queueShutdownError{}
+)
 
 func (q *renderQueue) AddErrorCallback(fn func(RenderQueueInterface, error)) {
 	q.errorCallbacks.mut.Lock()

@@ -2,9 +2,10 @@ package ai
 
 import (
 	"fmt"
+	"math/rand"
+
 	"github.com/runningwild/polish"
 	"github.com/runningwild/yedparse"
-	"math/rand"
 )
 
 type Error struct {
@@ -15,9 +16,11 @@ func (e *Error) Error() string {
 	return e.ErrorString
 }
 
-var InterruptError error = &Error{"Evaluation was terminated due to an interrupt."}
-var TermError error = &Error{"Evaluation was terminated early."}
-var StartError error = &Error{"No start node was found."}
+var (
+	InterruptError error = &Error{"Evaluation was terminated due to an interrupt."}
+	TermError      error = &Error{"Evaluation was terminated early."}
+	StartError     error = &Error{"No start node was found."}
+)
 
 type AiGraph struct {
 	Graph   *yed.Graph

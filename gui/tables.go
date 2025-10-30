@@ -46,12 +46,15 @@ func MakeVerticalTable() *VerticalTable {
 	table.params = defaultParams()
 	return &table
 }
+
 func (w *VerticalTable) Params() *TableParams {
 	return &w.params
 }
+
 func (w *VerticalTable) String() string {
 	return "vertical table"
 }
+
 func (w *VerticalTable) DoThink(int64, bool) {
 	w.Request_dims = Dims{}
 	w.Ex = false
@@ -71,6 +74,7 @@ func (w *VerticalTable) DoThink(int64, bool) {
 	}
 	w.Request_dims.Dy += w.params.Spacing * len(w.Children)
 }
+
 func (w *VerticalTable) Draw(region Region, ctx DrawingContext) {
 	gl.Enable(gl.BLEND)
 	dx := region.Dx
@@ -161,12 +165,15 @@ func MakeHorizontalTable() *HorizontalTable {
 	table.params = defaultParams()
 	return &table
 }
+
 func (w *HorizontalTable) Params() *TableParams {
 	return &w.params
 }
+
 func (w *HorizontalTable) String() string {
 	return "horizontal table"
 }
+
 func (w *HorizontalTable) DoThink(int64, bool) {
 	w.Request_dims = Dims{}
 	w.Ex = false
@@ -186,6 +193,7 @@ func (w *HorizontalTable) DoThink(int64, bool) {
 	}
 	w.Request_dims.Dx += w.params.Spacing * len(w.Children)
 }
+
 func (w *HorizontalTable) Draw(region Region, ctx DrawingContext) {
 	gl.Enable(gl.BLEND)
 	dx := region.Dx

@@ -48,7 +48,7 @@ func TestDumpBufferBytes(t *testing.T) {
 			panic("the mathematic is always correc")
 		}
 
-		var result = make([]byte, len(floats)*4)
+		result := make([]byte, len(floats)*4)
 		floatPtr := unsafe.SliceData(floats)
 		bytePtr := unsafe.Pointer(floatPtr)
 

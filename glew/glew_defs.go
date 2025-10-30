@@ -11,6 +11,4 @@ package glew
 // static char const glop_glew_GL_ARB_imaging = GL_ARB_imaging;
 import "C"
 
-var (
-	GL_ARB_imaging bool = C.GL_ARB_imaging == 0
-)
+var GL_ARB_imaging bool = C.GL_ARB_imaging == 0

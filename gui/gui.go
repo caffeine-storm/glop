@@ -59,9 +59,11 @@ type StandardParent struct {
 func (s *StandardParent) GetChildren() []Widget {
 	return s.Children
 }
+
 func (s *StandardParent) AddChild(w Widget) {
 	s.Children = append(s.Children, w)
 }
+
 func (s *StandardParent) RemoveChild(w Widget) {
 	for i := range s.Children {
 		if s.Children[i] == w {
@@ -71,6 +73,7 @@ func (s *StandardParent) RemoveChild(w Widget) {
 		}
 	}
 }
+
 func (s *StandardParent) ReplaceChild(old, new Widget) {
 	for i := range s.Children {
 		if s.Children[i] == old {
@@ -79,6 +82,7 @@ func (s *StandardParent) ReplaceChild(old, new Widget) {
 		}
 	}
 }
+
 func (s *StandardParent) RemoveAllChildren() {
 	s.Children = s.Children[0:0]
 }
@@ -99,9 +103,11 @@ type Gui struct {
 	logger glog.Logger
 }
 
-var _ DrawingContext = (*Gui)(nil)
-var _ UpdateableDrawingContext = (*Gui)(nil)
-var _ EventHandlingContext = (*Gui)(nil)
+var (
+	_ DrawingContext           = (*Gui)(nil)
+	_ UpdateableDrawingContext = (*Gui)(nil)
+	_ EventHandlingContext     = (*Gui)(nil)
+)
 
 type MissingFontError struct {
 	error

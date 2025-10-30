@@ -33,9 +33,11 @@ func makeCheckBox() *checkBox {
 	cb.BasicZone.Request_dims.Dy = 30
 	return &cb
 }
+
 func (cb *checkBox) String() string {
 	return "check box"
 }
+
 func (cb *checkBox) Click() {
 	if cb.disabled {
 		return
@@ -49,6 +51,7 @@ func (cb *checkBox) Click() {
 		cb.selected = checkBoxSelected
 	}
 }
+
 func (cb *checkBox) Draw(region Region, ctx DrawingContext) {
 	cb.Render_region = region
 	if cb.disabled {
@@ -87,6 +90,7 @@ type checkRow struct {
 func (cb *checkRow) String() string {
 	return "check row"
 }
+
 func makeCheckRow(w Widget, target, index reflect.Value) *checkRow {
 	var cr checkRow
 	cr.EmbeddedWidget = &BasicWidget{CoreWidget: &cr}
@@ -98,6 +102,7 @@ func makeCheckRow(w Widget, target, index reflect.Value) *checkRow {
 	cr.AddChild(w)
 	return &cr
 }
+
 func (cr *checkRow) DoRespond(ctx EventHandlingContext, group EventGroup) (consume, change_focus bool) {
 	if group.IsPressed(gin.AnyMouseLButton) {
 		cr.check_box.Click()
@@ -113,6 +118,7 @@ func (cr *checkRow) DoRespond(ctx EventHandlingContext, group EventGroup) (consu
 	}
 	return
 }
+
 func (cr *checkRow) DoThink(t int64, focus bool) {
 	val := cr.target.MapIndex(cr.index)
 	if val.IsValid() {

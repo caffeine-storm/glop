@@ -315,6 +315,7 @@ type animAlgoGraph struct {
 func (cg *animAlgoGraph) NumVertex() int {
 	return cg.anim.NumNodes()
 }
+
 func (cg *animAlgoGraph) Adjacent(n int) (adj []int, cost []float64) {
 	node := cg.anim.Node(n)
 
@@ -487,9 +488,11 @@ func (cg *commandGroup) ready() bool {
 func (s *Sprite) State() string {
 	return s.state_node.Line(0)
 }
+
 func (s *Sprite) Anim() string {
 	return s.anim_node.Line(0)
 }
+
 func (s *Sprite) AnimState() string {
 	return s.shared.node_data[s.anim_node].state
 }
@@ -634,6 +637,7 @@ type pathingGraph struct {
 func (p pathingGraph) NumVertex() int {
 	return p.shared.anim.NumNodes() + 1
 }
+
 func (p pathingGraph) Adjacent(n int) (adj []int, cost []float64) {
 	var node *yed.Node
 	if n == p.shared.anim.NumNodes() {
@@ -766,12 +770,15 @@ func (s *Sprite) Bind() (x, y, x2, y2 float64) {
 	y2 = float64(rect.Y2) / dy
 	return
 }
+
 func (s *Sprite) Facing() int {
 	return s.facing
 }
+
 func (s *Sprite) StateFacing() int {
 	return s.state_facing
 }
+
 func (s *Sprite) doTrigger() {
 	if s.trigger == nil {
 		return

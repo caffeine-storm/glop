@@ -128,7 +128,6 @@ func TestDictionaryRenderString(t *testing.T) {
 
 	t.Run("works regardless of whether gl.TEXTURE_2D is enabled or not", func(t *testing.T) {
 		testbuilder.New().WithSize(128, 32).WithQueue().Run(func(queue render.RenderQueueInterface) {
-
 			d := gui.LoadAndInitializeDictionaryForTest(queue, glog.DebugLogger())
 
 			queue.Queue(func(st render.RenderQueueState) {

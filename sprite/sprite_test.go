@@ -106,7 +106,8 @@ func CommandNSpec() {
 			"turn_right",
 			"turn_right",
 			"turn_left",
-			"turn_left"})
+			"turn_left",
+		})
 
 		// Let the sprite finish its dance by simulating 5 seconds of animation.
 		s.Think(5000)

@@ -54,7 +54,7 @@ func (bank *fsByteBank) Read(key string) ([]byte, bool, error) {
 
 func (bank *fsByteBank) Write(key string, data []byte) error {
 	filename := path.Join(bank.root, key)
-	return os.WriteFile(filename, data, 0644)
+	return os.WriteFile(filename, data, 0o644)
 }
 
 type ramByteBank map[string][]byte

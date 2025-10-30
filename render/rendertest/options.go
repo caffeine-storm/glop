@@ -6,17 +6,21 @@ import (
 	"reflect"
 )
 
-type TestNumber uint8
-type FileExtension string
-type Threshold uint8
-type BackgroundColour color.Color
-type MakeRejectFiles bool
-type DebugDumpFilePath string
+type (
+	TestNumber        uint8
+	FileExtension     string
+	Threshold         uint8
+	BackgroundColour  color.Color
+	MakeRejectFiles   bool
+	DebugDumpFilePath string
+)
 
-var defaultTestNumber = TestNumber(0)
-var defaultFileExtension = FileExtension("png")
-var defaultThreshold = Threshold(3)
-var defaultDebugDumpFilePath = DebugDumpFilePath("/dev/null")
+var (
+	defaultTestNumber        = TestNumber(0)
+	defaultFileExtension     = FileExtension("png")
+	defaultThreshold         = Threshold(3)
+	defaultDebugDumpFilePath = DebugDumpFilePath("/dev/null")
+)
 
 // DefaultBackground is an opaque black
 var DefaultBackground BackgroundColour = color.RGBA{

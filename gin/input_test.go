@@ -148,7 +148,6 @@ func NaturalKeySpec() {
 	keya := input.GetKeyByParts(gin.KeyA, gin.DeviceTypeKeyboard, 1)
 	keyb := input.GetKeyByParts(gin.KeyB, gin.DeviceTypeKeyboard, 1)
 	Convey("Single key press or release per frame sets basic keyState values properly", func() {
-
 		events := make([]gin.OsEvent, 0)
 		appendTestEvent(&events, newKeyEvent('a').Press().At(5))
 		input.Think(10, events)
@@ -278,7 +277,6 @@ func DerivedKeySpec() {
 	// A B C E f
 
 	Convey("Derived key presses happen only when a primary key is pressed after all modifiers are set", func() {
-
 		// Test that first binding can trigger a press
 		events := make([]gin.OsEvent, 0)
 		appendTestEvent(&events, newKeyEvent('b').Press().At(1))
@@ -712,12 +710,15 @@ type listener struct {
 func (l *listener) ExpectPressCounts(v ...int) {
 	l.press_count = v
 }
+
 func (l *listener) ExpectReleaseCounts(v ...int) {
 	l.release_count = v
 }
+
 func (l *listener) ExpectPressAmts(v ...float64) {
 	l.press_amt = v
 }
+
 func (l *listener) HandleEventGroup(eg gin.EventGroup) {
 	k := l.input.GetKeyById(l.key_id)
 	So(k.CurPressCount(), ShouldEqual, l.press_count[0])
@@ -727,6 +728,7 @@ func (l *listener) HandleEventGroup(eg gin.EventGroup) {
 	l.release_count = l.release_count[1:]
 	l.press_amt = l.press_amt[1:]
 }
+
 func (l *listener) Think(ms int64) {
 	So(len(l.press_count), ShouldEqual, 0)
 	So(len(l.release_count), ShouldEqual, 0)

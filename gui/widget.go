@@ -113,12 +113,15 @@ func MakeImageBox() *ImageBox {
 	ib.r, ib.g, ib.b, ib.a = 1, 1, 1, 1
 	return &ib
 }
+
 func (w *ImageBox) String() string {
 	return "image box"
 }
+
 func (w *ImageBox) SetShading(r, g, b, a float64) {
 	w.r, w.g, w.b, w.a = r, g, b, a
 }
+
 func freeTexture(w *ImageBox) {
 	if w.active {
 		w.texture.Delete()
@@ -136,9 +139,11 @@ func (w *ImageBox) SetImageByTexture(texture gl.Texture, dx, dy int) {
 	w.Request_dims.Dy = dy
 	w.active = false
 }
+
 func (w *ImageBox) UnsetImage() {
 	freeTexture(w)
 }
+
 func (w *ImageBox) SetImage(path string) {
 	w.UnsetImage()
 	data, err := os.Open(path)
@@ -181,6 +186,7 @@ func (w *ImageBox) SetImage(path string) {
 
 	w.active = true
 }
+
 func (w *ImageBox) Draw(region Region, ctx DrawingContext) {
 	w.Render_region = region
 
@@ -262,6 +268,7 @@ type selectableOption struct {
 func (so *selectableOption) GetData() interface{} {
 	return so.data
 }
+
 func (so *selectableOption) SetSelectFunc(f func(EventHandlingContext, int64)) {
 	so.on_click = f
 }
