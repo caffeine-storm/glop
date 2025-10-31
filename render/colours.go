@@ -38,6 +38,10 @@ func NormalizedColourToByte(f float32) uint8 {
 	return uint8(ret)
 }
 
+func ByteToNormalizedColour(b uint8) float32 {
+	return float32(b) / 255
+}
+
 func GetCurrentBackgroundColor() color.NRGBA {
 	oldClear := getCurrentBackground()
 	return color.NRGBA{
