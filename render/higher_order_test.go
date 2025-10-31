@@ -187,7 +187,7 @@ func pickADifferentColour(notThese ...color.NRGBA) color.NRGBA {
 		R: 0,
 		G: 0,
 		B: 0,
-		A: 1,
+		A: 255,
 	}
 	if len(notThese) == 0 {
 		return ret
