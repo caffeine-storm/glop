@@ -70,7 +70,7 @@ func assertFreshState(t *testing.T, st *debug.GlState) {
 
 func TestWithMatrixMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
-	testbuilder.New().Run(func() {
+	testbuilder.Run(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
@@ -89,7 +89,7 @@ func TestWithMatrixInMode(t *testing.T) {
 	var beforeMode, duringMode, targetMode, afterMode render.MatrixMode
 	var beforeMat, duringMat, targetMat, afterMat render.Matrix
 
-	testbuilder.New().Run(func() {
+	testbuilder.Run(func() {
 		beforeMode = render.GetCurrentMatrixMode()
 		targetMode = pickADifferentMode(beforeMode)
 
@@ -122,7 +122,7 @@ func TestWithFreshMatrices(t *testing.T) {
 
 	var beforeState, entryState, exitState, afterState *debug.GlState
 
-	testbuilder.New().Run(func() {
+	testbuilder.Run(func() {
 		// Start out with matrics that are 'not-fresh'.
 		gl.MatrixMode(gl.MODELVIEW)
 		gl.LoadMatrixf((*[16]float32)(&notIdent))
@@ -156,7 +156,7 @@ func TestWithFreshMatrices(t *testing.T) {
 }
 
 func TestTexture2DHelpers(t *testing.T) {
-	testbuilder.New().Run(func() {
+	testbuilder.Run(func() {
 		testcase := func() {
 			flags := []bool{false, false, false}
 			gl.GetBooleanv(gl.TEXTURE_2D, flags[0:])
@@ -217,7 +217,7 @@ func asFloats(c color.NRGBA) (float32, float32, float32, float32) {
 
 func TestWithColour(t *testing.T) {
 	assert := assert.New(t)
-	testbuilder.New().Run(func() {
+	testbuilder.Run(func() {
 		oldColour := render.GetCurrentForegroundColour()
 		newColour := pickADifferentColour(oldColour)
 		var chosenColour color.NRGBA
