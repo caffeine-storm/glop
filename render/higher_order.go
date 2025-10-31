@@ -138,10 +138,17 @@ func WithoutTexturing(fn func()) {
 func WithColour(r, g, b, a float32, fn func()) {
 	assertNormalized(r, g, b, a)
 
-	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
-	defer gl.PopAttrib()
+	oldColour := GetCurrentForegroundColour()
+	oldr := ByteToNormalizedColour(oldColour.R)
+	oldg := ByteToNormalizedColour(oldColour.G)
+	oldb := ByteToNormalizedColour(oldColour.B)
+	olda := ByteToNormalizedColour(oldColour.A)
 
 	gl.Color4f(r, g, b, a)
+	defer func() {
+		gl.Color4f(oldr, oldg, oldb, olda)
+	}()
+
 	fn()
 }
 

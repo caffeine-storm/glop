@@ -1,3 +1,10 @@
+tmckee:#52 the higher-order WithColour helper doesn't always reset the
+foreground colour... when trying to debug it, it seemed like extra work that
+interacts with opengl (even if its just a read through
+gl.GetFloatv(gl.CURRENT_COLOR)!!!) _fixes_ the problem. Clearly, the code is
+haunted. For now, we work around it by saving our own colour values and calling
+gl.Color4f in a defer.
+
 tmckee:#51 render/rendertest/testbuilder.WithSize is nice but .WithDims would
 be sweet for when we've already got a gui.Dims kicking around.
 
@@ -81,4 +88,4 @@ better resolution in the event of a long frame.
 
 Make a way to test sprite stuff without needed opengl.
 
-<owner>:#52 <next>
+<owner>:#53 <next>
