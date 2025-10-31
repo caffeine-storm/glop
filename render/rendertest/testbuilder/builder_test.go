@@ -103,13 +103,11 @@ func TestBuilderFluentApi(t *testing.T) {
 				rendertest.DrawRectNdc(-1, -1, 1, 1)
 			})
 
-			// TODO(tmckee): use a render package helper to do byte/clampf
-			// conversions
 			pinkBackground := color.RGBA{
-				R: 225, G: 0, B: 255, A: 255,
+				R: 255, G: 0, B: 255, A: 255,
 			}
 			testbuilder.WithExpectation(c, "red-on-pink", pinkBackground, func() {
-				render.WithBlankScreen(1.0, 0, 1.0, 1.0, func() {
+				render.WithBlankScreen(1.0, 0.0, 1.0, 1.0, func() {
 					rendertest.DrawRectNdc(-0.5, -0.5, 0.5, 0.5)
 				})
 			})
