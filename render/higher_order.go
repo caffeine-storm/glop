@@ -1,9 +1,6 @@
 package render
 
 import (
-	"fmt"
-	"slices"
-
 	"github.com/MobRulesGames/mathgl"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glew"
@@ -136,14 +133,6 @@ func WithTexturing(fn func()) {
 
 func WithoutTexturing(fn func()) {
 	WithTexture2DSetting(false, fn)
-}
-
-func assertNormalized[T ~float32](values ...T) {
-	if slices.ContainsFunc(values, func(v T) bool {
-		return v < 0.0 || v > 1.0
-	}) {
-		panic(fmt.Errorf("each float needs to be in the range [0, 1] but got %v", values))
-	}
 }
 
 func WithColour(r, g, b, a float32, fn func()) {

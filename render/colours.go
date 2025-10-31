@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"image/color"
+	"slices"
 
 	"github.com/go-gl-legacy/gl"
 )
@@ -19,10 +20,17 @@ func getCurrentForeground() [4]float32 {
 	return ret
 }
 
-func normColourToByte(f float32) uint8 {
-	if f < 0 || f > 1.0 {
-		panic(fmt.Errorf("non-normalized float: %v is not in range [0.0, 1.0]", f))
+func assertNormalized[T ~float32](values ...T) {
+	if slices.ContainsFunc(values, func(v T) bool {
+		return v < 0.0 || v > 1.0
+	}) {
+		panic(fmt.Errorf("each float needs to be in the range [0, 1] but got %v", values))
 	}
+}
+
+func NormalizedColourToByte(f float32) uint8 {
+	assertNormalized(f)
+
 	ret := int(f * 256)
 	if ret >= 256 {
 		ret = 255
@@ -33,19 +41,19 @@ func normColourToByte(f float32) uint8 {
 func GetCurrentBackgroundColor() color.NRGBA {
 	oldClear := getCurrentBackground()
 	return color.NRGBA{
-		R: normColourToByte(oldClear[0]),
-		G: normColourToByte(oldClear[1]),
-		B: normColourToByte(oldClear[2]),
-		A: normColourToByte(oldClear[3]),
+		R: NormalizedColourToByte(oldClear[0]),
+		G: NormalizedColourToByte(oldClear[1]),
+		B: NormalizedColourToByte(oldClear[2]),
+		A: NormalizedColourToByte(oldClear[3]),
 	}
 }
 
 func GetCurrentForegroundColour() color.NRGBA {
 	oldFg := getCurrentForeground()
 	return color.NRGBA{
-		R: normColourToByte(oldFg[0]),
-		G: normColourToByte(oldFg[1]),
-		B: normColourToByte(oldFg[2]),
-		A: normColourToByte(oldFg[3]),
+		R: NormalizedColourToByte(oldFg[0]),
+		G: NormalizedColourToByte(oldFg[1]),
+		B: NormalizedColourToByte(oldFg[2]),
+		A: NormalizedColourToByte(oldFg[3]),
 	}
 }
