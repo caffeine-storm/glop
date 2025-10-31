@@ -1,6 +1,8 @@
 package render
 
 import (
+	"fmt"
+
 	"github.com/MobRulesGames/mathgl"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glew"
@@ -135,7 +137,19 @@ func WithoutTexturing(fn func()) {
 	WithTexture2DSetting(false, fn)
 }
 
+func assertNormalized(r, g, b, a float32) {
+	bad := func(f float32) bool {
+		return f < 0.0 || f > 1.0
+	}
+
+	if bad(r) || bad(g) || bad(b) || bad(a) {
+		panic(fmt.Errorf("normalized float needs to be in range [0, 1] but got (%v, %v, %v, %v)", r, g, b, a))
+	}
+}
+
 func WithColour(r, g, b, a float32, fn func()) {
+	assertNormalized(r, g, b, a)
+
 	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
 	defer gl.PopAttrib()
 
