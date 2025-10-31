@@ -216,21 +216,34 @@ func asFloats(c color.NRGBA) (float32, float32, float32, float32) {
 }
 
 func TestWithColour(t *testing.T) {
-	assert := assert.New(t)
-	testbuilder.Run(func() {
-		oldColour := render.GetCurrentForegroundColour()
-		newColour := pickADifferentColour(oldColour)
-		var chosenColour color.NRGBA
-		r, g, b, a := asFloats(newColour)
-		render.WithColour(r, g, b, a, func() {
-			chosenColour = render.GetCurrentForegroundColour()
+	t.Run("supports nesting", func(t *testing.T) {
+		assert := assert.New(t)
+		testbuilder.Run(func() {
+			oldColour := render.GetCurrentForegroundColour()
+			newColour := pickADifferentColour(oldColour)
+			var chosenColour color.NRGBA
+			r, g, b, a := asFloats(newColour)
+			render.WithColour(r, g, b, a, func() {
+				chosenColour = render.GetCurrentForegroundColour()
 
-			tempColour := pickADifferentColour(oldColour, newColour, chosenColour)
-			gl.Color4ub(tempColour.R, tempColour.G, tempColour.B, tempColour.A)
+				tempColour := pickADifferentColour(oldColour, newColour, chosenColour)
+				gl.Color4ub(tempColour.R, tempColour.G, tempColour.B, tempColour.A)
+			})
+			afterColour := render.GetCurrentForegroundColour()
+
+			assert.Equal(newColour, chosenColour)
+			assert.Equal(oldColour, afterColour)
 		})
-		afterColour := render.GetCurrentForegroundColour()
+	})
 
-		assert.Equal(newColour, chosenColour)
-		assert.Equal(oldColour, afterColour)
+	t.Run("rejects non-normalized floats", func(t *testing.T) {
+		assert := assert.New(t)
+		testbuilder.Run(func() {
+			assert.Panics(func() {
+				render.WithColour(200, 0, 0, 1, func() {
+					assert.Fail("the wrapped func should not run")
+				})
+			})
+		})
 	})
 }
