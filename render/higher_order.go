@@ -138,8 +138,8 @@ func WithoutTexturing(fn func()) {
 	WithTexture2DSetting(false, fn)
 }
 
-func assertNormalized(values ...float32) {
-	if slices.ContainsFunc(values, func(v float32) bool {
+func assertNormalized[T ~float32](values ...T) {
+	if slices.ContainsFunc(values, func(v T) bool {
 		return v < 0.0 || v > 1.0
 	}) {
 		panic(fmt.Errorf("each float needs to be in the range [0, 1] but got %v", values))
@@ -157,6 +157,8 @@ func WithColour(r, g, b, a float32, fn func()) {
 }
 
 func WithBlankScreen(r, g, b, a gl.GLclampf, fn func()) {
+	assertNormalized(r, g, b, a)
+
 	gl.PushAttrib(gl.ACCUM_BUFFER_BIT | gl.CURRENT_BIT)
 	defer gl.PopAttrib()
 
