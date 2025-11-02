@@ -7,7 +7,7 @@ replace github.com/go-gl-legacy/gl => github.com/caffeine-storm/gl v0.0.0-202505
 replace github.com/go-gl-legacy/glu => github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6
 
 require (
-	github.com/caffeine-storm/freetype v0.0.0-20251102162939-ec920aee583e
+	github.com/caffeine-storm/freetype v0.0.0-haunted
 	github.com/caffeine-storm/mathgl v0.0.0-haunted
 	github.com/go-gl-legacy/gl v0.0.0-20150223033340-df25b1fe668d
 	github.com/go-gl-legacy/glu v0.0.0-20150315173544-b54aa06bc77a
