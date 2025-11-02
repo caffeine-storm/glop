@@ -1,15 +1,13 @@
 module github.com/runningwild/glop
 
-go 1.23.0
-
-replace code.google.com/p/freetype-go => github.com/golang/freetype v0.0.0-20120725121025-28cc5fbc5d0b
+go 1.24.0
 
 replace github.com/go-gl-legacy/gl => github.com/caffeine-storm/gl v0.0.0-20250506174032-5994dccd6839
 
 replace github.com/go-gl-legacy/glu => github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6
 
 require (
-	code.google.com/p/freetype-go v0.0.0-00010101000000-000000000000
+	github.com/caffeine-storm/freetype v0.0.0-20251102162939-ec920aee583e
 	github.com/caffeine-storm/mathgl v0.0.0-haunted
 	github.com/go-gl-legacy/gl v0.0.0-20150223033340-df25b1fe668d
 	github.com/go-gl-legacy/glu v0.0.0-20150315173544-b54aa06bc77a
@@ -18,6 +16,7 @@ require (
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0
+	golang.org/x/image v0.32.0
 )
 
 require (

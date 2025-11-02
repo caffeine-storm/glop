@@ -8,8 +8,8 @@ import (
 	"os"
 	"testing"
 
-	"code.google.com/p/freetype-go/freetype"
-	"code.google.com/p/freetype-go/freetype/truetype"
+	"github.com/caffeine-storm/freetype"
+	"github.com/caffeine-storm/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gui"

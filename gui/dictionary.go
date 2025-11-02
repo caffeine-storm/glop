@@ -8,12 +8,12 @@ import (
 	"io"
 	"unsafe"
 
-	"code.google.com/p/freetype-go/freetype"
-	"code.google.com/p/freetype-go/freetype/raster"
-	"code.google.com/p/freetype-go/freetype/truetype"
+	"github.com/caffeine-storm/freetype"
+	"github.com/caffeine-storm/freetype/truetype"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
+	"golang.org/x/image/math/fixed"
 )
 
 // Shader stuff - The font stuff requires that we use some simple shaders
@@ -424,11 +424,11 @@ func (d *Dictionary) RenderString(s string, target Point, height int, just Justi
 	render.LogAndClearGlErrors(d.logger)
 }
 
-func fix24_8_to_float64(n raster.Fix32) float64 {
-	// 'n' is a fractional value packed into an int32 with the 24
-	// most-significant bits representing the 'whole' portion and the 8
+func fix26_6_to_float64(n fixed.Int26_6) float64 {
+	// 'n' is a fractional value packed into an int32 with the 26
+	// most-significant bits representing the 'whole' portion and the 6
 	// least-significant bits representing the fractional part.
-	return float64(n/256) + float64(n%256)/256.0
+	return float64(n/64) + float64(n%64)/64.0
 }
 
 func RasterizeFont(font *truetype.Font, pointSize int) RasteredFont {
@@ -461,11 +461,11 @@ func RasterizeFont(font *truetype.Font, pointSize int) RasteredFont {
 		context.SetDst(canvas)
 		context.SetClip(canvas.Bounds())
 
-		advance, _ := context.DrawString(string([]rune{r}), raster.Point{})
+		advance, _ := context.DrawString(string([]rune{r}), fixed.Point26_6{})
 		sub := MinimalSubImage(canvas)
 		letters = append(letters, sub)
 		rune_mapping[r] = sub
-		adv := fix24_8_to_float64(advance.X)
+		adv := fix26_6_to_float64(advance.X)
 		rune_info[r] = runeInfo{Bounds: sub.bounds, Advance: adv}
 	}
 	packed := packImages(letters)
