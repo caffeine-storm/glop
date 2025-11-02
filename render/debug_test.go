@@ -3,7 +3,7 @@ package render_test
 import (
 	"testing"
 
-	"github.com/MobRulesGames/mathgl"
+	"github.com/caffeine-storm/mathgl"
 	"github.com/runningwild/glop/render"
 	"github.com/stretchr/testify/assert"
 )

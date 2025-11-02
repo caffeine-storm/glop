@@ -6,7 +6,7 @@ import (
 	"image/color"
 	"strings"
 
-	"github.com/MobRulesGames/mathgl"
+	"github.com/caffeine-storm/mathgl"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"

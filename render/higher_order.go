@@ -1,7 +1,7 @@
 package render
 
 import (
-	"github.com/MobRulesGames/mathgl"
+	"github.com/caffeine-storm/mathgl"
 	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glew"
 )
