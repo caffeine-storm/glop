@@ -3,7 +3,7 @@ package render
 import (
 	"fmt"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 	"github.com/runningwild/glop/glog"
 )
 

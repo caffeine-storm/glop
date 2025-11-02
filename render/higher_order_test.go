@@ -5,7 +5,7 @@ import (
 	"image/color"
 	"testing"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 	"github.com/runningwild/glop/debug"
 	"github.com/runningwild/glop/glew"
 	"github.com/runningwild/glop/render"

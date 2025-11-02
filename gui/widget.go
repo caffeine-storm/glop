@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
+	"github.com/caffeine-storm/gl"
+	"github.com/caffeine-storm/glu"
 )
 
 type Widget interface {

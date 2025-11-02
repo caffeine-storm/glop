@@ -1,8 +1,8 @@
 package render
 
 import (
+	"github.com/caffeine-storm/gl"
 	"github.com/caffeine-storm/mathgl"
-	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glew"
 )
 

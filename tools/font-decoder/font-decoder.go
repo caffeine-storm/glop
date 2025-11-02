@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"

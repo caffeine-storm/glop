@@ -8,7 +8,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/imgmanip"
 	"github.com/runningwild/glop/render"

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-gl-legacy/gl"
-	"github.com/go-gl-legacy/glu"
+	"github.com/caffeine-storm/gl"
+	"github.com/caffeine-storm/glu"
 	"github.com/runningwild/glop/cache"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"

@@ -5,7 +5,7 @@ import (
 	"image/color"
 	"slices"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 )
 
 func getCurrentBackground() [4]float32 {

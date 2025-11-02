@@ -1,6 +1,6 @@
 package gui
 
-import "github.com/go-gl-legacy/gl"
+import "github.com/caffeine-storm/gl"
 
 type TableParams struct {
 	Spacing    int

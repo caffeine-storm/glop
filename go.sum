@@ -1,9 +1,9 @@
 github.com/caffeine-storm/freetype v0.0.0-haunted h1:+Wc4Ry5M+Zk1o8+3qB06PTozSq10x80f2XnnGNQGxIc=
 github.com/caffeine-storm/freetype v0.0.0-haunted/go.mod h1:8v3T4U+NrXpMTze2WJjyWVBwW33gTnjePagu9H1ssz4=
-github.com/caffeine-storm/gl v0.0.0-20250506174032-5994dccd6839 h1:yMJDSsrkrBC6dRKbi0zMhYrc8eb9fDcfugYuvC9KCTI=
-github.com/caffeine-storm/gl v0.0.0-20250506174032-5994dccd6839/go.mod h1:L86rxjA8/HgyZTK0nI9WNXSXtFfJ3Jz5cOvYDO44mfw=
-github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6 h1:P5AfHxhrOVg47HAn8FTGsUyqnd+TEJghuMiuAb48IWc=
-github.com/caffeine-storm/glu v0.0.0-20240904141638-031792da4ab6/go.mod h1:u7X6dfpvRdRDhT7TNW2tHPXi+GY3/8rgCZuHYHJKCyc=
+github.com/caffeine-storm/gl v0.0.0-haunted h1:WnsPfQvFvUbebQQd7GAz0eNaP+GEecWN5itP+SV2DNI=
+github.com/caffeine-storm/gl v0.0.0-haunted/go.mod h1:GiE1+RHb0hbvCfdTsrpXJtB1cU7OS+lMs7DzreBArNE=
+github.com/caffeine-storm/glu v0.0.0-haunted h1:Wjpub9fcbXSqz/mNX4zAggs+IK52XS3IF/3PGRTT6/U=
+github.com/caffeine-storm/glu v0.0.0-haunted/go.mod h1:Zsr4IbX9P07/+uEJhhDnA95muGmcl1XE8+n9GwvUYJE=
 github.com/caffeine-storm/mathgl v0.0.0-haunted h1:DkBxIPxF9tVC85unE08GpxiCdJ6PYlvj3UXMV1p6fAQ=
 github.com/caffeine-storm/mathgl v0.0.0-haunted/go.mod h1:LAozgTAiX5lX4z8lbX4uvpM8dayOoAUx3iS1a786bZM=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

@@ -6,8 +6,8 @@ import (
 	"image/color"
 	"strings"
 
+	"github.com/caffeine-storm/gl"
 	"github.com/caffeine-storm/mathgl"
-	"github.com/go-gl-legacy/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 )

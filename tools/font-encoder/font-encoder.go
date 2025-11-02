@@ -8,7 +8,7 @@ import (
 
 	"github.com/caffeine-storm/freetype"
 	"github.com/caffeine-storm/freetype/truetype"
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 	"github.com/runningwild/glop/gin"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/gos"

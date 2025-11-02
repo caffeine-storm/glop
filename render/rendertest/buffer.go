@@ -3,7 +3,7 @@ package rendertest
 import (
 	"unsafe"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 )
 
 func GivenABufferWithData(data []float32) gl.Buffer {

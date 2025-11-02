@@ -3,7 +3,7 @@ package render_test
 import (
 	"testing"
 
-	"github.com/go-gl-legacy/gl"
+	"github.com/caffeine-storm/gl"
 	"github.com/runningwild/glop/glog"
 	"github.com/runningwild/glop/render"
 	"github.com/runningwild/glop/render/rendertest/testbuilder"
