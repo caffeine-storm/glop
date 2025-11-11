@@ -5,20 +5,23 @@ import (
 	"os/exec"
 )
 
-func xDoToolRun(xdotoolAnyArgs ...any) {
-	xdotoolArgs := make([]string, len(xdotoolAnyArgs))
-	for i, arg := range xdotoolAnyArgs {
+func stringifyArgs(args []any) []string {
+	ret := make([]string, len(args))
+	for i, arg := range args {
 		switch v := arg.(type) {
 		case string:
-			xdotoolArgs[i] = v
+			ret[i] = v
 		case fmt.Stringer:
-			xdotoolArgs[i] = v.String()
+			ret[i] = v.String()
 		default:
-			xdotoolArgs[i] = fmt.Sprintf("%v", arg)
+			ret[i] = fmt.Sprintf("%v", arg)
 		}
 	}
+	return ret
+}
 
-	cmd := exec.Command("xdotool", xdotoolArgs...)
+func xDoToolRun(xdotoolArgs ...any) {
+	cmd := exec.Command("xdotool", stringifyArgs(xdotoolArgs)...)
 
 	err := cmd.Run()
 	if err != nil {
@@ -26,20 +29,8 @@ func xDoToolRun(xdotoolAnyArgs ...any) {
 	}
 }
 
-func xDoToolOutput(xdotoolAnyArgs ...any) string {
-	xdotoolArgs := make([]string, len(xdotoolAnyArgs))
-	for i, arg := range xdotoolAnyArgs {
-		switch v := arg.(type) {
-		case string:
-			xdotoolArgs[i] = v
-		case fmt.Stringer:
-			xdotoolArgs[i] = v.String()
-		default:
-			xdotoolArgs[i] = fmt.Sprintf("%v", arg)
-		}
-	}
-
-	cmd := exec.Command("xdotool", xdotoolArgs...)
+func xDoToolOutput(xdotoolArgs ...any) string {
+	cmd := exec.Command("xdotool", stringifyArgs(xdotoolArgs)...)
 
 	bs, err := cmd.Output()
 	if err != nil {
