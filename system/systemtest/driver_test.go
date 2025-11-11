@@ -3,8 +3,10 @@ package systemtest_test
 import (
 	"testing"
 
+	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/system"
 	"github.com/runningwild/glop/system/systemtest"
+	"github.com/stretchr/testify/assert"
 )
 
 type click struct {
@@ -143,5 +145,17 @@ func TestSystemtestDriver(t *testing.T) {
 		if lastClick != expectedClick {
 			t.Fatalf("click expectation failed: expected: %+v, actual: %+v", expectedClick, lastClick)
 		}
+	})
+
+	t.Run("can move a mouse cursor", func(t *testing.T) {
+		driver, clean := GivenANewDriver()
+		defer clean()
+
+		pt := gui.Point{X: 42, Y: 13}
+		driver.MoveMouse(pt.X, pt.Y)
+
+		pos := driver.GetMousePosition()
+
+		assert.Equal(t, pt, pos)
 	})
 }
