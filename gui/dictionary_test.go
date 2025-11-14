@@ -122,7 +122,7 @@ func TestDictionaryRenderString(t *testing.T) {
 
 			// TODO(tmckee): clean: expose 'glop.font' name through the API instead of
 			// copy-pasta.
-			d.RenderString("render this", gui.Point{X: 12, Y: 2}, 14, gui.Left, rendertest.StubShaderBank("glop.font"))
+			d.RenderString("render this", gui.PointAt(12, 2), 14, gui.Left, rendertest.StubShaderBank("glop.font"))
 		})
 	})
 

@@ -789,10 +789,7 @@ func EventListenerSpec() {
 		l := &testMouseListener{}
 		input.RegisterEventListener(l)
 
-		clickPoint := gui.Point{
-			X: 17,
-			Y: 42,
-		}
+		clickPoint := gui.PointAt(17, 42)
 
 		events := events[0:0]
 		appendTestEvent(&events, newMouseClickEvent(clickPoint))

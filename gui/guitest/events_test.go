@@ -48,12 +48,8 @@ func TestSynthesize(t *testing.T) {
 	})
 
 	t.Run("dragging", func(t *testing.T) {
-		fromPos := gui.Point{
-			X: 4, Y: 4,
-		}
-		toPos := gui.Point{
-			X: 7, Y: 42,
-		}
+		fromPos := gui.PointAt(4, 4)
+		toPos := gui.PointAt(7, 42)
 
 		leftMouseButtonKeyId := gin.KeyId{
 			Index: gin.MouseLButton,
