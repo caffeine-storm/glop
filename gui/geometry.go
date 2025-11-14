@@ -9,6 +9,13 @@ type Point struct {
 	X, Y int
 }
 
+func PointAt(x, y int) Point {
+	return Point{
+		X: x,
+		Y: y,
+	}
+}
+
 func (p Point) Add(q Point) Point {
 	return Point{
 		X: p.X + q.X,

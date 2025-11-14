@@ -2,14 +2,18 @@ package systemtest
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/runningwild/glop/gin"
+	"github.com/runningwild/glop/gui"
 	"github.com/runningwild/glop/system"
 
 	agg "github.com/runningwild/glop/gin/aggregator"
 )
 
 type Driver interface {
+	MoveMouse(x, y int)
 	Click(wx, wy int)
 	Scroll(dy float64)
 	ProcessFrame()
@@ -20,6 +24,7 @@ type Driver interface {
 
 	RawTool(func(system.NativeWindowHandle) []any)
 
+	GetMousePosition() gui.Point
 	GetEvents() []gin.EventGroup
 
 	// Panics if there were no clicks
@@ -42,6 +47,16 @@ type testDriver struct {
 func (d *testDriver) glopToX(glopX, glopY int) (int, int) {
 	height := d.window.getWindowHeight()
 	return glopX, height - 1 - glopY
+}
+
+func (d *testDriver) xToGlop(x, y int) (int, int) {
+	height := d.window.getWindowHeight()
+	return x, height - 1 - y
+}
+
+func (d *testDriver) MoveMouse(x, y int) {
+	xorgX, xorgY := d.glopToX(x, y)
+	xDoToolRun("mousemove", "--window", d.window.hdl, "--sync", xorgX, xorgY)
 }
 
 func (d *testDriver) Click(glopX, glopY int) {
@@ -119,6 +134,51 @@ func (d *testDriver) GetLastScroll() float64 {
 	}
 
 	panic(fmt.Errorf("couldn't find MouseWheelVertical in events: %v", d.eventGroups))
+}
+
+func (d *testDriver) GetMousePosition() gui.Point {
+	parseResponse := func(s string) map[string]string {
+		ret := map[string]string{}
+		for _, line := range strings.Split(s, "\n") {
+			if line == "" {
+				continue
+			}
+			parts := strings.Split(line, "=")
+			if len(parts) != 2 {
+				panic(fmt.Errorf("parseResponse: couldn't split line %q on '='", line))
+			}
+			ret[parts[0]] = parts[1]
+		}
+		return ret
+	}
+
+	response := xDoToolOutput("getmouselocation", "--shell")
+	responseMap := parseResponse(response)
+
+	getResponseInt := func(key string) int {
+		s, ok := responseMap[key]
+		if !ok {
+			panic(fmt.Errorf("couldn't find '%s=<int>' in xdotool output: %q", key, response))
+		}
+		ret, err := strconv.Atoi(s)
+		if err != nil {
+			panic(fmt.Errorf("GetMousePosition: %w", err))
+		}
+		return ret
+	}
+
+	mouseXScreen := getResponseInt("X")
+	mouseYScreen := getResponseInt("Y")
+	windowId := getResponseInt("WINDOW")
+
+	// Need to adjust x and y by the window's screen location
+	response = xDoToolOutput("getwindowgeometry", "--shell", windowId)
+	responseMap = parseResponse(response)
+
+	x := mouseXScreen - getResponseInt("X")
+	y := mouseYScreen - getResponseInt("Y")
+
+	return gui.PointAt(d.xToGlop(x, y))
 }
 
 func (d *testDriver) GetEvents() []gin.EventGroup {

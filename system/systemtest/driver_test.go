@@ -151,8 +151,10 @@ func TestSystemtestDriver(t *testing.T) {
 		driver, clean := GivenANewDriver()
 		defer clean()
 
-		pt := gui.Point{X: 42, Y: 13}
+		pt := gui.PointAt(42, 13)
 		driver.MoveMouse(pt.X, pt.Y)
+
+		driver.ProcessFrame()
 
 		pos := driver.GetMousePosition()
 
