@@ -1,8 +1,8 @@
 package gos
 
 import (
-	"github.com/runningwild/glop/gos/linux"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/gos/linux"
+	"github.com/caffeine-storm/glop/system"
 )
 
 type linuxSystemObject struct {

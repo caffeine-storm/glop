@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gos/linux"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gos/linux"
 )
 
 type stubCoordser struct {

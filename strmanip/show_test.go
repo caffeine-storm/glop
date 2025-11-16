@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/strmanip"
+	"github.com/caffeine-storm/glop/strmanip"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,9 +3,9 @@ package systemtest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/system"
-	"github.com/runningwild/glop/system/systemtest"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/system"
+	"github.com/caffeine-storm/glop/system/systemtest"
 	"github.com/stretchr/testify/assert"
 )
 

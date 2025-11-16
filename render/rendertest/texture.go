@@ -9,9 +9,9 @@ import (
 	"path"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/imgmanip"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/imgmanip"
+	"github.com/caffeine-storm/glop/render"
 )
 
 func uploadTextureFromImage(img *image.RGBA) gl.Texture {

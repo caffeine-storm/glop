@@ -5,8 +5,8 @@ import (
 	"image/draw"
 	"testing"
 
-	"github.com/runningwild/glop/imgmanip"
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/imgmanip"
+	"github.com/caffeine-storm/glop/render/rendertest"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -1,6 +1,6 @@
 package gin
 
-import "github.com/runningwild/glop/gin/aggregator"
+import "github.com/caffeine-storm/glop/gin/aggregator"
 
 // A generalDerivedKey represents a group of natural keys. A key is specified
 // with a KeyID which is a tuple of (key index, device type, device index).

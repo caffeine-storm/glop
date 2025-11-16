@@ -1,8 +1,8 @@
 package gintest
 
 import (
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gin/aggregator"
 )
 
 func ClickEventGroup(input *gin.Input) gin.EventGroup {

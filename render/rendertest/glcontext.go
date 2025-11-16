@@ -6,10 +6,10 @@ import (
 	"runtime/debug"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/gos"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/gos"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/system"
 )
 
 type conveyIsHalting struct {

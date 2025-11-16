@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/caffeine-storm/gl"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/gloptest"
 	"github.com/caffeine-storm/glu"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/gloptest"
 )
 
 func logErrorsWithAttribution(logger glog.Logger, file string, line int) {

@@ -5,7 +5,7 @@ package rendertest
 import (
 	"testing"
 
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/render"
 	"github.com/stretchr/testify/assert"
 )
 

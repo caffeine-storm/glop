@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/caffeine-storm/gl"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
 	"github.com/caffeine-storm/mathgl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
 )
 
 func getBadMatrixStackSizes() map[string]int {

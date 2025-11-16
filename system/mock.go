@@ -1,8 +1,8 @@
 package system
 
 import (
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/glog"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/glog"
 )
 
 type MockSystem struct {

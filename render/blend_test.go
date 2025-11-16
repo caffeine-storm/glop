@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 	"github.com/smartystreets/goconvey/convey"
 )
 

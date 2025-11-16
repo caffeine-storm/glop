@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 )
 

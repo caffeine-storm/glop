@@ -11,8 +11,8 @@ import (
 	"github.com/caffeine-storm/freetype"
 	"github.com/caffeine-storm/freetype/truetype"
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
 	"golang.org/x/image/math/fixed"
 )
 

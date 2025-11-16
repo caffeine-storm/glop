@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/system/systemtest"
+	"github.com/caffeine-storm/glop/system/systemtest"
 )
 
 func TestE2EClickHelper(t *testing.T) {

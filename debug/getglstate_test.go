@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/debug"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 )
 

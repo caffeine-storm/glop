@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/runningwild/glop/imgmanip"
+	"github.com/caffeine-storm/glop/imgmanip"
 )
 
 func MustLoadTestImage(testdataref TestDataReference) image.Image {

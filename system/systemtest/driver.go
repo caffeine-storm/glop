@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/system"
 
-	agg "github.com/runningwild/glop/gin/aggregator"
+	agg "github.com/caffeine-storm/glop/gin/aggregator"
 )
 
 type Driver interface {

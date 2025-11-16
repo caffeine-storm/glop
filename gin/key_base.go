@@ -3,8 +3,8 @@ package gin
 import (
 	"fmt"
 
-	"github.com/runningwild/glop/gin/aggregator"
-	"github.com/runningwild/glop/glog"
+	"github.com/caffeine-storm/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/glog"
 )
 
 type Key interface {

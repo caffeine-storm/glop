@@ -3,9 +3,9 @@ package gui_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/glog/glogtest"
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/gui/guitest"
+	"github.com/caffeine-storm/glop/glog/glogtest"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/gui/guitest"
 	"github.com/stretchr/testify/assert"
 )
 

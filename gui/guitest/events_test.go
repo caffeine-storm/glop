@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/aggregator"
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/gui/guitest"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/gui/guitest"
 	"github.com/stretchr/testify/assert"
 )
 

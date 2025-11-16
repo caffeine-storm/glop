@@ -2,7 +2,7 @@ package rendertest
 
 import (
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/render"
 )
 
 func StubShaderBank(shaderNames ...string) *render.ShaderBank {

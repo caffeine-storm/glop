@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/gloptest"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/gloptest"
 	"github.com/stretchr/testify/assert"
 )
 

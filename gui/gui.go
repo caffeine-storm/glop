@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
 )
 
 type DrawingContext interface {

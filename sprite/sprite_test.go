@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/cache"
-	"github.com/runningwild/glop/cache/cachetest"
-	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/sprite"
+	"github.com/caffeine-storm/glop/cache"
+	"github.com/caffeine-storm/glop/cache/cachetest"
+	"github.com/caffeine-storm/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/sprite"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

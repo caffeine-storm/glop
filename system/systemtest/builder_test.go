@@ -3,9 +3,9 @@ package systemtest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
-	"github.com/runningwild/glop/system/systemtest"
+	"github.com/caffeine-storm/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/system/systemtest"
 )
 
 func TestSystemtestBuilder(t *testing.T) {

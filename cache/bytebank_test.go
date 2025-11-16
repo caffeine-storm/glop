@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/runningwild/glop/cache"
+	"github.com/caffeine-storm/glop/cache"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

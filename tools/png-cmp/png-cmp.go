@@ -7,7 +7,7 @@ import (
 	"image/png"
 	"os"
 
-	"github.com/runningwild/glop/imgmanip"
+	"github.com/caffeine-storm/glop/imgmanip"
 )
 
 type Delta struct {

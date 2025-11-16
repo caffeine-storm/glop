@@ -3,8 +3,8 @@ package guitest
 import (
 	"fmt"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gui"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gui"
 )
 
 type stubEventDispatcher struct{}

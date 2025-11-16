@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glew"
+	"github.com/caffeine-storm/glop/glew"
 )
 
 func mappedSymbols() map[gl.GLenum]string {

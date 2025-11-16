@@ -1,7 +1,7 @@
 package system
 
 import (
-	"github.com/runningwild/glop/gin"
+	"github.com/caffeine-storm/glop/gin"
 )
 
 type NativeWindowHandle interface{}

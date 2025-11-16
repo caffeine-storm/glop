@@ -10,11 +10,11 @@ import (
 	"path/filepath"
 
 	"github.com/caffeine-storm/gl"
+	"github.com/caffeine-storm/glop/cache"
+	"github.com/caffeine-storm/glop/debug"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
 	"github.com/caffeine-storm/glu"
-	"github.com/runningwild/glop/cache"
-	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
 	yed "github.com/runningwild/yedparse"
 )
 

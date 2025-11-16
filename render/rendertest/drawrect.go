@@ -2,7 +2,7 @@ package rendertest
 
 import (
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/render"
 )
 
 func BlankAndDrawRectNdc(x1, y1, x2, y2 float64) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/gin/aggregator"
 )
 
 func TestWheelAggregator(t *testing.T) {

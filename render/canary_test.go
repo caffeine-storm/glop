@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/gloptest"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/gloptest"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 )
 
 var (

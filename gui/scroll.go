@@ -3,7 +3,7 @@ package gui
 import (
 	"math"
 
-	"github.com/runningwild/glop/gin"
+	"github.com/caffeine-storm/glop/gin"
 )
 
 type ScrollFrame struct {

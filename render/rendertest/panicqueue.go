@@ -1,7 +1,7 @@
 package rendertest
 
 import (
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/render"
 )
 
 // An implemenation of render.RenderQueueInterface that panics if anything is

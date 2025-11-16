@@ -4,7 +4,7 @@ import (
 	"image"
 	"testing"
 
-	"github.com/runningwild/glop/tools/png-cmp"
+	"github.com/caffeine-storm/glop/tools/png-cmp"
 )
 
 func TestWeUseNrgba(t *testing.T) {

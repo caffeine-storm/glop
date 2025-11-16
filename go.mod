@@ -1,4 +1,4 @@
-module github.com/runningwild/glop
+module github.com/caffeine-storm/glop
 
 go 1.24.0
 

@@ -1,6 +1,6 @@
 package gui
 
-import "github.com/runningwild/glop/gin"
+import "github.com/caffeine-storm/glop/gin"
 
 type EventGroup struct {
 	gin.EventGroup

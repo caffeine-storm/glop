@@ -1,11 +1,11 @@
 package systemtest
 
 import (
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/system"
 )
 
 type Window interface {

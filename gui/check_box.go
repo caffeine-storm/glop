@@ -4,7 +4,7 @@ import (
 	"reflect"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/gin"
+	"github.com/caffeine-storm/glop/gin"
 )
 
 type checkBoxSelection int

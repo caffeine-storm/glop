@@ -9,8 +9,8 @@ import (
 	"os"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/imgmanip"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/imgmanip"
 )
 
 func getBoundTextureSize() (width int, height int) {

@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/runningwild/glop/imgmanip"
+	"github.com/caffeine-storm/glop/imgmanip"
 )
 
 func withTempFile(tempname string, fn func(*os.File)) {

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/cache"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
-	"github.com/runningwild/glop/sprite"
+	"github.com/caffeine-storm/glop/cache"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/sprite"
 )
 
 func givenASpriteManager(queue render.RenderQueueInterface) *sprite.Manager {

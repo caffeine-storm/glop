@@ -3,7 +3,7 @@ package gin
 import (
 	"fmt"
 
-	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/gin/aggregator"
 )
 
 // A view over the data that comes back from native code.

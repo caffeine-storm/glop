@@ -3,7 +3,7 @@ package algorithm_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/util/algorithm"
+	"github.com/caffeine-storm/glop/util/algorithm"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

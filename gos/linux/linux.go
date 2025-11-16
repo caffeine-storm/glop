@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/system"
 )
 
 type SystemObject struct {

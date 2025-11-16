@@ -3,7 +3,7 @@ package aggregator_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/gin/aggregator"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -9,10 +9,10 @@ import (
 	rtdebug "runtime/debug"
 	"testing"
 
-	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/imgmanip"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/debug"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/imgmanip"
+	"github.com/caffeine-storm/glop/render"
 )
 
 var transparent = color.RGBA{}

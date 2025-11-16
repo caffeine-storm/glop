@@ -4,10 +4,10 @@ import (
 	"image"
 	"testing"
 
-	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/debug"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 )
 
 func TestClearScreen(t *testing.T) {

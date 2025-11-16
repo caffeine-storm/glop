@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render/tls"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render/tls"
 )
 
 func IsOnRenderThread() bool {

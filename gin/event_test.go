@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/aggregator"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gin/aggregator"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

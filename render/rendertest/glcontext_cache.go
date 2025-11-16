@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/system"
 )
 
 func RunTestWithCachedContext(width, height int, fn func(system.System, system.NativeWindowHandle, render.RenderQueueInterface)) {

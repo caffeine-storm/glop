@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/runningwild/glop/cache"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/util/algorithm"
+	"github.com/caffeine-storm/glop/cache"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/util/algorithm"
 	yed "github.com/runningwild/yedparse"
 )
 

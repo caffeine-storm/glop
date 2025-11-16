@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/runningwild/glop/gin"
+	"github.com/caffeine-storm/glop/gin"
 )
 
 // Stub implementation of aggregator.SubAggregator

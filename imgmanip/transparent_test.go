@@ -6,7 +6,7 @@ import (
 	"image/draw"
 	"testing"
 
-	"github.com/runningwild/glop/imgmanip"
+	"github.com/caffeine-storm/glop/imgmanip"
 )
 
 func TestIsTransparent(t *testing.T) {

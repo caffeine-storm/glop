@@ -3,8 +3,8 @@ package system_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/system"
 )
 
 type stubSystem struct{}

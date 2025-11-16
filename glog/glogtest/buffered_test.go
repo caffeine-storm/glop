@@ -3,7 +3,7 @@ package glogtest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/glog/glogtest"
+	"github.com/caffeine-storm/glop/glog/glogtest"
 	"github.com/stretchr/testify/assert"
 )
 

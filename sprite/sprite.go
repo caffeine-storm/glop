@@ -14,11 +14,11 @@ import (
 	"sync"
 
 	"github.com/caffeine-storm/gl"
+	"github.com/caffeine-storm/glop/cache"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/util/algorithm"
 	"github.com/caffeine-storm/glu"
-	"github.com/runningwild/glop/cache"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/util/algorithm"
 	yed "github.com/runningwild/yedparse"
 )
 

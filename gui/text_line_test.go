@@ -5,12 +5,12 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/gui/guitest"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/gui/guitest"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 )
 
 func TestRunTextLineSpecs(t *testing.T) {

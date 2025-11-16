@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/gloptest"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/gloptest"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

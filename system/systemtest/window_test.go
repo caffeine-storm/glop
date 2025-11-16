@@ -3,9 +3,9 @@ package systemtest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/gui"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/system/systemtest"
+	"github.com/caffeine-storm/glop/gui"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/system/systemtest"
 )
 
 func TestTestWindow(t *testing.T) {

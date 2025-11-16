@@ -9,11 +9,11 @@ import (
 	"image/png"
 	"testing"
 
-	"github.com/runningwild/glop/debug"
-	"github.com/runningwild/glop/imgmanip"
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/render/rendertest/testbuilder"
+	"github.com/caffeine-storm/glop/debug"
+	"github.com/caffeine-storm/glop/imgmanip"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/render/rendertest/testbuilder"
 )
 
 const maxuint16 = 0xffff

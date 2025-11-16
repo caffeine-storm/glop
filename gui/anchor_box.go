@@ -1,8 +1,8 @@
 package gui
 
 import (
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
 )
 
 // An Anchor specifies where a widget should be positioned withing an AnchorBox

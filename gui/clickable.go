@@ -1,6 +1,6 @@
 package gui
 
-import "github.com/runningwild/glop/gin"
+import "github.com/caffeine-storm/glop/gin"
 
 // Embed a Clickable object to run a specified function when the widget
 // is clicked and run a specified function.

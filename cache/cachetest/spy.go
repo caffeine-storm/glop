@@ -3,7 +3,7 @@ package cachetest
 import (
 	"fmt"
 
-	"github.com/runningwild/glop/cache"
+	"github.com/caffeine-storm/glop/cache"
 )
 
 type SpyedCache struct {

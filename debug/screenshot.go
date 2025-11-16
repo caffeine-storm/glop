@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/imgmanip"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/imgmanip"
 )
 
 var logger = glog.WarningLogger()

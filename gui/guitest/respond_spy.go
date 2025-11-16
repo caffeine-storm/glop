@@ -1,6 +1,6 @@
 package guitest
 
-import "github.com/runningwild/glop/gui"
+import "github.com/caffeine-storm/glop/gui"
 
 type Responder interface {
 	Respond(gui *gui.Gui, evt gui.EventGroup) bool

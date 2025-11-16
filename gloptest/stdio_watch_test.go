@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/runningwild/glop/gloptest"
+	"github.com/caffeine-storm/glop/gloptest"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

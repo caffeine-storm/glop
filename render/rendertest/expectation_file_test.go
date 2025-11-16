@@ -3,7 +3,7 @@ package rendertest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/render/rendertest"
 	"github.com/stretchr/testify/assert"
 )
 

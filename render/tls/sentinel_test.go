@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/runningwild/glop/render/tls"
+	"github.com/caffeine-storm/glop/render/tls"
 )
 
 func inFreshThread(fn func()) {

@@ -2,8 +2,8 @@ package gui
 
 import (
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/render"
 )
 
 type cursor struct {

@@ -3,8 +3,8 @@ package rendertest
 import (
 	"fmt"
 
-	"github.com/runningwild/glop/glog"
-	"github.com/runningwild/glop/render"
+	"github.com/caffeine-storm/glop/glog"
+	"github.com/caffeine-storm/glop/render"
 )
 
 // Like a render.renderQueue but, if there were on-render-thread errors,

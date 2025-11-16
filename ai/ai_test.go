@@ -3,7 +3,7 @@ package ai_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/ai"
+	"github.com/caffeine-storm/glop/ai"
 	"github.com/runningwild/polish"
 	yed "github.com/runningwild/yedparse"
 

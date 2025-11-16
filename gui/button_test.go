@@ -3,9 +3,9 @@ package gui_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/gin"
-	"github.com/runningwild/glop/gin/gintest"
-	"github.com/runningwild/glop/gui"
+	"github.com/caffeine-storm/glop/gin"
+	"github.com/caffeine-storm/glop/gin/gintest"
+	"github.com/caffeine-storm/glop/gui"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

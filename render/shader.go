@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/caffeine-storm/gl"
-	"github.com/runningwild/glop/glog"
+	"github.com/caffeine-storm/glop/glog"
 )
 
 type ShaderBank struct {

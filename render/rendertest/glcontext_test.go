@@ -3,9 +3,9 @@ package rendertest_test
 import (
 	"testing"
 
-	"github.com/runningwild/glop/render"
-	"github.com/runningwild/glop/render/rendertest"
-	"github.com/runningwild/glop/system"
+	"github.com/caffeine-storm/glop/render"
+	"github.com/caffeine-storm/glop/render/rendertest"
+	"github.com/caffeine-storm/glop/system"
 	"github.com/stretchr/testify/assert"
 )
 
