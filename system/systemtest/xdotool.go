@@ -1,8 +1,10 @@
 package systemtest
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
+	"runtime/trace"
 )
 
 func stringifyArgs(args []any) []string {
@@ -20,12 +22,24 @@ func stringifyArgs(args []any) []string {
 	return ret
 }
 
-func xDoToolRun(xdotoolArgs ...any) {
-	cmd := exec.Command("xdotool", stringifyArgs(xdotoolArgs)...)
+func traceRunningExternalCommand(xdotoolArgs []any) (bs []byte, err error) {
+	ctx := context.Background()
+	trace.WithRegion(ctx, "systemtest-xdotool", func() {
+		stringargs := stringifyArgs(xdotoolArgs)
+		trace.Logf(ctx, "systemtest-xdotool", "args: %s", stringargs)
+		cmd := exec.Command("xdotool", stringargs...)
+		bs, err = cmd.Output()
+		if err != nil {
+			err = fmt.Errorf("couldn't run %q: %w", cmd.String(), err)
+		}
+	})
+	return
+}
 
-	err := cmd.Run()
+func xDoToolRun(xdotoolArgs ...any) {
+	_, err := traceRunningExternalCommand(xdotoolArgs)
 	if err != nil {
-		panic(fmt.Errorf("could not %q: %w", cmd.String(), err))
+		panic(err)
 	}
 }
 
@@ -34,7 +48,7 @@ func xDoToolOutput(xdotoolArgs ...any) string {
 
 	bs, err := cmd.Output()
 	if err != nil {
-		panic(fmt.Errorf("could not %q: %w", cmd.String(), err))
+		panic(err)
 	}
 
 	return string(bs)
