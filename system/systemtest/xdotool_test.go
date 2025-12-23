@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/caffeine-storm/glop/gui"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,4 +26,19 @@ func TestXdoToolVersion(t *testing.T) {
 	require.NoError(err, "couldn't parse 'major' version component, %q, as an int: %s", parts[0], err)
 
 	assert.GreaterOrEqual(asInt, 4)
+}
+
+func BenchmarkMouseMoves(b *testing.B) {
+	// Before the change to run version 4+ through podman:
+	// BenchmarkMouseMoves-12    10    14,754,686,470 ns/op
+	// After
+	// BenchmarkMouseMoves-12    10       704,084,872 ns/op
+	pt := gui.PointAt(42, 13)
+
+	WithTestWindowDriver(64, 64, func(driver Driver) {
+		for b.Loop() {
+			driver.MoveMouse(pt.X, pt.Y)
+			driver.ProcessFrame()
+		}
+	})
 }
