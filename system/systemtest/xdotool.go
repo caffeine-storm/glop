@@ -72,7 +72,7 @@ func xDoToolOutput(xdotoolArgs ...any) string {
 		"--env", fmt.Sprintf("DISPLAY=%s", display),
 
 		// Use xdotool version 4.
-		"caffeinestorm/xdotool-4:20251204.1",
+		"docker.io/caffeinestorm/xdotool-4:20251204.1",
 
 		// The container has an entrypoint of /bin/bash ... let's run xdotool
 		// directly.
